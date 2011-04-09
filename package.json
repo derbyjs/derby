@@ -1,0 +1,12 @@
+{
+  "name": "Vers",
+  "description": "Framework for creating applications with automatically synced models and functionally defined views. HTML and updates can be rendered both on the server and on the client.",
+  "version": "0.0.0",
+  "author": "Nate Smith",
+  "main": "./lib/vers.js",
+  "dependencies": {
+    "socket.io": "*",
+    "browserify": "*",
+    "uglify-js": "*"
+  }
+}
