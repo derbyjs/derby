@@ -34,7 +34,6 @@ module.exports = {
           value.should.equal(value1);
           options.should.equal(options1);
           done();
-          return true;
         },
         dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1, listener1);
@@ -47,7 +46,6 @@ module.exports = {
           value.should.equal(value1);
           options.should.equal(options1);
           done();
-          return true;
         },
         dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1);
@@ -60,7 +58,6 @@ module.exports = {
           counts[listener] = (counts[listener] || 0) + 1;
           value.should.equal(value1);
           options.should.equal(options1);
-          return true;
         },
         dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1, listener2);
@@ -100,10 +97,7 @@ module.exports = {
     dispatcher.trigger(name1);
   }, 1),
   'test EventDispatcher unbind': wrapTest(function(done) {
-    var triggerFunction = function() {
-          done();
-          return true;
-        },
+    var triggerFunction = done,
         dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1);
@@ -117,7 +111,6 @@ module.exports = {
           value.should.equal(value1);
           options.should.equal(options1);
           done();
-          return true;
         },
         dispatcher1 = makeDispatcher('server', triggerFunction),
         dispatcher2 = makeDispatcher('browser', triggerFunction),
@@ -134,5 +127,32 @@ module.exports = {
     
     dispatcher2.set(data2);
     dispatcher2.trigger(name1, value1, options1);
+  }, 1),
+  'test EventDispatcher bind callback': wrapTest(function(done) {
+    var triggerFunction = function(listener, value, options) {
+          listener.should.eql(listener1);
+          value.should.equal(value1);
+          options.should.equal(options1);
+          done();
+        },
+        bindFunction = function(name, listener) {
+          name.should.equal(name1);
+          listener.should.eql(listener1);
+          done();
+        },
+        dispatcher = makeDispatcher('browser', triggerFunction, bindFunction);
+    dispatcher.bind(name1, listener1);
+    dispatcher.trigger(name1, value1, options1);
+    dispatcher.trigger(name1, value1, options1);
+  }, 3),
+  'test EventDispatcher bind callback can cancel': wrapTest(function(done) {
+    var triggerFunction = done,
+        bindFunction = function() {
+          done();
+          return false;
+        },
+        dispatcher = makeDispatcher('browser', triggerFunction, bindFunction);
+    dispatcher.bind(name1);
+    dispatcher.trigger(name1);
   }, 1),
 }
