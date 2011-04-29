@@ -17,14 +17,14 @@ var listener4 = true;
 var value1 = 'test value';
 var options1 = { option: 4 };
 
-function makeDispatcher(onServer, triggerCallback, bindCallback) {
-  EventDispatcher._.onServer = onServer;
+function makeDispatcher(environment, triggerCallback, bindCallback) {
+  EventDispatcher._.onServer = environment === 'server';
   return new EventDispatcher(triggerCallback, bindCallback);
 }
 
 module.exports = {
   'test EventDispatcher no callbacks': function() {
-    var dispatcher = makeDispatcher(false);
+    var dispatcher = makeDispatcher('browser');
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1, value1, options1);
   },
@@ -36,7 +36,7 @@ module.exports = {
           done();
           return true;
         },
-        dispatcher = makeDispatcher(false, triggerFunction);
+        dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1, value1, options1);
     dispatcher.trigger(name1, value1, options1);
@@ -49,7 +49,7 @@ module.exports = {
           done();
           return true;
         },
-        dispatcher = makeDispatcher(false, triggerFunction);
+        dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1);
     dispatcher.trigger(name1, value1, options1);
     dispatcher.trigger(name1, value1, options1);
@@ -62,7 +62,7 @@ module.exports = {
           options.should.equal(options1);
           return true;
         },
-        dispatcher = makeDispatcher(false, triggerFunction);
+        dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1, listener2);
     dispatcher.bind(name1, listener3);
     dispatcher.bind(name1, listener4);
@@ -81,20 +81,20 @@ module.exports = {
           done();
           return false;
         },
-        dispatcher = makeDispatcher(false, triggerFunction);
+        dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1);
     dispatcher.trigger(name1);
     dispatcher.trigger(name1);
   }, 1),
   'test EventDispatcher do not trigger on server': wrapTest(function(done) {
     var triggerFunction = done,
-        dispatcher = makeDispatcher(true, triggerFunction);
+        dispatcher = makeDispatcher('server', triggerFunction);
     dispatcher.bind(name1);
     dispatcher.trigger(name1);
   }, 0),
   'test EventDispatcher do not trigger twice after double bind': wrapTest(function(done) {
     var triggerFunction = done,
-        dispatcher = makeDispatcher(false, triggerFunction);
+        dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1, listener1);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1);
@@ -104,7 +104,7 @@ module.exports = {
           done();
           return true;
         },
-        dispatcher = makeDispatcher(false, triggerFunction);
+        dispatcher = makeDispatcher('browser', triggerFunction);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1);
     dispatcher.trigger(name1);
@@ -119,8 +119,8 @@ module.exports = {
           done();
           return true;
         },
-        dispatcher1 = makeDispatcher(true, triggerFunction),
-        dispatcher2 = makeDispatcher(false, triggerFunction),
+        dispatcher1 = makeDispatcher('server', triggerFunction),
+        dispatcher2 = makeDispatcher('browser', triggerFunction),
         data1, data2;
     
     dispatcher1.bind(name1, listener1);
