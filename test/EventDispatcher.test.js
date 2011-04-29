@@ -2,11 +2,15 @@ var wrapTest = require('./helpers').wrapTest,
     assert = require('assert'),
     EventDispatcher = require('../lib/EventDispatcher.js');
 
-// Names must be a string
+// Names must be a valid object key
 var name1 = 'test event';
+var name2 = 89;
 
 // Listeners can be anything that is representable in plain JSON 
 var listener1 = [1, 2, 'qu"a"il', "'", { arr: ['x', 'y'] }];
+var listener2 = 0;
+var listener3 = 'stuff';
+var listener4 = true;
 
 // The second and third parameters sent to trigger are simply passed through
 // to the callback function. They can be anything.
@@ -50,6 +54,28 @@ module.exports = {
     dispatcher.trigger(name1, value1, options1);
     dispatcher.trigger(name1, value1, options1);
   }, 2),
+  'test EventDispatcher trigger multiple listeners': function(beforeExit) {
+    var counts = {},
+        triggerFunction = function(listener, value, options) {
+          counts[listener] = (counts[listener] || 0) + 1;
+          value.should.equal(value1);
+          options.should.equal(options1);
+          return true;
+        },
+        dispatcher = makeDispatcher(false, triggerFunction);
+    dispatcher.bind(name1, listener2);
+    dispatcher.bind(name1, listener3);
+    dispatcher.bind(name1, listener4);
+    dispatcher.bind(name2, listener3);
+    dispatcher.trigger(name1, value1, options1);
+    dispatcher.trigger(name2, value1, options1);
+    dispatcher.trigger(name2, value1, options1);
+    beforeExit(function() {
+      counts[listener2].should.equal(1);
+      counts[listener3].should.equal(3);
+      counts[listener4].should.equal(1);
+    });
+  },
   'test EventDispatcher remove listener after failed trigger': wrapTest(function(done) {
     var triggerFunction = function() {
           done();
