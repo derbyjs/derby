@@ -3,6 +3,9 @@ var wrapTest = require('./helpers').wrapTest,
     htmlParser = require('../lib/htmlParser.js');
 
 module.exports = {
+  'test htmlParser no handlers': function() {
+    htmlParser.parse('<p id=stuff>Heyo</p>');
+  },
   'test htmlParser basic HTML': function() {
     var stack = [],
         handlers = {
@@ -33,7 +36,7 @@ module.exports = {
       '<p>Flowers ' + // Trailing whitespace on implicitly closed tag
       '<p>Flight</p>\n' + // Explicitly closed tag
       '  \t<p>Fight</p>\t \n' + // New line and leading whitespace between tags should disappear
-      '<p>Blight\nSight</p> <p>'; // Trailing whitespace and between tags should be kept
+      '<p>Blight\nSight</p> <p />'; // Trailing whitespace and between tags should be kept
     expected = [
       ['start', 'h1', {}],
       ['chars', 'Willow '],
