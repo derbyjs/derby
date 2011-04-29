@@ -33,7 +33,7 @@ module.exports = {
       '<p>Flowers ' + // Trailing whitespace on implicitly closed tag
       '<p>Flight</p>\n' + // Explicitly closed tag
       '  \t<p>Fight</p>\t \n' + // New line and leading whitespace between tags should disappear
-      '<p>Blight</p> <p>'; // Trailing whitespace and between tags should be kept
+      '<p>Blight\nSight</p> <p>'; // Trailing whitespace and between tags should be kept
     expected = [
       ['start', 'h1', {}],
       ['chars', 'Willow '],
@@ -62,7 +62,7 @@ module.exports = {
       ['end', 'p'],
       ['chars', '\t '],
       ['start', 'p', {}],
-      ['chars', 'Blight'],
+      ['chars', 'Blight\nSight'],
       ['end', 'p'],
       ['chars', ' '],
       ['start', 'p', {}]
