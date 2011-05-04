@@ -4,11 +4,6 @@
   "version": "0.0.1",
   "author": "Nate Smith",
   "main": "./lib/vers.js",
-  "dependencies": {
-    "socket.io": "*",
-    "browserify": "*",
-    "uglify-js": "*"
-  },
   "browserify": {
     "name": "vers",
     "main": "./index.js",
