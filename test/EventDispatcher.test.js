@@ -17,9 +17,9 @@ var listener4 = true;
 var value1 = 'test value';
 var options1 = { option: 4 };
 
-function makeDispatcher(environment, triggerCallback, bindCallback) {
+function makeDispatcher(environment, onTrigger, onBind) {
   EventDispatcher._.onServer = environment === 'server';
-  return new EventDispatcher(triggerCallback, bindCallback);
+  return new EventDispatcher(onTrigger, onBind);
 }
 
 module.exports = {
@@ -29,37 +29,37 @@ module.exports = {
     dispatcher.trigger(name1, value1, options1);
   },
   'test EventDispatcher successful trigger in browser': wrapTest(function(done) {
-    var triggerFunction = function(listener, value, options) {
+    var onTrigger = function(listener, value, options) {
           listener.should.eql(listener1);
           value.should.equal(value1);
           options.should.equal(options1);
           done();
         },
-        dispatcher = makeDispatcher('browser', triggerFunction);
+        dispatcher = makeDispatcher('browser', onTrigger);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1, value1, options1);
     dispatcher.trigger(name1, value1, options1);
   }, 2),
   'test EventDispatcher no listener': wrapTest(function(done) {
-    var triggerFunction = function(listener, value, options) {
+    var onTrigger = function(listener, value, options) {
           assert.isNull(listener);
           value.should.equal(value1);
           options.should.equal(options1);
           done();
         },
-        dispatcher = makeDispatcher('browser', triggerFunction);
+        dispatcher = makeDispatcher('browser', onTrigger);
     dispatcher.bind(name1);
     dispatcher.trigger(name1, value1, options1);
     dispatcher.trigger(name1, value1, options1);
   }, 2),
   'test EventDispatcher trigger multiple listeners': function(beforeExit) {
     var counts = {},
-        triggerFunction = function(listener, value, options) {
+        onTrigger = function(listener, value, options) {
           counts[listener] = (counts[listener] || 0) + 1;
           value.should.equal(value1);
           options.should.equal(options1);
         },
-        dispatcher = makeDispatcher('browser', triggerFunction);
+        dispatcher = makeDispatcher('browser', onTrigger);
     dispatcher.bind(name1, listener2);
     dispatcher.bind(name1, listener3);
     dispatcher.bind(name1, listener4);
@@ -74,31 +74,31 @@ module.exports = {
     });
   },
   'test EventDispatcher remove listener after failed trigger': wrapTest(function(done) {
-    var triggerFunction = function() {
+    var onTrigger = function() {
           done();
           return false;
         },
-        dispatcher = makeDispatcher('browser', triggerFunction);
+        dispatcher = makeDispatcher('browser', onTrigger);
     dispatcher.bind(name1);
     dispatcher.trigger(name1);
     dispatcher.trigger(name1);
   }, 1),
   'test EventDispatcher do not trigger on server': wrapTest(function(done) {
-    var triggerFunction = done,
-        dispatcher = makeDispatcher('server', triggerFunction);
+    var onTrigger = done,
+        dispatcher = makeDispatcher('server', onTrigger);
     dispatcher.bind(name1);
     dispatcher.trigger(name1);
   }, 0),
   'test EventDispatcher do not trigger twice after double bind': wrapTest(function(done) {
-    var triggerFunction = done,
-        dispatcher = makeDispatcher('browser', triggerFunction);
+    var onTrigger = done,
+        dispatcher = makeDispatcher('browser', onTrigger);
     dispatcher.bind(name1, listener1);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1);
   }, 1),
   'test EventDispatcher unbind': wrapTest(function(done) {
-    var triggerFunction = done,
-        dispatcher = makeDispatcher('browser', triggerFunction);
+    var onTrigger = done,
+        dispatcher = makeDispatcher('browser', onTrigger);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1);
     dispatcher.trigger(name1);
@@ -106,14 +106,14 @@ module.exports = {
     dispatcher.trigger(name1);
   }, 2),
   'test EventDispatcher get and set': wrapTest(function(done) {
-    var triggerFunction = function(listener, value, options) {
+    var onTrigger = function(listener, value, options) {
           listener.should.eql(listener1);
           value.should.equal(value1);
           options.should.equal(options1);
           done();
         },
-        dispatcher1 = makeDispatcher('server', triggerFunction),
-        dispatcher2 = makeDispatcher('browser', triggerFunction),
+        dispatcher1 = makeDispatcher('server', onTrigger),
+        dispatcher2 = makeDispatcher('browser', onTrigger),
         data1, data2;
     
     dispatcher1.bind(name1, listener1);
@@ -129,29 +129,29 @@ module.exports = {
     dispatcher2.trigger(name1, value1, options1);
   }, 1),
   'test EventDispatcher bind callback': wrapTest(function(done) {
-    var triggerFunction = function(listener, value, options) {
+    var onTrigger = function(listener, value, options) {
           listener.should.eql(listener1);
           value.should.equal(value1);
           options.should.equal(options1);
           done();
         },
-        bindFunction = function(name, listener) {
+        onBind = function(name, listener) {
           name.should.equal(name1);
           listener.should.eql(listener1);
           done();
         },
-        dispatcher = makeDispatcher('browser', triggerFunction, bindFunction);
+        dispatcher = makeDispatcher('browser', onTrigger, onBind);
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1, value1, options1);
     dispatcher.trigger(name1, value1, options1);
   }, 3),
   'test EventDispatcher bind callback can cancel': wrapTest(function(done) {
-    var triggerFunction = done,
-        bindFunction = function() {
+    var onTrigger = done,
+        onBind = function() {
           done();
           return false;
         },
-        dispatcher = makeDispatcher('browser', triggerFunction, bindFunction);
+        dispatcher = makeDispatcher('browser', onTrigger, onBind);
     dispatcher.bind(name1);
     dispatcher.trigger(name1);
   }, 1),
