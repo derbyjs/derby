@@ -1,15 +1,16 @@
 var wrapTest = require('./helpers').wrapTest,
-    assert = require('assert');
+    assert = require('assert'),
+    _ = require('../lib/utils'),
+    model = require('../lib/model.js');
 
 function makeModel(environment) {
-  var model = require('../lib/model.js');
-  model._.onServer = environment === 'server';
-  return model;
+  _.onServer = environment === 'server';
+  return model();
 }
 
 module.exports = {
   'test model set and get simple objects': function() {
-    var model = makeModel('server'),
+    var model = makeModel('browser'),
         page = {
           name: 'test',
           lines: ['line1', 'line 2', 'more lines...'],
@@ -127,4 +128,60 @@ module.exports = {
     model.set('picHeight', 11);
     model.set('picHeight', 11);
   }, 1),
+  'test model trigger event on reference set': wrapTest(function(done) {
+    var model = makeModel('browser'),
+        expectedColor,
+        domMock = {
+          update: function(id, method, property, viewFunc, value) {
+            id.should.equal('test');
+            method.should.equal('prop');
+            property.should.eql(['style', 'color']);
+            assert.isUndefined(viewFunc);
+            value.should.equal(expectedColor);
+            done();
+          }
+        };
+    model._link(domMock);
+    model.init({
+      info: {
+        users: [
+          { name: 'user1', colors: model.ref('info.favoriteColors') },
+          { name: 'ben', colors: ['black', 'white'] }
+        ],
+        favoriteColors: ['aqua', 'orange']
+      },
+      userIndex: 0,
+      user: model.ref('info.users', 'userIndex')
+    });
+    model.events.bind('user.colors.1', ['test', 'prop', ['style', 'color']]);
+    expectedColor = 'violet';
+    model.set('user.colors.1', expectedColor);
+    console.log(model.events._names)
+    expectedColor = 'white';
+    model.set('userIndex', 1);
+    console.log(model.events._names)
+    //model.set('info.users.1.color.1', 'violet');
+  }, 2),
+  'test model push': wrapTest(function(done) {
+    var model = makeModel('browser'),
+        domMock = {
+          update: function(id, method, property, viewFunc, value) {
+            id.should.equal('list');
+            method.should.equal('appendHtml');
+            assert.isNull(property);
+            viewFunc.should.equal('stuff');
+            value.should.equal('hey');
+            done();
+          }
+        };
+    model._link(domMock);
+    model.init({
+      stuff: {
+        items: ['item1', [8, 3, 'q'], 'item3']
+      }
+    });
+    model.events.bind('stuff.items', ['list', 'html', null, 'stuff']);
+    model.push('stuff.items', 'hey');
+    model.get('stuff.items').should.eql(['item1', [8, 3, 'q'], 'item3', 'hey']);
+  }, 1)
 }

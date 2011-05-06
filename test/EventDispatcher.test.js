@@ -1,5 +1,6 @@
 var wrapTest = require('./helpers').wrapTest,
     assert = require('assert'),
+    _ = require('../lib/utils'),
     EventDispatcher = require('../lib/EventDispatcher.js');
 
 // Names must be a valid object key
@@ -18,7 +19,7 @@ var value1 = 'test value';
 var options1 = { option: 4 };
 
 function makeDispatcher(environment, onTrigger, onBind) {
-  EventDispatcher._.onServer = environment === 'server';
+  _.onServer = environment === 'server';
   return new EventDispatcher(onTrigger, onBind);
 }
 
