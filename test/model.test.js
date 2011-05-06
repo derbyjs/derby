@@ -154,14 +154,20 @@ module.exports = {
       user: model.ref('info.users', 'userIndex')
     });
     model.events.bind('user.colors.1', ['test', 'prop', ['style', 'color']]);
+    // Trigger when a value is set on the reference
     expectedColor = 'violet';
     model.set('user.colors.1', expectedColor);
-    console.log(model.events._names)
+    // Trigger when a reference key is changed
     expectedColor = 'white';
     model.set('userIndex', 1);
+    // Trigger when the referenced object is set
+    //expectedColor = 'teal'
+    //model.set('info.users.1.colors.1', expectedColor);
     console.log(model.events._names)
-    //model.set('info.users.1.color.1', 'violet');
-  }, 2),
+    // Replace the references
+    expectedColor = 'blue'
+    model.set('user.colors', ['yellow', 'blue']);
+  }, 3),
   'test model push': wrapTest(function(done) {
     var model = makeModel('browser'),
         domMock = {
