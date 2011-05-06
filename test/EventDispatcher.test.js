@@ -103,8 +103,12 @@ module.exports = {
     dispatcher.bind(name1, listener1);
     dispatcher.trigger(name1);
     dispatcher.trigger(name1);
+    dispatcher.unbind(name1, 'some stuff'); // Shouldn't do anything
+    dispatcher.get().should.have.property(name1);
     dispatcher.unbind(name1, listener1);
+    dispatcher.get().should.not.have.property(name1);
     dispatcher.trigger(name1);
+    dispatcher.unbind('does not exist', null); // Shouldn't do anything
   }, 2),
   'test EventDispatcher get and set': wrapTest(function(done) {
     var onTrigger = function(listener, value, options) {
