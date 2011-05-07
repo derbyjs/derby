@@ -78,24 +78,6 @@ module.exports = {
     model.get('user.color').should.equal('red');
     model.get('info.favoriteColors').should.eql(['aqua', 'pink']);
   },
-  'test model set and get model functions': function() {
-    var model = makeModel('server');
-    model.init({
-      item: {
-        val: model.func('add'),
-        arg1: 11
-      },
-      arg2: 7
-    });
-    model.makeFunc('add', ['item.arg1', 'arg2'], function(arg1, arg2) {
-      return arg1 + arg2;
-    });
-    model.get('item.val').should.equal(18);
-    model.set('item.arg1', 21);
-    model.get('item.val').should.equal(28);
-    model.set('arg2', 0);
-    model.get('item.val').should.equal(21);
-  },
   'test model trigger successful event on set': wrapTest(function(done) {
     var model = makeModel('browser'),
         domMock = {
@@ -157,6 +139,10 @@ module.exports = {
     // Trigger when a value is set on the reference
     expectedColor = 'violet';
     model.set('user.colors.1', expectedColor);
+    expectedColor = 'gold';
+    model.set('info.users.0.colors.1', expectedColor);
+    expectedColor = 'silver';
+    model.set('info.favoriteColors.1', expectedColor);
     // Trigger when a reference key is changed
     expectedColor = 'white';
     model.set('userIndex', 1);
@@ -167,7 +153,84 @@ module.exports = {
     model.events.get().should.have.property('info.favoriteColors.1');
     model.set('info.users.0.colors.1', 'black');
     model.events.get().should.not.have.property('info.favoriteColors.1');
-  }, 3),
+    // 5 out of these 6 set operations should trigger the callback
+  }, 5),
+  'test model set and get model functions': function() {
+    var model = makeModel('server');
+    model.init({
+      item: {
+        val: model.func('add'),
+        arg1: 11
+      },
+      arg2: 7
+    });
+    model.makeFunc('add', ['item.arg1', 'arg2'], function(arg1, arg2) {
+      return arg1 + arg2;
+    });
+    model.get('item.val').should.equal(18);
+    model.set('item.arg1', 21);
+    model.get('item.val').should.equal(28);
+    model.set('arg2', 0);
+    model.get('item.val').should.equal(21);
+  },
+  'test model function composition and events': wrapTest(function(done) {
+    var model = makeModel('browser'),
+        expectedValue;
+        domMock = {
+          update: function(id, method, property, viewFunc, value) {
+            value.should.equal(expectedValue);
+            done();
+          }
+        };
+    model._link(domMock);
+    model.init({
+      in: { a: 3, b: 5, c: model.ref('numbers.0') },
+      funcs: {
+        sum: model.func('sum'),
+        text: model.func('cat')
+      },
+      message: 'double sum is: ',
+      numbers: [0, 2, 3],
+      func: 'text',
+      out: model.ref('funcs', 'func')
+    });
+    model.makeFunc('sum', ['in.a', 'in.b', 'in.c'], function(a, b, c) {
+      return a + b + c;
+    });
+    model.makeFunc('cat', ['message', 'funcs.sum'], function(message, num) {
+      return message + (num * 2);
+    });
+    model.events.bind('funcs.sum', []);
+    model.get('funcs.sum').should.equal(8);
+    model.get('funcs.text').should.equal('double sum is: 16');
+    
+    // Test setting on an input updates the function listener
+    expectedValue = 3;
+    model.set('in.b', 0);
+    model.get('funcs.sum').should.equal(expectedValue);
+    model.get('funcs.text').should.equal('double sum is: 6');
+    
+    // Check for propogation of a reference to event triggering
+    expectedValue = 4;
+    model.set('numbers.0', 1);
+    model.get('funcs.sum').should.equal(expectedValue);
+    
+    // Shouldn't trigger after removal of event listener
+    model.events.unbind('funcs.sum', []);
+    model.set('in.b', -2);
+    
+    // Add a listener to a function of a function
+    model.events.bind('funcs.text', []);
+    expectedValue = 'double sum is: -2';
+    model.set('in.a', 0);
+    model.get('funcs.text', expectedValue);
+    model.get('funcs.sum', -2);
+    model.events.unbind('funcs.text', []);
+    
+    // Add a listener to a reference to a function
+    model.events.bind('out', []);
+    model.set('in.a', 0);
+  }, 4),
   'test model push': wrapTest(function(done) {
     var model = makeModel('browser'),
         domMock = {
@@ -189,5 +252,15 @@ module.exports = {
     model.events.bind('stuff.items', ['list', 'html', null, 'stuff']);
     model.push('stuff.items', 'hey');
     model.get('stuff.items').should.eql(['item1', [8, 3, 'q'], 'item3', 'hey']);
-  }, 1)
+  }, 1),
+  'test model server sends update messages': wrapTest(function(done) {
+    var model = makeModel('server');
+  }, 0),
+  'test model browser sends update messages': wrapTest(function(done) {
+    var model = makeModel('browser');
+  }, 0),
+  'test model server and browser models sync': wrapTest(function(done) {
+    var serverModel = makeModel('server'),
+        browserModel = makeModel('browser');
+  }, 0),
 }
