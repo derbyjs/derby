@@ -30,7 +30,7 @@ module.exports = {
     dispatcher.trigger(name1, value1, options1);
   },
   'test EventDispatcher successful trigger in browser': wrapTest(function(done) {
-    var onTrigger = function(listener, value, options) {
+    var onTrigger = function(name, listener, value, options) {
           listener.should.eql(listener1);
           value.should.equal(value1);
           options.should.equal(options1);
@@ -42,7 +42,7 @@ module.exports = {
     dispatcher.trigger(name1, value1, options1);
   }, 2),
   'test EventDispatcher no listener': wrapTest(function(done) {
-    var onTrigger = function(listener, value, options) {
+    var onTrigger = function(name, listener, value, options) {
           assert.isNull(listener);
           value.should.equal(value1);
           options.should.equal(options1);
@@ -55,7 +55,7 @@ module.exports = {
   }, 2),
   'test EventDispatcher trigger multiple listeners': function(beforeExit) {
     var counts = {},
-        onTrigger = function(listener, value, options) {
+        onTrigger = function(name, listener, value, options) {
           counts[listener] = (counts[listener] || 0) + 1;
           value.should.equal(value1);
           options.should.equal(options1);
@@ -111,7 +111,7 @@ module.exports = {
     dispatcher.unbind('does not exist', null); // Shouldn't do anything
   }, 2),
   'test EventDispatcher get and set': wrapTest(function(done) {
-    var onTrigger = function(listener, value, options) {
+    var onTrigger = function(name, listener, value, options) {
           listener.should.eql(listener1);
           value.should.equal(value1);
           options.should.equal(options1);
@@ -134,7 +134,7 @@ module.exports = {
     dispatcher2.trigger(name1, value1, options1);
   }, 1),
   'test EventDispatcher bind callback': wrapTest(function(done) {
-    var onTrigger = function(listener, value, options) {
+    var onTrigger = function(name, listener, value, options) {
           listener.should.eql(listener1);
           value.should.equal(value1);
           options.should.equal(options1);

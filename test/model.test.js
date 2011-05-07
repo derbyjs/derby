@@ -103,7 +103,7 @@ module.exports = {
             id.should.equal('test');
             method.should.equal('attr');
             property.should.equal('height');
-            assert.isUndefined(viewFunc);
+            assert.isNull(viewFunc);
             value.should.equal(11);
             done();
           }
@@ -136,7 +136,7 @@ module.exports = {
             id.should.equal('test');
             method.should.equal('prop');
             property.should.eql(['style', 'color']);
-            assert.isUndefined(viewFunc);
+            assert.isNull(viewFunc);
             value.should.equal(expectedColor);
             done();
           }
@@ -161,12 +161,12 @@ module.exports = {
     expectedColor = 'white';
     model.set('userIndex', 1);
     // Trigger when the referenced object is set
-    //expectedColor = 'teal'
-    //model.set('info.users.1.colors.1', expectedColor);
-    console.log(model.events._names)
-    // Replace the references
-    expectedColor = 'blue'
-    model.set('user.colors', ['yellow', 'blue']);
+    expectedColor = 'teal'
+    model.set('info.users.1.colors.1', expectedColor);
+    // This should start to trigger and fail, since it is an out of date reference
+    model.events.get().should.have.property('info.favoriteColors.1');
+    model.set('info.users.0.colors.1', 'black');
+    model.events.get().should.not.have.property('info.favoriteColors.1');
   }, 3),
   'test model push': wrapTest(function(done) {
     var model = makeModel('browser'),
