@@ -1,11 +1,13 @@
 var wrapTest = require('./helpers').wrapTest,
     assert = require('assert'),
+    util = require('util'),
+    EventEmitter = require('events').EventEmitter,
     _ = require('../lib/utils'),
-    model = require('../lib/model.js');
+    Model = require('../lib/Model.js');
 
 function makeModel(environment) {
   _.onServer = environment === 'server';
-  return model();
+  return new Model();
 }
 
 module.exports = {
@@ -253,14 +255,110 @@ module.exports = {
     model.push('stuff.items', 'hey');
     model.get('stuff.items').should.eql(['item1', [8, 3, 'q'], 'item3', 'hey']);
   }, 1),
-  'test model server sends update messages': wrapTest(function(done) {
-    var model = makeModel('server');
-  }, 0),
+  'test model broadcasts update messages on server': wrapTest(function(done) {
+    function ServerSocketMock() {
+      var clients = [];
+      this.on('connection', function(client) {
+        clients.push(client);
+      });
+      this.broadcast = function(message) {
+        JSON.parse(message).should.eql(['set', ['colors.best', 'red']]);
+        clients.forEach(done);
+      };
+    }
+    util.inherits(ServerSocketMock, EventEmitter);
+    
+    var model = makeModel('server'),
+        socket = new ServerSocketMock(),
+        client1 = new EventEmitter(),
+        client2 = new EventEmitter();
+    model._setSocket(socket);
+    socket.emit('connection', client1);
+    socket.emit('connection', client2);
+    model.set('colors.best', 'red');
+  }, 2),
   'test model browser sends update messages': wrapTest(function(done) {
-    var model = makeModel('browser');
-  }, 0),
-  'test model server and browser models sync': wrapTest(function(done) {
+    function BrowserSocketMock() {
+      this.connect = done;
+      this.send = function(message) {
+        JSON.parse(message).should.eql(['set', ['colors.best', 'red']]);
+        done();
+      };
+    }
+    util.inherits(BrowserSocketMock, EventEmitter);
+    
+    var model = makeModel('browser'),
+        socket = new BrowserSocketMock();
+    model._setSocket(socket);
+    model.set('colors.best', 'red');
+  }, 2),
+  'test model server and browser models sync': function() {
+    function ServerSocketMock() {
+      var clients = this._clients = [],
+          self = this;
+      self.on('connection', function(client) {
+        clients.push(client.browserSocket);
+        client._serverSocket = self;
+      });
+      self.broadcast = function(message) {
+        clients.forEach(function(client) {
+          client.emit('message', message);
+        });
+      };
+    }
+    util.inherits(ServerSocketMock, EventEmitter);
+    function ServerClientMock(browserSocket) {
+      var self = this;
+      self.browserSocket = browserSocket;
+      self.broadcast = function(message) {
+        self._serverSocket._clients.forEach(function(client) {
+          if (browserSocket !== client) {
+            client.emit('message', message);
+          }
+        });
+      }
+    }
+    util.inherits(ServerClientMock, EventEmitter);
+    function BrowserSocketMock() {
+      var self = this,
+          serverClient = new ServerClientMock(self);
+      self.connect = function() {
+        serverSocket.emit('connection', serverClient);
+      };
+      self.send = function(message) {
+        serverClient.emit('message', message);
+      };
+    }
+    util.inherits(BrowserSocketMock, EventEmitter);
+    
     var serverModel = makeModel('server'),
-        browserModel = makeModel('browser');
-  }, 0),
+        browserModel1 = makeModel('browser'),
+        browserModel2 = makeModel('browser'),
+        serverSocket = new ServerSocketMock(),
+        browserSocket1 = new BrowserSocketMock(),
+        browserSocket2 = new BrowserSocketMock();
+    serverModel._setSocket(serverSocket);
+    browserModel1._setSocket(browserSocket1);
+    browserModel2._setSocket(browserSocket2);
+    
+    serverModel.set('colors.best', 'red');
+    serverModel.get().should.eql({ colors: { best: 'red' } });
+    browserModel1.get().should.eql({ colors: { best: 'red' } });
+    browserModel2.get().should.eql({ colors: { best: 'red' } });
+    
+    browserModel1.set('colors.sad', 'black');
+    serverModel.get().should.eql({ colors: { best: 'red', sad: 'black' } });
+    browserModel1.get().should.eql({ colors: { best: 'red', sad: 'black' } });
+    browserModel2.get().should.eql({ colors: { best: 'red', sad: 'black' } });
+    
+    browserModel1.set('_priv', 'stuff');
+    serverModel.get().should.eql({ colors: { best: 'red', sad: 'black' } });
+    browserModel1.get().should.eql({ _priv: 'stuff', colors: { best: 'red', sad: 'black' } });
+    browserModel2.get().should.eql({ colors: { best: 'red', sad: 'black' } });
+    
+    browserModel2.setSilent('colors.best', 'blue');
+    serverModel.get().should.eql({ colors: { best: 'red', sad: 'black' } });
+    browserModel1.get().should.eql({ _priv: 'stuff', colors: { best: 'red', sad: 'black' } });
+    browserModel2.get().should.eql({ colors: { best: 'blue', sad: 'black' } });
+  },
 }
