@@ -6,8 +6,9 @@
   "main": "./lib/vers.js",
   "browserify": {
     "name": "vers",
-    "main": "./index.js",
-    "base": "./",
-    "dependencies": {}
+    "main": "./lib/vers.browser.js",
+  },
+  "dependencies": {
+    "racer": "*"
   }
 }
