@@ -1,6 +1,5 @@
 var wrapTest = require('./helpers').wrapTest,
     assert = require('assert'),
-    _ = require('../lib/utils'),
     EventDispatcher = require('../lib/EventDispatcher.js');
 
 // Names must be a valid object key

@@ -1,36 +1,33 @@
+{hasKeys} = require('racer').util
+
 swapQuotes = (s) -> s.replace /['"]/g,
   (match) -> if match == '"' then "'" else '"'
 
-_ = require './utils'
-EventDispatcher = module.exports = (onTrigger, onBind, onUnbind) ->
+EventDispatcher = module.exports = (options = {}) ->
   empty = ->
-  @_onTrigger = onTrigger or empty
-  @_onBind = onBind or empty
-  @_onUnbind = onUnbind or empty
-  @trigger = if _.onServer then empty else @_trigger
+  @_onTrigger = options.onTrigger || empty
+  @_onBind = options.onBind || empty
+  @_onUnbind = options.onUnbind || empty
   @_names = {}
-
   return
 
 EventDispatcher:: = 
   bind: (name, listener) ->
     return  if @_onBind(name, listener) == false
     names = @_names
-    key = if _.isDefined(listener) then JSON.stringify(listener) else 'null'
-    obj = names[name] or {}
+    key = if `listener == null` then 'null' else JSON.stringify listener
+    obj = names[name] || {}
     obj[key] = true
     names[name] = obj
   
   unbind: (name, listener) ->
     return  if @_onUnbind(name, listener) == false
     names = @_names
-    obj = names[name]
-    key = JSON.stringify(listener)
-    if obj
-      delete obj[key]  if obj[key]
-      delete names[name]  unless Object.keys(obj).length
+    return unless obj = names[name]
+    delete obj[JSON.stringify listener]
+    delete names[name]  unless hasKeys obj
   
-  _trigger: (name, value, options) ->
+  trigger: (name, value, options) ->
     names = @_names
     listeners = names[name]
     onTrigger = @_onTrigger
@@ -38,23 +35,24 @@ EventDispatcher:: =
     deleted = 0
     for key of listeners
       i++
-      listener = JSON.parse(key)
-      if onTrigger(name, listener, value, options) == false
-        delete listeners[key]
-        deleted++
+      listener = JSON.parse key
+      continue unless onTrigger(name, listener, value, options) == false
+      delete listeners[key]
+      deleted++
     delete names[name]  if i - deleted == 0
   
   get: ->
+    # Get all listener data in more compact array format
     names = @_names
     out = {}
-    Object.keys(names).forEach (name) ->
-      out[name] = Object.keys(names[name]).map(swapQuotes)
+    for name, listeners of names
+      out[name] = (swapQuotes listener for listener of listeners)
     return out
   
   set: (n) ->
+    # Load in data in array format previously output by get
     names = @_names
-    Object.keys(n).forEach (name) ->
+    for name, listeners of n
       obj = names[name] = {}
-      listeners = n[name]
-      listeners.forEach (listener) ->
-        obj[swapQuotes(listener)] = true
+      for listener of listeners
+        obj[swapQuotes listener] = true

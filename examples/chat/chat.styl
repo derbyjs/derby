@@ -1,0 +1,101 @@
+border-radius() {
+  -webkit-border-radius: arguments;
+  -moz-border-radius: arguments;
+  border-radius: arguments;
+}
+
+body {
+  background: #bbb;
+  color: #000;
+  font: 13px/1.231 arial,sans-serif;
+  overflow: hidden;
+}
+body,fieldset,form,h1,h2,h3,h4,input,ul,li,ol,p,pre,td,textarea,th {
+  margin: 0;
+  padding: 0;
+}
+ul {
+  margin: 0 normal;
+}
+table {
+  border-collapse: collapse;
+}
+fieldset,img {
+  border: 0;
+}
+h1,h2,h3,h4,input,pre,select,textarea,th {
+  font: 1em f;
+  line-height: inherit;
+  font-family: inherit;
+}
+img[src="data:,"] {
+  visibility: hidden;
+}
+
+li {
+  margin: 8px 0;
+  clear: both;
+}
+input {
+  margin: 0;
+  padding: 1px;
+}
+#messageContainer {
+  overflow-y: scroll;
+}
+#messageList {
+  list-style: none;
+  position: relative;
+  overflow: hidden;
+}
+.message,#inputs {
+  margin: 0 8px 0 64px;
+}
+.message {
+  background: #fff;
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 8px 12px;
+  white-space: pre;
+}
+.pic,.pic0,.pic1,.pic2,.pic3,.pic4,.pic5,.pic6,.pic7,.pic8,.pic9 {
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  left: 0;
+  margin: 0 8px;
+}
+.pic0,.pic1,.pic2,.pic3,.pic4,.pic5,.pic6,.pic7,.pic8,.pic9 {
+  height: 480px;
+}
+picClip(num) {
+  clip: rect(48px * num, 48px, 48px * (num + 1), 0);
+  margin-top: -48px * num;
+}
+.pic0 { picClip: 0 }
+.pic1 { picClip: 1 }
+.pic2 { picClip: 2 }
+.pic3 { picClip: 3 }
+.pic4 { picClip: 4 }
+.pic5 { picClip: 5 }
+.pic6 { picClip: 6 }
+.pic7 { picClip: 7 }
+.pic8 { picClip: 8 }
+.pic9 { picClip: 9 }
+
+#foot {
+  background: #ddd;
+  width: 100%;
+  border-top: 1px solid #eee;
+  position: absolute;
+  bottom: 0;
+  padding: 8px 0;
+}
+#inputForm {
+  margin-top: 4px;
+  padding-right: 8px;
+  position: relative;
+}
+#commentInput {
+  width: 100%;
+}
