@@ -1,5 +1,8 @@
-element = (id) ->
-  elements[id] or (elements[id] = doc.getElementById(id))
+_ = require './utils'
+EventDispatcher = require './EventDispatcher'
+
+element = (id) -> elements[id] or (elements[id] = doc.getElementById(id))
+
 onTrigger = (name, listener, targetId) ->
   func = listener[0]
   path = listener[1]
@@ -11,22 +14,24 @@ onTrigger = (name, listener, targetId) ->
     return false  unless el
     value = getMethods[method](el, property)
     model[func].apply null, [ path, value ]
+
 onBind = (name) ->
   addListener name  unless (name of events._names)
+
 domHandler = (e) ->
   e = e or event
   target = e.target or e.srcElement
   target = target.parentNode  if target.nodeType == 3
   events.trigger e.type, target.id
-_ = require("./utils")
-EventDispatcher = require("./EventDispatcher")
-win = not _.onServer and window
-doc = win and win.document
-elements = 
+
+
+win = !_.onServer && window
+doc = win && win.document
+emptyEl = if doc then doc.createElement('div') else null
+elements =
   __document: doc
   __window: win
 
-emptyEl = (if doc then doc.createElement("div") else null)
 getMethods = 
   attr: (el, attr) ->
     el.getAttribute attr
@@ -70,29 +75,28 @@ exports._link = (m, v) ->
   view = v
 
 exports.update = (id, method, property, viewFunc, value) ->
-  el = element(id)
-  return false  unless el
-  s = (if (viewFunc) then view._get(viewFunc, value) else value)
+  return false  unless el = element id
+  s = if viewFunc then view._get(viewFunc, value) else value
   setMethods[method] s, el, property
 
-events = exports.events = new EventDispatcher(onTrigger, onBind)
+events = exports.events = new EventDispatcher onTrigger, onBind
 
 if doc.addEventListener
   addListener = (name) ->
     doc.addEventListener name, domHandler, false
-  
   removeListener = (name) ->
     doc.removeEventListener name, domHandler, false
 else if doc.attachEvent
   addListener = (name) ->
-    doc.attachEvent "on" + name, domHandler
-  
+    doc.attachEvent 'on' + name, domHandler
   removeListener = (name) ->
-    doc.detachEvent "on" + name, domHandler
+    doc.detachEvent 'on' + name, domHandler
 else
   addListener = removeListener = ->
+
 exports.addListener = addListener
 exports.removeListener = removeListener
 exports.init = (domEvents) ->
   events.set domEvents
   Object.keys(events._names).forEach addListener
+

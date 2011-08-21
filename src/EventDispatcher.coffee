@@ -1,21 +1,22 @@
-swapQuotes = (s) ->
-  s.replace /['"]/g, (match) ->
-    (if match == "\"" then "'" else "\"")
-_ = require("./utils")
+swapQuotes = (s) -> s.replace /['"]/g,
+  (match) -> if match == '"' then "'" else '"'
+
+_ = require './utils'
 EventDispatcher = module.exports = (onTrigger, onBind, onUnbind) ->
   empty = ->
-  
   @_onTrigger = onTrigger or empty
   @_onBind = onBind or empty
   @_onUnbind = onUnbind or empty
-  @trigger = (if _.onServer then empty else @_trigger)
+  @trigger = if _.onServer then empty else @_trigger
   @_names = {}
+
+  return
 
 EventDispatcher:: = 
   bind: (name, listener) ->
     return  if @_onBind(name, listener) == false
     names = @_names
-    key = (if _.isDefined(listener) then JSON.stringify(listener) else "null")
+    key = if _.isDefined(listener) then JSON.stringify(listener) else 'null'
     obj = names[name] or {}
     obj[key] = true
     names[name] = obj
@@ -40,7 +41,6 @@ EventDispatcher:: =
       listener = JSON.parse(key)
       if onTrigger(name, listener, value, options) == false
         delete listeners[key]
-        
         deleted++
     delete names[name]  if i - deleted == 0
   
@@ -49,8 +49,7 @@ EventDispatcher:: =
     out = {}
     Object.keys(names).forEach (name) ->
       out[name] = Object.keys(names[name]).map(swapQuotes)
-    
-    out
+    return out
   
   set: (n) ->
     names = @_names
