@@ -11,11 +11,11 @@ View:: =
   uniqueId: -> '_' + (@_idCount++).toString 36
 
   get: (view, obj) ->
-    (if view = @_views[view]
-      (if Array.isArray obj
+    if view = @_views[view]
+      if Array.isArray obj
         (view item for item in obj).join ''
-       else view obj)
-     else '')
+      else view obj
+    else ''
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
 
@@ -26,20 +26,20 @@ View:: =
 
     render = ->
       render = if template
-        parse template, uniqueId, self.dom, self.model
-       else simpleView name, self.model
+          parse template, uniqueId, self.dom, self.model
+        else simpleView name, self.model
       render arguments...
 
     @_register name, after, (if typeof data is 'function'
-      -> render data arguments...
-     else
-      -> render data)
+        -> render data arguments...
+      else
+        -> render data)
 
   _register: (name, after, fn) ->
-    @_views[name] = (if after then ->
-      setTimeout after, 0
-      fn arguments...
-     else fn)
+    @_views[name] = if after then ->
+        setTimeout after, 0
+        fn arguments...
+      else fn
 
 
 View.htmlEscape = htmlEscape = (s) ->
@@ -68,7 +68,7 @@ parse = (template, uniqueId, dom, model) ->
 
   extractPlaceholder = (text) ->
     match = /^(.*?)(\{{2,3})(\w+)\}{2,3}(.*)$/.exec text
-    if match then 
+    if match
       pre: match[1]
       escaped: match[2] == '{{'
       name: match[3]
