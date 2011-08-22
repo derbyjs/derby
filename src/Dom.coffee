@@ -11,14 +11,11 @@ element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
 
 
 getMethods = 
-  attr: (el, attr) ->
-    el.getAttribute attr
+  attr: (el, attr) -> el.getAttribute attr
   
-  prop: (el, prop) ->
-    el[prop]
+  prop: (el, prop) -> el[prop]
   
-  html: (el) ->
-    el.innerHTML
+  html: (el) -> el.innerHTML
 
 setMethods = 
   attr: (value, el, attr) ->
@@ -47,24 +44,7 @@ setMethods =
       el.appendChild child
 
 
-domHandler = (e) ->
-  target = e.target || e.srcElement
-  target = target.parentNode  if target.nodeType == 3
-  events.trigger e.type, target.id
-
-unless doc
-  addListener = removeListener = ->
-else if doc.addEventListener
-  addListener = (name) ->
-    doc.addEventListener name, domHandler, false
-  removeListener = (name) ->
-    doc.removeEventListener name, domHandler, false
-else if doc.attachEvent
-  addListener = (name) ->
-    doc.attachEvent 'on' + name, -> domHandler event
-  removeListener = (name) ->
-    doc.detachEvent 'on' + name, domHandler
-
+addListener = ->
 
 Dom = module.exports = (model) ->
   @events = events = new EventDispatcher
@@ -81,8 +61,19 @@ Dom = module.exports = (model) ->
 
 Dom:: =
   init: (domEvents) ->
-    @events.set domEvents
-    addListener name for name in @events._names
+    events = @events
+    domHandler = (e) ->
+      target = e.target || e.srcElement
+      target = target.parentNode  if target.nodeType == 3
+      events.trigger e.type, target.id
+    
+    if doc.addEventListener
+      addListener = (name) -> doc.addEventListener name, domHandler, false
+    else if doc.attachEvent
+      addListener = (name) -> doc.attachEvent 'on' + name, -> domHandler event
+    
+    events.set domEvents
+    addListener name for name of events._names
 
   update: (id, method, property, value) ->
     return false  unless el = element id

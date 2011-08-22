@@ -1,14 +1,16 @@
 htmlParser = require './htmlParser'
 
 View = module.exports = ->
+  self = this
   @_views = {}
   @_loadFuncs = ''
+  
+  # All automatically created ids start with an underscore
+  @uniqueId = -> '_' + (self._idCount++).toString 36
+  
   return
 
 View:: =
-
-  # All automatically created ids start with an underscore
-  uniqueId: -> '_' + (@_idCount++).toString 36
 
   get: (view, obj) ->
     if view = @_views[view]
@@ -86,8 +88,8 @@ parse = (template, uniqueId, view) ->
       method = 'propPolite'
       setMethod = 'set'
       if 'silent' of attrs
+        # TODO: Implement silent
         method = 'prop'
-        setMethod = 'setSilent'
         delete attrs.silent
       events.push (data) ->
         domArgs = [setMethod, data[name].model, attrs._id or attrs.id, 'prop', 'value']
