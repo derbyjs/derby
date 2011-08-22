@@ -3,12 +3,6 @@
   "description": "Demo chat application built on Vers framework.",
   "version": "0.0.1",
   "author": "Nate Smith",
-  "directories": {
-    "src": "src"
-  },
-  "engines": {
-    "node": "*"
-  },
   "dependencies": {
     "express": "*",
     "stylus": "*",

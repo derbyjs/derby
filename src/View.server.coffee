@@ -24,6 +24,7 @@ View::html = (model) ->
   JSON.stringify(model.__events.get()) + ',' +
   JSON.stringify(dom.events.get()) + ")},0)</script>#{foot}"
 
-minify (js) ->
-  return store[js]  if store[js]
-  store[js] = uglify js
+cache = {}
+minify = (js) ->
+  return cache[js]  if cache[js]
+  cache[js] = uglify js

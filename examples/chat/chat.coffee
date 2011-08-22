@@ -3,8 +3,6 @@ vers = require 'vers'
 # can expose certain functions on this module for the server or client code.
 {model, view} = vers.createApp module, exports
 
-SPRITE_URL = 'img/s.png'
-
 # MODEL FUNCTION DEFINITION #
 
 # Model functions must be defined on both the server and client, since only
@@ -24,7 +22,7 @@ view.make 'message', (item) ->
     userName: {model: "users.#{item.userId}.name"}
     comment: item.comment
   , """
-  <li><img src=#{SPRITE_URL} class={{{userPicClass}}}>
+  <li><img src=img/s.png class={{{userPicClass}}}>
     <div class=message>
       <p><b>{{userName}}</b>
       <p>{{comment}}

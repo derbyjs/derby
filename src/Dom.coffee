@@ -52,7 +52,9 @@ domHandler = (e) ->
   target = target.parentNode  if target.nodeType == 3
   events.trigger e.type, target.id
 
-if doc.addEventListener
+unless doc
+  addListener = removeListener = ->
+else if doc.addEventListener
   addListener = (name) ->
     doc.addEventListener name, domHandler, false
   removeListener = (name) ->
@@ -62,8 +64,6 @@ else if doc.attachEvent
     doc.attachEvent 'on' + name, -> domHandler event
   removeListener = (name) ->
     doc.detachEvent 'on' + name, domHandler
-else
-  addListener = removeListener = ->
 
 
 Dom = module.exports = (model) ->

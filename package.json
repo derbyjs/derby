@@ -5,8 +5,7 @@
   "author": "Nate Smith",
   "main": "./lib/vers.js",
   "browserify": {
-    "name": "vers",
-    "main": "./lib/vers.browser.js",
+    "main": "./lib/vers.browser.js"
   },
   "dependencies": {
     "racer": "*"

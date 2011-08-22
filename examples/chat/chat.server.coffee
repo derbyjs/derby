@@ -1,4 +1,4 @@
-chat = require './chat'
+chat = module.exports = require './chat'
 view = chat.view
 fs = require 'fs'
 stylus = require 'stylus'
@@ -42,7 +42,7 @@ view.make 'Body',
   , """
   <div id=messageContainer><ul id=messageList>{{{messages}}}</ul></div>
   <div id=foot>
-    <img id=inputPic src=#{SPRITE_URL} class={{{userPicClass}}}>
+    <img id=inputPic src=img/s.png class={{{userPicClass}}}>
     <div id=inputs>
       <!-- By default, user changes to input values update the model. -->
       <input id=inputName value={{userName}}>

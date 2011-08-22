@@ -26,8 +26,8 @@ View:: =
 
     render = ->
       render = if template
-          parse template, uniqueId, self.dom, self.model
-        else simpleView name, self.model
+          parse template, uniqueId, self, self.dom, self.model
+        else simpleView name, self, self.model
       render arguments...
 
     @_register name, after, (if typeof data is 'function'
@@ -55,13 +55,13 @@ quoteAttr = (s) ->
   s = s.toString().replace /"/g, '&quot;'
   if /[ =]/.test s then '"' + s + '"' else s
 
-parse = (template, uniqueId, dom, model) ->
+parse = (template, uniqueId, view, dom, model) ->
 
   modelText = (name, escaped, quote) ->
     (data) ->
       datum = data[name]
       obj = if datum.model then model.get datum.model else datum
-      text = if datum.view then get datum.view, obj else obj
+      text = if datum.view then view.get datum.view, obj else obj
       text = htmlEscape text  if escaped
       text = quoteAttr text  if quote
       text
@@ -106,7 +106,7 @@ parse = (template, uniqueId, dom, model) ->
           method = if tag of elementParse then elementParse[tag] key, attrs, name else 'attr'
           events.push (data) ->
             path = data[name].model
-            model.events.bind path, [attrs._id || attrs.id, method, key]  if path
+            model.__events.bind path, [attrs._id || attrs.id, method, key]  if path
           attrs[key] = modelText name, match.escaped, true
       stack.push ['start', tag, attrs]
 
@@ -129,7 +129,7 @@ parse = (template, uniqueId, dom, model) ->
             params = [attrs._id || attrs.id, 'html', escaped]
             if path
               params.push viewFunc  if viewFunc
-              model.events.bind path, params
+              model.__events.bind path, params
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if pre or post
       htmlParse.chars post  if post
@@ -139,7 +139,7 @@ parse = (template, uniqueId, dom, model) ->
 
   for item in stack
     pushValue = (value, quote) ->
-      if value.call
+      if value && value.call
         htmlIndex = html.push(value, '') - 1
       else
         html[htmlIndex] += if quote then quoteAttr value else value
@@ -157,15 +157,15 @@ parse = (template, uniqueId, dom, model) ->
         html[htmlIndex] += '</' + item[1] + '>'
 
   (data, obj) ->
-    rendered = (if item.call then item data else item for item in html).join ''
+    rendered = ((if item && item.call then item data else item) for item in html).join ''
     event data for event in events
     return rendered
 
-simpleView = (name, model) ->
+simpleView = (name, view, model) ->
   (datum) ->
     path = datum.model
     obj = if path then model.get path else datum
-    text = if datum.view then get datum.view, obj else obj
-    model.events.bind path, ['__document', 'prop', 'title']  if path and name is 'Title'
+    text = if datum.view then view.get datum.view, obj else obj
+    model.__events.bind path, ['__document', 'prop', 'title']  if path and name is 'Title'
     return text
 
