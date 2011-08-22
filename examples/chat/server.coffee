@@ -14,7 +14,7 @@ store.flush()
 newUserId = 0
 
 # Use Express to serve the image sprite and deal with session tracking.
-# app.use express.static 'public', MAX_AGE_ONE_YEAR
+app.use express.static __dirname
 # app.use gzip.gzip()
 # app.use express.cookieParser()
 # app.use express.session
@@ -44,7 +44,7 @@ app.get '/:room', (req, res) ->
       user: model.ref '_room.users', '_session.userId'
       newComment: ''
 
-    res.send chat.view.html model
+    chat.view.html model, (html) -> res.send html
 
 app.listen 3001
 console.log 'Go to: http://localhost:3001/lobby'

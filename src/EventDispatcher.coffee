@@ -31,15 +31,14 @@ EventDispatcher:: =
     names = @_names
     listeners = names[name]
     onTrigger = @_onTrigger
-    i = 0
-    deleted = 0
+    count = 0
     for key of listeners
-      i++
+      count++
       listener = JSON.parse key
       continue unless onTrigger(name, listener, value, options) == false
       delete listeners[key]
-      deleted++
-    delete names[name]  if i - deleted == 0
+      count--
+    delete names[name]  if count == 0
   
   get: ->
     # Get all listener data in more compact array format
@@ -54,5 +53,5 @@ EventDispatcher:: =
     names = @_names
     for name, listeners of n
       obj = names[name] = {}
-      for listener of listeners
+      for listener in listeners
         obj[swapQuotes listener] = true

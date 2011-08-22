@@ -86,8 +86,5 @@ Dom:: =
 
   update: (id, method, property, value) ->
     return false  unless el = element id
-    setMethods[method] s, el, property
-
-
-#    s = if viewFunc then @view._get(viewFunc, value) else value
+    setMethods[method] value, el, property
 

@@ -39,17 +39,16 @@ view.make 'Body',
     userPicClass: {model: '_session.user.picClass'}
     userName: {model: '_session.user.name'}
     newComment: {model: '_session.newComment'}
+  # By default, user changes to input values update the model. "silent" is a
+  # special attribute that prevents the model from generating update events
+  # when the user edits an input field.
   , """
   <div id=messageContainer><ul id=messageList>{{{messages}}}</ul></div>
   <div id=foot>
     <img id=inputPic src=img/s.png class={{{userPicClass}}}>
     <div id=inputs>
-      <!-- By default, user changes to input values update the model. -->
       <input id=inputName value={{userName}}>
-      <form id=inputForm action="javascript:return chat.postMessage()">
-        <!-- "silent" is a special attribute that prevents the model from
-        generating update events when the user edits an input field. Thus,
-        the model is updated but not synced with the server or view. -->
+      <form id=inputForm onsubmit="return chat.postMessage()">
         <input id=commentInput value={{newComment}} silent>
       </form>
     </div>

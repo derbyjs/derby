@@ -18,8 +18,8 @@ vers = require 'vers'
 # This is an example of a custom view. Since it is bound to an array, each item
 # in the array is passed as an argument.
 view.make 'message', (item) ->
-    userPicClass: {model: "users.#{item.userId}.picClass"}
-    userName: {model: "users.#{item.userId}.name"}
+    userPicClass: {model: "_room.users.#{item.userId}.picClass"}
+    userName: {model: "_room.users.#{item.userId}.name"}
     comment: item.comment
   , """
   <li><img src=img/s.png class={{{userPicClass}}}>

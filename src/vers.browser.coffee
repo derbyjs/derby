@@ -8,11 +8,12 @@ exports.createApp = (appModule, appExports) ->
   racer.util.merge appExports, racer
 
   appExports.view = view = new View
-  dom = view.dom = new Dom(model = view.model = modelHelper.init racer.model)
+  dom = view.dom = new Dom(model = view.model = racer.model)
+  modelHelper.init model, dom, view
   
-  appModule.exports = (idCount, modelData, modelEvents, domEvents) ->
+  appModule.exports = (idCount, modelBundle, modelEvents, domEvents) ->
     view._idCount = idCount
-    racer.init modelData
+    racer.init modelBundle
     model.__events.set modelEvents
     dom.init domEvents
     return appExports

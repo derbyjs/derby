@@ -26,8 +26,8 @@ View:: =
 
     render = ->
       render = if template
-          parse template, uniqueId, self, self.dom, self.model
-        else simpleView name, self, self.model
+          parse template, uniqueId, self
+        else simpleView name, self
       render arguments...
 
     @_register name, after, (if typeof data is 'function'
@@ -43,7 +43,7 @@ View:: =
 
 
 View.htmlEscape = htmlEscape = (s) ->
-  if s is null then '' else s.toString().replace /[&<>]/g, (s) ->
+  if `s == null` then '' else s.toString().replace /[&<>]/g, (s) ->
     switch s
       when '&' then '&amp;'
       when '<' then '&lt;'
@@ -51,16 +51,16 @@ View.htmlEscape = htmlEscape = (s) ->
       else s
 
 quoteAttr = (s) ->
-  return '""' if s is null || s is ''
+  return '""' if `s == null` || s is ''
   s = s.toString().replace /"/g, '&quot;'
   if /[ =]/.test s then '"' + s + '"' else s
 
-parse = (template, uniqueId, view, dom, model) ->
+parse = (template, uniqueId, view) ->
 
   modelText = (name, escaped, quote) ->
     (data) ->
       datum = data[name]
-      obj = if datum.model then model.get datum.model else datum
+      obj = if datum.model then view.model.get datum.model else datum
       text = if datum.view then view.get datum.view, obj else obj
       text = htmlEscape text  if escaped
       text = quoteAttr text  if quote
@@ -91,8 +91,9 @@ parse = (template, uniqueId, view, dom, model) ->
         delete attrs.silent
       events.push (data) ->
         domArgs = [setMethod, data[name].model, attrs._id or attrs.id, 'prop', 'value']
-        dom.events.bind 'keyup', domArgs
-        dom.events.bind 'keydown', domArgs
+        domEvents = view.dom.events
+        domEvents.bind 'keyup', domArgs
+        domEvents.bind 'keydown', domArgs
       return method
 
   htmlParser.parse template,
@@ -101,12 +102,11 @@ parse = (template, uniqueId, view, dom, model) ->
         if match = extractPlaceholder value
           name = match.name
           if attrs.id is undefined
-            attrs.id = ->
-              attrs._id = uniqueId()
+            attrs.id = -> attrs._id = uniqueId()
           method = if tag of elementParse then elementParse[tag] key, attrs, name else 'attr'
           events.push (data) ->
             path = data[name].model
-            model.__events.bind path, [attrs._id || attrs.id, method, key]  if path
+            view.model.__events.bind path, [attrs._id || attrs.id, method, key]  if path
           attrs[key] = modelText name, match.escaped, true
       stack.push ['start', tag, attrs]
 
@@ -122,14 +122,15 @@ parse = (template, uniqueId, view, dom, model) ->
         last = stack[stack.length - 1]
         if last[0] == 'start'
           attrs = last[2]
-          attrs.id = -> attrs._id = uniqueId()  if attrs.id is undefined
+          if attrs.id is undefined
+            attrs.id = -> attrs._id = uniqueId()
           events.push (data) ->
             path = data[name].model
             viewFunc = data[name].view
             params = [attrs._id || attrs.id, 'html', escaped]
             if path
               params.push viewFunc  if viewFunc
-              model.__events.bind path, params
+              view.model.__events.bind path, params
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if pre or post
       htmlParse.chars post  if post
@@ -161,11 +162,12 @@ parse = (template, uniqueId, view, dom, model) ->
     event data for event in events
     return rendered
 
-simpleView = (name, view, model) ->
+simpleView = (name, view) ->
   (datum) ->
     path = datum.model
+    model = view.model
     obj = if path then model.get path else datum
     text = if datum.view then view.get datum.view, obj else obj
     model.__events.bind path, ['__document', 'prop', 'title']  if path and name is 'Title'
-    return text
+    return text && text.replace /\n/g, ''
 
