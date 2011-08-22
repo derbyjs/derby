@@ -22,6 +22,7 @@ exports.init = (model, dom, view) ->
       listener[4] = path  unless listener[4]
   
   model.on 'set', ([path, value]) ->
+    console.log path, value
     events.trigger path, value
     
   model.on 'push', ([path, value]) ->

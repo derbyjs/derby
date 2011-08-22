@@ -41,8 +41,8 @@ app.get '/:room', (req, res) ->
     # client. Nothing set under that path is synced back to the server
     model.set '_session',
       userId: userId
-      user: model.ref '_room.users', '_session.userId'
       newComment: ''
+    model.set '_user', model.ref "_room.users.#{userId}"
 
     chat.view.html model, (html) -> res.send html
 
