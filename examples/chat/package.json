@@ -1,13 +1,13 @@
 {
-  "name": "chat",
-  "description": "Demo chat application built on Vers framework.",
+  "name": "derby-chat-example",
+  "description": "Demo chat application for Derby",
   "version": "0.0.1",
-  "author": "Nate Smith",
+  "main": "./server.js",
   "dependencies": {
-    "express": "*",
-    "stylus": "*",
-    "connect-mongodb": "*",
-    "connect-gzip": "*",
-    "vers": "*"
-  }
+    "derby": "0.0.1",
+    "express": ">=2",
+    "stylus": ">=0.15",
+    "connect-gzip": ">=0.1"
+  },
+  "private": true
 }

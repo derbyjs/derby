@@ -1,7 +1,7 @@
-vers = require 'vers'
-# This module's "module" and "exports" objects are passed to Vers, so that it
+derby = require 'derby'
+# This module's "module" and "exports" objects are passed to Derby, so that it
 # can expose certain functions on this module for the server or client code.
-{model, view} = vers.createApp module, exports
+{model, view} = derby.createApp module, exports
 
 # MODEL FUNCTION DEFINITION #
 

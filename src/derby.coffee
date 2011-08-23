@@ -5,7 +5,7 @@ fs = require 'fs'
 crypto = require 'crypto'
 
 exports.createApp = (appModule, appExports, options = {}) ->
-  # Expose racer and vers methods on the application module
+  # Expose Racer and Derby methods on the application module
   racer.util.merge appExports, racer
   appExports.view = view = new View
 

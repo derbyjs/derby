@@ -4,10 +4,10 @@ Dom = require './Dom'
 View = require './View'
 
 exports.createApp = (appModule, appExports) ->
-  # Expose racer's methods on the application module
+  # Expose Racer and Derby methods on the application module
   racer.util.merge appExports, racer
-
   appExports.view = view = new View
+  
   dom = view.dom = new Dom(model = view.model = racer.model)
   modelHelper.init model, dom, view
   
