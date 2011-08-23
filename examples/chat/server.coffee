@@ -4,7 +4,7 @@ MAX_AGE_ONE_YEAR = {maxAge: 1000 * 60 * 60 * 24 * 365}
 
 # dbUrl = (process.env.MONGODB_PATH || 'mongodb://127.0.0.1:27017') + '/chat'
 # mongoStore = require 'connect-mongodb'
-# gzip = require 'connect-gzip'
+gzip = require 'connect-gzip'
 express = require 'express'
 app = express.createServer()
 
@@ -13,8 +13,8 @@ store = chat.createStore listen: app
 store.flush()
 newUserId = 0
 
-# Use Express to serve the image sprite and deal with session tracking.
-app.use express.static __dirname
+# Use Express to serve the image sprite and deal with session tracking
+app.use gzip.staticGzip __dirname + '/public'
 # app.use gzip.gzip()
 # app.use express.cookieParser()
 # app.use express.session
