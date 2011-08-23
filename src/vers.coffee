@@ -10,7 +10,6 @@ exports.createApp = (appModule, appExports, options = {}) ->
   appExports.view = view = new View
 
   view._clientName = options.name || path.basename appModule.filename, '.js'
-  maxAge = options.maxAge || 1000 * 60 * 60 * 24 * 365
   staticRoot = options.root || path.dirname appModule.filename
   staticDir = options.dir || 'public'
   staticPath = path.join staticRoot, staticDir
@@ -24,7 +23,7 @@ exports.createApp = (appModule, appExports, options = {}) ->
         when '/' then '-'
         when '+' then '_'
         when '=' then ''
-    console.log filePath = path.join staticPath, filename
+    filePath = path.join staticPath, filename
     fs.writeFile filePath, js
 
   path.exists staticPath, (exists) ->

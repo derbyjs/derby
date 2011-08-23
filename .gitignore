@@ -1,3 +1,5 @@
 node_modules
 /lib/
 /examples/chat/*.js
+/examples/chat/public/*.js
+*.gz
