@@ -13,12 +13,13 @@ View::html = (model, callback) ->
   @_idCount = 0
 
   # Render the page
-  title = @get 'Title'
+  doctype = @get('Doctype') || '<!DOCTYPE html><meta charset=utf-8>'
+  title = @get('Title') || 'Derby app'
   head = @get 'Head'
   body = @get 'Body'
   foot = @get 'Foot'
 
-  html = "<!DOCTYPE html><title>#{title}</title>#{head}#{body}" +
+  html = "#{doctype}<title>#{title}</title>#{head}#{body}" +
   "<script>function $(i){return document.getElementById(i)}" +
   "#{minify @_loadFuncs}</script>" +
   "<script src=#{@_jsFile}></script>" +

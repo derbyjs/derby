@@ -36,8 +36,8 @@ view.make 'Body',
     # If the model object is an array, the view function will be called for
     # each item in the array, and the outputs will be concatenated together.
     messages: {model: '_room.messages', view: 'message'}
-    userPicClass: {model: '_user.picClass'}
-    userName: {model: '_user.name'}
+    userPicClass: {model: '_session.user.picClass'}
+    userName: {model: '_session.user.name'}
     newComment: {model: '_session.newComment'}
   # By default, user changes to input values update the model. "silent" is a
   # special attribute that prevents the model from generating update events

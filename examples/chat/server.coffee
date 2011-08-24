@@ -21,14 +21,14 @@ app.get '/:room', (req, res) ->
   # Otherwise, set to a new ID value
   session = req.session
   console.log session.userId
-  session.userId = userId = if typeof session.userId is 'number'
-      session.userId
-    else newUserId++
-  # session.save()
+  session.userId = userId =
+    if typeof session.userId is 'number' then session.userId else newUserId++
+  session.save()
   console.log session.userId
 
   room = req.params.room
   store.subscribe _room: "rooms.#{room}.**", (err, model) ->
+    # setNull will set a value if the object is currently null or undefined
     model.setNull '_room.messages', []
     model.setNull "_room.users.#{userId}",
       name: 'User ' + (userId + 1)
@@ -37,13 +37,15 @@ app.get '/:room', (req, res) ->
     # client. Nothing set under that path is synced back to the server
     model.set '_session',
       userId: userId
+      user: model.ref '_room.users', '_session.userId'
       newComment: ''
-    model.set '_user', model.ref "_room.users.#{userId}"
+      title: 'Chat'
+    
+    # TODO: Make title update when Racer supports model functions
+    # model.set '_session.title', model.fn ['messages', '_session.user.name'],
+    #   (messages, userName) -> "Chat (#{messages.length}) - #{userName}"
 
-    chat.view.html model, (html) ->
-      console.log req.session
-      console.log res.writeHead.toString()
-      res.send html
+    chat.view.html model, (html) -> res.send html
 
 app.listen 3001
 console.log 'Go to: http://localhost:3001/lobby'

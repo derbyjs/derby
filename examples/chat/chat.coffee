@@ -1,16 +1,7 @@
 derby = require 'derby'
 # This module's "module" and "exports" objects are passed to Derby, so that it
 # can expose certain functions on this module for the server or client code.
-{model, view} = derby.createApp module, exports
-
-# MODEL FUNCTION DEFINITION #
-
-# Model functions must be defined on both the server and client, since only
-# the name of the model function is stored in the model itself. The inputs to
-# model functions are defined via an array of names. The function is called
-# with their values as arguments after any of the inputs are modified.
-# model.fn 'title', ['messages', '_session.user.name'],
-  # (messages, userName) -> "Chat (#{messages.length}) - #{userName}"
+{model, view} = chat = derby.createApp module, exports
 
 
 # SERVER & CLIENT VIEW DEFINITION #
