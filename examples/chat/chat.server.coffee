@@ -5,9 +5,9 @@ stylus = require 'stylus'
 
 # SERVER ONLY VIEW DEFINITION #
   
-# There are a handful of reserved view names -- Title, Head, Body, and Foot.
+# There are a handful of reserved views: Doctype, Title, Head, Body, and Foot.
 # These are rendered when the view.html function is called by the server.
-# The rendering order is doctype, Title, Head, Body, preLoad scripts,
+# The rendering order is Doctype, Title, Head, Body, preLoad scripts,
 # external JS, model and event initialization scripts, and then Foot.
   
 # There are a few ways to specifiy views. The Title must be a simple view,
@@ -39,9 +39,9 @@ view.make 'Body',
     userPicClass: {model: '_session.user.picClass'}
     userName: {model: '_session.user.name'}
     newComment: {model: '_session.newComment'}
-  # By default, user changes to input values update the model. "silent" is a
-  # special attribute that prevents the model from generating update events
-  # when the user edits an input field.
+    # By default, user changes to input values update the model. "silent" is a
+    # special attribute that prevents the model from generating update events
+    # when the user edits an input field.
   , """
   <div id=messageContainer><ul id=messageList>{{{messages}}}</ul></div>
   <div id=foot>
@@ -56,10 +56,8 @@ view.make 'Body',
   """
   
 # Scripts required to properly render the document can be passed in an
-# anonymous function to view.preLoad. These scripts will be executed before
-# any external scripts are downloaded, so they will typically happen before
-# the browser paints. For conciseness, document.getElementById is aliased
-# as $, but no other special functions are provided by default.
+# anonymous function to view.preLoad. For convenience, document.getElementById
+# is aliased as $, but no other special functions are provided by default.
 view.preLoad ->
   container = $('messageContainer')
   foot = $('foot')

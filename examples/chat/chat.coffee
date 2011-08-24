@@ -1,7 +1,7 @@
 derby = require 'derby'
 # This module's "module" and "exports" objects are passed to Derby, so that it
 # can expose certain functions on this module for the server or client code.
-{model, view} = chat = derby.createApp module, exports
+{model, view} = derby.createApp module, exports
 
 
 # SERVER & CLIENT VIEW DEFINITION #
