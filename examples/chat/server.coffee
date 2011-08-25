@@ -11,7 +11,7 @@ app = express.createServer()
   .use(gzip.gzip())
 
 chat = require './chat.server'
-store = chat.createStore redis: {db: 3}, listen: app, namespace: 'chat'
+store = chat.createStore redis: {db: 3}, listen: app
 store.flush()
 newUserId = 0
 

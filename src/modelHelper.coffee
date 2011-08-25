@@ -5,7 +5,7 @@ exports.init = (model, dom, view) ->
 
   events = model.__events = new EventDispatcher
     onTrigger: (path, listener, value, options) ->
-      [id, method, property, viewFunc, oldPath] = listener
+      [oldPath, id, method, property, viewFunc] = listener
       
       # Check to see if this event is triggering for the right object. Remove
       # this listener if it is now stale
@@ -19,10 +19,9 @@ exports.init = (model, dom, view) ->
 
     onBind: (path, listener) ->
       # Save the original path in the listener to be checked at trigger time
-      listener[4] = path  unless listener[4]
+      listener.unshift path
   
   model.on 'set', ([path, value]) ->
-    console.log path, value
     events.trigger path, value
     
   model.on 'push', ([path, value]) ->

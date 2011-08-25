@@ -2,8 +2,8 @@ EventDispatcher = require './EventDispatcher'
 View = require './View'
 
 elements =
-  __window: win = typeof window is 'object' && window
-  __document: doc = win.document
+  $win: win = typeof window is 'object' && window
+  $doc: doc = win.document
 
 emptyEl = doc && doc.createElement 'div'
 
@@ -12,15 +12,15 @@ element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
 
 getMethods = 
   attr: (el, attr) -> el.getAttribute attr
-  
+
   prop: (el, prop) -> el[prop]
-  
+
   html: (el) -> el.innerHTML
 
 setMethods = 
   attr: (value, el, attr) ->
     el.setAttribute attr, value
-  
+
   prop: (value, el, props) ->
     if Array.isArray props
       last = props.length - 1
@@ -31,13 +31,13 @@ setMethods =
     else
       prop = props
     el[prop] = value
-  
+
   propPolite: (value, el, prop) ->
     el[prop] = value  if el != doc.activeElement
-  
+
   html: (value, el, escape) ->
     el.innerHTML = if escape then View.htmlEscape value else value
-  
+
   appendHtml: (value, el) ->
     emptyEl.innerHTML = value
     while child = emptyEl.firstChild
@@ -50,12 +50,12 @@ Dom = module.exports = (model) ->
   @events = events = new EventDispatcher
     onBind: (name) -> addListener name  unless name of events._names
     onTrigger: (name, listener, targetId) ->
-      [fn, path, id, method, property] = listener
+      [fn, path, id, method, property, silent] = listener
       return  unless id is targetId
       # Remove this listener if the element doesn't exist
       return false  unless el = element id
       value = getMethods[method] el, property
-      model[fn] path, value
+      (if silent then model.silent else model)[fn] path, value
 
   return
 

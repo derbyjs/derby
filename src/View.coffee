@@ -85,14 +85,15 @@ parse = (template, uniqueId, view) ->
   elementParse =
     input: (attr, attrs, name) ->
       return 'attr'  unless attr == 'value'
-      method = 'propPolite'
-      setMethod = 'set'
       if 'silent' of attrs
-        # TODO: Implement silent
-        method = 'prop'
         delete attrs.silent
+        method = 'prop'
+        silent = 1
+      else
+        method = 'propPolite'
+        silent = 0
       events.push (data) ->
-        domArgs = [setMethod, data[name].model, attrs._id or attrs.id, 'prop', 'value']
+        domArgs = ['set', data[name].model, attrs._id || attrs.id, 'prop', 'value', silent]
         domEvents = view.dom.events
         domEvents.bind 'keyup', domArgs
         domEvents.bind 'keydown', domArgs
@@ -127,11 +128,9 @@ parse = (template, uniqueId, view) ->
           if attrs.id is undefined
             attrs.id = -> attrs._id = uniqueId()
           events.push (data) ->
-            path = data[name].model
-            viewFunc = data[name].view
-            params = [attrs._id || attrs.id, 'html', escaped]
-            if path
-              params.push viewFunc  if viewFunc
+            if path = data[name].model
+              params = [attrs._id || attrs.id, 'html', escaped]
+              params[3] = viewFunc  if viewFunc = data[name].view
               view.model.__events.bind path, params
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if pre or post
@@ -170,6 +169,6 @@ simpleView = (name, view) ->
     model = view.model
     obj = if path then model.get path else datum
     text = if datum.view then view.get datum.view, obj else obj
-    model.__events.bind path, ['__document', 'prop', 'title']  if path and name is 'Title'
+    model.__events.bind path, ['$doc', 'prop', 'title']  if path and name is 'Title'
     return text && text.replace /\n/g, ''
 
