@@ -7,7 +7,7 @@
     "main": "./lib/derby.browser.js"
   },
   "dependencies": {
-    "racer": "0.0.9",
+    "racer": "0.0.10",
     "uglify-js": ">=1.0.6"
   },
   "devDependencies": {
