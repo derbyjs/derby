@@ -5,17 +5,17 @@ stylus = require 'stylus'
 
 # SERVER ONLY VIEW DEFINITION #
   
-# There are a handful of reserved views: Doctype, Title, Head, Body, and Foot.
+# There are a handful of reserved views: Doctype, Title, Head, Body, and Tail.
 # These are rendered when the view.html function is called by the server.
 # The rendering order is Doctype, Title, Head, Body, preLoad scripts,
-# external JS, model and event initialization scripts, and then Foot.
+# external JS, model and event initialization scripts, and then Tail.
   
 # There are a few ways to specifiy views. The Title must be a simple view,
 # which means that it is tied to the value of one model object, a string,
 # or a function that returns a string.
 view.make 'Title', model: '_session.title'
 
-# Head and Foot are typically simple views that output a string.
+# Head and Tail are typically simple views that output a string.
 fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
   stylus.render styl, compress: true, (err, css) ->
     view.make 'Head', """
@@ -32,9 +32,10 @@ fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
 # update the DOM when the model changes and update the model when certain
 # user events occur.
 
-# By default, user changes to input values update the model. "silent" is a
-# special attribute that prevents the model from generating update events
-# when the user edits an input field.
+# By default, user changes to input values update the model and model changes
+# update the input unless the input has focus. "silent" is a special attribute
+# that prevents the model from generating update events when the user edits
+# an input field and overrides the input value even if it has focus.
 view.make 'Body', """
   {{> info}}
   <div id=messages><ul id=messageList>{{_room.messages > message}}</ul></div>
@@ -49,15 +50,14 @@ view.make 'Body', """
   </div>
   """
 
-
 # Scripts required to properly render the document can be passed in an
 # anonymous function to view.preLoad. For convenience, document.getElementById
 # is aliased as $, but no other special functions are provided by default.
 view.preLoad ->
-  container = $('messageContainer')
-  foot = $('foot')
+  messages = $('messages')
   messageList = $('messageList')
+  foot = $('foot')
   do window.onresize = ->
-    container.style.height = (window.innerHeight - foot.offsetHeight) + 'px'
-    container.scrollTop = messageList.offsetHeight
+    messages.style.height = (window.innerHeight - foot.offsetHeight) + 'px'
+    messages.scrollTop = messageList.offsetHeight
   $('commentInput').focus()

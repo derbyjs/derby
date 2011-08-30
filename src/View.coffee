@@ -12,11 +12,11 @@ View = module.exports = ->
 
 View:: =
 
-  get: (view, obj) ->
+  get: (view, ctx) ->
     if view = @_views[view]
-      if Array.isArray obj
-        (view item for item in obj).join ''
-      else view obj
+      if Array.isArray ctx
+        (view item for item in ctx).join ''
+      else view ctx
     else ''
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
@@ -24,6 +24,8 @@ View:: =
   make: (name, template, data) ->
     if template.model || !~template.indexOf('{{')
       data = template
+      # Remove leading whitespace and newlines from static strings
+      data = data.replace /^|\n[\s]*/g, ''  if typeof data is 'string'
       simple = true
     else
       data = {}  if data is undefined
@@ -34,18 +36,17 @@ View:: =
     self = this
 
     render = ->
-      render = if simple
-          simpleView name, self
-        else parse template, data, uniqueId, self
+      render = if simple then parseSimple name, self else
+        parse template, data, uniqueId, self
       render arguments...
 
-    fn = if typeof data is 'function'
+    @_register name, before, after, (if typeof data is 'function'
         -> render data arguments...
       else
-        -> render data
+        -> render data)
 
-    @_views[name] =
-      if before
+  _register: (name, before, after, fn) ->
+    @_views[name] = if before
         if after then ->
           before()
           fn arguments...
@@ -61,7 +62,7 @@ View:: =
 
 
 View.htmlEscape = htmlEscape = (s) ->
-  if `s == null` then '' else s.toString().replace /[&<>]/g, (s) ->
+  if `s == null` then '' else s.replace /[&<>]/g, (s) ->
     switch s
       when '&' then '&amp;'
       when '<' then '&lt;'
@@ -76,7 +77,7 @@ quoteAttr = (s) ->
 extractPlaceholder = (text) ->
   match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}(.*)$/.exec text
   return null unless match
-  content = /^([#^//>]?) *([^\|]*)(?: *> *(.*))?$/.exec match[3]
+  content = /^([#^//>]?) *([^ >]*)(?: *> *(.*))?$/.exec match[3]
   pre: match[1]
   escaped: match[2] == '{{'
   type: content[1]
@@ -90,8 +91,8 @@ addNameToData = (data, name) ->
 modelText = (view, name, escaped, quote) ->
   (data) ->
     datum = data[name]
-    obj = if datum.model then view.model.get datum.model else datum
-    text = if datum.view then view.get datum.view, obj else obj
+    text = if datum.model then view.model.get datum.model else datum
+    text = if `text == null` then '' else text.toString()
     text = htmlEscape text  if escaped
     text = quoteAttr text  if quote
     return text
@@ -104,6 +105,7 @@ getElementParse = (view, events) ->
       method = 'prop'
       silent = 1
     else
+      # Update the property unless the element has focus
       method = 'propPolite'
       silent = 0
     events.push (data) ->
@@ -144,7 +146,12 @@ parse = (template, data, uniqueId, view) ->
         last = stack[stack.length - 1]
         if wrap = pre || post || !(last && last[0] == 'start')
           stack.push last = ['start', 'span', {}]
-        text = modelText view, name, escaped
+        text = if partial then (data) ->
+            partialData = Object.create model.get name
+            for item, value of data
+              partialData[item] = value
+            view.get partial, partialData
+          else modelText view, name, escaped
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
         events.push (data) ->
@@ -178,17 +185,15 @@ parse = (template, data, uniqueId, view) ->
       when 'end'
         html[htmlIndex] += '</' + item[1] + '>'
 
-  (data, obj) ->
-    rendered = ((if item && item.call then item data else item) for item in html).join ''
+  (data) ->
+    rendered = ((if item.call then item data else item) for item in html).join ''
     event data for event in events
     return rendered
 
-simpleView = (name, view) ->
+parseSimple = (name, view) ->
   (datum) ->
     path = datum.model
     model = view.model
     text = if path then model.get path else datum
     model.__events.bind path, ['$doc', 'prop', 'title']  if path and name is 'Title'
-    # Remove leading whitespace and newlines
-    return text && text.replace /^[\w]*([^\n]*)/g, '$1'
-
+    return text

@@ -5,14 +5,14 @@ exports.init = (model, dom, view) ->
 
   events = model.__events = new EventDispatcher
     onTrigger: (path, listener, value, options) ->
-      [oldPath, id, method, property, viewFunc] = listener
+      [oldPath, id, method, property, partial] = listener
       
       # Check to see if this event is triggering for the right object. Remove
       # this listener if it is now stale
       return false  unless oldPath == path || get(oldPath) == get(path)
       method = options.method  if options && options.method
       
-      value = view.get viewFunc, value  if viewFunc
+      value = view.get partial, value  if partial
       # Remove this listener if the DOM update fails. This usually happens
       # when an id cannot be found
       return dom.update id, method, property, value

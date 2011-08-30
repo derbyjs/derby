@@ -3,7 +3,8 @@ module.exports = View = require './View'
 Dom = require './Dom'
 modelHelper = require './modelHelper'
 
-View::_register = (name, after, fn) ->
+View::_register = (name, before, after, fn) ->
+  @preLoad before  if before
   @preLoad after  if after
   @_views[name] = fn
 
@@ -17,7 +18,7 @@ View::html = (model, callback) ->
   title = @get('Title') || 'Derby app'
   head = @get 'Head'
   body = @get 'Body'
-  foot = @get 'Foot'
+  tail = @get 'Tail'
 
   html = "#{doctype}<title>#{title}</title>#{head}#{body}" +
   "<script>function $(i){return document.getElementById(i)}" +
@@ -30,7 +31,7 @@ View::html = (model, callback) ->
   model.bundle (bundle) ->
     callback html + bundle.replace(/<\//g, '<\\/') + ',' +
       JSON.stringify(model.__events.get()) + ',' +
-      JSON.stringify(dom.events.get()) + ")},0)</script>#{foot}"
+      JSON.stringify(dom.events.get()) + ")},0)</script>#{tail}"
 
 cache = {}
 minify = (js) ->
