@@ -142,19 +142,18 @@ parse = (template, data, uniqueId, view) ->
         {name, escaped, pre, post, type, partial} = match
         addNameToData data, name
         stack.push ['chars', pre]  if pre
-        if wrap = pre || post || stack.length is 0
-          stack.push ['start', 'span', {}]
-        text = modelText view, name, escaped
         last = stack[stack.length - 1]
-        if last[0] == 'start'
-          attrs = last[2]
-          if attrs.id is undefined
-            attrs.id = -> attrs._id = uniqueId()
-          events.push (data) ->
-            if path = data[name].model
-              params = [attrs._id || attrs.id, 'html', +escaped]
-              params[3] = partial  if partial
-              model.__events.bind path, params
+        if wrap = pre || post || !(last && last[0] == 'start')
+          stack.push last = ['start', 'span', {}]
+        text = modelText view, name, escaped
+        attrs = last[2]
+        if attrs.id is undefined
+          attrs.id = -> attrs._id = uniqueId()
+        events.push (data) ->
+          if path = data[name].model
+            params = [attrs._id || attrs.id, 'html', +escaped]
+            params[3] = partial  if partial
+            model.__events.bind path, params
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if wrap
       chars post  if post
