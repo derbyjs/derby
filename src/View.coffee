@@ -128,8 +128,7 @@ parse = (template, data, uniqueId, view) ->
         if match = extractPlaceholder value
           {name, escaped} = match
           addNameToData data, name
-          if attrs.id is undefined
-            attrs.id = -> attrs._id = uniqueId()
+          (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
           method = if tag of elementParse then elementParse[tag] key, attrs, name else 'attr'
           events.push (data) ->
             path = data[name].model
@@ -147,13 +146,12 @@ parse = (template, data, uniqueId, view) ->
           stack.push last = ['start', 'span', {}]
         text = modelText view, name, escaped
         attrs = last[2]
-        if attrs.id is undefined
-          attrs.id = -> attrs._id = uniqueId()
+        (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
         events.push (data) ->
-          if path = data[name].model
-            params = [attrs._id || attrs.id, 'html', +escaped]
-            params[3] = partial  if partial
-            model.__events.bind path, params
+          return  unless path = data[name].model
+          params = [attrs._id || attrs.id, 'html', +escaped]
+          params[3] = partial  if partial
+          model.__events.bind path, params
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if wrap
       chars post  if post
