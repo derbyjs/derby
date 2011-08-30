@@ -6,23 +6,31 @@ derby = require 'derby'
 
 # SERVER & CLIENT VIEW DEFINITION #
 
-# This is an example of a custom view. Since it is bound to an array, each item
-# in the array is passed as an argument.
-view.make 'message', (item) ->
-    userPicClass: {model: "_room.users.#{item.userId}.picClass"}
-    userName: {model: "_room.users.#{item.userId}.name"}
-    comment: item.comment
-  , """
-  <li><img src=img/s.png class={{{userPicClass}}}>
+# Context object names starting with a capital letter are reserved. They are
+# used for built-in properties of model.
+view.make 'info', """
+  {{^Connected}}
+    {{#CanConnect}}
+      <p id=info>Offline<span id=reconnect> &ndash; 
+      <a href=# onclick="return chat.connect()">Reconnect</a></span>'
+    {{/CanConnect}}{{^CanConnect}}
+      <p id=info>Unable to reconnect &ndash; 
+      <a href=javascript:window.location.reload()>Reload</a>
+    {{/CanConnect}}
+  {{/Connected}}
+  """
+
+view.make 'message', """
+  <li><img src=img/s.png class={{user.picClass}}>
     <div class=message>
-      <p><b>{{userName}}</b>
+      <p><b>{{user.name}}</b>
       <p>{{comment}}
     </div>
-  """
-    # The "after" option specifies a function to execute after the view is
-    # rendered. If a view that has an after function is rendered on the server,
-    # the after function will be added to the preLoad functions.
-  , after: -> $('messageContainer').scrollTop = $('messageList').offsetHeight
+  """,
+  # The "After" option specifies a function to execute after the view is
+  # rendered. If a view that has an after function is rendered on the server,
+  # the after function will be added to the preLoad functions.
+  After: -> $('messages').scrollTop = $('messageList').offsetHeight
 
 
 # USER FUNCTIONS DEFINITION #
@@ -31,7 +39,7 @@ view.make 'message', (item) ->
 # name as this module. This function is called by the form submission action.
 exports.postMessage = ->
   model.push '_room.messages',
-    userId: model.get '_session.userId'
+    user: model.ref '_room.users', '_session.userId'
     comment: model.get '_session.newComment'
   model.set '_session.newComment', ''
   return false

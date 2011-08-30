@@ -28,33 +28,28 @@ fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
 # returns a similarly formatted object. The template must be a string of HTML,
 # which is parsed when the view is created. Fields in double braces are
 # escaped and fields in triple braces are not. Note that this template does
-# not only specify the initial HTML rendering; event handlers are created to
+# not only specify the initial HTML rendering; bindings are also created to
 # update the DOM when the model changes and update the model when certain
 # user events occur.
-view.make 'Body',
-    # A field can be output by another view function tied to a model object.
-    # If the model object is an array, the view function will be called for
-    # each item in the array, and the outputs will be concatenated together.
-    messages: {model: '_room.messages', view: 'message'}
-    userPicClass: {model: '_session.user.picClass'}
-    userName: {model: '_session.user.name'}
-    newComment: {model: '_session.newComment'}
-    # By default, user changes to input values update the model. "silent" is a
-    # special attribute that prevents the model from generating update events
-    # when the user edits an input field.
-  , """
-  <div id=messageContainer><ul id=messageList>{{{messages}}}</ul></div>
+
+# By default, user changes to input values update the model. "silent" is a
+# special attribute that prevents the model from generating update events
+# when the user edits an input field.
+view.make 'Body', """
+  {{> info}}
+  <div id=messages><ul id=messageList>{{_room.messages > message}}</ul></div>
   <div id=foot>
-    <img id=inputPic src=img/s.png class={{{userPicClass}}}>
+    <img id=inputPic src=img/s.png class={{_session.user.picClass}}>
     <div id=inputs>
-      <input id=inputName value={{userName}}>
+      <input id=inputName value={{_session.user.name}}>
       <form id=inputForm onsubmit="return chat.postMessage()">
-        <input id=commentInput value={{newComment}} silent>
+        <input id=commentInput value={{_session.newComment}} silent>
       </form>
     </div>
   </div>
   """
-  
+
+
 # Scripts required to properly render the document can be passed in an
 # anonymous function to view.preLoad. For convenience, document.getElementById
 # is aliased as $, but no other special functions are provided by default.
