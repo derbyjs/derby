@@ -14,11 +14,11 @@ view.make 'info', """
     {{#CanConnect}}
       <p id=info>Offline<span id=reconnect> &ndash; 
       <a href=# onclick="return chat.connect()">Reconnect</a></span>'
-    {{/CanConnect}}{{^CanConnect}}
+    {{^}}
       <p id=info>Unable to reconnect &ndash; 
       <a href=javascript:window.location.reload()>Reload</a>
-    {{/CanConnect}}
-  {{/Connected}}
+    {{/}}
+  {{/}}
   """
 
 view.make 'message', """
