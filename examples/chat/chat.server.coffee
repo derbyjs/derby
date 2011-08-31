@@ -9,13 +9,7 @@ stylus = require 'stylus'
 # These are rendered when the view.html function is called by the server.
 # The rendering order is Doctype, Title, Head, Body, preLoad scripts,
 # external JS, model and event initialization scripts, and then Tail.
-  
-# There are a few ways to specifiy views. The Title must be a simple view,
-# which means that it is tied to the value of one model object, a string,
-# or a function that returns a string.
-view.make 'Title', model: '_session.title'
 
-# Head and Tail are typically simple views that output a string.
 fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
   stylus.render styl, compress: true, (err, css) ->
     view.make 'Head', """

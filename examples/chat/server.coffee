@@ -41,11 +41,10 @@ app.get '/:room?', (req, res) ->
       userId: userId
       user: model.ref '_room.users', '_session.userId'
       newComment: ''
-      title: 'Chat'
     
-    # TODO: Make title update when Racer supports model functions
-    # model.set '_session.title', model.fn ['messages', '_session.user.name'],
-    #   (messages, userName) -> "Chat (#{messages.length}) - #{userName}"
+    # TODO: Make title show message count when Racer supports model functions
+    # model.set '_numMessages', model.fn '_room.messages',
+    #   (messages) -> messages.length
 
     chat.view.html model, (html) -> res.send html
 

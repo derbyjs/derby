@@ -6,6 +6,8 @@ derby = require 'derby'
 
 # SERVER & CLIENT VIEW DEFINITION #
 
+view.make 'Title', 'Chat - {{_session.user.name}}'
+
 # Context object names starting with a capital letter are reserved. They are
 # used for built-in properties of model.
 view.make 'info', """
@@ -27,9 +29,9 @@ view.make 'message', """
       <p>{{comment}}
     </div>
   """,
-  # The "After" option specifies a function to execute after the view is
-  # rendered. If a view that has an after function is rendered on the server,
-  # the after function will be added to the preLoad functions.
+  # "Before" and "After" options specify a function to execute before or after
+  # the view is rendered. If rendered on the server, these functions will be
+  # added to the preLoad functions
   After: -> $('messages').scrollTop = $('messageList').offsetHeight
 
 
