@@ -195,7 +195,7 @@ parse = (view, viewName, template, data, uniqueId) ->
 parseString = (view, viewName, template, data) ->
   items = []
   events = []
-  
+
   post = template
   while match = extractPlaceholder post
     {name, pre, post} = match
@@ -205,6 +205,6 @@ parseString = (view, viewName, template, data) ->
     params = ['$doc', 'prop', 'title', 'Title']  if viewName is 'Title'
     if params then events.push (data, modelEvents) ->
       return  unless path = modelPath data, name
-      modelEvents.bind path, params
+      modelEvents.bind path, params.slice()
 
   renderer view, items, events
