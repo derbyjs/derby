@@ -92,7 +92,7 @@ quoteAttr = (s) ->
 extractPlaceholder = (text) ->
   match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}(.*)$/.exec text
   return null unless match
-  content = /^([#^//>%]?) *([^ >]*)(?: *> *(.*))?$/.exec match[3]
+  content = /^([#^//]?) *([^ >]*)(?: *> *(.*))?$/.exec match[3]
   pre: match[1]
   escaped: match[2] == '{{'
   type: content[1]
