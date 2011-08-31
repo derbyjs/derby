@@ -43,7 +43,7 @@ app.get '/:room?', (req, res) ->
       newComment: ''
       numMessages: model.get('_room.messages').length
 
-    chat.view.html model, (html) -> res.send html
+    chat.view.sendHtml res, model
 
 app.listen 3003
 console.log "Go to: http://localhost:3003/lobby"
