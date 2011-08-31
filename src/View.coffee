@@ -1,12 +1,5 @@
 htmlParser = require './htmlParser'
-
-extend = (parent, obj) ->
-  return parent  unless obj
-  return obj  unless parent
-  out = Object.create parent
-  for key of obj
-    out[key] = obj[key]
-  return out
+elementParser = require './elementParser'
 
 View = module.exports = ->
   self = this
@@ -33,23 +26,22 @@ View:: =
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
 
   make: (name, template, data, options) ->
-    if template.model || !~template.indexOf('{{')
-      data = template
-      # Remove leading whitespace and newlines from static strings
-      data = data.replace /^|\n[\s]*/g, ''  if typeof data is 'string'
-      simple = true
+    if typeof template is 'string' && !~template.indexOf('{{')
+      # Remove leading whitespace and newlines from literal strings
+      template = template.replace /^|\n[\s]*/g, ''
+      literal = true
     else
       data = {}  if data is undefined
     
-    options = options || data
-    before = options.Before
-    after = options.After
+    if options = options || data
+      before = options.Before
+      after = options.After
     uniqueId = @uniqueId
     self = this
 
     render = (ctx) ->
-      render = if simple then parseSimple name, self else
-        parse template, data, uniqueId, self
+      render = if literal then -> template else
+        parse self, name, template, data, uniqueId
       render ctx
 
     @_register name, before, after,
@@ -75,6 +67,14 @@ View:: =
           rendered = fn ctx
         else fn
 
+
+extend = (parent, obj) ->
+  return parent  unless obj
+  return obj  unless parent
+  out = Object.create parent
+  for key of obj
+    out[key] = obj[key]
+  return out
 
 View.htmlEscape = htmlEscape = (s) ->
   if `s == null` then '' else s.replace /[&<>]/g, (s) ->
@@ -115,31 +115,22 @@ modelText = (view, name, escaped, quote) ->
     text = quoteAttr text  if quote
     return text
 
-getElementParse = (view, events) ->
-  input: (attr, attrs, name) ->
-    return 'attr'  unless attr == 'value'
-    if 'silent' of attrs
-      delete attrs.silent
-      method = 'prop'
-      silent = 1
-    else
-      # Update the property unless the element has focus
-      method = 'propPolite'
-      silent = 0
-    events.push (data) ->
-      domArgs = ['set', data[name].model, attrs._id || attrs.id, 'prop', 'value', silent]
-      domEvents = view.dom.events
-      domEvents.bind 'keyup', domArgs
-      domEvents.bind 'keydown', domArgs
-    return method
+renderer = (view, items, events) ->
+  (data) ->
+    model = view.model
+    modelEvents = model.__events
+    rendered = ((if item.call then item data, model else item) for item in items).join ''
+    event data, modelEvents for event in events
+    return rendered
 
-parse = (template, data, uniqueId, view) ->
+parse = (view, viewName, template, data, uniqueId) ->
+  return parseString view, viewName, template, data  if viewName is 'Title'
+
   stack = []
   events = []
   html = ['']
   htmlIndex = 0
-
-  elementParse = getElementParse view, events
+  elements = elementParser view, events
 
   htmlParser.parse template,
     start: (tag, attrs) ->
@@ -148,7 +139,7 @@ parse = (template, data, uniqueId, view) ->
           {name, escaped} = match
           addNameToData data, name
           (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
-          method = if tag of elementParse then elementParse[tag] key, attrs, name else 'attr'
+          method = if tag of elements then elements[tag] key, attrs, name else 'attr'
           events.push (data, modelEvents) ->
             path = modelPath data, name
             modelEvents.bind path, [attrs._id || attrs.id, method, key]  if path
@@ -199,17 +190,21 @@ parse = (template, data, uniqueId, view) ->
       when 'end'
         html[htmlIndex] += '</' + item[1] + '>'
 
-  (data) ->
-    model = view.model
-    modelEvents = model.__events
-    rendered = ((if item.call then item data, model else item) for item in html).join ''
-    event data, modelEvents for event in events
-    return rendered
+  renderer view, html, events
 
-parseSimple = (name, view) ->
-  (datum) ->
-    path = datum.model
-    model = view.model
-    text = if path then model.get path else datum
-    model.__events.bind path, ['$doc', 'prop', 'title']  if path and name is 'Title'
-    return text
+parseString = (view, viewName, template, data) ->
+  items = []
+  events = []
+  
+  post = template
+  while match = extractPlaceholder post
+    {name, pre, post} = match
+    addNameToData data, name
+    items.push pre  if pre
+    items.push modelText view, name
+    params = ['$doc', 'prop', 'title', 'Title']  if viewName is 'Title'
+    if params then events.push (data, modelEvents) ->
+      return  unless path = modelPath data, name
+      modelEvents.bind path, params
+
+  renderer view, items, events
