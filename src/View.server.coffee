@@ -20,7 +20,7 @@ View::sendHtml = (res, model) ->
   # CSS to the browser as soon as possible, so styles should definately be
   # within the Head view. In addition, the Head view does not have to be the
   # same thing as the contents of the HTML head element, and if there is small
-  # amount of header HTML that will display well by iteself, it is a good idea
+  # amount of header HTML that will display well by itself, it is a good idea
   # to add this to the Head view so that it renders ASAP.
   doctype = @get('Doctype') || '<!DOCTYPE html><meta charset=utf-8>'
   title = @get('Title') || 'Derby app'
