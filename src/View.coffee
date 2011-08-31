@@ -1,5 +1,13 @@
 htmlParser = require './htmlParser'
 
+extend = (parent, obj) ->
+  return parent  unless obj
+  return obj  unless parent
+  out = Object.create parent
+  for key of obj
+    out[key] = obj[key]
+  return out
+
 View = module.exports = ->
   self = this
   @_views = {}
@@ -12,16 +20,19 @@ View = module.exports = ->
 
 View:: =
 
-  get: (view, ctx) ->
+  get: (view, ctx, parentCtx) ->
     if view = @_views[view]
-      if Array.isArray ctx
-        (view item for item in ctx).join ''
-      else view ctx
+      if ctx && Array.isArray ctx
+        out = ''
+        for item in ctx
+          out += view extend parentCtx, item
+        return out
+      else view extend parentCtx, ctx
     else ''
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
 
-  make: (name, template, data) ->
+  make: (name, template, data, options) ->
     if template.model || !~template.indexOf('{{')
       data = template
       # Remove leading whitespace and newlines from static strings
@@ -30,34 +41,38 @@ View:: =
     else
       data = {}  if data is undefined
     
-    before = data && data.Before
-    after = data && data.After
+    options = options || data
+    before = options.Before
+    after = options.After
     uniqueId = @uniqueId
     self = this
 
-    render = ->
+    render = (ctx) ->
       render = if simple then parseSimple name, self else
         parse template, data, uniqueId, self
-      render arguments...
+      render ctx
 
-    @_register name, before, after, (if typeof data is 'function'
-        -> render data arguments...
+    @_register name, before, after,
+      if typeof data is 'object'
+        (ctx) -> render extend data, ctx
+      else if typeof data is 'function'
+        (ctx) -> render extend data(ctx), ctx
       else
-        -> render data)
+        -> render data
 
   _register: (name, before, after, fn) ->
     @_views[name] = if before
-        if after then ->
+        if after then (ctx) ->
           before()
-          fn arguments...
-          after()
-        else ->
+          setTimeout after, 0
+          rendered = fn ctx
+        else (ctx) ->
           before()
-          fn arguments...
+          fn ctx
       else
-        if after then ->
-          fn arguments...
-          after()
+        if after then (ctx) ->
+          setTimeout after, 0
+          rendered = fn ctx
         else fn
 
 
@@ -77,7 +92,7 @@ quoteAttr = (s) ->
 extractPlaceholder = (text) ->
   match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}(.*)$/.exec text
   return null unless match
-  content = /^([#^//>]?) *([^ >]*)(?: *> *(.*))?$/.exec match[3]
+  content = /^([#^//>%]?) *([^ >]*)(?: *> *(.*))?$/.exec match[3]
   pre: match[1]
   escaped: match[2] == '{{'
   type: content[1]
@@ -88,10 +103,14 @@ extractPlaceholder = (text) ->
 addNameToData = (data, name) ->
   data[name] = model: name  unless name of data
 
+modelPath = (data, name) ->
+  return null  unless path = data[name].model
+  path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
+
 modelText = (view, name, escaped, quote) ->
+  model = view.model
   (data) ->
-    datum = data[name]
-    text = if datum.model then view.model.get datum.model else datum
+    text = if path = modelPath data, name then model.get path else data[name]
     text = if `text == null` then '' else text.toString()
     text = htmlEscape text  if escaped
     text = quoteAttr text  if quote
@@ -133,7 +152,7 @@ parse = (template, data, uniqueId, view) ->
           (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
           method = if tag of elementParse then elementParse[tag] key, attrs, name else 'attr'
           events.push (data) ->
-            path = data[name].model
+            path = modelPath data, name
             model.__events.bind path, [attrs._id || attrs.id, method, key]  if path
           attrs[key] = modelText view, name, escaped, true
       stack.push ['start', tag, attrs]
@@ -147,15 +166,12 @@ parse = (template, data, uniqueId, view) ->
         if wrap = pre || post || !(last && last[0] == 'start')
           stack.push last = ['start', 'span', {}]
         text = if partial then (data) ->
-            partialData = Object.create model.get name
-            for item, value of data
-              partialData[item] = value
-            view.get partial, partialData
+            view.get partial, model.get(name), data
           else modelText view, name, escaped
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
         events.push (data) ->
-          return  unless path = data[name].model
+          return  unless path = modelPath data, name
           params = [attrs._id || attrs.id, 'html', +escaped]
           params[3] = partial  if partial
           model.__events.bind path, params

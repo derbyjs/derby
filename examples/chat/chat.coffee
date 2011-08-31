@@ -21,9 +21,9 @@ view.make 'info', """
   """
 
 view.make 'message', """
-  <li><img src=img/s.png class={{user.picClass}}>
+  <li><img src=img/s.png class={{_room.users.(userId).picClass}}>
     <div class=message>
-      <p><b>{{user.name}}</b>
+      <p><b>{{_room.users.(userId).name}}</b>
       <p>{{comment}}
     </div>
   """,
@@ -39,7 +39,7 @@ view.make 'message', """
 # name as this module. This function is called by the form submission action.
 exports.postMessage = ->
   model.push '_room.messages',
-    user: model.ref '_room.users', '_session.userId'
+    userId: model.get '_session.userId'
     comment: model.get '_session.newComment'
   model.set '_session.newComment', ''
   return false
