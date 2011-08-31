@@ -9,6 +9,8 @@ exports.createApp = (appModule, appExports, options = {}) ->
   racer.util.merge appExports, racer
   appExports.view = view = new View
 
+  appExports.ready = ->
+
   view._clientName = options.name || path.basename appModule.filename, '.js'
   staticRoot = options.root || path.dirname appModule.filename
   staticDir = options.dir || 'public'

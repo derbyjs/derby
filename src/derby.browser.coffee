@@ -8,6 +8,8 @@ exports.createApp = (appModule, appExports) ->
   racer.util.merge appExports, racer
   appExports.view = view = new View
   
+  appExports.ready = (fn) -> racer.onready = fn
+  
   dom = view.dom = new Dom(model = view.model = racer.model)
   modelHelper.init model, dom, view
   

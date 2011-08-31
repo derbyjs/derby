@@ -1,12 +1,11 @@
 derby = require 'derby'
 # This module's "module" and "exports" objects are passed to Derby, so that it
 # can expose certain functions on this module for the server or client code.
-{model, view} = derby.createApp module, exports
-
+{ready, model, view} = derby.createApp module, exports
 
 # SERVER & CLIENT VIEW DEFINITION #
 
-view.make 'Title', 'Chat - {{_session.user.name}}'
+view.make 'Title', 'Chat ({{_session.numMessages}}) - {{_session.user.name}}'
 
 # Context object names starting with a capital letter are reserved. They are
 # used for built-in properties of model.
@@ -36,6 +35,9 @@ view.make 'message', """
 
 
 # USER FUNCTIONS DEFINITION #
+
+ready ->
+  model.on 'push', '_room.messages', -> model.incr '_session.numMessages'
 
 # Exported functions are exposed as a global in the browser with the same
 # name as this module. This function is called by the form submission action.

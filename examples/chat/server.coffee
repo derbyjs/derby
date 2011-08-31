@@ -41,10 +41,7 @@ app.get '/:room?', (req, res) ->
       userId: userId
       user: model.ref '_room.users', '_session.userId'
       newComment: ''
-    
-    # TODO: Make title show message count when Racer supports model functions
-    # model.set '_numMessages', model.fn '_room.messages',
-    #   (messages) -> messages.length
+      numMessages: model.get('_room.messages').length
 
     chat.view.html model, (html) -> res.send html
 
