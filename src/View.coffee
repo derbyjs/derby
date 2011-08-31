@@ -108,8 +108,7 @@ modelPath = (data, name) ->
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
 modelText = (view, name, escaped, quote) ->
-  model = view.model
-  (data) ->
+  (data, model) ->
     text = if path = modelPath data, name then model.get path else data[name]
     text = if `text == null` then '' else text.toString()
     text = htmlEscape text  if escaped
@@ -139,7 +138,6 @@ parse = (template, data, uniqueId, view) ->
   events = []
   html = ['']
   htmlIndex = 0
-  model = view.model
 
   elementParse = getElementParse view, events
 
@@ -151,9 +149,9 @@ parse = (template, data, uniqueId, view) ->
           addNameToData data, name
           (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
           method = if tag of elementParse then elementParse[tag] key, attrs, name else 'attr'
-          events.push (data) ->
+          events.push (data, modelEvents) ->
             path = modelPath data, name
-            model.__events.bind path, [attrs._id || attrs.id, method, key]  if path
+            modelEvents.bind path, [attrs._id || attrs.id, method, key]  if path
           attrs[key] = modelText view, name, escaped, true
       stack.push ['start', tag, attrs]
 
@@ -165,16 +163,16 @@ parse = (template, data, uniqueId, view) ->
         last = stack[stack.length - 1]
         if wrap = pre || post || !(last && last[0] == 'start')
           stack.push last = ['start', 'span', {}]
-        text = if partial then (data) ->
+        text = if partial then (data, model) ->
             view.get partial, model.get(name), data
           else modelText view, name, escaped
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
-        events.push (data) ->
+        events.push (data, modelEvents) ->
           return  unless path = modelPath data, name
           params = [attrs._id || attrs.id, 'html', +escaped]
           params[3] = partial  if partial
-          model.__events.bind path, params
+          modelEvents.bind path, params
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if wrap
       chars post  if post
@@ -202,8 +200,10 @@ parse = (template, data, uniqueId, view) ->
         html[htmlIndex] += '</' + item[1] + '>'
 
   (data) ->
-    rendered = ((if item.call then item data else item) for item in html).join ''
-    event data for event in events
+    model = view.model
+    modelEvents = model.__events
+    rendered = ((if item.call then item data, model else item) for item in html).join ''
+    event data, modelEvents for event in events
     return rendered
 
 parseSimple = (name, view) ->
