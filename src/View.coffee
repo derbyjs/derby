@@ -6,8 +6,8 @@ View = module.exports = ->
   @_views = {}
   @_loadFuncs = ''
   
-  # All automatically created ids start with an underscore
-  @uniqueId = -> '_' + (self._idCount++).toString 36
+  # All automatically created ids start with a dollar sign
+  @uniqueId = -> '$' + (self._idCount++).toString 36
   
   return
 
@@ -27,8 +27,8 @@ View:: =
 
   make: (name, template, data, options) ->
     if typeof template is 'string' && !~template.indexOf('{{')
-      # Remove leading whitespace and newlines from literal strings
-      template = template.replace /^|\n[\s]*/g, ''
+      # Remove leading whitespace and newlines
+      template = trim template
       literal = true
     else
       data = {}  if data is undefined
@@ -89,22 +89,27 @@ quoteAttr = (s) ->
   s = s.toString().replace /"/g, '&quot;'
   if /[ =]/.test s then '"' + s + '"' else s
 
+# Remove leading whitespace and newlines from a string. Note that trailing
+# whitespace is not removed in case whitespace is desired between lines
+trim = (s) -> s.replace /^|\n[\s]*/g, ''
+
 extractPlaceholder = (text) ->
-  match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}(.*)$/.exec text
+  match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}([\s\S]*)/.exec text
   return null unless match
-  content = /^([#^//]?) *([^ >]*)(?: *> *(.*))?$/.exec match[3]
-  pre: match[1]
+  content = /^([#^//]?) *([^ >]*)(?: *> *(.*))?/.exec match[3]
+  pre: trim match[1]
   escaped: match[2] == '{{'
   type: content[1]
   name: content[2]
   partial: content[3]
-  post: match[4]
+  post: trim match[4]
 
 addNameToData = (data, name) ->
   data[name] = model: name  unless name of data
 
 modelPath = (data, name) ->
-  return null  unless path = data[name].model
+  datum = data[name]
+  return null  unless datum && path = datum.model
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
 modelText = (view, name, escaped, quote) ->
@@ -123,6 +128,30 @@ renderer = (view, items, events) ->
     event data, modelEvents for event in events
     return rendered
 
+parseChars = (view, uniqueId, stack, events, pre, post, name, escaped, type, partial) ->
+  switch type
+    when '#' then stack.push ['section', name]; return
+    when '^' then stack.push ['inverted', name]; return
+    when '/' then stack.push ['endSection', name]; return
+
+  last = stack[stack.length - 1]
+  if wrap = pre || post || !(last && last[0] == 'start')
+    stack.push last = ['start', 'span', {}]
+  attrs = last[2]
+  (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
+
+  events.push (data, modelEvents) ->
+    return  unless path = modelPath data, name
+    params = [attrs._id || attrs.id, 'html', +escaped]
+    params[3] = partial  if partial
+    modelEvents.bind path, params
+
+  text = if partial then (data, model) ->
+      view.get partial, model.get(name), data
+    else modelText view, name, escaped
+  stack.push ['chars', text]
+  stack.push ['end', 'span']  if wrap
+
 parse = (view, viewName, template, data, uniqueId) ->
   return parseString view, viewName, template, data  if viewName is 'Title'
 
@@ -137,40 +166,34 @@ parse = (view, viewName, template, data, uniqueId) ->
       for key, value of attrs
         if match = extractPlaceholder value
           {name, escaped} = match
-          addNameToData data, name
+          addNameToData data, name  if name
+          
           (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
           method = if tag of elements then elements[tag] key, attrs, name else 'attr'
+          
           events.push (data, modelEvents) ->
             path = modelPath data, name
             modelEvents.bind path, [attrs._id || attrs.id, method, key]  if path
+          
           attrs[key] = modelText view, name, escaped, true
+      
       stack.push ['start', tag, attrs]
 
     chars: chars = (text) ->
-      if match = extractPlaceholder text
-        {name, escaped, pre, post, type, partial} = match
-        addNameToData data, name
-        stack.push ['chars', pre]  if pre
-        last = stack[stack.length - 1]
-        if wrap = pre || post || !(last && last[0] == 'start')
-          stack.push last = ['start', 'span', {}]
-        text = if partial then (data, model) ->
-            view.get partial, model.get(name), data
-          else modelText view, name, escaped
-        attrs = last[2]
-        (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
-        events.push (data, modelEvents) ->
-          return  unless path = modelPath data, name
-          params = [attrs._id || attrs.id, 'html', +escaped]
-          params[3] = partial  if partial
-          modelEvents.bind path, params
-      stack.push ['chars', text]  if text
-      stack.push ['end', 'span']  if wrap
+      console.log text
+      return  unless match = extractPlaceholder text
+      console.log {pre, post, name, escaped, type, partial} = match
+      addNameToData data, name  if name
+        
+      stack.push ['chars', pre]  if pre
+      parseChars view, uniqueId, stack, events, pre, post, name, escaped, type, partial
       chars post  if post
 
     end: (tag) ->
       stack.push ['end', tag]
 
+  console.log stack
+  
   for item in stack
     pushValue = (value, quote) ->
       if value && value.call
