@@ -3,13 +3,11 @@ view = chat.view
 fs = require 'fs'
 stylus = require 'stylus'
 
-# SERVER ONLY VIEW DEFINITION #
-  
-# There are a handful of reserved views: Doctype, Title, Head, Body, and Tail.
-# These are rendered when the view.html function is called by the server.
-# The rendering order is Doctype, Title, Head, Body, preLoad scripts,
-# external JS, model and event initialization scripts, and then Tail.
 
+# SERVER ONLY VIEW DEFINITION #
+
+# There are a handful of reserved views: Doctype, Title, Head, Body, and Tail.
+# These are rendered when the view.sendHtml function is called by the server.
 fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
   stylus.render styl, compress: true, (err, css) ->
     view.make 'Head', """
@@ -17,19 +15,12 @@ fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
       <style>#{css}</style>
       """
 
-# The Body and user defined views can be a function of multiple model objects.
-# The template fields can be specified by an object literal or function that
-# returns a similarly formatted object. The template must be a string of HTML,
-# which is parsed when the view is created. Fields in double braces are
-# escaped and fields in triple braces are not. Note that this template does
-# not only specify the initial HTML rendering; bindings are also created to
-# update the DOM when the model changes and update the model when certain
-# user events occur.
-
-# By default, user changes to input values update the model and model changes
-# update the input unless the input has focus. "silent" is a special attribute
-# that prevents the model from generating update events when the user edits
-# an input field and overrides the input value even if it has focus.
+# Derby templates are very similar to Mustache, except that there are a few
+# additions so that they work directly with models. Unlike other templating
+# languages, Derby parses the HTML and infers bindings from context. Thus,
+# a simple HTML template defines the HTML output, the event handlers that
+# should update the model after user interaction, and the event handlers that
+# update the DOM when the model changes.
 view.make 'Body', """
   {{> info}}
   <div id=messages><ul id=messageList>{{_room.messages > message}}</ul></div>

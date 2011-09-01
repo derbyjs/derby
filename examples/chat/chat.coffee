@@ -3,6 +3,7 @@ derby = require 'derby'
 # can expose certain functions on this module for the server or client code.
 {ready, model, view} = derby.createApp module, exports
 
+
 # SERVER & CLIENT VIEW DEFINITION #
 
 view.make 'Title', 'Chat ({{_session.numMessages}}) - {{_session.user.name}}'
@@ -13,7 +14,7 @@ view.make 'info', """
   {{^Connected}}
     {{#CanConnect}}
       <p id=info>Offline<span id=reconnect> &ndash; 
-      <a href=# onclick="return chat.connect()">Reconnect</a></span>'
+      <a href=# onclick="return chat.connect()">Reconnect</a></span>
     {{^}}
       <p id=info>Unable to reconnect &ndash; 
       <a href=javascript:window.location.reload()>Reload</a>
@@ -34,7 +35,7 @@ view.make 'message', """
   After: -> $('messages').scrollTop = $('messageList').offsetHeight
 
 
-# USER FUNCTIONS DEFINITION #
+# CONTROLLER FUNCTIONS DEFINITION #
 
 ready ->
   model.on 'push', '_room.messages', -> model.incr '_session.numMessages'

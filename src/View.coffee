@@ -180,9 +180,8 @@ parse = (view, viewName, template, data, uniqueId) ->
       stack.push ['start', tag, attrs]
 
     chars: chars = (text) ->
-      console.log text
       return  unless match = extractPlaceholder text
-      console.log {pre, post, name, escaped, type, partial} = match
+      {pre, post, name, escaped, type, partial} = match
       addNameToData data, name  if name
         
       stack.push ['chars', pre]  if pre
