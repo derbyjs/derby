@@ -23,9 +23,9 @@ view.make 'info', """
   """
 
 view.make 'message', """
-  <li><img src=img/s.png class={{_room.users.(userId).picClass}}>
+  <li><img src=img/s.png class={{users.(userId).picClass}}>
     <div class=message>
-      <p><b>{{_room.users.(userId).name}}</b>
+      <p><b>{{users.(userId).name}}</b>
       <p>{{comment}}
     </div>
   """,

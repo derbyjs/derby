@@ -29,7 +29,7 @@ app.get '/:room?', (req, res) ->
     session.userId = newUserId++
 
   # TODO: Limit user data subscription to users in the room. Maybe this could
-  # be implied by an object ref
+  # be implied by an object ref on the room
   room = req.params.room
   store.subscribe _room: "rooms.#{room}.**", "users.**", (err, model) ->
     # setNull will set a value if the object is currently null or undefined
@@ -37,13 +37,11 @@ app.get '/:room?', (req, res) ->
     model.setNull "users.#{userId}",
       name: 'User ' + (userId + 1)
       picClass: 'pic' + (userId % NUM_USER_IMAGES)
-    # TODO: Would be more efficient to have one object ref indexed by id
-    model.set "_room.users.#{userId}", model.ref "users.#{userId}"
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server
     model.set '_session',
       userId: userId
-      user: model.ref '_room.users', '_session.userId'
+      user: model.ref 'users', '_session.userId'
       newComment: ''
       numMessages: model.get('_room.messages').length
 
