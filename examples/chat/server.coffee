@@ -12,6 +12,7 @@ app = express.createServer()
 
 chat = require './chat.server'
 store = chat.createStore redis: {db: 3}, listen: app
+# Clear all data every time node server is started
 store.flush()
 newUserId = 0
 
@@ -22,23 +23,26 @@ app.get '/:room?', (req, res) ->
   _room = room.toLowerCase().replace /[_ ]/g, '-'
   return res.redirect "/#{_room}" if _room != room
   
-  # If the client already has a session cookie with user info, use that.
-  # Otherwise, initialize a new user
+  # Get the userId from session data or select a new id if needed
   session = req.session
-  user = if session.user then session.user else session.user =
-    userId: userId = newUserId++
-    name: 'User ' + (userId + 1)
-    picClass: 'pic' + (userId % NUM_USER_IMAGES)
+  userId = if typeof session.userId is 'number' then session.userId else
+    session.userId = newUserId++
 
+  # TODO: Limit user data subscription to users in the room. Maybe this could
+  # be implied by an object ref
   room = req.params.room
-  store.subscribe _room: "rooms.#{room}.**", (err, model) ->
+  store.subscribe _room: "rooms.#{room}.**", "users.**", (err, model) ->
     # setNull will set a value if the object is currently null or undefined
     model.setNull '_room.messages', []
-    model.setNull "_room.users.#{user.userId}", user
+    model.setNull "users.#{userId}",
+      name: 'User ' + (userId + 1)
+      picClass: 'pic' + (userId % NUM_USER_IMAGES)
+    # TODO: Would be more efficient to have one object ref indexed by id
+    model.set "_room.users.#{userId}", model.ref "users.#{userId}"
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server
     model.set '_session',
-      userId: user.userId
+      userId: userId
       user: model.ref '_room.users', '_session.userId'
       newComment: ''
       numMessages: model.get('_room.messages').length

@@ -20,6 +20,7 @@ exports.parse = (html, handler) ->
   startHandler = (handler && handler.start) || empty
   endHandler = (handler && handler.end) || empty
 
+  # Remove HTML comments before parsing
   html = html.replace comment, ''
 
   while html
