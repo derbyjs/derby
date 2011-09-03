@@ -59,7 +59,7 @@ View:: =
 
 extend = (parent, obj) ->
   return obj  unless typeof parent is 'object'
-  return parent  unless typeof obj is 'object'
+  return parent  unless obj
   out = Object.create parent
   for key of obj
     out[key] = obj[key]
@@ -139,8 +139,9 @@ renderer = (view, items, events) ->
   (data) ->
     model = view.model
     modelEvents = model.__events
+    html = ((if item.call then item data, model else item) for item in items).join ''
     event data, modelEvents for event in events
-    ((if item.call then item data, model else item) for item in items).join ''
+    return html
 
 parse = (view, viewName, template, data) ->
   return parseString view, viewName, template, data  if viewName is 'Title'
@@ -202,6 +203,7 @@ parse = (view, viewName, template, data) ->
           return  unless path = modelPath data, name
           params = [attrs._id || attrs.id, 'html', +escaped]
           params[3] = partial  if partial
+          console.log path, params
           modelEvents.bind path, params
         
         text = modelText view, name, escaped
