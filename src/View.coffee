@@ -187,11 +187,10 @@ parse = (view, viewName, template, data) ->
 
       stack.push ['chars', pre]  if pre
 
-      if block
-        if type is '/' || (type is '^' && !name && block.type is '#')
-          name = block.name  if type is '^'
-          popped.push queues.pop()
-          {stack, events, block} = queues[queues.length - 1]
+      if block && (type is '/' || (type is '^' && !name && block.type is '#'))
+        name = block.name  if type is '^'
+        popped.push queues.pop()
+        {stack, events, block} = queues[queues.length - 1]
       
       if startBlock = type is '#' || type is '^'
         partial = partialName()
