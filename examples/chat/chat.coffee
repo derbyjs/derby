@@ -20,7 +20,9 @@ view.make 'info', """
       <a href=javascript:window.location.reload()>Reload</a>
     {{/}}
   {{/}}
-  """
+  """,
+  Connected: false
+  CanConnect: true
 
 view.make 'message', """
   <li><img src=img/s.png class={{users.(userId).picClass}}>

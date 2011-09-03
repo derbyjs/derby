@@ -10,10 +10,10 @@ exports.parse = (html, handler) ->
     attrs = {}
     rest.replace attr, (match, name, equals, attr0, attr1, attr2) ->
       attrs[name.toLowerCase()] = attr0 || attr1 || attr2 || (if equals then '' else null)
-    startHandler tagName.toLowerCase(), attrs
+    startHandler tag, tagName.toLowerCase(), attrs
 
   parseEndTag = (tag, tagName) ->
-    endHandler tagName.toLowerCase()
+    endHandler tag, tagName.toLowerCase()
 
   empty = ->
   charsHandler = (handler && handler.chars) || empty
