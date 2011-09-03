@@ -3,7 +3,7 @@ module.exports = View = require './View'
 Dom = require './Dom'
 modelHelper = require './modelHelper'
 
-View::_register = (name, before, after, fn) ->
+View::_register = (name, fn, before, after) ->
   @preLoad before  if before
   @preLoad after  if after
   @_views[name] = fn

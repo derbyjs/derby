@@ -48,10 +48,8 @@ View:: =
 
     fn = (ctx) -> render extend data, ctx
     @_register name, fn, before, after
-    console.log @_register
 
   _register: (name, fn, before, after) ->
-    console.log 'name'
     @_views[name] = if before
         if after then (ctx) ->
           before()
