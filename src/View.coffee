@@ -15,8 +15,6 @@ View = module.exports = ->
 View:: =
 
   get: (view, ctx, parentCtx) ->
-    console.log view, ctx
-    console.log "#{k}: #{v}" for k, v of ctx
     if view = @_views[view]
       if ctx is false
         ''
@@ -200,9 +198,7 @@ parse = (view, viewName, template, data) ->
         block =
           type: type
           name: name
-        name = null
-      
-      if name
+      else if name
         last = stack[stack.length - 1]
         if wrap = pre || post || !(last && last[0] == 'start')
           stack.push last = ['start', 'span', {}]
@@ -237,11 +233,9 @@ parse = (view, viewName, template, data) ->
 
   for queue in popped
     do (queue) ->
-      console.log queue.viewName, queue.stack
       render = renderer(view, reduceStack(queue.stack), queue.events)
       view._register queue.viewName, (ctx) -> render extend data, ctx
   
-  console.log viewName, stack
   return renderer view, reduceStack(stack), events
 
 parseString = (view, viewName, template, data) ->
