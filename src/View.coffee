@@ -26,26 +26,20 @@ View:: =
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
 
-  make: (name, template, data, options) ->
-    if typeof template is 'string' && !~template.indexOf('{{')
-      # Remove leading whitespace and newlines
-      template = trim template
-      literal = true
-    else
-      data = {}  if data is undefined
-    
-    if options = options || data
-      before = options.Before
-      after = options.After
-    
+  make: (name, template, data = {}) ->
     self = this
     render = (ctx) ->
-      render = if literal then -> template else
-        parse self, name, template, data
+      if typeof template is 'string' && !~template.indexOf('{{')
+        # Return the template without leading whitespace and newlines
+        # if it is a string literal without placeholders
+        template = trim template
+        render = -> template
+      else
+        render = parse self, name, template, data
       render ctx
 
     fn = (ctx) -> render extend data, ctx
-    @_register name, fn, before, after
+    @_register name, fn, data.Before, data.After
 
   _register: (name, fn, before, after) ->
     @_views[name] = if before
@@ -86,18 +80,18 @@ quoteAttr = (s) ->
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
-trim = (s) -> s.replace /(?:^|\n)\s*/g, ''
+trim = (s) -> if s then s.replace /(?:^|\n)\s*/g, '' else ''
 
 extractPlaceholder = (text) ->
   match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}([\s\S]*)/.exec text
   return  unless match
   content = /^([#^//]?) *([^ >]*)(?: *> *(.*))?/.exec match[3]
-  pre: trim(match[1] || '')
+  pre: trim match[1]
   escaped: match[2] == '{{'
   type: content[1]
   name: content[2]
   partial: content[3]
-  post: trim(match[4] || '')
+  post: trim match[4]
 
 addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
