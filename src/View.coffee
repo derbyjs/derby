@@ -215,7 +215,7 @@ parse = (view, viewName, template, data) ->
 
       if partial then text = (data, model) ->
         ctx = dataValue data, name, model
-        ctx = !ctx  if type is '^'
+        ctx = if type is '#' then !!ctx else if type is '^' then !ctx else ctx
         view.get partial, ctx, data
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if wrap
