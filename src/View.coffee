@@ -150,31 +150,7 @@ renderer = (view, items, events) ->
     event data, modelEvents for event in events
     ((if item.call then item data, model else item) for item in items).join ''
 
-parseChars = (view, uniqueId, stack, events, pre, post, name, escaped, type, partial) ->
-  if name
-    last = stack[stack.length - 1]
-    if wrap = pre || post || !(last && last[0] == 'start')
-      stack.push last = ['start', 'span', {}]
-    attrs = last[2]
-    (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
-
-    events.push (data, modelEvents) ->
-      return  unless path = modelPath data, name
-      params = [attrs._id || attrs.id, 'html', +escaped]
-      params[3] = partial  if partial
-      modelEvents.bind path, params
-
-  text = if partial then (data, model) ->
-      console.log type
-      ctx = dataValue data, name, model
-      ctx = !ctx  if type is '^'
-      view.get partial, ctx, data
-    else modelText view, name, escaped
-  stack.push ['chars', text]
-  stack.push ['end', 'span']  if wrap
-
 parse = (view, viewName, template, data) ->
-  console.log viewName
   return parseString view, viewName, template, data  if viewName is 'Title'
 
   queues = [{stack: stack = [], events: events = []}]
@@ -209,38 +185,63 @@ parse = (view, viewName, template, data) ->
       if match = extractPlaceholder text
         {pre, post, name, escaped, type, partial} = match
         addNameToData data, name
-      else
-        pre = trim text
+        text = ''
 
       stack.push ['chars', pre]  if pre
 
       if block
         if type is '/' || (type is '^' && !name && block.type is '#')
-          name = block.name
+          name = block.name  if type is '^'
           popped.push queues.pop()
           {stack, events, block} = queues[queues.length - 1]
       
-      if type is '#' || type is '^'
-        queues.push
-          stack: stack = []
-          events: events = []
-          viewName: partial = partialName()
-          block: block =
-            type: type
-            name: name
+      if startBlock = type is '#' || type is '^'
+        partial = partialName()
+        block =
+          type: type
+          name: name
+        name = null
       
-      parseChars view, uniqueId, stack, events, pre, post, name, escaped, type, partial
+      if name
+        last = stack[stack.length - 1]
+        if wrap = pre || post || !(last && last[0] == 'start')
+          stack.push last = ['start', 'span', {}]
+        attrs = last[2]
+        (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
+
+        events.push (data, modelEvents) ->
+          return  unless path = modelPath data, name
+          params = [attrs._id || attrs.id, 'html', +escaped]
+          params[3] = partial  if partial
+          modelEvents.bind path, params
+        
+        text = modelText view, name, escaped
+
+      if partial then text = (data, model) ->
+        ctx = dataValue data, name, model
+        ctx = !ctx  if type is '^'
+        view.get partial, ctx, data
+      stack.push ['chars', text]  if text
+      stack.push ['end', 'span']  if wrap
+      
+      if startBlock then queues.push
+        stack: stack = []
+        events: events = []
+        viewName: partial
+        block: block
+      
       chars post  if post
 
     end: (tag, tagName) ->
       stack.push ['end', tagName]
 
-  console.log stack
+  for queue in popped
+    do (queue) ->
+      console.log queue.viewName, queue.stack
+      render = renderer(view, reduceStack(queue.stack), queue.events)
+      view._register queue.viewName, (ctx) -> render extend data, ctx
   
-  # register = view._register
-    # for queue in popped
-    #   register queue.viewName, renderer(view, reduceStack(queue.stack), queue.events)
-    # 
+  console.log viewName, stack
   return renderer view, reduceStack(stack), events
 
 parseString = (view, viewName, template, data) ->
