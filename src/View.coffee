@@ -203,7 +203,6 @@ parse = (view, viewName, template, data) ->
           return  unless path = modelPath data, name
           params = [attrs._id || attrs.id, 'html', +escaped]
           params[3] = partial  if partial
-          console.log path, params
           modelEvents.bind path, params
         
         text = modelText view, name, escaped
