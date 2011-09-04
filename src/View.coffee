@@ -207,7 +207,7 @@ parse = (view, viewName, template, data) ->
       datum = data[name]
       if name && !(startBlock && (datum == false || datum == true))
         last = stack[stack.length - 1]
-        if wrap = pre || post || !(last && last[0] == 'start')
+        if wrap = pre || (post && !type) || !(last && last[0] == 'start')
           stack.push last = ['start', 'ins', {}]
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
@@ -241,9 +241,11 @@ parse = (view, viewName, template, data) ->
 
   for queue in popped
     do (queue) ->
+      console.log queue.viewName, queue.stack
       render = renderer(view, reduceStack(queue.stack), queue.events)
       view._register queue.viewName, (ctx) -> render extend data, ctx
   
+  console.log viewName, stack
   return renderer view, reduceStack(stack), events
 
 parseString = (view, viewName, template, data) ->

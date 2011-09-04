@@ -14,10 +14,10 @@ view.make 'info', """
   <div id=info>{{^Connected}}
     {{#CanConnect}}
       Offline<span id=reconnect> &ndash; 
-      <a href=# onclick="return chat.connect()">Reconnect</a></span></p>
+      <a href=# onclick="return chat.connect()">Reconnect</a></span>
     {{^}}
       Unable to reconnect &ndash; 
-      <a href=javascript:window.location.reload()>Reload</a></p>
+      <a href=javascript:window.location.reload()>Reload</a>
     {{/}}
   {{/}}</div>
   """
