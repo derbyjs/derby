@@ -257,8 +257,9 @@ parseString = (view, viewName, template, data) ->
     items.push pre  if pre
     items.push modelText view, name
     params = ['$doc', 'prop', 'title', 'Title']  if viewName is 'Title'
-    if params then events.push (data, modelEvents) ->
-      return  unless path = modelPath data, name
-      modelEvents.bind path, params.slice()
+    do (name) ->
+      if params then events.push (data, modelEvents) ->
+        return  unless path = modelPath data, name
+        modelEvents.bind path, params.slice()
 
   renderer view, items, events

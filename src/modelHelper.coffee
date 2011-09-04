@@ -5,8 +5,7 @@ exports.init = (model, dom, view) ->
 
   events = model.__events = new EventDispatcher
     onTrigger: (path, listener, value, options) ->
-      console.log path, value, options
-      console.log [oldPath, id, method, property, partial] = listener
+      [oldPath, id, method, property, partial] = listener
       
       # Check to see if this event is triggering for the right object. Remove
       # this listener if it is now stale
