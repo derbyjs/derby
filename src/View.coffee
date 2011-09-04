@@ -194,7 +194,7 @@ parse = (view, viewName, template, data) ->
       stack.push ['chars', pre]  if pre
 
       if block && (type is '/' || (type is '^' && !name && block.type is '#'))
-        name = block.name  if type is '^'
+        name = block.name
         popped.push queues.pop()
         {stack, events, block} = queues[queues.length - 1]
       
@@ -205,10 +205,13 @@ parse = (view, viewName, template, data) ->
       # Setup binding if there is a variable or block name and it is not a
       # true or false constant
       datum = data[name]
-      if name && !(startBlock && (datum == false || datum == true))
-        last = stack[stack.length - 1]
-        if wrap = pre || (post && !type) || !(last && last[0] == 'start')
-          stack.push last = ['start', 'ins', {}]
+      if name && !startBlock
+        endBlock = type is '/'
+        i = stack.length - (if endBlock then 2 else 1)
+        last = stack[i]
+        if wrap = pre || post || !(last && last[0] == 'start')
+          last = ['start', 'ins', {}]
+          if endBlock then stack.splice i, 0, last else stack.push last
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
 
@@ -218,7 +221,7 @@ parse = (view, viewName, template, data) ->
           params[3] = partial  if partial
           modelEvents.bind path, params
         
-        text = modelText view, name, escaped
+        text = modelText view, name, escaped  unless endBlock
 
       if partial then text = (data, model) ->
         ctx = dataValue data, name, model
