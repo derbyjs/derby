@@ -202,8 +202,11 @@ parse = (view, viewName, template, data) ->
       if startBlock = type is '#' || type is '^'
         partial = partialName()
         block = {type, name}
-      
-      if name
+     
+      # Setup binding if there is a variable or block name and it is not a
+      # true or false constant
+      datum = data[name]
+      if name && !(startBlock && (datum == false || datum == true))
         last = stack[stack.length - 1]
         if wrap = pre || post || !(last && last[0] == 'start')
           stack.push last = ['start', 'ins', {}]
