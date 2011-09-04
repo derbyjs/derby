@@ -11,15 +11,15 @@ view.make 'Title', 'Chat ({{_session.numMessages}}) - {{_session.user.name}}'
 # Context object names starting with a capital letter are reserved. They are
 # used for built-in properties of model.
 view.make 'info', """
-  {{^Connected}}
+  <div id=info>{{^Connected}}
     {{#CanConnect}}
-      <p id=info>Offline<span id=reconnect> &ndash; 
+      Offline<span id=reconnect> &ndash; 
       <a href=# onclick="return chat.connect()">Reconnect</a></span></p>
     {{^}}
-      <p id=info>Unable to reconnect &ndash; 
+      Unable to reconnect &ndash; 
       <a href=javascript:window.location.reload()>Reload</a></p>
     {{/}}
-  {{/}}
+  {{/}}</div>
   """
 
 view.make 'message', """
