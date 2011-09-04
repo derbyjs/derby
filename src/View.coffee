@@ -206,7 +206,7 @@ parse = (view, viewName, template, data) ->
       if name
         last = stack[stack.length - 1]
         if wrap = pre || post || !(last && last[0] == 'start')
-          stack.push last = ['start', 'span', {}]
+          stack.push last = ['start', 'ins', {}]
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
 
@@ -224,7 +224,7 @@ parse = (view, viewName, template, data) ->
         else if !type && ctx is undefined then ctx = true
         view.get partial, ctx, data
       stack.push ['chars', text]  if text
-      stack.push ['end', 'span']  if wrap
+      stack.push ['end', 'ins']  if wrap
       
       if startBlock then queues.push
         stack: stack = []

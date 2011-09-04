@@ -14,16 +14,16 @@ view.make 'info', """
   {{^Connected}}
     {{#CanConnect}}
       <p id=info>Offline<span id=reconnect> &ndash; 
-      <a href=# onclick="return chat.connect()">Reconnect</a></span>
+      <a href=# onclick="return chat.connect()">Reconnect</a></span></p>
     {{^}}
       <p id=info>Unable to reconnect &ndash; 
-      <a href=javascript:window.location.reload()>Reload</a>
+      <a href=javascript:window.location.reload()>Reload</a></p>
     {{/}}
   {{/}}
   """
 
 view.make 'message', """
-  <li><img src=img/s.png class={{users.(userId).picClass}}>
+  <li><img src=img/s.png class={{users.(userId).picClass}} alt="">
     <div class=message>
       <p><b>{{users.(userId).name}}</b>
       <p>{{comment}}

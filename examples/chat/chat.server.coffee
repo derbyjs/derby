@@ -25,7 +25,7 @@ view.make 'Body', """
   {{> info}}
   <div id=messages><ul id=messageList>{{_room.messages > message}}</ul></div>
   <div id=foot>
-    <img id=inputPic src=img/s.png class={{_session.user.picClass}}>
+    <img id=inputPic src=img/s.png class={{_session.user.picClass}} alt="">
     <div id=inputs>
       <input id=inputName value={{_session.user.name}}>
       <form id=inputForm onsubmit="setTimeout(chat.postMessage,0);return false">

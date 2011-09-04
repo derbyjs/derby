@@ -37,7 +37,7 @@ View::sendHtml = (res, model) ->
   
   # Initialization script and Tail
   tail = @get 'Tail'
-  initScript = "<script defer>i=function(){setTimeout(function(){#{@_clientName}" +
+  initScript = "<script>i=function(){setTimeout(function(){#{@_clientName}" +
     "=require('./#{@_clientName}')(" + @_idCount + ','
   
   # Wait for transactions to finish and package up the racer model data
