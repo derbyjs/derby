@@ -31,20 +31,21 @@ View::sendHtml = (res, model) ->
   res.write @get 'Body'
 
   # preLoad scripts and external script
+  clientName = @_clientName
   res.write "<script>function $(i){return document.getElementById(i)}" +
     "#{minify @_loadFuncs}</script>" +
-    "<script defer async onload=i() src=#{@_jsFile}></script>"
+    "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"
   
   # Initialization script and Tail
   tail = @get 'Tail'
-  initScript = "<script>i=function(){setTimeout(function(){#{@_clientName}" +
-    "=require('./#{@_clientName}')(" + @_idCount + ','
+  initScript = "<script>#{clientName}=function(){setTimeout(function(){#{clientName}" +
+    "=require('./#{clientName}')(" + @_idCount + ','
   
   # Wait for transactions to finish and package up the racer model data
   model.bundle (bundle) ->
     res.end initScript + bundle.replace(/<\//g, '<\\/') + ',' +
       JSON.stringify(model.__events.get()) + ',' +
-      JSON.stringify(dom.events.get()) + ");delete window.i},0)}</script>#{tail}"
+      JSON.stringify(dom.events.get()) + ")},0)}</script>#{tail}"
 
 cache = {}
 minify = (js) ->

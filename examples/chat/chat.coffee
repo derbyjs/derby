@@ -38,7 +38,7 @@ view.make 'message', """
 # CONTROLLER FUNCTIONS DEFINITION #
 
 ready ->
-  model.on 'push', '_room.messages', -> console.log 'hye'; model.incr '_session.numMessages'
+  model.on 'push', '_room.messages', -> model.incr '_session.numMessages'
 
 # Exported functions are exposed as a global in the browser with the same
 # name as this module. This function is called by the form submission action.

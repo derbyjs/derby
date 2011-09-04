@@ -15,7 +15,6 @@ View = module.exports = ->
 View:: =
 
   get: (viewName, ctx, parentCtx) ->
-    console.log view, parentCtx, ctx
     unless view = @_views[viewName]
       # Check to see if view is a block partial that hasn't been created yet,
       # because its parent hasn't been rendered. If so, render the parent and
