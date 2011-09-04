@@ -244,11 +244,9 @@ parse = (view, viewName, template, data) ->
 
   for queue in popped
     do (queue) ->
-      console.log queue.viewName, queue.stack
       render = renderer(view, reduceStack(queue.stack), queue.events)
       view._register queue.viewName, (ctx) -> render extend data, ctx
   
-  console.log viewName, stack
   return renderer view, reduceStack(stack), events
 
 parseString = (view, viewName, template, data) ->
