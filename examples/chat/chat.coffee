@@ -22,6 +22,20 @@ view.make 'info', """
   {{/}}
   """
 
+view.make 'Body', """
+  {{> info}}
+  <div id=messages><ul id=messageList>{{#_room.messages}}{{> message}}{{/}}</ul></div>
+  <div id=foot>
+    <img id=inputPic src=img/s.png class={{_session.user.picClass}}>
+    <div id=inputs>
+      <input id=inputName value={{_session.user.name}}>
+      <form id=inputForm onsubmit="return chat.postMessage()">
+        <input id=commentInput value={{_session.newComment}} silent>
+      </form>
+    </div>
+  </div>
+  """
+
 view.make 'message', """
   <li><img src=img/s.png class={{users.(userId).picClass}}>
     <div class=message>
@@ -38,7 +52,7 @@ view.make 'message', """
 # CONTROLLER FUNCTIONS DEFINITION #
 
 ready ->
-  model.on 'push', '_room.messages', -> model.incr '_session.numMessages'
+  model.on 'push', '_room.messages', -> console.log 'hye'; model.incr '_session.numMessages'
 
 # Exported functions are exposed as a global in the browser with the same
 # name as this module. This function is called by the form submission action.

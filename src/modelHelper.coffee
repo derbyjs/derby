@@ -5,7 +5,7 @@ exports.init = (model, dom, view) ->
 
   events = model.__events = new EventDispatcher
     onTrigger: (path, listener, value, options) ->
-      [oldPath, id, method, property, partial] = listener
+      console.log [oldPath, id, method, property, partial] = listener
       
       # Check to see if this event is triggering for the right object. Remove
       # this listener if it is now stale
@@ -22,6 +22,7 @@ exports.init = (model, dom, view) ->
       listener.unshift path
   
   model.on 'set', ([path, value]) ->
+    console.log path, value
     events.trigger path, value
     
   model.on 'push', ([path, value]) ->

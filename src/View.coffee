@@ -14,15 +14,27 @@ View = module.exports = ->
 
 View:: =
 
-  get: (view, ctx, parentCtx) ->
-    if view = @_views[view]
-      if ctx is false
-        ''
+  get: (viewName, ctx, parentCtx) ->
+    console.log view, parentCtx, ctx
+    unless view = @_views[viewName]
+      # Check to see if view is a block partial that hasn't been created yet,
+      # because it's parent hasn't been rendered. If so, render the parent
+      # and try to get the block partial again
+      if ~(i = viewName.indexOf '$')
+        parentView = viewName.substr 0, i
+        # Make sure the parent view exists to avoid an infinte loop
+        return ''  unless @_views[parentView]
+        @get parentView
+        return @get viewName, ctx, parentCtx
+      # Return an empty string when a view can't be found
+      return ''
+    # parentCtx will be an object if this is a partial
+    if parentCtx
+      if !ctx
+        return ''
       else if Array.isArray ctx
-        (view extend parentCtx, item for item in ctx).join ''
-      else
-        view extend parentCtx, ctx
-    else ''
+        return (view extend parentCtx, item for item in ctx).join ''
+    return view extend parentCtx, ctx
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
 
@@ -189,10 +201,9 @@ parse = (view, viewName, template, data) ->
       
       if startBlock = type is '#' || type is '^'
         partial = partialName()
-        block =
-          type: type
-          name: name
-      else if name
+        block = {type, name}
+      
+      if name
         last = stack[stack.length - 1]
         if wrap = pre || post || !(last && last[0] == 'start')
           stack.push last = ['start', 'span', {}]
@@ -209,7 +220,8 @@ parse = (view, viewName, template, data) ->
 
       if partial then text = (data, model) ->
         ctx = dataValue data, name, model
-        ctx = if type is '#' then !!ctx else if type is '^' then !ctx else ctx
+        if type is '^' then ctx = !ctx
+        else if !type && ctx is undefined then ctx = true
         view.get partial, ctx, data
       stack.push ['chars', text]  if text
       stack.push ['end', 'span']  if wrap
