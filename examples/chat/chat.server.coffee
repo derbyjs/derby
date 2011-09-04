@@ -21,19 +21,19 @@ fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
 # a simple HTML template defines the HTML output, the event handlers that
 # should update the model after user interaction, and the event handlers that
 # update the DOM when the model changes.
-# view.make 'Body', """
-#   {{> info}}
-#   <div id=messages><ul id=messageList>{{#_room.messages}}{{> message}}{{/}}</ul></div>
-#   <div id=foot>
-#     <img id=inputPic src=img/s.png class={{_session.user.picClass}}>
-#     <div id=inputs>
-#       <input id=inputName value={{_session.user.name}}>
-#       <form id=inputForm onsubmit="return chat.postMessage()">
-#         <input id=commentInput value={{_session.newComment}} silent>
-#       </form>
-#     </div>
-#   </div>
-#   """
+view.make 'Body', """
+  {{> info}}
+  <div id=messages><ul id=messageList>{{_room.messages > message}}</ul></div>
+  <div id=foot>
+    <img id=inputPic src=img/s.png class={{_session.user.picClass}}>
+    <div id=inputs>
+      <input id=inputName value={{_session.user.name}}>
+      <form id=inputForm onsubmit="setTimeout(chat.postMessage,0);return false">
+        <input id=commentInput value={{_session.newComment}} silent>
+      </form>
+    </div>
+  </div>
+  """
 
 # Scripts required to properly render the document can be passed in an
 # anonymous function to view.preLoad. For convenience, document.getElementById

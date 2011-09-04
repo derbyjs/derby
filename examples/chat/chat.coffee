@@ -22,20 +22,6 @@ view.make 'info', """
   {{/}}
   """
 
-view.make 'Body', """
-  {{> info}}
-  <div id=messages><ul id=messageList>{{#_room.messages}}{{> message}}{{/}}</ul></div>
-  <div id=foot>
-    <img id=inputPic src=img/s.png class={{_session.user.picClass}}>
-    <div id=inputs>
-      <input id=inputName value={{_session.user.name}}>
-      <form id=inputForm onsubmit="return chat.postMessage()">
-        <input id=commentInput value={{_session.newComment}} silent>
-      </form>
-    </div>
-  </div>
-  """
-
 view.make 'message', """
   <li><img src=img/s.png class={{users.(userId).picClass}}>
     <div class=message>

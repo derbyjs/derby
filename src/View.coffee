@@ -18,12 +18,12 @@ View:: =
     console.log view, parentCtx, ctx
     unless view = @_views[viewName]
       # Check to see if view is a block partial that hasn't been created yet,
-      # because it's parent hasn't been rendered. If so, render the parent
-      # and try to get the block partial again
+      # because its parent hasn't been rendered. If so, render the parent and
+      # try to get the block partial again
       if ~(i = viewName.indexOf '$')
         parentView = viewName.substr 0, i
         # Make sure the parent view exists to avoid an infinte loop
-        return ''  unless @_views[parentView]
+        throw "Can't find view: #{parentView}"  unless @_views[parentView]
         @get parentView
         return @get viewName, ctx, parentCtx
       # Return an empty string when a view can't be found
