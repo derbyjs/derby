@@ -20,16 +20,18 @@ View:: =
       # because its parent hasn't been rendered. If so, render the parent and
       # try to get the block partial again
       if ~(i = viewName.indexOf '$')
-        parentView = viewName.substr 0, i
+        parentView = viewName.substr 1, i - 1
         # Make sure the parent view exists to avoid an infinte loop
         throw "Can't find view: #{parentView}"  unless @_views[parentView]
         @get parentView
         return @get viewName, ctx, parentCtx
       # Return an empty string when a view can't be found
       return ''
-    # parentCtx will be an object if this is a partial
-    if parentCtx
-      if !ctx
+    if parentCtx || ctx?
+      # This is a partial
+      ctx = if (type = viewName.charAt(0)) is '^' then !ctx else
+        if type is '#' then !!ctx else ctx
+      if ctx is false
         return ''
       else if Array.isArray ctx
         return (view extend parentCtx, item for item in ctx).join ''
@@ -50,7 +52,7 @@ View:: =
       render ctx
 
     fn = (ctx) -> render extend data, ctx
-    @_register name, fn, data.Before, data.After
+    @_register name, fn, data.before, data.after
 
   _register: (name, fn, before, after) ->
     @_views[name] = if before
@@ -113,7 +115,13 @@ modelPath = (data, name) ->
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
 dataValue = (data, name, model) ->
-  if path = modelPath data, name then model.get path else data[name]
+  # Get the value from the model if the name is a model path
+  if path = modelPath data, name
+      # First try to get the path from the model data. Otherwise, assume it
+      # is a built-in property of model
+      if (value = model.get path)? then value else model[path]
+    # If not a model path, check if the value is defined in the context data
+    else data[name]
 
 modelText = (view, name, escaped, quote) ->
   (data, model) ->
@@ -195,17 +203,16 @@ parse = (view, viewName, template, data) ->
 
       if block && (type is '/' || (type is '^' && !name && block.type is '#'))
         name = block.name
+        partial = block.partial
         popped.push queues.pop()
         {stack, events, block} = queues[queues.length - 1]
-      
+
       if startBlock = type is '#' || type is '^'
-        partial = partialName()
-        block = {type, name}
-     
-      # Setup binding if there is a variable or block name and it is not a
-      # true or false constant
-      datum = data[name]
-      if name && !startBlock
+        partial = type + partialName()
+        block = {type, name, partial}
+
+      # Setup binding if there is a variable or block name
+      if name && !(startBlock)
         endBlock = type is '/'
         i = stack.length - (if endBlock then 2 else 1)
         last = stack[i]
@@ -217,26 +224,25 @@ parse = (view, viewName, template, data) ->
 
         events.push (data, modelEvents) ->
           return  unless path = modelPath data, name
+          escaped = false  if partial
           params = [attrs._id || attrs.id, 'html', +escaped]
           params[3] = partial  if partial
           modelEvents.bind path, params
-        
+
         text = modelText view, name, escaped  unless endBlock
 
-      if partial then text = (data, model) ->
-        ctx = dataValue data, name, model
-        if type is '^' then ctx = !ctx
-        else if !type && ctx is undefined then ctx = true
-        view.get partial, ctx, data
+      else if partial then text = (data, model) ->
+        view.get partial, dataValue(data, name, model), data
+      
       stack.push ['chars', text]  if text
       stack.push ['end', 'ins']  if wrap
-      
+
       if startBlock then queues.push
         stack: stack = []
         events: events = []
         viewName: partial
         block: block
-      
+
       chars post  if post
 
     end: (tag, tagName) ->
@@ -246,7 +252,7 @@ parse = (view, viewName, template, data) ->
     do (queue) ->
       render = renderer(view, reduceStack(queue.stack), queue.events)
       view._register queue.viewName, (ctx) -> render extend data, ctx
-  
+ 
   return renderer view, reduceStack(stack), events
 
 parseString = (view, viewName, template, data) ->

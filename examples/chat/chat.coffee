@@ -8,11 +8,12 @@ derby = require 'derby'
 
 view.make 'Title', 'Chat ({{_session.numMessages}}) - {{_session.user.name}}'
 
-# Context object names starting with a capital letter are reserved. They are
-# used for built-in properties of model.
+# connected and canConnect are built-in properties of model. If a variable
+# is not defined in the current context, it will be looked up in the model
+# and the model properties
 view.make 'info', """
-  <div id=info>{{^Connected}}
-    {{#CanConnect}}
+  <div id=info>{{^connected}}
+    {{#canConnect}}
       Offline<span id=reconnect> &ndash; 
       <a href=# onclick="return chat.connect()">Reconnect</a></span>
     {{^}}
@@ -29,10 +30,10 @@ view.make 'message', """
       <p>{{comment}}
     </div>
   """,
-  # "Before" and "After" options specify a function to execute before or after
+  # "before" and "after" options specify a function to execute before or after
   # the view is rendered. If rendered on the server, these functions will be
   # added to the preLoad functions
-  After: -> $('messages').scrollTop = $('messageList').offsetHeight
+  after: -> $('messages').scrollTop = $('messageList').offsetHeight
 
 
 # CONTROLLER FUNCTIONS DEFINITION #
