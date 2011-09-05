@@ -27,8 +27,8 @@ exports.init = (model, dom, view) ->
   model.on 'push', ([path, value]) ->
     events.trigger path, value, method: 'appendHtml'
 
-  model.on 'connectionStatus', (connected, canConnect) ->
-    events.trigger 'connected', connected
-    events.trigger 'canConnect', canConnect
+  for event in ['connected', 'canConnect']
+    do (event) ->
+      model.on event, (value) -> events.trigger event, value
   
   return model
