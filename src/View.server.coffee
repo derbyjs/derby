@@ -12,9 +12,12 @@ View::sendHtml = (res, model) ->
   dom = @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
 
+  unless res.getHeader 'content-type'
+    res.setHeader 'Content-Type', 'text/html; charset=utf-8'
+
   # The view.get function renders and sets event listeners. It must be
   # called for all views before the event listeners are retrieved
-  
+
   # The first chunk includes everything through head. It is important to get
   # CSS to the browser as soon as possible, so styles should definately be
   # within the Head view. In addition, the Head view does not have to be the
