@@ -19,7 +19,7 @@ view.make 'info', """
       {{/}}
     {{^}}
       Unable to reconnect &ndash; 
-      <a href=javascript:window.location.reload()>Reload</a>
+      <a href=# onclick=window.location.reload()>Reload</a>
     {{/}}
   {{/}}</div>
   """
