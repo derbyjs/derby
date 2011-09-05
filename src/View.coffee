@@ -202,14 +202,14 @@ parse = (view, viewName, template, data) ->
       stack.push ['chars', pre]  if pre
 
       if block && (type is '/' || (type is '^' && !name && block.type is '#'))
-        name = block.name
-        partial = block.partial
+        {name, partial, autoClosed} = block
         popped.push queues.pop()
         {stack, events, block} = queues[queues.length - 1]
 
       if startBlock = type is '#' || type is '^'
+        autoClosed = partial
         partial = type + partialName()
-        block = {type, name, partial}
+        block = {type, name, partial, autoClosed}
 
       # Setup binding if there is a variable or block name
       if name && !(startBlock)
@@ -222,12 +222,14 @@ parse = (view, viewName, template, data) ->
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
 
-        events.push (data, modelEvents) ->
+        addEvent = (partial) -> events.push (data, modelEvents) ->
           return  unless path = modelPath data, name
           escaped = false  if partial
           params = [attrs._id || attrs.id, 'html', +escaped]
           params[3] = partial  if partial
           modelEvents.bind path, params
+        addEvent partial
+        addEvent autoClosed  if autoClosed
 
         text = modelText view, name, escaped  unless endBlock
 
