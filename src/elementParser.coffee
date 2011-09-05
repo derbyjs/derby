@@ -20,9 +20,9 @@ module.exports = (view, events) ->
   elementBind:
     a: (attrs, name) ->
       if name is 'click'
-        attrs.href = '#'  unless attrs.href
-        attrs.onclick = 'return false'  unless attrs.onclick
+        attrs.href = '#'  unless 'href' of attrs
+        attrs.onclick = 'return false'  unless 'onclick' of attrs
     form: (attrs, name) ->
       if name is 'submit'
-        attrs.onsubmit = 'return false'  unless attrs.onsubmit
+        attrs.onsubmit = 'return false'  unless 'onsubmit' of attrs
 
