@@ -14,8 +14,9 @@ view.make 'Title', 'Chat ({{_session.numMessages}}) - {{_session.user.name}}'
 view.make 'info', """
   <div id=info>{{^connected}}
     {{#canConnect}}
-      Offline<span id=reconnect> &ndash; 
-      <a href=# onclick="return chat.connect()">Reconnect</a></span>
+      Offline{{#_showReconnect}} 
+        &ndash; <a href=# onclick="return chat.connect()">Reconnect</a>
+      {{/}}
     {{^}}
       Unable to reconnect &ndash; 
       <a href=javascript:window.location.reload()>Reload</a>
@@ -39,6 +40,15 @@ view.make 'message', """
 # CONTROLLER FUNCTIONS DEFINITION #
 
 ready ->
+
+  model.set '_showReconnect', true
+  exports.connect = ->
+    # Hide the reconnect link for a second so it looks like something is going on
+    model.set '_showReconnect', false
+    setTimeout (-> model.set '_showReconnect', true), 1000
+    model.socket.socket.connect()
+    return false
+
   model.on 'push', '_room.messages', -> model.incr '_session.numMessages'
 
 # Exported functions are exposed as a global in the browser with the same
@@ -49,3 +59,4 @@ exports.postMessage = ->
     comment: model.get '_session.newComment'
   model.set '_session.newComment', ''
   return false
+

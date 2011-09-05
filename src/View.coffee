@@ -27,14 +27,14 @@ View:: =
         return @get viewName, ctx, parentCtx
       # Return an empty string when a view can't be found
       return ''
+    console.log viewName, ctx, parentCtx
     if parentCtx || ctx?
       # This is a partial
+      if Array.isArray ctx
+        return (view extend parentCtx, item for item in ctx).join ''
       ctx = if (type = viewName.charAt(0)) is '^' then !ctx else
         if type is '#' then !!ctx else ctx
-      if ctx is false
-        return ''
-      else if Array.isArray ctx
-        return (view extend parentCtx, item for item in ctx).join ''
+      return ''  if ctx is false
     return view extend parentCtx, ctx
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
@@ -211,8 +211,11 @@ parse = (view, viewName, template, data) ->
         partial = type + partialName()
         block = {type, name, partial, autoClosed}
 
+      if partial then partialText = (data, model) ->
+        view.get partial, dataValue(data, name, model), data
+
       # Setup binding if there is a variable or block name
-      if name && !(startBlock)
+      if name && !startBlock
         endBlock = type is '/'
         i = stack.length - (if endBlock then 2 else 1)
         last = stack[i]
@@ -231,10 +234,9 @@ parse = (view, viewName, template, data) ->
         addEvent partial
         addEvent autoClosed  if autoClosed
 
-        text = modelText view, name, escaped  unless endBlock
+        text = partialText || modelText view, name, escaped  unless endBlock
 
-      else if partial then text = (data, model) ->
-        view.get partial, dataValue(data, name, model), data
+      else text = partialText || text
       
       stack.push ['chars', text]  if text
       stack.push ['end', 'ins']  if wrap
