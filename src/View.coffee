@@ -225,14 +225,15 @@ parse = (view, viewName, template, data) ->
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
 
-        addEvent = (partial) -> events.push (data, modelEvents) ->
+        addEvent = (partial, append) -> events.push (data, modelEvents) ->
           return  unless path = modelPath data, name
           escaped = false  if partial
-          params = [attrs._id || attrs.id, 'html', +escaped]
+          domMethod = if append then 'appendHtml' else 'html'
+          params = [attrs._id || attrs.id, domMethod, +escaped]
           params[3] = partial  if partial
           modelEvents.bind path, params
         addEvent partial
-        addEvent lastPartial  if lastAutoClosed
+        addEvent lastPartial, true  if lastAutoClosed
 
         text = partialText || modelText view, name, escaped  unless endBlock
 
