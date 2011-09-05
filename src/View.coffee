@@ -51,7 +51,7 @@ View:: =
       render ctx
 
     fn = (ctx) -> render extend data, ctx
-    @_register name, fn, data.before, data.after
+    @_register name, fn, data.Before, data.After
 
   _register: (name, fn, before, after) ->
     @_views[name] = if before

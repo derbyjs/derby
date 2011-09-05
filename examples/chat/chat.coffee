@@ -32,9 +32,9 @@ view.make 'message', """
       <p>{{comment}}
     </div>
   """,
-  # "before" and "after" functions are called when the view is rendered in the
+  # "Before" and "After" functions are called when the view is rendered in the
   # browser. Note that they are not called on the server.
-  after: -> $('messages').scrollTop = $('messageList').offsetHeight
+  After: -> $('messages').scrollTop = $('messageList').offsetHeight
 
 
 # CONTROLLER FUNCTIONS DEFINITION #
