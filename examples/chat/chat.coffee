@@ -41,6 +41,8 @@ view.make 'message', """
 
 ready ->
 
+  # Any path name that starts with an underscore is private to the current
+  # client. Nothing set under a private path is synced back to the server
   model.set '_showReconnect', true
   exports.connect = ->
     # Hide the reconnect link for a second so it looks like something is going on

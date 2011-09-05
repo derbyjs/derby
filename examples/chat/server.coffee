@@ -37,8 +37,6 @@ app.get '/:room?', (req, res) ->
     model.setNull "users.#{userId}",
       name: 'User ' + (userId + 1)
       picClass: 'pic' + (userId % NUM_USER_IMAGES)
-    # Any path name that starts with an underscore is private to the current
-    # client. Nothing set under a private path is synced back to the server
     model.set '_session',
       userId: userId
       user: model.ref 'users', '_session.userId'
