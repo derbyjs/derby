@@ -198,6 +198,7 @@ parse = (view, viewName, template, data) ->
         {pre, post, name, escaped, type, partial} = match
         addNameToData data, name
         text = ''
+      else text = trimInner text
 
       stack.push ['chars', pre]  if pre
 
