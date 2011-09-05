@@ -27,7 +27,6 @@ View:: =
         return @get viewName, ctx, parentCtx
       # Return an empty string when a view can't be found
       return ''
-    console.log viewName, ctx, parentCtx
     if parentCtx || ctx?
       # This is a partial
       if Array.isArray ctx
@@ -94,17 +93,18 @@ quoteAttr = (s) ->
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
 trim = (s) -> if s then s.replace /(?:^|\n)\s*/g, '' else ''
+trimInner = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
 extractPlaceholder = (text) ->
   match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}([\s\S]*)/.exec text
   return  unless match
   content = /^([#^//]?) *([^ >]*)(?: *> *(.*))?/.exec match[3]
-  pre: trim match[1]
+  pre: trimInner match[1]
   escaped: match[2] == '{{'
   type: content[1]
   name: content[2]
   partial: content[3]
-  post: trim match[4]
+  post: trimInner match[4]
 
 addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
@@ -201,15 +201,15 @@ parse = (view, viewName, template, data) ->
 
       stack.push ['chars', pre]  if pre
 
-      if block && (type is '/' || (type is '^' && !name && block.type is '#'))
-        {name, partial, autoClosed} = block
+      if block && (type is '/' || (autoClosed = type is '^' && !name && block.type is '#'))
+        {name, partial, lastPartial, lastAutoClosed} = block
         popped.push queues.pop()
         {stack, events, block} = queues[queues.length - 1]
 
       if startBlock = type is '#' || type is '^'
-        autoClosed = partial
+        lastPartial = partial
         partial = type + partialName()
-        block = {type, name, partial, autoClosed}
+        block = {type, name, partial, lastPartial, lastAutoClosed: autoClosed}
 
       if partial then partialText = (data, model) ->
         view.get partial, dataValue(data, name, model), data
@@ -217,11 +217,11 @@ parse = (view, viewName, template, data) ->
       # Setup binding if there is a variable or block name
       if name && !startBlock
         endBlock = type is '/'
-        i = stack.length - (if endBlock then 2 else 1)
+        i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
         last = stack[i]
         if wrap = pre || post || !(last && last[0] == 'start')
           last = ['start', 'ins', {}]
-          if endBlock then stack.splice i, 0, last else stack.push last
+          if endBlock then stack.splice i + 1, 0, last else stack.push last
         attrs = last[2]
         (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
 
@@ -232,7 +232,7 @@ parse = (view, viewName, template, data) ->
           params[3] = partial  if partial
           modelEvents.bind path, params
         addEvent partial
-        addEvent autoClosed  if autoClosed
+        addEvent lastPartial  if lastAutoClosed
 
         text = partialText || modelText view, name, escaped  unless endBlock
 
