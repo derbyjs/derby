@@ -1,8 +1,7 @@
 startTag = /^<(\w+)((?:\s+\w+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+)?)?)*)\s*(\/?)>/
 endTag = /^<\/(\w+)[^>]*>/
 attr = /(\w+)(?:\s*(=)\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+))?)?/g
-comment = /<!--[\s\S]*?-->(?:\n\s*)?/g
-endingSpace = /\n\s*$/
+comment = /<!--[\s\S]*?-->/g
 
 exports.parse = (html, handler) ->
 
@@ -45,7 +44,6 @@ exports.parse = (html, handler) ->
       index = html.indexOf '<'
       text = if index < 0 then html else html.substring 0, index
       html = if index < 0 then '' else html.substring index
-      text = text.replace endingSpace, ''
       charsHandler text  if text
 
     throw 'Parse error: ' + html  if html == last
