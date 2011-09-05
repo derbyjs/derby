@@ -1,7 +1,7 @@
 {
   "name": "derby",
   "description": "Framework for creating realtime applications with automatically synced models and functionally defined views. HTML and updates are rendered both on the server and on the client.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "./lib/derby.js",
   "browserify": {
     "main": "./lib/derby.browser.js"
