@@ -29,7 +29,7 @@ view.make 'Body', """
     <div id=inputs>
       <input id=inputName value={{_session.user.name}}>
       <form id=inputForm bind=submit:postMessage>
-        <input id=commentInput value={{_session.newComment}} silent>
+        <input id=commentInput value={{_session.newComment}} silent autofocus>
       </form>
     </div>
   </div>
@@ -39,10 +39,12 @@ view.make 'Body', """
 # to view.preLoad. For convenience, document.getElementById is aliased as $,
 # but no other special functions are provided by default.
 view.preLoad ->
-  messages = $('messages')
-  messageList = $('messageList')
-  foot = $('foot')
+  messages = $ 'messages'
+  messageList = $ 'messageList'
+  foot = $ 'foot'
+  commentInput = $ 'commentInput'
   do window.onresize = ->
     messages.style.height = (window.innerHeight - foot.offsetHeight) + 'px'
     messages.scrollTop = messageList.offsetHeight
-  $('commentInput').focus()
+  commentInput.focus()  unless 'autofocus' of commentInput
+
