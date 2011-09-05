@@ -9,7 +9,7 @@ derby = require 'derby'
 view.make 'Title', 'Chat ({{_session.numMessages}}) - {{_session.user.name}}'
 
 # connected and canConnect are built-in properties of model. If a variable
-# is not defined in the current context, it will be looked up in the model
+# is not defined in the current context, it will be looked up in the model data
 # and the model properties
 view.make 'info', """
   <div id=info>{{^connected}}
@@ -24,6 +24,7 @@ view.make 'info', """
   {{/}}</div>
   """
 
+# Parentheses can be used to do interpolation within a model name. 
 view.make 'message', """
   <li><img src=img/s.png class={{users.(userId).picClass}} alt="">
     <div class=message>
@@ -31,9 +32,8 @@ view.make 'message', """
       <p>{{comment}}
     </div>
   """,
-  # "before" and "after" options specify a function to execute before or after
-  # the view is rendered. If rendered on the server, these functions will be
-  # added to the preLoad functions
+  # "before" and "after" functions are called when the view is rendered in the
+  # browser. Note that they are not called on the server.
   after: -> $('messages').scrollTop = $('messageList').offsetHeight
 
 

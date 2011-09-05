@@ -3,9 +3,8 @@ module.exports = View = require './View'
 Dom = require './Dom'
 modelHelper = require './modelHelper'
 
-View::_register = (name, fn, before, after) ->
-  @preLoad before  if before
-  @preLoad after  if after
+# Override register so that before and after functions are not called
+View::_register = (name, fn) ->
   @_views[name] = fn
 
 View::sendHtml = (res, model) ->
