@@ -46,14 +46,22 @@ setMethods =
 
 addListener = ->
 
-Dom = module.exports = (model) ->
+Dom = module.exports = (model, appExports) ->
   @events = events = new EventDispatcher
     onBind: (name) -> addListener name  unless name of events._names
     onTrigger: (name, listener, targetId) ->
-      [fn, path, id, method, property, silent] = listener
+      if listener.length is 2
+        [fn, id] = listener
+        return  unless callback = appExports[fn]
+      else
+        [fn, path, id, method, property, silent] = listener
+      
       return  unless id is targetId
       # Remove this listener if the element doesn't exist
       return false  unless el = element id
+      
+      if callback then callback(); return
+      
       value = getMethods[method] el, property
       (if silent then model.silent else model)[fn] path, value
 

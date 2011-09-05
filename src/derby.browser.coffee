@@ -9,8 +9,9 @@ exports.createApp = (appModule, appExports) ->
   appExports.view = view = new View
   
   appExports.ready = (fn) -> racer.onready = fn
-  
-  dom = view.dom = new Dom(model = view.model = racer.model)
+ 
+  model = view.model = racer.model
+  dom = view.dom = new Dom model, appExports
   modelHelper.init model, dom, view
   
   appModule.exports = (idCount, modelBundle, modelEvents, domEvents) ->

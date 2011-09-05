@@ -28,7 +28,7 @@ view.make 'Body', """
     <img id=inputPic src=img/s.png class={{_session.user.picClass}} alt="">
     <div id=inputs>
       <input id=inputName value={{_session.user.name}}>
-      <form id=inputForm onsubmit="setTimeout(chat.postMessage,0);return false">
+      <form id=inputForm bind=submit:postMessage>
         <input id=commentInput value={{_session.newComment}} silent>
       </form>
     </div>

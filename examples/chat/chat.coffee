@@ -15,11 +15,11 @@ view.make 'info', """
   <div id=info>{{^connected}}
     {{#canConnect}}
       Offline{{#_showReconnect}} 
-        &ndash; <a href=# onclick="return chat.connect()">Reconnect</a>
+        &ndash; <a bind=click:connect>Reconnect</a>
       {{/}}
     {{^}}
       Unable to reconnect &ndash; 
-      <a href=# onclick=window.location.reload()>Reload</a>
+      <a bind=click:reload>Reload</a>
     {{/}}
   {{/}}</div>
   """
@@ -40,25 +40,25 @@ view.make 'message', """
 # CONTROLLER FUNCTIONS DEFINITION #
 
 ready ->
+  # Exported functions are exposed as a global in the browser with the same
+  # name as the module that includes Derby. They can also be bound to DOM
+  # events using the "bind" attribute in a template.
 
   # Any path name that starts with an underscore is private to the current
   # client. Nothing set under a private path is synced back to the server
   model.set '_showReconnect', true
   exports.connect = ->
-    # Hide the reconnect link for a second so it looks like something is going on
+    # Hide the reconnect link for a second after clicking it
     model.set '_showReconnect', false
     setTimeout (-> model.set '_showReconnect', true), 1000
     model.socket.socket.connect()
-    return false
+
+  exports.reload = -> window.location.reload()
 
   model.on 'push', '_room.messages', -> model.incr '_session.numMessages'
-
-# Exported functions are exposed as a global in the browser with the same
-# name as this module. This function is called by the form submission action.
-exports.postMessage = ->
-  model.push '_room.messages',
-    userId: model.get '_session.userId'
-    comment: model.get '_session.newComment'
-  model.set '_session.newComment', ''
-  return false
+  exports.postMessage = ->
+    model.push '_room.messages',
+      userId: model.get '_session.userId'
+      comment: model.get '_session.newComment'
+    model.set '_session.newComment', ''
 

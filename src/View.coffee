@@ -77,6 +77,9 @@ extend = (parent, obj) ->
     out[key] = obj[key]
   return out
 
+addId = (attrs, uniqueId) ->
+  if attrs.id is undefined then attrs.id = -> attrs._id = uniqueId()
+
 View.htmlEscape = htmlEscape = (s) ->
   unless s? then '' else s.replace /[&<>]/g, (s) ->
     switch s
@@ -158,8 +161,9 @@ renderer = (view, items, events) ->
   (data) ->
     model = view.model
     modelEvents = model.__events
+    domEvents = view.dom.events
     html = ((if item.call then item data, model else item) for item in items).join ''
-    event data, modelEvents for event in events
+    event data, modelEvents, domEvents for event in events
     return html
 
 parse = (view, viewName, template, data) ->
@@ -173,23 +177,37 @@ parse = (view, viewName, template, data) ->
   partialCount = 0
   partialName = -> viewName + '$' + partialCount++
 
-  elements = elementParser view, events
+  {elementPlaceholder, elementBind} = elementParser view, events
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
-      for key, value of attrs
+      for attr, value of attrs
         if match = extractPlaceholder value
           {name, escaped} = match
           addNameToData data, name
           
-          (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
-          method = if tagName of elements then elements[tagName] key, attrs, name else 'attr'
+          addId attrs, uniqueId
+          method = if tagName of elementPlaceholder
+              elementPlaceholder[tagName] attr, attrs, name
+            else 'attr'
           
           events.push (data, modelEvents) ->
             path = modelPath data, name
-            modelEvents.bind path, [attrs._id || attrs.id, method, key]  if path
+            modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
           
-          attrs[key] = modelText view, name, escaped, true
+          attrs[attr] = modelText view, name, escaped, true
+        
+        if attr is 'bind'
+          break  unless match = /^\s*([^:\s]+)\s*:\s*([^\s]+)/.exec value
+          name = match[1]
+          fn = match[2]
+          delete attrs[attr]
+          
+          addId attrs, uniqueId
+          elementBind[tagName] attrs, name  if tagName of elementBind
+          
+          events.push (data, modelEvents, domEvents) ->
+            domEvents.bind name, [fn, attrs._id || attrs.id]
       
       stack.push ['start', tagName, attrs]
 
@@ -224,7 +242,7 @@ parse = (view, viewName, template, data) ->
           last = ['start', 'ins', {}]
           if endBlock then stack.splice i + 1, 0, last else stack.push last
         attrs = last[2]
-        (attrs.id = -> attrs._id = uniqueId())  if attrs.id is undefined
+        addId attrs, uniqueId
 
         addEvent = (partial, append) -> events.push (data, modelEvents) ->
           return  unless path = modelPath data, name
