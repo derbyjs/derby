@@ -1,10 +1,10 @@
 {
   "name": "derby-chat-example",
   "description": "Demo chat application for Derby",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "./server.js",
   "dependencies": {
-    "derby": "0.0.3",
+    "derby": "0.0.4",
     "express": ">=2",
     "stylus": ">=0.15",
     "connect-gzip": ">=0.1"
