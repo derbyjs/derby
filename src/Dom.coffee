@@ -49,7 +49,7 @@ addListener = ->
 Dom = module.exports = (model, appExports) ->
   @events = events = new EventDispatcher
     onBind: (name) -> addListener name  unless name of events._names
-    onTrigger: (name, listener, targetId) ->
+    onTrigger: (name, listener, targetId, e) ->
       if listener.length is 2
         [fn, id] = listener
         return  unless callback = appExports[fn]
@@ -60,7 +60,7 @@ Dom = module.exports = (model, appExports) ->
       # Remove this listener if the element doesn't exist
       return false  unless el = element id
       
-      if callback then callback(); return
+      if callback then callback e; return
       
       value = getMethods[method] el, property
       (if silent then model.silent else model)[fn] path, value
@@ -73,7 +73,7 @@ Dom:: =
     domHandler = (e) ->
       target = e.target || e.srcElement
       target = target.parentNode  if target.nodeType == 3
-      events.trigger e.type, target.id
+      events.trigger e.type, target.id, e
     
     if doc.addEventListener
       addListener = (name) -> doc.addEventListener name, domHandler, false
