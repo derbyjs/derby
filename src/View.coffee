@@ -182,41 +182,44 @@ parse = (view, viewName, template, data) ->
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
       for attr, value of attrs
-        if match = extractPlaceholder value
-          {name, escaped} = match
-          addNameToData data, name
+        do (attr) ->
+          if match = extractPlaceholder value
+            {name, escaped} = match
+            addNameToData data, name
           
-          addId attrs, uniqueId
-          method = if tagName of elementPlaceholder
-              elementPlaceholder[tagName] attr, attrs, name
-            else 'attr'
+            addId attrs, uniqueId
+            method = if tagName of elementPlaceholder
+                elementPlaceholder[tagName] attr, attrs, name
+              else 'attr'
           
-          events.push (data, modelEvents) ->
-            path = modelPath data, name
-            modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
+            events.push (data, modelEvents) ->
+              path = modelPath data, name
+              modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
           
-          attrs[attr] = modelText view, name, escaped, true
+            attrs[attr] = modelText view, name, escaped, true
         
-        if attr is 'bind'
-          break  unless match = /^\s*([^:\s]+)\s*:\s*([^\s]+)/.exec value
-          name = match[1]
-          fn = match[2]
-          delete attrs[attr]
+          if attr is 'bind'
+            return  unless match = /^\s*([^:\s]+)\s*:\s*([^\s]+)/.exec value
+            name = match[1]
+            fn = match[2]
+            delete attrs[attr]
           
-          addId attrs, uniqueId
-          elementBind[tagName] attrs, name  if tagName of elementBind
+            addId attrs, uniqueId
+            elementBind[tagName] attrs, name  if tagName of elementBind
           
-          events.push (data, modelEvents, domEvents) ->
-            domEvents.bind name, [fn, attrs._id || attrs.id]
+            events.push (data, modelEvents, domEvents) ->
+              domEvents.bind name, [fn, attrs._id || attrs.id]
       
       stack.push ['start', tagName, attrs]
 
     chars: chars = (text) ->
-      if match = extractPlaceholder text
-        {pre, post, name, escaped, type, partial} = match
-        addNameToData data, name
-        text = ''
-      else text = trimInner text
+      unless match = extractPlaceholder text
+        stack.push ['chars', text]  if text = trimInner text
+        return
+
+      {pre, post, name, escaped, type, partial} = match
+      addNameToData data, name
+      text = ''
 
       stack.push ['chars', pre]  if pre
 
@@ -257,7 +260,7 @@ parse = (view, viewName, template, data) ->
         text = partialText || modelText view, name, escaped  unless endBlock
 
       else text = partialText || text
-      
+
       stack.push ['chars', text]  if text
       stack.push ['end', 'ins']  if wrap
 

@@ -21,15 +21,7 @@ setMethods =
   attr: (value, el, attr) ->
     el.setAttribute attr, value
 
-  prop: (value, el, props) ->
-    if Array.isArray props
-      last = props.length - 1
-      i = 0
-      while i < last
-        el = el[props[i++]]
-      prop = props[last]
-    else
-      prop = props
+  prop: (value, el, prop) ->
     el[prop] = value
 
   propPolite: (value, el, prop) ->
