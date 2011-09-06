@@ -35,7 +35,8 @@ test-async: test-async-fast
 test-serial: test-serial-fast test-serial-slow
 test-fast: test-async-fast test-serial-fast
 test-slow: test-serial-slow
-test: test-async-fast test-serial-fast test-serial-slow
+
+test: test-async-fast
 
 test-cov:
 	@TESTFLAGS=--cov $(MAKE) test

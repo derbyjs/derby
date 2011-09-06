@@ -23,7 +23,7 @@ module.exports =
       '<p>Flowers ' + # Trailing whitespace on implicitly closed tag
       '<p>Flight</p>\n' + # Explicitly closed tag
       '  \t<p>Fight</p>\t \n' + # New line and leading whitespace
-      '<p>Blight\nSight</p> <p />' # Whitespace between tags
+      '<p>Blight\nSight</p> <p / >' # Whitespace between tags
     expected = [
       ['start', 'h1', {}]
       ['chars', 'Willow ']
