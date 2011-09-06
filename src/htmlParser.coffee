@@ -3,7 +3,7 @@ endTag = /^<\/(\w+)[^>]*>/
 attr = /([^\s=]+)(?:\s*(=)\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+))?)?/g
 comment = /<!--[\s\S]*?-->/g
 
-exports.parse = (html, handler) ->
+exports.parse = (html, handler = {}) ->
 
   parseStartTag = (tag, tagName, rest) ->
     attrs = {}
@@ -15,9 +15,9 @@ exports.parse = (html, handler) ->
     endHandler tag, tagName.toLowerCase()
 
   empty = ->
-  charsHandler = (handler && handler.chars) || empty
-  startHandler = (handler && handler.start) || empty
-  endHandler = (handler && handler.end) || empty
+  charsHandler = handler.chars || empty
+  startHandler = handler.start || empty
+  endHandler = handler.end || empty
 
   # Remove HTML comments before parsing
   html = html.replace comment, ''
