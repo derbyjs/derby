@@ -3,8 +3,8 @@ module.exports = (view, events) ->
   elementPlaceholder:
     input: (attr, attrs, name) ->
       return 'attr'  unless attr == 'value'
-      if 'silent' of attrs
-        delete attrs.silent
+      if 'x-silent' of attrs
+        delete attrs['x-silent']
         method = 'prop'
         silent = 1
       else

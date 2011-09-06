@@ -15,11 +15,11 @@ view.make 'info', """
   <div id=info>{{^connected}}
     {{#canConnect}}
       Offline{{#_showReconnect}} 
-        &ndash; <a bind=click:connect>Reconnect</a>
+        &ndash; <a x-bind=click:connect>Reconnect</a>
       {{/}}
     {{^}}
       Unable to reconnect &ndash; 
-      <a bind=click:reload>Reload</a>
+      <a x-bind=click:reload>Reload</a>
     {{/}}
   {{/}}</div>
   """

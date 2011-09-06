@@ -148,8 +148,10 @@ reduceStack = (stack) ->
       when 'start'
         html[i] += '<' + item[1]
         for key, value of item[2]
-          html[i] += ' ' + key + '='
-          pushValue value, true
+          html[i] += ' ' + key
+          if value?
+            html[i] += '='
+            pushValue value, true
         html[i] += '>'
       when 'chars'
         pushValue item[1]
@@ -181,6 +183,7 @@ parse = (view, viewName, template, data) ->
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
+      console.log tag, tagName, attrs
       for attr, value of attrs
         do (attr) ->
           if match = extractPlaceholder value
@@ -198,7 +201,7 @@ parse = (view, viewName, template, data) ->
           
             attrs[attr] = modelText view, name, escaped, true
         
-          if attr is 'bind'
+          if attr is 'x-bind'
             return  unless match = /^\s*([^:\s]+)\s*:\s*([^\s]+)/.exec value
             name = match[1]
             fn = match[2]

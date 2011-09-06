@@ -28,8 +28,8 @@ view.make 'Body', """
     <img id=inputPic src=img/s.png class={{_session.user.picClass}} alt="">
     <div id=inputs>
       <input id=inputName value={{_session.user.name}}>
-      <form id=inputForm bind=submit:postMessage>
-        <input id=commentInput value={{_session.newComment}} silent autofocus>
+      <form id=inputForm x-bind=submit:postMessage>
+        <input id=commentInput value={{_session.newComment}} x-silent autofocus>
       </form>
     </div>
   </div>
