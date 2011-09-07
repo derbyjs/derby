@@ -183,7 +183,6 @@ parse = (view, viewName, template, data) ->
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
-      console.log tag, tagName, attrs
       for attr, value of attrs
         do (attr) ->
           if match = extractPlaceholder value
@@ -222,7 +221,7 @@ parse = (view, viewName, template, data) ->
 
       {pre, post, name, escaped, type, partial} = match
       addNameToData data, name
-      text = ''
+      text = if data[name].model then '' else data[name].toString()
 
       stack.push ['chars', pre]  if pre
 
@@ -240,7 +239,7 @@ parse = (view, viewName, template, data) ->
         view.get partial, dataValue(data, name, model), data
 
       # Setup binding if there is a variable or block name
-      if name && !startBlock
+      if name && !startBlock && data[name].model
         endBlock = type is '/'
         i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
         last = stack[i]

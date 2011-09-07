@@ -13,6 +13,7 @@ ResMock:: =
   send: write
   end: write
 
+Model::_commit = ->
 Model::bundle = ->
 
 module.exports =
@@ -23,4 +24,40 @@ module.exports =
     view.sendHtml res, model
     res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
 
-  
+  'test rendering a string literal view': ->
+    view = new View
+    model = new Model
+    view._init model
+    
+    view.make 'test', """
+      <style>
+        body {
+          margin: 
+            0
+        }
+      </style>
+      """
+    # String views should have line breaks and leading whitespace removed
+    view.get('test').should.eql '<style>body {margin: 0}</style>'
+
+  'test substituting variables into text': ->
+    view = new View
+    model = new Model
+    view._init model
+    
+    view.make 'test', """
+      {{connected}} - {{canConnect}}
+      <p>{{name}}
+      <p>{{age}} - {{height}} - {{weight}}
+      """,
+      connected: false
+      weight: '165 lbs'
+    
+    model.set 'name', 'John'
+    model.set 'age', 22
+    model.set 'height', '6 ft 2 in'
+    model.set 'weight', '175 lbs'
+
+    view.get('test').should.eql 'false - <ins id=$0>true</ins>' +
+      '<p id=$1>John' +
+      '<p><ins id=$2>22</ins> - <ins id=$3>6 ft 2 in</ins> - 165 lbs'

@@ -7,10 +7,13 @@ modelHelper = require './modelHelper'
 View::_register = (name, fn) ->
   @_views[name] = fn
 
-View::sendHtml = (res, model) ->
+View::_init = (model) ->
   # Initialize view for rendering
   dom = @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
+
+View::sendHtml = (res, model) ->
+  @_init model
 
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
