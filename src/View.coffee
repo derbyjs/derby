@@ -81,14 +81,14 @@ addId = (attrs, uniqueId) ->
   if attrs.id is undefined then attrs.id = -> attrs._id = uniqueId()
 
 View.htmlEscape = htmlEscape = (s) ->
-  unless s? then '' else s.replace /&(?!\s)|</g, (s) ->
+  unless s? then '' else s.replace /&(?=\S)|</g, (s) ->
     if s is '&' then '&amp;' else '&lt;'
 
 View.attrEscape = attrEscape = (s) ->
   return '""' if `s == null` || s is ''
-  s = s.toString().replace /&(?!\s)|"/g, (s) ->
+  s = s.toString().replace /&(?=\S)|"/g, (s) ->
     if s is '&' then '&amp;' else '&quot;'
-  if /[ =>]/.test s then '"' + s + '"' else s
+  if /[ =<>]/.test s then '"' + s + '"' else s
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
