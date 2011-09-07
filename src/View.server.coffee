@@ -9,11 +9,12 @@ View::_register = (name, fn) ->
 
 View::_init = (model) ->
   # Initialize view for rendering
-  dom = @dom = new Dom(@model = modelHelper.init model)
+  @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
 
 View::sendHtml = (res, model) ->
   @_init model
+  dom = @dom
 
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'

@@ -221,7 +221,7 @@ parse = (view, viewName, template, data) ->
 
       {pre, post, name, escaped, type, partial} = match
       addNameToData data, name
-      text = if data[name].model then '' else data[name].toString()
+      text = if name && !data[name].model then data[name].toString() else ''
 
       stack.push ['chars', pre]  if pre
 
