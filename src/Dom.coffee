@@ -46,7 +46,7 @@ Dom = module.exports = (model, appExports) ->
         [fn, id] = listener
         return  unless callback = appExports[fn]
       else
-        [fn, path, id, method, property, silent] = listener
+        [fn, path, id, method, property] = listener
       
       return  unless id is targetId
       # Remove this listener if the element doesn't exist
@@ -55,7 +55,7 @@ Dom = module.exports = (model, appExports) ->
       if callback then callback e; return
       
       value = getMethods[method] el, property
-      (if silent then model.silent else model)[fn] path, value
+      model[fn] path, value
 
   return
 

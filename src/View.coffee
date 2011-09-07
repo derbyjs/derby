@@ -179,7 +179,7 @@ parse = (view, viewName, template, data) ->
   partialCount = 0
   partialName = -> viewName + '$' + partialCount++
 
-  {elementPlaceholder, elementBind} = elementParser view, events
+  {parsePlaceholder, parseAttr} = elementParser events
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
@@ -188,30 +188,28 @@ parse = (view, viewName, template, data) ->
           if match = extractPlaceholder value
             name = match.name
             addNameToData data, name
-          
+
             if data[name]?.model
               addId attrs, uniqueId
-              method = if tagName of elementPlaceholder
-                  elementPlaceholder[tagName] attr, attrs, name
-                else 'attr'
-          
+              if parser = parsePlaceholder[attr]
+                if anyParser = parser['*']
+                  method = parser attr, attrs, name
+                if elParser = parser[tagName]
+                  method = elParser(attr, attrs, name) || method  
+              method = method || 'attr'
+
               events.push (data, modelEvents) ->
                 path = modelPath data, name
                 modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
-          
+
             attrs[attr] = modelText view, name, attrEscape
-        
-          if attr is 'x-bind'
-            return  unless match = /^\s*([^:\s]+)\s*:\s*([^\s]+)/.exec value
-            name = match[1]
-            fn = match[2]
-            delete attrs[attr]
-          
-            addId attrs, uniqueId
-            elementBind[tagName] attrs, name  if tagName of elementBind
-          
-            events.push (data, modelEvents, domEvents) ->
-              domEvents.bind name, [fn, attrs._id || attrs.id]
+
+          return  unless parser = parseAttr[attr]
+          args = value.replace(/\s/g, '').split ':'
+          args.unshift attrs
+          anyAddId = anyParser args...  if anyParser = parser['*']
+          elAddId = elParser args...  if elParser = parser[tagName]
+          addId attrs, uniqueId  if elAddId || anyAddId
       
       stack.push ['start', tagName, attrs]
 

@@ -29,7 +29,7 @@ view.make 'Body', """
     <div id=inputs>
       <input id=inputName value={{_session.user.name}}>
       <form id=inputForm x-bind=submit:postMessage>
-        <input id=commentInput value={{_session.newComment}} x-silent autofocus>
+        <input id=commentInput value={{_session.newComment}} autofocus>
       </form>
     </div>
   </div>
