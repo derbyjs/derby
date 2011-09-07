@@ -224,7 +224,7 @@ parse = (view, viewName, template, data) ->
 
       stack.push ['chars', pre]  if pre
 
-      if block && ((endBlock = type is '/') || (autoClosed = type is '^' && !name && block.type is '#'))
+      if block && ((endBlock = type is '/') || (autoClosed = type is '^' && (!name || name == block.name) && block.type is '#'))
         {name, partial, lastPartial, lastAutoClosed} = block
         popped.push queues.pop()
         {stack, events, block} = queues[queues.length - 1]

@@ -95,33 +95,35 @@ module.exports =
     model = new Model
     view._init model
     
-    template = '{{#show}}Yep{{^}}Nope{{/}}{{#show}}} Yes!{{/}} - {{^show}}No{{/}}'
+    template = '{{#show}}Yep{{^}}Nope{{/}}{{#show}}} Yes!{{/}} {{^show}}No{{/}}'
     
     view.make 'test', template, show: true
-    view.get('test').should.eql 'Yep Yes! - '
+    view.get('test').should.eql 'Yep Yes! '
     view.make 'test', template, show: 1
-    view.get('test').should.eql 'Yep Yes! - '
+    view.get('test').should.eql 'Yep Yes! '
     view.make 'test', template, show: 'x'
-    view.get('test').should.eql 'Yep Yes! - '
+    view.get('test').should.eql 'Yep Yes! '
     view.make 'test', template, show: {}
-    view.get('test').should.eql 'Yep Yes! - '
+    view.get('test').should.eql 'Yep Yes! '
     
     view.make 'test', template, show: false
-    view.get('test').should.eql 'Nope - No'
+    view.get('test').should.eql 'Nope No'
     view.make 'test', template, show: undefined
-    view.get('test').should.eql 'Nope - No'
+    view.get('test').should.eql 'Nope No'
     view.make 'test', template, show: null
-    view.get('test').should.eql 'Nope - No'
+    view.get('test').should.eql 'Nope No'
     view.make 'test', template, show: 0
-    view.get('test').should.eql 'Nope - No'
+    view.get('test').should.eql 'Nope No'
     view.make 'test', template, show: ''
-    view.get('test').should.eql 'Nope - No'
+    view.get('test').should.eql 'Nope No'
     view.make 'test', template, show: []
-    view.get('test').should.eql 'Nope - No'
+    view.get('test').should.eql 'Nope No'
     
     view.make 'test', template
-    view.get('test').should.eql '<ins id=$0>Nope</ins><ins id=$1></ins> - <ins id=$2>No</ins>'
+    view.get('test').should.eql '<ins id=$0>Nope</ins><ins id=$1></ins> <ins id=$2>No</ins>'
     model.set 'show', false
-    view.get('test').should.eql '<ins id=$3>Nope</ins><ins id=$4></ins> - <ins id=$5>No</ins>'
+    view.get('test').should.eql '<ins id=$3>Nope</ins><ins id=$4></ins> <ins id=$5>No</ins>'
     model.set 'show', true
-    view.get('test').should.eql '<ins id=$6>Yep</ins><ins id=$7> Yes!</ins> - <ins id=$8></ins>'
+    view.get('test').should.eql '<ins id=$6>Yep</ins><ins id=$7> Yes!</ins> <ins id=$8></ins>'
+
+  
