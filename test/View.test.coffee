@@ -48,11 +48,12 @@ module.exports =
     view.make 'test', """
       {{connected}} - {{canConnect}}
       <p>{{name}}
-      <p>{{age}} - {{height}} - {{weight}}
+      <p>{{age}} - {{height}} - {{weight}}{{nada}}
       """,
       connected: false
       height: {model: 'newHeight'}
       weight: '165 lbs'
+      nada: null
     
     model.set 'name', 'John'
     model.set 'age', 22
@@ -68,31 +69,24 @@ module.exports =
     model = new Model
     view._init model
 
-    view.make 'test',
-      '<input value={{html}}> {{html}} {{{html}}}',
-      html: '<b id="hey">&Hi!</b>'
-    
-    view.get('test').should.eql '<input value="<b id=&quot;hey&quot;>&Hi!</b>"> ' +
-      '&lt;b id="hey"&gt;&amp;Hi!&lt;/b&gt; ' +
-      '<b id="hey">&Hi!</b>'
+    # Attribute values are escaped regardless of placeholder type
+    # Amphersands are escaped at the end of a replacement even when not
+    # required, because it is sometimes needed depending on the following item
+    template = '<input value={{{html}}}> {{html}}x{{{html}}}'
+    value = '<b id="hey">&Hi! & x& </b>&'
 
-  'test conditional blocks in text': ->
-    view = new View
-    model = new Model
-    view._init model
-    
-    view.make 'test', """
-      {{#show}}<p>{{#user}}<b>{{name}}</b>  
-      """,
-      connected: false
-      height: {model: 'newHeight'}
-      weight: '165 lbs'
-    
-    model.set 'name', 'John'
-    model.set 'age', 22
-    model.set 'newHeight', '6 ft 2 in'
-    model.set 'weight', '175 lbs'
+    view.make 'test1', template, html: value
+    view.get('test1').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
+      '&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;x' +
+      '<b id="hey">&Hi! & x& </b>&'
 
-    view.get('test').should.eql 'false - <ins id=$0>true</ins>' +
-      '<p id=$1>John' +
-      '<p><ins id=$2>22</ins> - <ins id=$3>6 ft 2 in</ins> - 165 lbs'
+    view.make 'test2', template
+    model.set 'html', value
+    view.get('test2').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;" id=$0> ' +
+      '<ins id=$1>&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;</ins>x' +
+      '<ins id=$2><b id="hey">&Hi! & x& </b>&</ins>'
+
+    view.make 'test3', '<p a={{a}} b={{b}} c={{c}} d={{d}} e={{e}} f={{f}} g={{g}} h={{h}} i>',
+      {a: '"', b: "'", c: '<', d: '>', e: '=', f: ' ', g: '', h: null}
+    view.get('test3').should.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
+

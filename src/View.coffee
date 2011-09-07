@@ -81,14 +81,14 @@ addId = (attrs, uniqueId) ->
   if attrs.id is undefined then attrs.id = -> attrs._id = uniqueId()
 
 View.htmlEscape = htmlEscape = (s) ->
-  unless s? then '' else s.replace /&(?=\S)|</g, (s) ->
+  unless s? then '' else s.replace /&(?!\s)|</g, (s) ->
     if s is '&' then '&amp;' else '&lt;'
 
 View.attrEscape = attrEscape = (s) ->
   return '""' if `s == null` || s is ''
-  s = s.toString().replace /&(?=\S)|"/g, (s) ->
+  s = s.toString().replace /&(?!\s)|"/g, (s) ->
     if s is '&' then '&amp;' else '&quot;'
-  if /[ =<>]/.test s then '"' + s + '"' else s
+  if /[ =<>']/.test s then '"' + s + '"' else s
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
@@ -185,14 +185,15 @@ parse = (view, viewName, template, data) ->
             name = match.name
             addNameToData data, name
           
-            addId attrs, uniqueId
-            method = if tagName of elementPlaceholder
-                elementPlaceholder[tagName] attr, attrs, name
-              else 'attr'
+            if data[name]?.model
+              addId attrs, uniqueId
+              method = if tagName of elementPlaceholder
+                  elementPlaceholder[tagName] attr, attrs, name
+                else 'attr'
           
-            events.push (data, modelEvents) ->
-              path = modelPath data, name
-              modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
+              events.push (data, modelEvents) ->
+                path = modelPath data, name
+                modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
           
             attrs[attr] = modelText view, name, attrEscape
         
@@ -217,7 +218,8 @@ parse = (view, viewName, template, data) ->
 
       {pre, post, name, escaped, type, partial} = match
       addNameToData data, name
-      text = if name && !data[name].model then data[name].toString() else ''
+      datum = data[name]
+      text = if name && datum? && !datum.model then datum.toString() else text = ''
 
       stack.push ['chars', pre]  if pre
 
@@ -235,7 +237,7 @@ parse = (view, viewName, template, data) ->
         view.get partial, dataValue(data, name, model), data
 
       # Setup binding if there is a variable or block name
-      if name && !startBlock && data[name].model
+      if name && !startBlock && datum?.model
         endBlock = type is '/'
         i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
         last = stack[i]
@@ -257,7 +259,7 @@ parse = (view, viewName, template, data) ->
 
         text = partialText || modelText view, name, escaped && htmlEscape  unless endBlock
 
-      else text = partialText || text
+      else text = partialText || if escaped then htmlEscape text else text
 
       stack.push ['chars', text]  if text
       stack.push ['end', 'ins']  if wrap
