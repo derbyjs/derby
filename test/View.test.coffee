@@ -126,4 +126,28 @@ module.exports =
     model.set 'show', true
     view.get('test').should.eql '<ins id=$6>Yep</ins><ins id=$7> Yes!</ins> <ins id=$8></ins>'
 
-  
+  'test lists in text': ->
+    view = new View
+    model = new Model
+    view._init model
+    
+    template = """
+      <ul>
+        {{#arr}}
+          <li>{{name}}
+        {{^}}
+          <li>Nothing to see
+        {{/}}
+      </ul>
+      """
+
+    view.make 'test', template, arr: []
+    view.get('test').should.eql '<ul><li>Nothing to see</ul>'
+
+    # TODO: Currently literal array values are still wrapped in ins tags,
+    # since the compiler is not detecting that the values are supplied in the
+    # passed in context.
+    view.make 'test', template, arr: [{name: 'stuff'}, {name: 'more'}]
+    view.get('test').should.eql '<ul><li><ins id=$0>stuff</ins><li><ins id=$1>more</ins></ul>'
+
+    

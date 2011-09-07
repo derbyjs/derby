@@ -32,6 +32,7 @@ View:: =
       type = viewName.charAt(0)
       if Array.isArray ctx
         if ctx.length
+          return ''  if type is '^'
           return (view extend parentCtx, item for item in ctx).join ''
         else
           return ''  unless type is '^'
