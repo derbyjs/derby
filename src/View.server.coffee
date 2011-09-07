@@ -29,7 +29,7 @@ View::sendHtml = (res, model) ->
   # amount of header HTML that will display well by itself, it is a good idea
   # to add this to the Head view so that it renders ASAP.
   doctype = @get('Doctype') || '<!DOCTYPE html><meta charset=utf-8>'
-  title = @get('Title') || 'Derby app'
+  title = View.htmlEscape(@get 'Title') || 'Derby app'
   head = @get 'Head'
   res.write "#{doctype}<title>#{title}</title>#{head}"
 

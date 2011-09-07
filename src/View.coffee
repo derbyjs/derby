@@ -81,17 +81,14 @@ addId = (attrs, uniqueId) ->
   if attrs.id is undefined then attrs.id = -> attrs._id = uniqueId()
 
 View.htmlEscape = htmlEscape = (s) ->
-  unless s? then '' else s.replace /[&<>]/g, (s) ->
-    switch s
-      when '&' then '&amp;'
-      when '<' then '&lt;'
-      when '>' then '&gt;'
-      else s
+  unless s? then '' else s.replace /&(?!\s)|</g, (s) ->
+    if s is '&' then '&amp;' else '&lt;'
 
-quoteAttr = (s) ->
+View.attrEscape = attrEscape = (s) ->
   return '""' if `s == null` || s is ''
-  s = s.toString().replace /"/g, '&quot;'
-  if /[ =]/.test s then '"' + s + '"' else s
+  s = s.toString().replace /&(?!\s)|"/g, (s) ->
+    if s is '&' then '&amp;' else '&quot;'
+  if /[ =>]/.test s then '"' + s + '"' else s
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
@@ -126,23 +123,22 @@ dataValue = (data, name, model) ->
     # If not a model path, check if the value is defined in the context data
     else data[name]
 
-modelText = (view, name, escaped, quote) ->
+modelText = (view, name, escape) ->
   (data, model) ->
     text = dataValue data, name, model
     text = if text? then text.toString() else ''
-    text = htmlEscape text  if escaped
-    text = quoteAttr text  if quote
+    text = escape text  if escape
     return text
 
 reduceStack = (stack) ->
   html = ['']
   i = 0
   for item in stack
-    pushValue = (value, quote) ->
+    pushValue = (value, isAttr) ->
       if value && value.call
         i = html.push(value, '') - 1
       else
-        html[i] += if quote then quoteAttr value else value
+        html[i] += if isAttr then attrEscape value else value
 
     switch item[0]
       when 'start'
@@ -186,7 +182,7 @@ parse = (view, viewName, template, data) ->
       for attr, value of attrs
         do (attr) ->
           if match = extractPlaceholder value
-            {name, escaped} = match
+            name = match.name
             addNameToData data, name
           
             addId attrs, uniqueId
@@ -198,7 +194,7 @@ parse = (view, viewName, template, data) ->
               path = modelPath data, name
               modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
           
-            attrs[attr] = modelText view, name, escaped, true
+            attrs[attr] = modelText view, name, attrEscape
         
           if attr is 'x-bind'
             return  unless match = /^\s*([^:\s]+)\s*:\s*([^\s]+)/.exec value
@@ -259,7 +255,7 @@ parse = (view, viewName, template, data) ->
         addEvent partial
         addEvent lastPartial, true  if lastAutoClosed
 
-        text = partialText || modelText view, name, escaped  unless endBlock
+        text = partialText || modelText view, name, escaped && htmlEscape  unless endBlock
 
       else text = partialText || text
 
