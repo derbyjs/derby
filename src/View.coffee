@@ -29,11 +29,14 @@ View:: =
       return ''
     if parentCtx || ctx?
       # This is a partial
+      type = viewName.charAt(0)
       if Array.isArray ctx
-        return (view extend parentCtx, item for item in ctx).join ''
-      ctx = if (type = viewName.charAt(0)) is '^' then !ctx else
-        if type is '#' then !!ctx else ctx
-      return ''  if ctx is false
+        if ctx.length
+          return (view extend parentCtx, item for item in ctx).join ''
+        else
+          return ''  unless type is '^'
+      else
+        return ''  if (type is '^' && ctx) || (type is '#' && !ctx)
     return view extend parentCtx, ctx
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
@@ -218,11 +221,10 @@ parse = (view, viewName, template, data) ->
 
       {pre, post, name, escaped, type, partial} = match
       addNameToData data, name
-      text = ''
 
       stack.push ['chars', pre]  if pre
 
-      if block && (type is '/' || (autoClosed = type is '^' && !name && block.type is '#'))
+      if block && ((endBlock = type is '/') || (autoClosed = type is '^' && !name && block.type is '#'))
         {name, partial, lastPartial, lastAutoClosed} = block
         popped.push queues.pop()
         {stack, events, block} = queues[queues.length - 1]
@@ -232,13 +234,12 @@ parse = (view, viewName, template, data) ->
         partial = type + partialName()
         block = {type, name, partial, lastPartial, lastAutoClosed: autoClosed}
 
-      if partial then partialText = (data, model) ->
-        view.get partial, dataValue(data, name, model), data
+      text = unless partial then '' else
+        (data, model) -> view.get partial, dataValue(data, name, model), data
 
-      # Setup binding if there is a variable or block name
-      if name && !startBlock && (datum = data[name])?
-        if datum.model
-          endBlock = type is '/'
+      if (datum = data[name])?
+        if datum.model && !startBlock
+          # Setup binding if there is a variable or block name
           i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
           last = stack[i]
           if wrap = pre || post || !(last && last[0] == 'start')
@@ -257,15 +258,11 @@ parse = (view, viewName, template, data) ->
           addEvent partial
           addEvent lastPartial, true  if lastAutoClosed
 
-          text = partialText || modelText view, name, escaped && htmlEscape  unless endBlock
-        
-        else if !type
-          text = datum.toString()
-          text = if escaped then htmlEscape text else text
-      
-      else text = partialText || ''
+          text = text || modelText view, name, escaped && htmlEscape
 
-      stack.push ['chars', text]  if text
+        else text = text || if escaped then htmlEscape datum.toString() else datum.toString()
+
+      stack.push ['chars', text]  if text && !endBlock
       stack.push ['end', 'ins']  if wrap
 
       if startBlock then queues.push

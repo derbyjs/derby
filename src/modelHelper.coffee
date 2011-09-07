@@ -21,6 +21,9 @@ exports.init = (model, dom, view) ->
       # Save the original path in the listener to be checked at trigger time
       listener.unshift path
   
+  # Don't subscribe to any events on the server
+  return model  unless dom
+  
   model.on 'set', ([path, value]) ->
     events.trigger path, value
     
