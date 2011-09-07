@@ -75,18 +75,30 @@ module.exports =
     template = '<input value={{{html}}}> {{html}}x{{{html}}}'
     value = '<b id="hey">&Hi! & x& </b>&'
 
-    view.make 'test1', template, html: value
-    view.get('test1').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
+    view.make 'test0', template, html: value
+    view.get('test0').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
       '&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;x' +
       '<b id="hey">&Hi! & x& </b>&'
 
-    view.make 'test2', template
+    view.make 'test1', template
     model.set 'html', value
-    view.get('test2').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;" id=$0> ' +
+    view.get('test1').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;" id=$0> ' +
       '<ins id=$1>&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;</ins>x' +
       '<ins id=$2><b id="hey">&Hi! & x& </b>&</ins>'
 
-    view.make 'test3', '<p a={{a}} b={{b}} c={{c}} d={{d}} e={{e}} f={{f}} g={{g}} h={{h}} i>',
+    view.make 'test2', '<p a={{a}} b={{b}} c={{c}} d={{d}} e={{e}} f={{f}} g={{g}} h={{h}} i>',
       {a: '"', b: "'", c: '<', d: '>', e: '=', f: ' ', g: '', h: null}
-    view.get('test3').should.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
+    view.get('test2').should.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
 
+  'test conditional blocks in text': ->
+    view = new View
+    model = new Model
+    view._init model
+    
+    template = '{{#show}}Yep{{^}}Nope{{/}}{{#show}}} Yes!{{/}} - {{^show}}No{{/}}'
+    
+    view.make 'test0', template, show: true
+    view.get('test0').should.eql 'Yep Yes! - '
+    
+    view.make 'test1', template, show: false
+    view.get('test1').should.eql 'Nope - No'
