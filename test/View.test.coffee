@@ -70,7 +70,7 @@ module.exports =
     view._init model
 
     # Attribute values are escaped regardless of placeholder type
-    # Amphersands are escaped at the end of a replacement even when not
+    # Ampersands are escaped at the end of a replacement even when not
     # required, because it is sometimes needed depending on the following item
     template = '<input value={{{html}}}> {{html}}x{{{html}}}'
     value = '<b id="hey">&Hi! & x& </b>&'
