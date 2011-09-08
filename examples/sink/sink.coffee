@@ -11,9 +11,9 @@ view.make 'Head', """
   """
 
 view.make 'Body', """
-  <select multiple>{{#x.options}}
-    <option selected={{.active}}>{{.text}}
-  {{/}}</select>
+  <select multiple><optgroup label=Animals>{{#x.options}}
+    <option selected={{.active}} x-bind=change:change>{{.text}}
+  {{/}}</optgroup></select>
   {{#x.options}}
     <p><input type=checkbox checked={{.active}}> <input value={{.text}} disabled={{.active}}>
   {{/}}

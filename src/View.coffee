@@ -193,7 +193,7 @@ parse = (view, viewName, template, data) ->
   partialCount = 0
   partialName = -> viewName + '$' + partialCount++
 
-  {parsePlaceholder, parseAttr} = elementParser events
+  {parsePlaceholder, parseElement, parseAttr} = elementParser events
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
@@ -224,6 +224,10 @@ parse = (view, viewName, template, data) ->
                   if dataValue data, name, model then ' ' + attr else ''
               else modelText view, name, attrEscape
 
+          if parser = parseElement[tagName]
+            out = parser(events, attrs) || {}
+            addId attrs, uniqueId  if out.addId
+          
           return  unless parser = parseAttr[attr]
           args = value.replace(/\s/g, '').split ':'
           args.unshift events, attrs

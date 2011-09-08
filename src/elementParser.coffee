@@ -5,8 +5,8 @@ modelPath = (data, name) ->
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
 module.exports = ->
-  addDomEvent: addDomEvent = (events, attrs, name, eventNames, onMethod, getMethod, property) ->
-    args = [onMethod, null, null, getMethod, property]
+  addDomEvent: addDomEvent = (events, attrs, name, eventNames, getMethod, property) ->
+    args = [null, null, getMethod, property]
     if isArray = Array.isArray eventNames
       for eventName, i in eventNames
         eventNames[i] = eventName.split ','
@@ -14,11 +14,17 @@ module.exports = ->
       [eventName, delay] = eventNames.split ','
       args.push delay  if delay?
     events.push (data, modelEvents, domEvents) ->
-      args[1] = modelPath data, name
-      args[2] = attrs._id || attrs.id
+      args[0] = modelPath data, name
+      args[1] = attrs._id || attrs.id
       return domEvents.bind eventName, args  unless isArray
       for [eventName, delay] in eventNames
         domEvents.bind eventName, if delay? then args.concat delay else args
+
+  addDistribute: addDistribute = (events, attrs, eventName) ->
+    args = ['$dist', null]
+    events.push (data, modelEvents, domEvents) ->
+      args[1] = attrs._id || attrs.id
+      domEvents.bind eventName, args
 
   parsePlaceholder:
     'value':
@@ -33,23 +39,28 @@ module.exports = ->
           # these events are fired before the input value is updated
           eventNames = ['keyup', 'keydown', 'paste,0', 'dragover,0']
         
-        addDomEvent events, attrs, name, eventNames, 'set', 'prop', 'value'
+        addDomEvent events, attrs, name, eventNames, 'prop', 'value'
         # Update the element's property unless it has focus
         return method: 'propPolite'
     
     'checked':
       '*': (events, attr, attrs, name) ->
-        addDomEvent events, attrs, name, 'change', 'set', 'prop', 'checked'
+        addDomEvent events, attrs, name, 'change', 'prop', 'checked'
         return method: 'prop', bool: true
     
     'selected':
       '*': (events, attr, attrs, name) ->
-        addDomEvent events, attrs, name, 'change', 'set', 'prop', 'selected'
+        addDomEvent events, attrs, name, 'change', 'prop', 'selected'
         return method: 'prop', bool: true
     
     'disabled':
       '*': (events, attr, attrs, name) ->
         return method: 'prop', bool: true
+
+  parseElement:
+    'select': (events, attrs) ->
+      addDistribute events, attrs, 'change'
+      return addId: true
 
   parseAttr:
     'x-bind':

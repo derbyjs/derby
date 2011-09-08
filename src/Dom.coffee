@@ -35,8 +35,21 @@ setMethods =
     while child = emptyEl.firstChild
       el.appendChild child
 
-
+    
+domHandler = ->
 addListener = ->
+
+distribute = (e) ->
+  # Clone the event object first, since the e.target property is read only
+  clone = {}
+  for key, value of e
+    clone[key] = value
+  for child in e.target.childNodes
+    return  unless child.nodeType == 1
+    childEvent = Object.create clone
+    childEvent.target = child
+    domHandler childEvent
+    distribute childEvent
 
 Dom = module.exports = (model, appExports) ->
   @events = events = new EventDispatcher
@@ -44,9 +57,10 @@ Dom = module.exports = (model, appExports) ->
     onTrigger: (name, listener, targetId, e) ->
       if listener.length <= 3
         [fn, id, delay] = listener
-        return  unless callback = appExports[fn]
+        callback = if fn is '$dist' then distribute else appExports[fn]
+        return  unless callback
       else
-        [fn, path, id, method, property, delay] = listener
+        [path, id, method, property, delay] = listener
       
       return  unless id is targetId
       # Remove this listener if the element doesn't exist
@@ -55,8 +69,8 @@ Dom = module.exports = (model, appExports) ->
       # Update the model when the element's value changes
       finish = ->
         value = getMethods[method] el, property
-        return  if fn is 'set' && model.get(path) == value
-        model[fn] path, value
+        return  if model.get(path) == value
+        model.set path, value
       
       if delay?
         setTimeout callback || finish, delay, e
@@ -70,7 +84,7 @@ Dom:: =
   init: (domEvents) ->
     events = @events
     domHandler = (e) ->
-      target = e.target || e.srcElement
+      target = e.target || e.target = e.srcElement
       target = target.parentNode  if target.nodeType == 3
       events.trigger e.type, target.id, e
     
@@ -91,4 +105,7 @@ Dom:: =
       method = 'prop'
     setMethods[method] value, el, property
     return
+
+Dom.getMethods = getMethods
+Dom.setMethods = setMethods
 
