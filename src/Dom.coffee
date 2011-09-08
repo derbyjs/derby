@@ -42,22 +42,26 @@ Dom = module.exports = (model, appExports) ->
   @events = events = new EventDispatcher
     onBind: (name) -> addListener name  unless name of events._names
     onTrigger: (name, listener, targetId, e) ->
-      if listener.length is 2
-        [fn, id] = listener
+      if listener.length <= 3
+        [fn, id, delay] = listener
         return  unless callback = appExports[fn]
       else
-        [fn, path, id, method, property] = listener
+        [fn, path, id, method, property, delay] = listener
       
       return  unless id is targetId
       # Remove this listener if the element doesn't exist
       return false  unless el = element id
       
-      if callback then callback e; return
-      
       # Update the model when the element's value changes
-      value = getMethods[method] el, property
-      return  if fn is 'set' && model.get(path) == value
-      model[fn] path, value
+      finish = ->
+        value = getMethods[method] el, property
+        return  if fn is 'set' && model.get(path) == value
+        model[fn] path, value
+      
+      if delay?
+        setTimeout callback || finish, delay, e
+      else
+        (callback || finish) e
       return
 
   return
