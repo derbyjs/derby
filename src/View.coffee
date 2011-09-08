@@ -14,7 +14,7 @@ View = module.exports = ->
 
 View:: =
 
-  get: (viewName, ctx, parentCtx) ->
+  get: (viewName, ctx, parentCtx, path) ->
     unless view = @_views[viewName]
       # Check to see if view is a block partial that hasn't been created yet,
       # because its parent hasn't been rendered. If so, render the parent and
@@ -33,7 +33,18 @@ View:: =
       if Array.isArray ctx
         if ctx.length
           return ''  if type is '^'
-          return (view extend parentCtx, item for item in ctx).join ''
+          if path
+            out = ''
+            for item, i in ctx
+              obj = extend parentCtx, item
+              obj.$path = "#{path}.#{i}"
+              out += view obj
+            return out
+          else
+            out = ''
+            for item in ctx
+              out += view extend parentCtx, item
+            return out
         else
           return ''  unless type is '^'
       else
@@ -75,8 +86,8 @@ View:: =
 
 extend = (parent, obj) ->
   return obj  unless typeof parent is 'object'
-  return parent  unless obj
   out = Object.create parent
+  return out  unless obj
   for key of obj
     out[key] = obj[key]
   return out
@@ -113,9 +124,9 @@ extractPlaceholder = (text) ->
 addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
 
-modelPath = (data, name) ->
-  datum = data[name]
-  return null  unless datum && path = datum.model
+View.modelPath = modelPath = (data, name) ->
+  return path + name  if (path = data.$path) && name.charAt(0) == '.'
+  return null  unless (datum = data[name]) && path = datum.model
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
 dataValue = (data, name, model) ->
@@ -246,7 +257,7 @@ parse = (view, viewName, template, data) ->
         block = {type, name, partial, lastPartial, lastAutoClosed: autoClosed}
 
       text = unless partial then '' else
-        (data, model) -> view.get partial, dataValue(data, name, model), data
+        (data, model) -> view.get partial, dataValue(data, name, model), data, modelPath(data, name)
 
       if (datum = data[name])?
         if datum.model && !startBlock

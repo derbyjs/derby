@@ -1,9 +1,15 @@
-module.exports = ->
+# TODO: Include this from View. Wasn't working with require for some reason
+modelPath = (data, name) ->
+  return path + name  if (path = data.$path) && name.charAt(0) == '.'
+  return null  unless (datum = data[name]) && path = datum.model
+  path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
+module.exports = ->
   addDomEvent: addDomEvent = (events, attrs, name, eventNames, onMethod, getMethod, property) ->
     isArray = Array.isArray eventNames
     events.push (data, modelEvents, domEvents) ->
-      args = [onMethod, data[name].model, attrs._id || attrs.id, getMethod, property]
+      path = modelPath data, name
+      args = [onMethod, path, attrs._id || attrs.id, getMethod, property]
       return domEvents.bind eventNames, args  unless isArray
       for eventName in eventNames
         domEvents.bind eventName, args
@@ -24,8 +30,17 @@ module.exports = ->
         return method: 'propPolite'
     
     'checked':
-      input: (events, attr, attrs, name) ->
+      '*': (events, attr, attrs, name) ->
         addDomEvent events, attrs, name, 'change', 'set', 'prop', 'checked'
+        return method: 'prop', bool: true
+    
+    'selected':
+      '*': (events, attr, attrs, name) ->
+        addDomEvent events, attrs, name, 'change', 'set', 'prop', 'selected'
+        return method: 'prop', bool: true
+    
+    'disabled':
+      '*': (events, attr, attrs, name) ->
         return method: 'prop', bool: true
 
   parseAttr:

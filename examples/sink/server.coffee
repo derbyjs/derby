@@ -10,6 +10,11 @@ store.flush()
 
 app.get '/', (req, res) ->
   store.subscribe 'x.**', (err, model) ->
+    model.setNull 'x.options', [
+      {text: 'Frogs', active: true}
+      {text: 'Snakes', active: true}
+      {text: 'Puppies', active: false}
+    ]
     sink.view.sendHtml res, model
 
 app.listen 3000

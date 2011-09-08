@@ -1,5 +1,5 @@
 EventDispatcher = require './EventDispatcher'
-View = require './View'
+{htmlEscape} = require './View'
 
 elements =
   $win: win = typeof window is 'object' && window
@@ -28,7 +28,7 @@ setMethods =
     el[prop] = value  if el != doc.activeElement
 
   html: (value, el, escape) ->
-    el.innerHTML = if escape then View.htmlEscape value else value
+    el.innerHTML = if escape then htmlEscape value else value
 
   appendHtml: (value, el) ->
     emptyEl.innerHTML = value
