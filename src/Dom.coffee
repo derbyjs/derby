@@ -55,10 +55,10 @@ Dom = module.exports = (model, appExports) ->
       if callback then callback e; return
       
       # Update the model when the element's value changes
-      last = el.$last
-      el.$last = value = getMethods[method] el, property
-      return  unless value != last
+      value = getMethods[method] el, property
+      return  if fn is 'set' && model.get(path) == value
       model[fn] path, value
+      return
 
   return
 
@@ -86,4 +86,5 @@ Dom:: =
     else if method is 'propPolite' && local
       method = 'prop'
     setMethods[method] value, el, property
+    return
 

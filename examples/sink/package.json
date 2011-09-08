@@ -1,0 +1,11 @@
+{
+  "name": "derby-kitchen-sink-example",
+  "description": "Demo of Derby features",
+  "version": "0.0.5",
+  "main": "./server.js",
+  "dependencies": {
+    "derby": "0.0.5",
+    "express": ">=2"
+  },
+  "private": true
+}

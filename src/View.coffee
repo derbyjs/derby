@@ -203,6 +203,7 @@ parse = (view, viewName, template, data) ->
             bool = elOut.bool || anyOut.bool
 
             if data[name]?.model
+              addId attrs, uniqueId
               events.push (data, modelEvents) ->
                 path = modelPath data, name
                 modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
