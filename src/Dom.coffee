@@ -39,14 +39,13 @@ setMethods =
 domHandler = ->
 addListener = ->
 
+dist = (e) -> for child in e.target.childNodes
+  return  unless child.nodeType == 1
+  childEvent = Object.create e
+  childEvent.target = child
+  domHandler childEvent
+  dist childEvent
 distribute = (e) ->
-  dist = (e) ->
-    for child in e.target.childNodes
-      return  unless child.nodeType == 1
-      childEvent = Object.create e
-      childEvent.target = child
-      domHandler childEvent
-      dist childEvent
   # Clone the event object first, since the e.target property is read only
   clone = {}
   for key, value of e
