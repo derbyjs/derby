@@ -54,7 +54,10 @@ Dom = module.exports = (model, appExports) ->
       
       if callback then callback e; return
       
-      value = getMethods[method] el, property
+      # Update the model when the element's value changes
+      last = el.$last
+      el.$last = value = getMethods[method] el, property
+      return  unless value != last
       model[fn] path, value
 
   return
@@ -75,7 +78,12 @@ Dom:: =
     events.set domEvents
     addListener name for name of events._names
 
-  update: (id, method, property, value) ->
+  update: (id, method, property, value, type, local) ->
     return false  unless el = element id
+    
+    if type is 'push' && method is 'html'
+      method = 'appendHtml'  
+    else if method is 'propPolite' && local
+      method = 'prop'
     setMethods[method] value, el, property
 
