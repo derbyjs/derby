@@ -20,7 +20,7 @@ module.exports = ->
       for [eventName, delay] in eventNames
         domEvents.bind eventName, if delay? then args.concat delay else args
 
-  addDistribute: addDistribute = (events, attrs, eventName) ->
+  distribute: distribute = (events, attrs, eventName) ->
     args = ['$dist', null]
     events.push (data, modelEvents, domEvents) ->
       args[1] = attrs._id || attrs.id
@@ -59,7 +59,7 @@ module.exports = ->
 
   parseElement:
     'select': (events, attrs) ->
-      addDistribute events, attrs, 'change'
+      distribute events, attrs, 'change'
       return addId: true
 
   parseAttr:
