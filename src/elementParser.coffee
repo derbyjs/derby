@@ -22,13 +22,12 @@ module.exports = (events) ->
         
         addDomEvent attrs, name, eventNames, 'set', 'prop', 'value'
         # Update the element's property unless it has focus
-        return 'propPolite'
+        return method: 'propPolite'
     
     'checked':
       input: (attr, attrs, name) ->
-        # Checked is a boolean attribute....
-        addDomEvent attrs, name, 'change', 'set', 'prop', 'value'
-        return 'prop'
+        addDomEvent attrs, name, 'change', 'set', 'prop', 'checked'
+        return method: 'prop', bool: true
 
   parseAttr:
     'x-bind':
@@ -42,7 +41,6 @@ module.exports = (events) ->
           attrs.href = '#'
           attrs.onclick = 'return false'  unless 'onclick' of attrs
       form: (attrs, name) ->
-        console.log attrs, name
         if name is 'submit'
           attrs.onsubmit = 'return false'  unless 'onsubmit' of attrs
 

@@ -148,10 +148,13 @@ reduceStack = (stack) ->
       when 'start'
         html[i] += '<' + item[1]
         for key, value of item[2]
-          html[i] += ' ' + key
           if value?
-            html[i] += '='
+            if bool = value.bool
+              pushValue bool
+              continue
+            html[i] += ' ' + key + '='
             pushValue value, true
+          else html[i] += ' ' + key
         html[i] += '>'
       when 'chars'
         pushValue item[1]
@@ -189,20 +192,25 @@ parse = (view, viewName, template, data) ->
             name = match.name
             addNameToData data, name
 
-            if data[name]?.model
-              addId attrs, uniqueId
-              if parser = parsePlaceholder[attr]
-                if anyParser = parser['*']
-                  method = parser attr, attrs, name
-                if elParser = parser[tagName]
-                  method = elParser(attr, attrs, name) || method  
-              method = method || 'attr'
+            if parser = parsePlaceholder[attr]
+              if anyParser = parser['*']
+                anyOut = anyParser attr, attrs, name
+              if elParser = parser[tagName]
+                elOut = elParser attr, attrs, name
+            anyOut ||= {}
+            elOut ||= {}
+            method = elOut.method || anyOut.method || 'attr'
+            bool = elOut.bool || anyOut.bool
 
+            if data[name]?.model
               events.push (data, modelEvents) ->
                 path = modelPath data, name
                 modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
 
-            attrs[attr] = modelText view, name, attrEscape
+            attrs[attr] = if bool
+                bool: (data, model) ->
+                  if dataValue data, name, model then ' ' + attr else ''
+              else modelText view, name, attrEscape
 
           return  unless parser = parseAttr[attr]
           args = value.replace(/\s/g, '').split ':'

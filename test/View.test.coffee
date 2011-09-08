@@ -150,4 +150,17 @@ module.exports =
     view.make 'test', template, arr: [{name: 'stuff'}, {name: 'more'}]
     view.get('test').should.eql '<ul><li><ins id=$0>stuff</ins><li><ins id=$1>more</ins></ul>'
 
-    
+  'test boolean attributes': ->
+    view = new View
+    model = new Model
+    view._init model
+
+    template = '<input type=checkbox checked={{maybe}}>'
+
+    view.make 'test', template
+    view.get('test').should.eql '<input type=checkbox>'
+    view.make 'test', template, maybe: false
+    view.get('test').should.eql '<input type=checkbox>'
+    view.make 'test', template, maybe: true
+    view.get('test').should.eql '<input type=checkbox checked>'
+
