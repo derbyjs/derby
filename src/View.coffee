@@ -49,7 +49,9 @@ View:: =
           return ''  unless type is '^'
       else
         return ''  if (type is '^' && ctx) || (type is '#' && !ctx)
-    return view extend parentCtx, ctx
+    ctx = extend parentCtx, ctx
+    ctx.$path = path  if ctx
+    return view ctx
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
 
@@ -125,7 +127,9 @@ addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
 
 View.modelPath = modelPath = (data, name) ->
-  return path + name  if (path = data.$path) && name.charAt(0) == '.'
+  console.log data.$path, name
+  if (path = data.$path) && name.charAt(0) == '.'
+    return if name is '.' then path else path + name
   return null  unless (datum = data[name]) && path = datum.model
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
@@ -268,7 +272,7 @@ parse = (view, viewName, template, data) ->
           # Setup binding if there is a variable or block name
           i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
           last = stack[i]
-          if wrap = pre || post || !(last && last[0] == 'start')
+          if wrap = pre || (post && !/^\{{2,3}[\/^]\}{2,3}/.test post) || !(last && last[0] == 'start')
             last = ['start', 'ins', {}]
             if endBlock then stack.splice i + 1, 0, last else stack.push last
           attrs = last[2]

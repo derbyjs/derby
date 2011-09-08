@@ -1,6 +1,7 @@
 # TODO: Include this from View. Wasn't working with require for some reason
 modelPath = (data, name) ->
-  return path + name  if (path = data.$path) && name.charAt(0) == '.'
+  if (path = data.$path) && name.charAt(0) == '.'
+    return if name is '.' then path else path + name
   return null  unless (datum = data[name]) && path = datum.model
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
