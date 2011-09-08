@@ -216,9 +216,11 @@ parse = (view, viewName, template, data) ->
           args = value.replace(/\s/g, '').split ':'
           args.unshift events, attrs
           addId attrs, uniqueId
-          anyAddId = anyParser args...  if anyParser = parser['*']
-          elAddId = elParser args...  if elParser = parser[tagName]
-          addId attrs, uniqueId  if elAddId || anyAddId
+          anyOut = anyParser args...  if anyParser = parser['*']
+          elOut = elParser args...  if elParser = parser[tagName]
+          anyOut ||= {}
+          elOut ||= {}
+          addId attrs, uniqueId  if elOut.addId || anyOut.addId
       
       stack.push ['start', tagName, attrs]
 

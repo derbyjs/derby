@@ -34,14 +34,12 @@ module.exports = ->
         delete attrs['x-bind']
         events.push (data, modelEvents, domEvents) ->
           domEvents.bind name, [fn, attrs._id || attrs.id]
-        return true
+        return addId: true
       a: (events, attrs, name) ->
         if name is 'click' && !('href' of attrs)
           attrs.href = '#'
           attrs.onclick = 'return false'  unless 'onclick' of attrs
-        return
       form: (events, attrs, name) ->
         if name is 'submit'
           attrs.onsubmit = 'return false'  unless 'onsubmit' of attrs
-        return
 
