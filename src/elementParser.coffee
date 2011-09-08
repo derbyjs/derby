@@ -1,7 +1,6 @@
-module.exports = (events) ->
-  events: events
+module.exports = ->
 
-  addDomEvent: addDomEvent = (attrs, name, eventNames, onMethod, getMethod, property) ->
+  addDomEvent: addDomEvent = (events, attrs, name, eventNames, onMethod, getMethod, property) ->
     isArray = Array.isArray eventNames
     events.push (data, modelEvents, domEvents) ->
       args = [onMethod, data[name].model, attrs._id || attrs.id, getMethod, property]
@@ -11,7 +10,7 @@ module.exports = (events) ->
 
   parsePlaceholder:
     'value':
-      input: (attr, attrs, name) ->
+      input: (events, attr, attrs, name) ->
         if 'x-blur' of attrs
           # Only update after the element loses focus
           delete attrs['x-blur']
@@ -20,27 +19,29 @@ module.exports = (events) ->
           # By default, update on any event that could change the value
           eventNames = ['keyup', 'keydown', 'paste', 'dragend']
         
-        addDomEvent attrs, name, eventNames, 'set', 'prop', 'value'
+        addDomEvent events, attrs, name, eventNames, 'set', 'prop', 'value'
         # Update the element's property unless it has focus
         return method: 'propPolite'
     
     'checked':
-      input: (attr, attrs, name) ->
-        addDomEvent attrs, name, 'change', 'set', 'prop', 'checked'
+      input: (events, attr, attrs, name) ->
+        addDomEvent events, attrs, name, 'change', 'set', 'prop', 'checked'
         return method: 'prop', bool: true
 
   parseAttr:
     'x-bind':
-      '*': (attrs, name, fn) ->
+      '*': (events, attrs, name, fn) ->
         delete attrs['x-bind']
         events.push (data, modelEvents, domEvents) ->
           domEvents.bind name, [fn, attrs._id || attrs.id]
         return true
-      a: (attrs, name) ->
+      a: (events, attrs, name) ->
         if name is 'click' && !('href' of attrs)
           attrs.href = '#'
           attrs.onclick = 'return false'  unless 'onclick' of attrs
-      form: (attrs, name) ->
+        return
+      form: (events, attrs, name) ->
         if name is 'submit'
           attrs.onsubmit = 'return false'  unless 'onsubmit' of attrs
+        return
 

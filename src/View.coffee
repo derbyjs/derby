@@ -82,7 +82,7 @@ extend = (parent, obj) ->
   return out
 
 addId = (attrs, uniqueId) ->
-  if attrs.id is undefined then attrs.id = -> attrs._id = uniqueId()
+  unless attrs.id? then attrs.id = -> attrs._id = uniqueId()
 
 View.htmlEscape = htmlEscape = (s) ->
   unless s? then '' else s.replace /&(?!\s)|</g, (s) ->
@@ -194,9 +194,9 @@ parse = (view, viewName, template, data) ->
 
             if parser = parsePlaceholder[attr]
               if anyParser = parser['*']
-                anyOut = anyParser attr, attrs, name
+                anyOut = anyParser events, attr, attrs, name
               if elParser = parser[tagName]
-                elOut = elParser attr, attrs, name
+                elOut = elParser events, attr, attrs, name
             anyOut ||= {}
             elOut ||= {}
             method = elOut.method || anyOut.method || 'attr'
@@ -214,7 +214,8 @@ parse = (view, viewName, template, data) ->
 
           return  unless parser = parseAttr[attr]
           args = value.replace(/\s/g, '').split ':'
-          args.unshift attrs
+          args.unshift events, attrs
+          addId attrs, uniqueId
           anyAddId = anyParser args...  if anyParser = parser['*']
           elAddId = elParser args...  if elParser = parser[tagName]
           addId attrs, uniqueId  if elAddId || anyAddId
