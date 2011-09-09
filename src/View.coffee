@@ -200,6 +200,10 @@ parse = (view, viewName, template, data) ->
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
+      if parser = parseElement[tagName]
+        out = parser(events, attrs) || {}
+        addId attrs, uniqueId  if out.addId
+
       for attr, value of attrs
         do (attr) ->
           if match = extractPlaceholder value
@@ -228,10 +232,6 @@ parse = (view, viewName, template, data) ->
                 bool: (data, model) ->
                   if !dataValue(data, name, model) != !invert then ' ' + attr else ''
               else modelText view, name, attrEscape
-
-          if parser = parseElement[tagName]
-            out = parser(events, attrs) || {}
-            addId attrs, uniqueId  if out.addId
           
           return  unless parser = parseAttr[attr]
           args = value.replace(/\s/g, '').split ':'

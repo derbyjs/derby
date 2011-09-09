@@ -60,6 +60,7 @@ module.exports = ->
 
   parseElement:
     'select': (events, attrs) ->
+      console.log 'hey'
       distribute events, attrs, 'change'
       return addId: true
 
