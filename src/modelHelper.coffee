@@ -10,8 +10,11 @@ exports.init = (model, dom, view) ->
       # Check to see if this event is triggering for the right object. Remove
       # this listener if it is now stale
       return false  unless oldPath == path || get(oldPath) == get(path)
-      
-      value = view.get partial, value  if partial
+     
+      if partial is '$inv'
+        value = !value
+      else if partial
+        value = view.get partial, value
       # Remove this listener if the DOM update fails. This usually happens
       # when an id cannot be found
       return dom.update id, method, property, value, type, local

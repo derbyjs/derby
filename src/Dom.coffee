@@ -62,6 +62,7 @@ Dom = module.exports = (model, appExports) ->
         return  unless callback
       else
         [path, id, method, property, delay] = listener
+        path = path.substr 1  if invert = path.charAt(0) is '!'
       
       return  unless id is targetId
       # Remove this listener if the element doesn't exist
@@ -70,6 +71,7 @@ Dom = module.exports = (model, appExports) ->
       # Update the model when the element's value changes
       finish = ->
         value = getMethods[method] el, property
+        value = !value  if invert
         return  if model.get(path) == value
         model.set path, value
       

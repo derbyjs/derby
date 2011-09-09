@@ -127,7 +127,6 @@ addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
 
 View.modelPath = modelPath = (data, name) ->
-  console.log data.$path, name
   if (path = data.$path) && name.charAt(0) == '.'
     return if name is '.' then path else path + name
   return null  unless (datum = data[name]) && path = datum.model
@@ -204,14 +203,15 @@ parse = (view, viewName, template, data) ->
       for attr, value of attrs
         do (attr) ->
           if match = extractPlaceholder value
-            name = match.name
+            {pre, name} = match
             addNameToData data, name
+            invert = /^\s*!\s*$/.test pre
 
             if parser = parsePlaceholder[attr]
               if anyParser = parser['*']
-                anyOut = anyParser events, attr, attrs, name
+                anyOut = anyParser events, attrs, name, invert
               if elParser = parser[tagName]
-                elOut = elParser events, attr, attrs, name
+                elOut = elParser events, attrs, name, invert
             anyOut ||= {}
             elOut ||= {}
             method = elOut.method || anyOut.method || 'attr'
@@ -220,12 +220,13 @@ parse = (view, viewName, template, data) ->
             if data[name]?.model
               addId attrs, uniqueId
               events.push (data, modelEvents) ->
-                path = modelPath data, name
-                modelEvents.bind path, [attrs._id || attrs.id, method, attr]  if path
+                args = [attrs._id || attrs.id, method, attr]
+                args.push '$inv'  if invert
+                modelEvents.bind path, args  if path = modelPath data, name
 
             attrs[attr] = if bool
                 bool: (data, model) ->
-                  if dataValue data, name, model then ' ' + attr else ''
+                  if !dataValue(data, name, model) != !invert then ' ' + attr else ''
               else modelText view, name, attrEscape
 
           if parser = parseElement[tagName]

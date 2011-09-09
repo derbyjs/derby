@@ -10,18 +10,18 @@ view.make 'Head', """
   </style>
   """
 
-view.make 'optionText', '{{.}}!'
+# view.make 'optionText', '{{.}}!'
   
 # For validation, non-closed p elements must be wrapped in a div instead of the
 # default ins. Closed p's are fine in an ins element.
 # Option tags must only contain a variable with no additional text
 view.make 'Body', """
-  {{x.options.0.text > optionText}}
+  <!--{{x.options.0.text > optionText}}-->
   <select multiple><optgroup label=Animals>{{#x.options}}
     <option selected={{.active}} x-bind=change:change>{{.text}}
   {{/}}</select>
   <div>{{#x.options}}
-    <p><input type=checkbox checked={{.active}}> <input value={{.text}} disabled={{.active}}>
+    <p><input type=checkbox checked={{.active}}> <input value={{.text}} disabled=!{{.active}}>
   {{/}}</div>
   """
 

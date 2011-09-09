@@ -6,7 +6,7 @@ modelPath = (data, name) ->
   path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
 
 module.exports = ->
-  addDomEvent: addDomEvent = (events, attrs, name, eventNames, getMethod, property) ->
+  addDomEvent: addDomEvent = (events, attrs, name, eventNames, getMethod, property, invert) ->
     args = [null, null, getMethod, property]
     if isArray = Array.isArray eventNames
       for eventName, i in eventNames
@@ -14,8 +14,9 @@ module.exports = ->
     else
       [eventName, delay] = eventNames.split ','
       args.push delay  if delay?
+    prefix = if invert then '!' else ''
     events.push (data, modelEvents, domEvents) ->
-      args[0] = modelPath data, name
+      args[0] = prefix + modelPath data, name
       args[1] = attrs._id || attrs.id
       return domEvents.bind eventName, args  unless isArray
       for [eventName, delay] in eventNames
@@ -29,7 +30,7 @@ module.exports = ->
 
   parsePlaceholder:
     'value':
-      input: (events, attr, attrs, name) ->
+      input: (events, attrs, name) ->
         if 'x-blur' of attrs
           # Only update after the element loses focus
           delete attrs['x-blur']
@@ -45,18 +46,17 @@ module.exports = ->
         return method: 'propPolite'
     
     'checked':
-      '*': (events, attr, attrs, name) ->
-        addDomEvent events, attrs, name, 'change', 'prop', 'checked'
+      '*': (events, attrs, name, invert) ->
+        addDomEvent events, attrs, name, 'change', 'prop', 'checked', invert
         return method: 'prop', bool: true
     
     'selected':
-      '*': (events, attr, attrs, name) ->
-        addDomEvent events, attrs, name, 'change', 'prop', 'selected'
+      '*': (events, attrs, name, invert) ->
+        addDomEvent events, attrs, name, 'change', 'prop', 'selected', invert
         return method: 'prop', bool: true
     
     'disabled':
-      '*': (events, attr, attrs, name) ->
-        return method: 'prop', bool: true
+      '*': -> return method: 'prop', bool: true
 
   parseElement:
     'select': (events, attrs) ->
