@@ -270,7 +270,7 @@ parse = (view, viewName, template, data) ->
         block = {type, name, partial, lastPartial, lastAutoClosed: autoClosed}
 
       text = unless partial then '' else
-        (data, model) -> view.get partial, dataValue(data, name, model), data, modelPath(data, name)
+        (data, model) -> view.get partial, dataValue(data, name, model), data, modelPath(data, name || '.')
 
       if (datum = data[name])?
         if datum.model && !startBlock
