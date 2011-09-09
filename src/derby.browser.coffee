@@ -14,8 +14,9 @@ exports.createApp = (appModule, appExports) ->
   dom = view.dom = new Dom model, appExports
   modelHelper.init model, dom, view
   
-  appModule.exports = (idCount, modelBundle, modelEvents, domEvents) ->
+  appModule.exports = (idCount, paths, modelBundle, modelEvents, domEvents) ->
     view._idCount = idCount
+    view._paths = paths
     racer.init modelBundle
     model.__events.set modelEvents
     dom.init domEvents

@@ -46,14 +46,15 @@ View::sendHtml = (res, model) ->
   # Initialization script and Tail
   tail = @get 'Tail'
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{clientName}')(" + @_idCount + ','
-  initEnd = ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
+    "#{clientName}=require('./#{clientName}')(#{@_idCount}," +
+    JSON.stringify(@_paths) + ','
+  initEnd = ',' + JSON.stringify(model.__events.get()) + ',' +
+      JSON.stringify(dom.events.get()) +
+      ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
   
   # Wait for transactions to finish and package up the racer model data
   model.bundle (bundle) ->
-    res.end initStart + bundle.replace(/<\//g, '<\\/') + ',' +
-      JSON.stringify(model.__events.get()) + ',' +
-      JSON.stringify(dom.events.get()) + initEnd
+    res.end initStart + bundle.replace(/<\//g, '<\\/') + initEnd
 
 cache = {}
 minify = (js) ->

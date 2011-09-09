@@ -4,6 +4,7 @@ elementParser = require './elementParser'
 View = module.exports = ->
   self = this
   @_views = {}
+  @_paths = {}
   @_loadFuncs = ''
   
   # All automatically created ids start with a dollar sign
@@ -49,8 +50,10 @@ View:: =
           return ''  unless type is '^'
       else
         return ''  if (type is '^' && ctx) || (type is '#' && !ctx)
+      
+      @_paths[viewName] = path  if path
     ctx = extend parentCtx, ctx
-    ctx.$path = path  if ctx
+    ctx.$path = @_paths[viewName]
     return view ctx
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
@@ -87,7 +90,8 @@ View:: =
 
 
 extend = (parent, obj) ->
-  return obj  unless typeof parent is 'object'
+  unless typeof parent is 'object'
+    return if typeof obj is 'object' then obj else {}
   out = Object.create parent
   return out  unless obj
   for key of obj
