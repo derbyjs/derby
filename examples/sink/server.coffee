@@ -10,10 +10,10 @@ store.flush()
 
 app.get '/', (req, res) ->
   store.subscribe 'x.**', (err, model) ->
-    model.setNull 'x.options', [
-      {text: 'Frogs', active: true}
-      {text: 'Snakes', active: true}
-      {text: 'Puppies', active: false}
+    model.setNull 'x.styles', [
+      {prop: 'color', value: '#c00', active: true}
+      {prop: 'font-weight', value: 'bold', active: true}
+      {prop: 'font-size', value: '18px', active: false}
     ]
     sink.view.sendHtml res, model
 

@@ -7,21 +7,29 @@ view.make 'Head', """
     body{margin:10px}
     body,select{font:13px/normal arial,sans-serif}
     ins{text-decoration:none}
+    .css{margin-left:10px}
   </style>
   """
 
-view.make 'exclaim', '{{.text}}!'
+view.make 'cssProperty', '{{.prop}}: {{.value}};'
 
 # Option tags must only contain a variable with no additional text
 # For validation, non-closed p elements must be wrapped in a div instead of the
 # default ins. Closed p's are fine in an ins element.
 view.make 'Body', """
-  <select multiple><optgroup label=Animals>{{#x.options}}
-    <option selected={{.active}}>{{.text}}
+  <select multiple><optgroup label="CSS properties">{{#x.styles}}
+    <option selected={{.active}}>{{.prop}}
   {{/}}</select>
-  <div>{{#x.options}}
-    <p><input type=checkbox checked={{.active}}> <input value={{.text}} disabled=!{{.active}}>
+  <div>{{#x.styles}}
+    <p><input type=checkbox checked={{.active}}> 
+    <input value={{.prop}} disabled=!{{.active}}> 
+    <input value={{.value}} disabled=!{{.active}}>
   {{/}}</div>
-  {{#x.options}}<p>{{> exclaim}}</p>{{/}}
+  <h3>Currently applied:</h3>
+  <p>{
+    <p class=css>{{#x.styles}}{{> cssProperty}}<br>{{/}}
+  <p>}
+  <h3>Output:</h3>
+  <p style="{{x.styles > cssProperty}}" contenteditable>Edit this text...
   """
 
