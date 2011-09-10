@@ -96,35 +96,73 @@ module.exports =
     view._init model
     
     template = '{{#show}}Yep{{^}}Nope{{/}}{{#show}}} Yes!{{/}} {{^show}}No{{/}}'
-    
+
+    literalTruthy = 'Yep Yes! '
+    literalFalsey = 'Nope No'
+    modelTruthy = '<ins id=$0>Yep</ins><ins id=$1> Yes!</ins> <ins id=$2></ins>'
+    modelFalsey = '<ins id=$0>Nope</ins><ins id=$1></ins> <ins id=$2>No</ins>'
+
     view.make 'test', template, show: true
-    view.get('test').should.eql 'Yep Yes! '
+    view.get('test').should.eql literalTruthy
     view.make 'test', template, show: 1
-    view.get('test').should.eql 'Yep Yes! '
+    view.get('test').should.eql literalTruthy
     view.make 'test', template, show: 'x'
-    view.get('test').should.eql 'Yep Yes! '
+    view.get('test').should.eql literalTruthy
     view.make 'test', template, show: {}
-    view.get('test').should.eql 'Yep Yes! '
+    view.get('test').should.eql literalTruthy
     
     view.make 'test', template, show: false
-    view.get('test').should.eql 'Nope No'
+    view.get('test').should.eql literalFalsey
     view.make 'test', template, show: undefined
-    view.get('test').should.eql 'Nope No'
+    view.get('test').should.eql literalFalsey
     view.make 'test', template, show: null
-    view.get('test').should.eql 'Nope No'
+    view.get('test').should.eql literalFalsey
     view.make 'test', template, show: 0
-    view.get('test').should.eql 'Nope No'
+    view.get('test').should.eql literalFalsey
     view.make 'test', template, show: ''
-    view.get('test').should.eql 'Nope No'
+    view.get('test').should.eql literalFalsey
     view.make 'test', template, show: []
-    view.get('test').should.eql 'Nope No'
+    view.get('test').should.eql literalFalsey
     
     view.make 'test', template
-    view.get('test').should.eql '<ins id=$0>Nope</ins><ins id=$1></ins> <ins id=$2>No</ins>'
-    model.set 'show', false
-    view.get('test').should.eql '<ins id=$3>Nope</ins><ins id=$4></ins> <ins id=$5>No</ins>'
+
+    # No parameter assumes it is a model path that is undefined
+    view._idCount = 0
+    view.get('test').should.eql modelFalsey
+    
+    view._idCount = 0
     model.set 'show', true
-    view.get('test').should.eql '<ins id=$6>Yep</ins><ins id=$7> Yes!</ins> <ins id=$8></ins>'
+    view.get('test').should.eql modelTruthy
+    view._idCount = 0
+    model.set 'show', 1
+    view.get('test').should.eql modelTruthy
+    view._idCount = 0
+    model.set 'show', 'x'
+    view.get('test').should.eql modelTruthy
+    view._idCount = 0
+    model.set 'show', {}
+    view.get('test').should.eql modelTruthy
+    
+    view._idCount = 0
+    model.set 'show', false
+    view.get('test').should.eql modelFalsey
+    view._idCount = 0
+    model.set 'show', undefined
+    view.get('test').should.eql modelFalsey
+    
+    # TODO: Fix bug in Racer
+    # view._idCount = 0
+    # model.set 'show', null
+    # view.get('test').should.eql modelFalsey
+    view._idCount = 0
+    model.set 'show', 0
+    view.get('test').should.eql modelFalsey
+    view._idCount = 0
+    model.set 'show', ''
+    view.get('test').should.eql modelFalsey
+    view._idCount = 0
+    model.set 'show', []
+    view.get('test').should.eql modelFalsey
 
   'test lists in text': ->
     view = new View
@@ -144,11 +182,8 @@ module.exports =
     view.make 'test', template, arr: []
     view.get('test').should.eql '<ul><li>Nothing to see</ul>'
 
-    # TODO: Currently literal array values are still wrapped in ins tags,
-    # since the compiler is not detecting that the values are supplied in the
-    # passed in context.
     view.make 'test', template, arr: [{name: 'stuff'}, {name: 'more'}]
-    view.get('test').should.eql '<ul><li><ins id=$0>stuff</ins><li><ins id=$1>more</ins></ul>'
+    view.get('test').should.eql '<ul><li id=$0>stuff<li id=$1>more</ul>'
 
   'test boolean attributes': ->
     view = new View
@@ -158,7 +193,7 @@ module.exports =
     template = '<input type=checkbox checked={{maybe}}>'
 
     view.make 'test', template
-    view.get('test').should.eql '<input type=checkbox>'
+    view.get('test').should.eql '<input type=checkbox id=$0>'
     view.make 'test', template, maybe: false
     view.get('test').should.eql '<input type=checkbox>'
     view.make 'test', template, maybe: true
