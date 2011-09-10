@@ -14,7 +14,7 @@ exports.init = (model, dom, view) ->
       if partial is '$inv'
         value = !value
       else if partial
-        value = view.get partial, value
+        value = view.get partial, value, null, null, oldPath
       # Remove this listener if the DOM update fails. This usually happens
       # when an id cannot be found
       return dom.update id, method, property, value, type, local

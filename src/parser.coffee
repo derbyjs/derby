@@ -1,11 +1,17 @@
-# TODO: Include this from View. Wasn't working with require for some reason
-modelPath = (data, name) ->
-  if (path = data.$path) && name.charAt(0) == '.'
-    return if name is '.' then path else path + name
-  return null  unless (datum = data[name]) && path = datum.model
-  path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
+replaceIndex = (data, path, noReplace) ->
+  return path  if noReplace || !(indicies = data.$i)
+  i = 0
+  path.replace /\$#/g, -> indicies[i++]
 
-module.exports = ->
+module.exports =
+  modelPath: modelPath = (data, name, noReplace) ->
+    if (paths = data.$paths) && name.charAt(0) == '.'
+      return replaceIndex(data, paths[0], noReplace)  if name is '.'
+      i = /^\.+/.exec(name)[0].length - 1
+      return replaceIndex(data, paths[i], noReplace) + name.substr(i)
+    return null  unless (datum = data[name]) && path = datum.model
+    path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
+
   addDomEvent: addDomEvent = (events, attrs, name, eventNames, getMethod, property, invert) ->
     args = [null, null, getMethod, property]
     if isArray = Array.isArray eventNames

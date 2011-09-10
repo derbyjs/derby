@@ -1,5 +1,5 @@
 htmlParser = require './htmlParser'
-elementParser = require './elementParser'
+{modelPath, parsePlaceholder, parseElement, parseAttr} = require './parser'
 
 View = module.exports = ->
   self = this
@@ -15,7 +15,7 @@ View = module.exports = ->
 
 View:: =
 
-  get: (viewName, ctx, parentCtx, path) ->
+  get: (viewName, ctx, parentCtx, path, triggerPath) ->
     unless view = @_views[viewName]
       # Check to see if view is a block partial that hasn't been created yet,
       # because its parent hasn't been rendered. If so, render the parent and
@@ -24,36 +24,43 @@ View:: =
         parentView = viewName.substr 1, i - 1
         # Make sure the parent view exists to avoid an infinte loop
         throw "Can't find view: #{parentView}"  unless @_views[parentView]
-        @get parentView
-        return @get viewName, ctx, parentCtx
+        @get parentView, {$triggerPath: triggerPath}
+        return @get viewName, ctx, parentCtx, null, triggerPath
       # Return an empty string when a view can't be found
       return ''
-    if parentCtx || ctx?
-      # This is a partial
-      type = viewName.charAt(0)
-      if Array.isArray ctx
-        if ctx.length
-          return ''  if type is '^'
-          if path
-            out = ''
-            for item, i in ctx
-              obj = extend parentCtx, item
-              obj.$path = "#{path}.#{i}"
-              out += view obj
-            return out
-          else
-            out = ''
-            for item in ctx
-              out += view extend parentCtx, item
-            return out
-        else
-          return ''  unless type is '^'
+
+    if path
+      paths = parentCtx.$paths
+      paths = @_paths[viewName] = if paths then [path].concat paths else [path]
+    else
+      paths = @_paths[viewName]
+
+    type = viewName.charAt(0)
+    # TODO: This is a hack to detect arrays, since Array.isArray doesn't work
+    # on speculative array objects right now. This should be fixed in Racer
+    if ctx && ctx.splice && ctx.slice
+      if paths
+        paths[0] += '.$#'
+        parentCtx = Object.create parentCtx
+        parentCtx.$paths = paths
+      if ctx.length
+        return ''  if type is '^'
+        out = ''
+        indicies = parentCtx.$i || []
+        for item, i in ctx
+          obj = extend parentCtx, item
+          obj.$i = [i].concat indicies
+          out += view obj
+        return out
       else
-        return ''  if (type is '^' && ctx) || (type is '#' && !ctx)
-      
-      @_paths[viewName] = path  if path
+        return ''  unless type is '^'
+    else
+      return ''  if (type is '^' && ctx) || (type is '#' && !ctx)
+    
     ctx = extend parentCtx, ctx
-    ctx.$path = @_paths[viewName]
+    if (paths = ctx.$paths = @_paths[viewName]) && (triggerPath ||= ctx.$triggerPath)
+      re = RegExp(paths[0].replace(/\$#|\./g, (match) -> if match is '.' then '\\.' else '(\\d+)'))
+      ctx.$i = re.exec(triggerPath)?.slice(1).reverse()
     return view ctx
 
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
@@ -130,12 +137,6 @@ extractPlaceholder = (text) ->
 addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
 
-View.modelPath = modelPath = (data, name) ->
-  if (path = data.$path) && name.charAt(0) == '.'
-    return if name is '.' then path else path + name
-  return null  unless (datum = data[name]) && path = datum.model
-  path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
-
 dataValue = (data, name, model) ->
   # Get the value from the model if the name is a model path
   if path = modelPath data, name
@@ -199,8 +200,6 @@ parse = (view, viewName, template, data) ->
   uniqueId = view._uniqueId
   partialCount = 0
   partialName = -> viewName + '$' + partialCount++
-
-  {parsePlaceholder, parseElement, parseAttr} = elementParser events
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
@@ -269,8 +268,9 @@ parse = (view, viewName, template, data) ->
         partial = type + partialName()
         block = {type, name, partial, lastPartial, lastAutoClosed: autoClosed}
 
-      text = unless partial then '' else
-        (data, model) -> view.get partial, dataValue(data, name, model), data, modelPath(data, name || '.')
+      text = unless partial then '' else (data, model) ->
+        relName = name || '.'
+        view.get partial, dataValue(data, relName, model), data, modelPath(data, relName, true)
 
       if (datum = data[name])?
         if datum.model && !startBlock
@@ -335,3 +335,4 @@ parseString = (view, viewName, template, data) ->
         modelEvents.bind path, params.slice()
 
   renderer view, items, events
+
