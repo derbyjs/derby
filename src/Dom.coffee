@@ -13,9 +13,13 @@ element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
 getMethods = 
   attr: (el, attr) -> el.getAttribute attr
 
-  prop: (el, prop) -> el[prop]
+  prop: getProp = (el, prop) -> el[prop]
+  
+  propPolite: getProp
 
   html: (el) -> el.innerHTML
+  
+  appendHtml: ->
 
 setMethods = 
   attr: (value, el, attr) ->
@@ -106,6 +110,8 @@ Dom:: =
       method = 'appendHtml'  
     else if method is 'propPolite' && local
       method = 'prop'
+    
+    return  if value == getMethods[method] el, property
     setMethods[method] value, el, property
     return
 
