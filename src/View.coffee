@@ -29,11 +29,11 @@ View:: =
       # Return an empty string when a view can't be found
       return ''
 
+    paths = parentCtx && parentCtx.$paths
     if path
-      paths = parentCtx.$paths
       paths = @_paths[viewName] = if paths then [path].concat paths else [path]
     else
-      paths = @_paths[viewName]
+      @_paths[viewName] = paths ||= @_paths[viewName]
 
     type = viewName.charAt(0)
     # TODO: This is a hack to detect arrays, since Array.isArray doesn't work
@@ -58,7 +58,7 @@ View:: =
       return ''  if (type is '^' && ctx) || (type is '#' && !ctx)
     
     ctx = extend parentCtx, ctx
-    if (paths = ctx.$paths = @_paths[viewName]) && (triggerPath ||= ctx.$triggerPath)
+    if (ctx.$paths = paths) && (triggerPath ||= ctx.$triggerPath)
       re = RegExp(paths[0].replace(/\$#|\./g, (match) -> if match is '.' then '\\.' else '(\\d+)'))
       ctx.$i = re.exec(triggerPath)?.slice(1).reverse()
     return view ctx
@@ -109,7 +109,7 @@ addId = (attrs, uniqueId) ->
   unless attrs.id? then attrs.id = -> attrs._id = uniqueId()
 
 View.htmlEscape = htmlEscape = (s) ->
-  unless s? then '' else s.replace /&(?!\s)|</g, (s) ->
+  unless s? then '' else s.toString().replace /&(?!\s)|</g, (s) ->
     if s is '&' then '&amp;' else '&lt;'
 
 View.attrEscape = attrEscape = (s) ->
@@ -210,9 +210,13 @@ parse = (view, viewName, template, data) ->
       for attr, value of attrs
         do (attr) ->
           if match = extractPlaceholder value
-            {pre, name} = match
+            {pre, post, name, partial} = match
             addNameToData data, name
             invert = /^\s*!\s*$/.test pre
+            if (pre && !invert) || post || partial
+              # Attributes can't handle more than a single variable, so create
+              # a string partial
+              console.log 'TODO'
 
             if parser = parsePlaceholder[attr]
               if anyParser = parser['*']
@@ -269,8 +273,7 @@ parse = (view, viewName, template, data) ->
         block = {type, name, partial, lastPartial, lastAutoClosed: autoClosed}
 
       text = unless partial then '' else (data, model) ->
-        relName = name || '.'
-        view.get partial, dataValue(data, relName, model), data, modelPath(data, relName, true)
+        view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
 
       if (datum = data[name])?
         if datum.model && !startBlock
@@ -295,7 +298,7 @@ parse = (view, viewName, template, data) ->
 
           text = text || modelText view, name, escaped && htmlEscape
 
-        else text = text || if escaped then htmlEscape datum.toString() else datum.toString()
+        else text = text || if escaped then htmlEscape datum else datum.toString()
 
       stack.push ['chars', text]  if text && !endBlock
       stack.push ['end', 'ins']  if wrap

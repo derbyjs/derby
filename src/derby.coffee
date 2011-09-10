@@ -16,7 +16,8 @@ exports.createApp = (appModule, appExports, options = {}) ->
   staticDir = options.dir || 'public'
   staticPath = path.join staticRoot, staticDir
 
-  bundle = -> racer.js require: appModule.filename, (js) ->
+  minify = process.env.NODE_ENV is 'production'
+  bundle = -> racer.js {minify, require: appModule.filename}, (js) ->
     filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
     # Base64 uses characters reserved in URLs and adds extra padding charcters.
     # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding

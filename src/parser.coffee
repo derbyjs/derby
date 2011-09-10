@@ -1,5 +1,5 @@
 replaceIndex = (data, path, noReplace) ->
-  return path  if noReplace || !(indicies = data.$i)
+  return path  if noReplace || !(indicies = data.$i) || !path
   i = 0
   path.replace /\$#/g, -> indicies[i++]
 
