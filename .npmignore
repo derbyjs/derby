@@ -1,3 +1,6 @@
 node_modules
-/examples/chat/public/*.js
-/examples/chat/public/*.gz
+examples/chat/public/*.js
+examples/chat/public/*.gz
+examples/sink/public/*.js
+examples/sink/public/*.gz
+*.gz
