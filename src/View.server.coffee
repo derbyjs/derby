@@ -12,7 +12,7 @@ View::_init = (model) ->
   @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
 
-View::sendHtml = (res, model) ->
+View::sendHtml = (res, model, ctx) ->
   @_init model
   dom = @dom
 
@@ -28,23 +28,23 @@ View::sendHtml = (res, model) ->
   # same thing as the contents of the HTML head element, and if there is small
   # amount of header HTML that will display well by itself, it is a good idea
   # to add this to the Head view so that it renders ASAP.
-  doctype = @get('Doctype') || '<!DOCTYPE html><meta charset=utf-8>'
-  title = View.htmlEscape(@get 'Title') || 'Derby app'
-  head = @get 'Head'
+  doctype = @get('Doctype', ctx) || '<!DOCTYPE html><meta charset=utf-8>'
+  title = View.htmlEscape(@get 'Title', ctx) || 'Derby app'
+  head = @get 'Head', ctx
   res.write "#{doctype}<title>#{title}</title>#{head}"
 
   # Remaining HTML
-  res.write @get 'Body'
+  res.write @get 'Body', ctx
 
   # preLoad scripts and external script
   clientName = @_clientName
   res.write "<script>function $(i){return document.getElementById(i)}" +
     "function #{clientName}(){#{clientName}=1}" +
-    "#{minify @_loadFuncs}</script>" +
+    "#{minify @_loadFuncs}</script>" + @get('Script', ctx) +
     "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"
   
   # Initialization script and Tail
-  tail = @get 'Tail'
+  tail = @get 'Tail', ctx
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
     "#{clientName}=require('./#{clientName}')(#{@_idCount}," +
     JSON.stringify(@_paths) + ','

@@ -126,12 +126,13 @@ trimInner = (s) -> if s then s.replace /\n\s*/g, '' else ''
 extractPlaceholder = (text) ->
   match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}([\s\S]*)/.exec text
   return  unless match
-  content = /^([#^//]?) *([^ >]*)(?: *> *(.*))?/.exec match[3]
+  content = /^([#^//]?) *(~?) *([^ >]*)(?: *> *(.*))?/.exec match[3]
   pre: trimInner match[1]
   escaped: match[2] == '{{'
   type: content[1]
-  name: content[2]
-  partial: content[3]
+  literal: content[2]
+  name: content[3]
+  partial: content[4]
   post: trimInner match[4]
 
 addNameToData = (data, name) ->
@@ -210,7 +211,7 @@ parse = (view, viewName, template, data) ->
       for attr, value of attrs
         do (attr) ->
           if match = extractPlaceholder value
-            {pre, post, name, partial} = match
+            {pre, post, name, partial, literal} = match
             addNameToData data, name
             invert = /^\s*!\s*$/.test pre
             if (pre && !invert) || post || partial
@@ -228,7 +229,7 @@ parse = (view, viewName, template, data) ->
             method = elOut.method || anyOut.method || 'attr'
             bool = elOut.bool || anyOut.bool
 
-            if data[name]?.model
+            if data[name]?.model && !literal
               addId attrs, uniqueId
               events.push (data, modelEvents) ->
                 args = [attrs._id || attrs.id, method, attr]
@@ -257,44 +258,45 @@ parse = (view, viewName, template, data) ->
         stack.push ['chars', text]  if text = trimInner text
         return
 
-      {pre, post, name, escaped, type, partial} = match
+      {pre, post, name, escaped, type, partial, literal} = match
       addNameToData data, name
 
       stack.push ['chars', pre]  if pre
 
       if block && ((endBlock = type is '/') || (autoClosed = type is '^' && (!name || name == block.name) && block.type is '#'))
-        {name, partial, lastPartial, lastAutoClosed} = block
+        {name, partial, literal, lastPartial, lastAutoClosed} = block
         popped.push queues.pop()
         {stack, events, block} = queues[queues.length - 1]
 
       if startBlock = type is '#' || type is '^'
         lastPartial = partial
         partial = type + partialName()
-        block = {type, name, partial, lastPartial, lastAutoClosed: autoClosed}
+        block = {type, name, partial, literal, lastPartial, lastAutoClosed: autoClosed}
 
       text = unless partial then '' else (data, model) ->
         view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
 
       if (datum = data[name])?
         if datum.model && !startBlock
-          # Setup binding if there is a variable or block name
-          i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
-          last = stack[i]
-          if wrap = pre || (post && !/^\{{2,3}[\/^]\}{2,3}/.test post) || !(last && last[0] == 'start')
-            last = ['start', 'ins', {}]
-            if endBlock then stack.splice i + 1, 0, last else stack.push last
-          attrs = last[2]
-          addId attrs, uniqueId
+          unless literal
+            # Setup binding if there is a variable or block name
+            i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
+            last = stack[i]
+            if wrap = pre || (post && !/^\{{2,3}[\/^]\}{2,3}/.test post) || !(last && last[0] == 'start')
+              last = ['start', 'ins', {}]
+              if endBlock then stack.splice i + 1, 0, last else stack.push last
+            attrs = last[2]
+            addId attrs, uniqueId
 
-          addEvent = (partial, append) -> events.push (data, modelEvents) ->
-            return  unless path = modelPath data, name
-            escaped = false  if partial
-            domMethod = if append then 'appendHtml' else 'html'
-            params = [attrs._id || attrs.id, domMethod, +escaped]
-            params[3] = partial  if partial
-            modelEvents.bind path, params
-          addEvent partial
-          addEvent lastPartial, true  if lastAutoClosed
+            addEvent = (partial, append) -> events.push (data, modelEvents) ->
+              return  unless path = modelPath data, name
+              escaped = false  if partial
+              domMethod = if append then 'appendHtml' else 'html'
+              params = [attrs._id || attrs.id, domMethod, +escaped]
+              params[3] = partial  if partial
+              modelEvents.bind path, params
+            addEvent partial
+            addEvent lastPartial, true  if lastAutoClosed
 
           text = text || modelText view, name, escaped && htmlEscape
 
