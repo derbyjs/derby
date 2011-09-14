@@ -6,29 +6,30 @@ derby = require 'derby'
 
 # SERVER & CLIENT VIEW DEFINITION #
 
-view.make 'Title', 'Chat ({{_session.numMessages}}) - {{_session.user.name}}'
+view.make 'Title',
+  'Chat &lpar;((_session.numMessages))&rpar; - ((_session.user.name))'
 
 # connected and canConnect are built-in properties of model. If a variable
 # is not defined in the current context, it will be looked up in the model data
 # and the model properties
 view.make 'info', """
-  <div id=info>{{^connected}}
-    {{#canConnect}}
-      Offline{{#_showReconnect}} 
+  <div id=info>((^connected))
+    ((#canConnect))
+      Offline((#_showReconnect)) 
         &ndash; <a x-bind=click:connect>Reconnect</a>
-      {{/}}
-    {{^}}
+      ((/))
+    ((^))
       Unable to reconnect &ndash; 
       <a x-bind=click:reload>Reload</a>
-    {{/}}
-  {{/}}</div>
+    ((/))
+  ((/))</div>
   """
 
 # Parentheses can be used to do interpolation within a model name. 
 view.make 'message', """
-  <li><img src=img/s.png class={{users.(userId).picClass}} alt="">
+  <li><img src=img/s.png class={{users.[userId].picClass}} alt="">
     <div class=message>
-      <p><b>{{users.(userId).name}}</b>
+      <p><b>((users.[userId].name))</b>
       <p>{{comment}}
     </div>
   """,

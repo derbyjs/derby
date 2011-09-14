@@ -22,18 +22,19 @@ fs.readFile "#{__dirname}/chat.styl", 'utf8', (err, styl) ->
 # update the model after user interaction, and the event handlers that update
 # the DOM when the model changes.
 view.make 'Body', """
-  {{> info}}
-  <div id=messages><ul id=messageList>{{_room.messages > message}}</ul></div>
+  ((> info))
+  <div id=messages><ul id=messageList>((_room.messages > message))</ul></div>
   <div id=foot>
-    <img id=inputPic src=img/s.png class={{_session.user.picClass}} alt="">
+    <img id=inputPic src=img/s.png class=((_session.user.picClass)) alt="">
     <div id=inputs>
-      <input id=inputName value={{_session.user.name}}>
+      <input id=inputName value=((_session.user.name))>
       <form id=inputForm x-bind=submit:postMessage>
-        <input id=commentInput value={{_session.newComment}} autofocus>
+        <input id=commentInput value=((_session.newComment)) autofocus>
       </form>
     </div>
   </div>
-  """
+  """,
+  'sadf': model: '_room.messages'
 
 # Scripts required to properly render the page can be passed in a function
 # to view.preLoad. For convenience, document.getElementById is aliased as $,

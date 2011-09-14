@@ -68,7 +68,7 @@ View:: =
   make: (name, template, data = {}) ->
     self = this
     render = (ctx) ->
-      if typeof template is 'string' && !~template.indexOf('{{')
+      if typeof template is 'string' && !/\{{2,3}|\({2,3}/.test(template)
         # Return the template without leading whitespace and newlines
         # if it is a string literal without placeholders
         template = trim template
@@ -124,16 +124,35 @@ trim = (s) -> if s then s.replace /(?:^|\n)\s*/g, '' else ''
 trimInner = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
 extractPlaceholder = (text) ->
-  match = /^([^\{]*)(\{{2,3})([^\}]+)\}{2,3}([\s\S]*)/.exec text
+  match = ///^
+    ([^\{\(]*)  # Text before placeholder
+    (\{{2,3}|\({2,3})  # Placeholder start
+    ([^\}\)]+)  # Placeholder contents
+    (?:\}{2,3}|\){2,3})  # End placeholder
+    ([\s\S]*)  # Text after placeholder
+  ///.exec text
   return  unless match
-  content = /^([#^//]?) *(~?) *([^ >]*)(?: *> *(.*))?/.exec match[3]
+  content = ///^
+    \s*([\#^/]?)  # Block type
+    \s*([^\s>]*)  # Name of context object
+    (?:\s+@([^\s>]))?  # Alias name
+    (?:\s*>\s*([^\s]+)\s*)?  # Partial name
+  ///.exec match[3]
   pre: trimInner match[1]
-  escaped: match[2] == '{{'
+  escaped: match[2].length is 2
+  literal: match[2].charAt(0) is '{'
   type: content[1]
-  literal: content[2]
-  name: content[3]
+  name: content[2]
+  alias: content[3]
   partial: content[4]
   post: trimInner match[4]
+
+startsEndBlock = (s) ->
+  ///^
+    (?:\{{2,3}|\({2,3})  # Start placeholder
+    [/^]  # End block type
+    (?:\}{2,3}|\){2,3})  # End placeholder
+  ///.test s
 
 addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
@@ -191,16 +210,50 @@ renderer = (view, items, events) ->
     event data, modelEvents, domEvents for event in events
     return html
 
+parsePlaceholderContent = (view, data, partialName, queues, popped, stack, events, block, match, callbacks) ->
+  {literal, type, name, alias, partial} = match
+  addNameToData data, name
+
+  if block && ((endBlock = type is '/') ||
+      (autoClosed = type is '^' && (!name || name == block.name) && block.type is '#'))
+    {name, partial, literal, lastPartial, lastAutoClosed} = block
+    popped.push queues.pop()
+    {stack, events, block} = queues[queues.length - 1]
+    callbacks.onStartBlock stack, events, block
+
+  if startBlock = type is '#' || type is '^'
+    lastPartial = partial
+    partial = type + partialName()
+    block = {type, name, partial, literal, lastPartial, lastAutoClosed: autoClosed}
+
+  if partial then partialText = (data, model) ->
+    view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
+
+  if (datum = data[name])?
+    if datum.model && !startBlock
+      callbacks.onBind name, partial, endBlock, lastAutoClosed, lastPartial  unless literal
+      callbacks.onModelText partialText, name, endBlock
+    else callbacks.onText partialText, datum, endBlock
+  else callbacks.onText partialText, '', endBlock
+
+  if startBlock
+    queues.push
+      stack: stack = []
+      events: events = []
+      viewName: partial
+      block: block
+    callbacks.onStartBlock stack, events, block
+
 parse = (view, viewName, template, data) ->
   return parseString view, viewName, template, data  if viewName is 'Title'
-
-  queues = [{stack: stack = [], events: events = []}]
-  popped = []
-  block = null
 
   uniqueId = view._uniqueId
   partialCount = 0
   partialName = -> viewName + '$' + partialCount++
+
+  queues = [{stack: stack = [], events: events = []}]
+  popped = []
+  block = null
 
   htmlParser.parse template,
     start: (tag, tagName, attrs) ->
@@ -258,58 +311,41 @@ parse = (view, viewName, template, data) ->
         stack.push ['chars', text]  if text = trimInner text
         return
 
-      {pre, post, name, escaped, type, partial, literal} = match
-      addNameToData data, name
+      {pre, post, escaped, partial} = match
+      escaped = false  if partial
+      pushText = (text, endBlock) -> stack.push ['chars', text]  if text && !endBlock
+      pushText pre
 
-      stack.push ['chars', pre]  if pre
+      wrap = null
+      parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match,
+        onBind: (name, partial, endBlock, lastAutoClosed, lastPartial) ->
+          i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
+          last = stack[i]
+          if wrap = pre || (post && !startsEndBlock post) || !(last && last[0] == 'start')
+            last = ['start', 'ins', {}]
+            if endBlock then stack.splice i + 1, 0, last else stack.push last
+          attrs = last[2]
+          addId attrs, uniqueId
 
-      if block && ((endBlock = type is '/') || (autoClosed = type is '^' && (!name || name == block.name) && block.type is '#'))
-        {name, partial, literal, lastPartial, lastAutoClosed} = block
-        popped.push queues.pop()
-        {stack, events, block} = queues[queues.length - 1]
+          addEvent = (partial, domMethod) -> events.push (data, modelEvents) ->
+            return  unless path = modelPath data, name
+            params = [attrs._id || attrs.id, domMethod, +escaped]
+            params[3] = partial  if partial
+            modelEvents.bind path, params
+          addEvent partial, 'html'
+          addEvent lastPartial, 'appendHtml'  if lastAutoClosed
 
-      if startBlock = type is '#' || type is '^'
-        lastPartial = partial
-        partial = type + partialName()
-        block = {type, name, partial, literal, lastPartial, lastAutoClosed: autoClosed}
+        onModelText: (partialText, name, endBlock) ->
+          pushText (partialText || modelText view, name, escaped && htmlEscape), endBlock
+          stack.push ['end', 'ins']  if wrap
+        
+        onText: (partialText, value, endBlock) ->
+          pushText (partialText || if escaped then htmlEscape value else value.toString()), endBlock
 
-      text = unless partial then '' else (data, model) ->
-        view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
-
-      if (datum = data[name])?
-        if datum.model && !startBlock
-          unless literal
-            # Setup binding if there is a variable or block name
-            i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
-            last = stack[i]
-            if wrap = pre || (post && !/^\{{2,3}[\/^]\}{2,3}/.test post) || !(last && last[0] == 'start')
-              last = ['start', 'ins', {}]
-              if endBlock then stack.splice i + 1, 0, last else stack.push last
-            attrs = last[2]
-            addId attrs, uniqueId
-
-            addEvent = (partial, append) -> events.push (data, modelEvents) ->
-              return  unless path = modelPath data, name
-              escaped = false  if partial
-              domMethod = if append then 'appendHtml' else 'html'
-              params = [attrs._id || attrs.id, domMethod, +escaped]
-              params[3] = partial  if partial
-              modelEvents.bind path, params
-            addEvent partial
-            addEvent lastPartial, true  if lastAutoClosed
-
-          text = text || modelText view, name, escaped && htmlEscape
-
-        else text = text || if escaped then htmlEscape datum else datum.toString()
-
-      stack.push ['chars', text]  if text && !endBlock
-      stack.push ['end', 'ins']  if wrap
-
-      if startBlock then queues.push
-        stack: stack = []
-        events: events = []
-        viewName: partial
-        block: block
+        onStartBlock: (_stack, _events, _block) ->
+          stack = _stack
+          events = _events
+          block = _block
 
       chars post  if post
 
@@ -320,24 +356,25 @@ parse = (view, viewName, template, data) ->
     do (queue) ->
       render = renderer(view, reduceStack(queue.stack), queue.events)
       view._register queue.viewName, (ctx) -> render extend data, ctx
- 
+
   return renderer view, reduceStack(stack), events
 
 parseString = (view, viewName, template, data) ->
-  items = []
+  stack = []
   events = []
 
   post = template
   while post
     {name, pre, post} = extractPlaceholder post
     addNameToData data, name
-    items.push pre  if pre
-    items.push modelText view, name
+    # TODO: Generalize HTML character entity replacement
+    stack.push pre.replace('&rpar;', ')').replace('&lpar;', '(')  if pre
+    stack.push modelText view, name
     params = ['$doc', 'prop', 'title', 'Title']  if viewName is 'Title'
     do (name) ->
       if params then events.push (data, modelEvents) ->
         return  unless path = modelPath data, name
         modelEvents.bind path, params.slice()
 
-  renderer view, items, events
+  renderer view, stack, events
 

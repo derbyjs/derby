@@ -10,7 +10,7 @@ module.exports =
       i = /^\.+/.exec(name)[0].length - 1
       return replaceIndex(data, paths[i], noReplace) + name.substr(i)
     return null  unless (datum = data[name]) && path = datum.model
-    path.replace /\(([^)]+)\)/g, (match, name) -> data[name]
+    path.replace /\[([^\]]+)\]/g, (match, name) -> data[name]
 
   addDomEvent: addDomEvent = (events, attrs, name, eventNames, getMethod, property, invert) ->
     args = [null, null, getMethod, property]
