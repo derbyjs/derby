@@ -245,12 +245,17 @@ parsePlaceholderContent = (view, data, partialName, queues, popped, stack, event
     callbacks.onStartBlock stack, events, block
 
 parse = (view, viewName, template, data) ->
-  return parseString view, viewName, template, data  if viewName is 'Title'
-
-  uniqueId = view._uniqueId
   partialCount = 0
   partialName = -> viewName + '$' + partialCount++
+ 
+  if viewName is 'Title' then return parseString view, viewName, template,
+    data, partialName, (events, name) ->
+      events.push (data, modelEvents) ->
+        return  unless path = modelPath data, name
+        modelEvents.bind path, ['$doc', 'prop', 'title', 'Title']
 
+  uniqueId = view._uniqueId
+  
   queues = [{stack: stack = [], events: events = []}]
   popped = []
   block = null
@@ -270,7 +275,14 @@ parse = (view, viewName, template, data) ->
             if (pre && !invert) || post || partial
               # Attributes can't handle more than a single variable, so create
               # a string partial
-              console.log 'TODO'
+              partial ||= partialName()
+              addId attrs, uniqueId
+              render = parseString view, partial, value, data, partialName, 
+                (events, name) -> events.push (data, modelEvents) ->
+                  return  unless path = modelPath data, name
+                  modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
+              attrs[attr] = (data, model) -> attrEscape render(data, model)
+              return
 
             if parser = parsePlaceholder[attr]
               if anyParser = parser['*']
@@ -285,13 +297,13 @@ parse = (view, viewName, template, data) ->
             if data[name]?.model && !literal
               addId attrs, uniqueId
               events.push (data, modelEvents) ->
+                return  unless path = modelPath data, name
                 args = [attrs._id || attrs.id, method, attr]
-                args.push '$inv'  if invert
-                modelEvents.bind path, args  if path = modelPath data, name
+                args[3] = '$inv'  if invert
+                modelEvents.bind path, args
 
-            attrs[attr] = if bool
-                bool: (data, model) ->
-                  if !dataValue(data, name, model) != !invert then ' ' + attr else ''
+            attrs[attr] = if bool then bool: (data, model) ->
+                if !dataValue(data, name, model) != !invert then ' ' + attr else ''
               else modelText view, name, attrEscape
           
           return  unless parser = parseAttr[attr]
@@ -311,7 +323,7 @@ parse = (view, viewName, template, data) ->
         stack.push ['chars', text]  if text = trimInner text
         return
 
-      {pre, post, escaped, partial} = match
+      {pre, post, escaped} = match
       pushText = (text, endBlock) -> stack.push ['chars', text]  if text && !endBlock
       pushText pre
 
@@ -360,22 +372,37 @@ parse = (view, viewName, template, data) ->
 
   return renderer view, reduceStack(stack), events
 
-parseString = (view, viewName, template, data) ->
-  stack = []
-  events = []
+parseString = (view, viewName, template, data, partialName, onBind) ->
+  queues = [{stack: stack = [], events: events = []}]
+  popped = []
+  block = null
+
+  pushText = (text, endBlock) -> stack.push text  if text && !endBlock
 
   post = template
   while post
-    {name, pre, post} = extractPlaceholder post
-    addNameToData data, name
+    {pre, post} = match = extractPlaceholder post
     # TODO: Generalize HTML character entity replacement
-    stack.push pre.replace('&rpar;', ')').replace('&lpar;', '(')  if pre
-    stack.push modelText view, name
-    params = ['$doc', 'prop', 'title', 'Title']  if viewName is 'Title'
-    do (name) ->
-      if params then events.push (data, modelEvents) ->
-        return  unless path = modelPath data, name
-        modelEvents.bind path, params.slice()
+    pushText pre.replace('&rpar;', ')').replace('&lpar;', '(')
+    
+    parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match,
+      onBind: (name) -> onBind events, name
+      
+      onModelText: (partialText, name, endBlock) ->
+        pushText (partialText || modelText view, name, attrEscape), endBlock
+      
+      onText: (partialText, value, endBlock) ->
+        pushText (partialText || attrEscape value.toString()), endBlock
+        
+      onStartBlock: (_stack, _events, _block) ->
+        stack = _stack
+        events = _events
+        block = _block
+
+  for queue in popped
+    do (queue) ->
+      render = renderer(view, queue.stack, queue.events)
+      view._register queue.viewName, (ctx) -> render extend data, ctx
 
   renderer view, stack, events
 
