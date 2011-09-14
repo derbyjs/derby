@@ -312,7 +312,6 @@ parse = (view, viewName, template, data) ->
         return
 
       {pre, post, escaped, partial} = match
-      escaped = false  if partial
       pushText = (text, endBlock) -> stack.push ['chars', text]  if text && !endBlock
       pushText pre
 
@@ -336,10 +335,12 @@ parse = (view, viewName, template, data) ->
           addEvent lastPartial, 'appendHtml'  if lastAutoClosed
 
         onModelText: (partialText, name, endBlock) ->
+          escaped = false  if partialText
           pushText (partialText || modelText view, name, escaped && htmlEscape), endBlock
           stack.push ['end', 'ins']  if wrap
         
         onText: (partialText, value, endBlock) ->
+          escaped = false  if partialText
           pushText (partialText || if escaped then htmlEscape value else value.toString()), endBlock
 
         onStartBlock: (_stack, _events, _block) ->
