@@ -5,6 +5,7 @@ View = module.exports = ->
   self = this
   @_views = {}
   @_paths = {}
+  @_onBind = {}
   @_loadFuncs = ''
   
   # All automatically created ids start with a dollar sign
@@ -16,12 +17,14 @@ View = module.exports = ->
 View:: =
 
   get: (viewName, ctx, parentCtx, path, triggerPath) ->
+    type = viewName.charAt(0)
     unless view = @_views[viewName]
       # Check to see if view is a block partial that hasn't been created yet,
       # because its parent hasn't been rendered. If so, render the parent and
       # try to get the block partial again
-      if ~(i = viewName.indexOf '$')
-        parentView = viewName.substr 1, i - 1
+      if ~(i = viewName.indexOf '$p')
+        start = if type is '#' or type is '^' then 1 else 0
+        parentView = viewName.substr start, i - start
         # Make sure the parent view exists to avoid an infinte loop
         throw "Can't find view: #{parentView}"  unless @_views[parentView]
         @get parentView, {$triggerPath: triggerPath}
@@ -35,7 +38,6 @@ View:: =
     else
       @_paths[viewName] = paths ||= @_paths[viewName]
 
-    type = viewName.charAt(0)
     # TODO: This is a hack to detect arrays, since Array.isArray doesn't work
     # on speculative array objects right now. This should be fixed in Racer
     if ctx && ctx.splice && ctx.slice
@@ -66,15 +68,11 @@ View:: =
   preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
 
   make: (name, template, data = {}) ->
+    unless data.$isString
+      @make name + '$s', template, extend data, {$isString: true}
     self = this
     render = (ctx) ->
-      if typeof template is 'string' && !/\{{2,3}|\({2,3}/.test(template)
-        # Return the template without leading whitespace and newlines
-        # if it is a string literal without placeholders
-        template = trim template
-        render = -> template
-      else
-        render = parse self, name, template, data
+      render = parse self, name, template, data, self._onBind[name]
       render ctx
 
     fn = (ctx) -> render extend data, ctx
@@ -186,7 +184,12 @@ reduceStack = (stack) ->
     switch item[0]
       when 'start'
         html[i] += '<' + item[1]
-        for key, value of item[2]
+        attrs = item[2]
+        if 'id' of attrs
+          html[i] += ' id='
+          pushValue attrs.id, true
+        for key, value of attrs
+          continue  if key is 'id'
           if value?
             if bool = value.bool
               pushValue bool
@@ -210,8 +213,9 @@ renderer = (view, items, events) ->
     event data, modelEvents, domEvents for event in events
     return html
 
-parsePlaceholderContent = (view, data, partialName, queues, popped, stack, events, block, match, callbacks) ->
+parsePlaceholderContent = (view, data, partialName, queues, popped, stack, events, block, match, isString, onBind, callbacks) ->
   {literal, type, name, alias, partial} = match
+  partial += '$s'  if partial && isString
   addNameToData data, name
 
   if block && ((endBlock = type is '/') ||
@@ -227,6 +231,7 @@ parsePlaceholderContent = (view, data, partialName, queues, popped, stack, event
     block = {type, name, partial, literal, lastPartial, lastAutoClosed: autoClosed}
 
   if partial then partialText = (data, model) ->
+    view._onBind[partial] = onBind
     view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
 
   if (datum = data[name])?
@@ -244,15 +249,17 @@ parsePlaceholderContent = (view, data, partialName, queues, popped, stack, event
       block: block
     callbacks.onStartBlock stack, events, block
 
-parse = (view, viewName, template, data) ->
+parse = (view, viewName, template, data, onBind) ->
   partialCount = 0
-  partialName = -> viewName + '$' + partialCount++
- 
+  partialName = -> viewName + '$p' + partialCount++
+
   if viewName is 'Title' then return parseString view, viewName, template,
     data, partialName, (events, name) ->
       events.push (data, modelEvents) ->
         return  unless path = modelPath data, name
         modelEvents.bind path, ['$doc', 'prop', 'title', 'Title']
+  else if data.$isString
+    return parseString view, viewName, template, data, partialName, onBind
 
   uniqueId = view._uniqueId
   
@@ -273,14 +280,14 @@ parse = (view, viewName, template, data) ->
             addNameToData data, name
             invert = /^\s*!\s*$/.test pre
             if (pre && !invert) || post || partial
-              # Attributes can't handle more than a single variable, so create
-              # a string partial
-              partial ||= partialName()
+              # Attributes must be a single string, so create a string partial
+              partial = partialName()
               addId attrs, uniqueId
-              render = parseString view, partial, value, data, partialName, 
+              render = parseString view, partial, value, data, partialName,
                 (events, name) -> events.push (data, modelEvents) ->
                   return  unless path = modelPath data, name
                   modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
+              view._register partial, (ctx) -> render extend data, ctx
               attrs[attr] = (data, model) -> attrEscape render(data, model)
               return
 
@@ -328,7 +335,7 @@ parse = (view, viewName, template, data) ->
       pushText pre
 
       wrap = null
-      parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match,
+      parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match, false, null,
         onBind: (name, partial, endBlock, lastAutoClosed, lastPartial) ->
           i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
           last = stack[i]
@@ -385,14 +392,14 @@ parseString = (view, viewName, template, data, partialName, onBind) ->
     # TODO: Generalize HTML character entity replacement
     pushText pre.replace('&rpar;', ')').replace('&lpar;', '(')
     
-    parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match,
+    parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match, true, onBind,
       onBind: (name) -> onBind events, name
       
       onModelText: (partialText, name, endBlock) ->
-        pushText (partialText || modelText view, name, attrEscape), endBlock
+        pushText (partialText || modelText view, name), endBlock
       
       onText: (partialText, value, endBlock) ->
-        pushText (partialText || attrEscape value.toString()), endBlock
+        pushText (partialText || value.toString()), endBlock
         
       onStartBlock: (_stack, _events, _block) ->
         stack = _stack

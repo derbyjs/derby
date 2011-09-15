@@ -125,7 +125,7 @@ module.exports =
               
     view.make 'test1', template
     model.set 'html', value
-    view.get('test1').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;" id=$0> ' +
+    view.get('test1').should.eql '<input id=$0 value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
       '<ins id=$1>&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;</ins>x' +
       '<ins id=$2><b id="hey">&Hi! & x& </b>&</ins>'
               
@@ -235,7 +235,7 @@ module.exports =
     template = '<input type=checkbox checked=((maybe))>'
 
     view.make 'test', template
-    view.get('test').should.eql '<input type=checkbox id=$0>'
+    view.get('test').should.eql '<input id=$0 type=checkbox>'
     view.make 'test', template, maybe: false
     view.get('test').should.eql '<input type=checkbox>'
     view.make 'test', template, maybe: true
