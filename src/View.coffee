@@ -253,13 +253,12 @@ parse = (view, viewName, template, data, onBind) ->
   partialCount = 0
   partialName = -> viewName + '$p' + partialCount++
 
-  if viewName is 'Title' then return parseString view, viewName, template,
-    data, partialName, (events, name) ->
-      events.push (data, modelEvents) ->
+  if data.$isString
+    if viewName is 'Title$s'
+      onBind = (events, name) -> events.push (data, modelEvents) ->
         return  unless path = modelPath data, name
-        modelEvents.bind path, ['$doc', 'prop', 'title', 'Title']
-  else if data.$isString
-    return parseString view, viewName, template, data, partialName, onBind
+        modelEvents.bind path, ['$doc', 'prop', 'title', 'Title$s']
+    return parseString view, viewName, template, data, partialName, onBind || ->
 
   uniqueId = view._uniqueId
   
