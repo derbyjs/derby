@@ -3,14 +3,15 @@ MAX_AGE_ONE_YEAR = {maxAge: 1000 * 60 * 60 * 24 * 365}
 
 gzip = require 'connect-gzip'
 express = require 'express'
+path = require 'path'
 app = express.createServer()
-  .use(gzip.staticGzip __dirname + '/public', MAX_AGE_ONE_YEAR)
+  .use(gzip.staticGzip path.dirname(__dirname) + '/public', MAX_AGE_ONE_YEAR)
   .use(express.favicon())
   .use(express.cookieParser())
   .use(express.session secret: 'dont_tell')
   .use(gzip.gzip())
 
-chat = require './chat.server'
+chat = require './chat'
 store = chat.createStore redis: {db: 3}, listen: app
 # Clear all data every time node server is started
 store.flush()
@@ -43,7 +44,7 @@ app.get '/:room?', (req, res) ->
       newComment: ''
       numMessages: model.get('_room.messages').length
 
-    chat.view.sendHtml res, model
+    chat.send res, model
 
 app.listen 3003
 console.log "Go to: http://localhost:3003/lobby"

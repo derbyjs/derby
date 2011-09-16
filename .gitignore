@@ -1,6 +1,6 @@
 node_modules
 lib/
-examples/chat/*.js
+examples/chat/lib/
 examples/chat/public/gen
 examples/sink/*.js
 examples/sink/public/gen

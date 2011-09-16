@@ -15,7 +15,7 @@ app.get '/', (req, res) ->
       {prop: 'font-weight', value: 'bold', active: true}
       {prop: 'font-size', value: '18px', active: false}
     ]
-    sink.view.sendHtml res, model
+    sink.send res, model
 
 app.listen 3000
 console.log 'Go to http://localhost:3000/'

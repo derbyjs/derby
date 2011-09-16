@@ -17,6 +17,8 @@ View = module.exports = ->
 
 View:: =
 
+  _find: (name) -> @_views[name] || do -> throw "Can't find view: #{name}"
+
   get: (viewName, ctx, parentCtx, path, triggerPath) ->
     type = viewName.charAt(0)
     unless view = @_views[viewName]
@@ -27,7 +29,7 @@ View:: =
         start = if type is '#' or type is '^' then 1 else 0
         parentView = viewName.substr start, i - start
         # Make sure the parent view exists to avoid an infinte loop
-        throw "Can't find view: #{parentView}"  unless @_views[parentView]
+        @_find parentView
         @get parentView, {$triggerPath: triggerPath}
         return @get viewName, ctx, parentCtx, null, triggerPath
       # Return an empty string when a view can't be found
@@ -66,7 +68,7 @@ View:: =
       ctx.$i = re.exec(triggerPath)?.slice(1).reverse()
     return view ctx
 
-  preLoad: (fn) -> @_loadFuncs += "(#{fn})();"
+  inline: (fn) -> @_loadFuncs += "(#{fn})();"
 
   make: (name, template, data = {}) ->
     unless data.$isString
@@ -75,25 +77,19 @@ View:: =
     render = (ctx) ->
       render = parse self, name, template, data, self._onBinds[name]
       render ctx
+    @_views[name] = (ctx) -> render extend data, ctx
 
-    fn = (ctx) -> render extend data, ctx
-    @_register name, fn, data.Before, data.After
+  before: (name, before) ->
+    fn = @_find name
+    @_views[name] = (ctx) ->
+      before ctx
+      fn ctx
 
-  _register: (name, fn, before, after) ->
-    @_views[name] = if before
-        if after then (ctx) ->
-          before()
-          setTimeout after, 0
-          rendered = fn ctx
-        else (ctx) ->
-          before()
-          fn ctx
-      else
-        if after then (ctx) ->
-          setTimeout after, 0
-          rendered = fn ctx
-        else fn
-
+  after: (name, after) ->
+    fn = @_find name
+    @_views[name] = (ctx) ->
+      setTimeout after, 0, ctx
+      fn ctx
 
 extend = (parent, obj) ->
   unless typeof parent is 'object'
@@ -293,7 +289,7 @@ parse = (view, viewName, template, data, onBind) ->
                 (events, name) -> events.push (data, modelEvents) ->
                   return  unless path = modelPath data, name
                   modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
-              view._register partial, (ctx) -> render extend data, ctx
+              view._views[partial] = (ctx) -> render extend data, ctx
               attrs[attr] = (data, model) -> attrEscape render(data, model)
               return
 
@@ -381,7 +377,7 @@ parse = (view, viewName, template, data, onBind) ->
   for queue in popped
     do (queue) ->
       render = renderer(view, reduceStack(queue.stack), queue.events)
-      view._register queue.viewName, (ctx) -> render extend data, ctx
+      view._views[queue.viewName] = (ctx) -> render extend data, ctx
 
   return renderer view, reduceStack(stack), events
 
@@ -415,7 +411,7 @@ parseString = (view, viewName, template, data, partialName, onBind) ->
   for queue in popped
     do (queue) ->
       render = renderer(view, queue.stack, queue.events)
-      view._register queue.viewName, (ctx) -> render extend data, ctx
+      view._views[queue.viewName] = (ctx) -> render extend data, ctx
 
   renderer view, stack, events
 

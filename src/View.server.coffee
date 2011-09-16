@@ -2,26 +2,32 @@ uglify = require 'uglify-js'
 module.exports = View = require './View'
 Dom = require './Dom'
 modelHelper = require './modelHelper'
+loader = require './loader'
 
-# Override register so that before and after functions are not called
-View::_register = (name, fn) ->
-  @_views[name] = fn
+# Don't execute before or after functions on the server
+View::before = View::after = ->
+
+View::_load = -> loader.views @, @_root, @_clientName
 
 View::_init = (model) ->
   # Initialize view for rendering
   @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
 
-View::sendHtml = (res, model, ctx) ->
+View::send = (res, model, ctx) ->
   @_init model
   dom = @dom
+  self = this
+  loader.css @_root, @_clientName, (css) ->
+    self._send res, model, ctx, dom, css
 
+View::_send = (res, model, ctx, dom, css) ->
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
-
+  
   # The view.get function renders and sets event listeners. It must be
   # called for all views before the event listeners are retrieved
-
+  
   # The first chunk includes everything through head. It is important to get
   # CSS to the browser as soon as possible, so styles should definately be
   # within the Head view. In addition, the Head view does not have to be the
@@ -31,7 +37,7 @@ View::sendHtml = (res, model, ctx) ->
   doctype = @get('Doctype', ctx) || '<!DOCTYPE html><meta charset=utf-8>'
   title = View.htmlEscape(@get 'Title$s', ctx) || 'Derby app'
   head = @get 'Head', ctx
-  res.write "#{doctype}<title>#{title}</title>#{head}"
+  res.write "#{doctype}<title>#{title}</title><style>#{css}</style>#{head}"
 
   # Remaining HTML
   res.write @get 'Body', ctx
@@ -46,7 +52,7 @@ View::sendHtml = (res, model, ctx) ->
   # Initialization script and Tail
   tail = @get 'Tail', ctx
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{clientName}')(#{@_idCount}," +
+    "#{clientName}=require('./#{@_require}')(#{@_idCount}," +
     JSON.stringify(@_paths) + ',' + JSON.stringify(@_partialIds) + ','
   initEnd = ',' + JSON.stringify(model.__events.get()) + ',' +
       JSON.stringify(dom.events.get()) +

@@ -1,0 +1,15 @@
+<!--
+  connected and canConnect are built-in properties of model. If a variable
+  is not defined in the current context, it will be looked up in the model data
+  and the model properties
+-->
+<div id=info>((^connected))
+  ((#canConnect))
+    Offline((#_showReconnect)) 
+      &ndash; <a x-bind=click:connect>Reconnect</a>
+    ((/))
+  ((^))
+    Unable to reconnect &ndash; 
+    <a x-bind=click:reload>Reload</a>
+  ((/))
+((/))</div>
