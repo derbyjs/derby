@@ -5,7 +5,8 @@ View = module.exports = ->
   self = this
   @_views = {}
   @_paths = {}
-  @_onBind = {}
+  @_onBinds = {}
+  @_partialIds = {}
   @_loadFuncs = ''
   
   # All automatically created ids start with a dollar sign
@@ -72,7 +73,7 @@ View:: =
       @make name + '$s', template, extend data, {$isString: true}
     self = this
     render = (ctx) ->
-      render = parse self, name, template, data, self._onBind[name]
+      render = parse self, name, template, data, self._onBinds[name]
       render ctx
 
     fn = (ctx) -> render extend data, ctx
@@ -105,6 +106,12 @@ extend = (parent, obj) ->
 
 addId = (attrs, uniqueId) ->
   unless attrs.id? then attrs.id = -> attrs._id = uniqueId()
+addIdPartial = (attrs, uniqueId, partialIds, partial) ->
+  return if attrs.id?
+  fn = ->
+    fn = -> partialIds[partial] = attrs._id = uniqueId()
+    attrs._id = partialIds[partial] || attrs.id()
+  attrs.id = -> fn()
 
 View.htmlEscape = htmlEscape = (s) ->
   unless s? then '' else s.toString().replace /&(?!\s)|</g, (s) ->
@@ -231,7 +238,7 @@ parsePlaceholderContent = (view, data, partialName, queues, popped, stack, event
     block = {type, name, partial, literal, lastPartial, lastAutoClosed: autoClosed}
 
   if partial then partialText = (data, model) ->
-    view._onBind[partial] = onBind
+    view._onBinds[partial] = onBind
     view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
 
   if (datum = data[name])?
@@ -281,7 +288,7 @@ parse = (view, viewName, template, data, onBind) ->
             if (pre && !invert) || post || partial
               # Attributes must be a single string, so create a string partial
               partial = partialName()
-              addId attrs, uniqueId
+              addIdPartial attrs, uniqueId, view._partialIds, partial
               render = parseString view, partial, value, data, partialName,
                 (events, name) -> events.push (data, modelEvents) ->
                   return  unless path = modelPath data, name

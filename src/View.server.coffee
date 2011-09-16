@@ -47,7 +47,7 @@ View::sendHtml = (res, model, ctx) ->
   tail = @get 'Tail', ctx
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
     "#{clientName}=require('./#{clientName}')(#{@_idCount}," +
-    JSON.stringify(@_paths) + ','
+    JSON.stringify(@_paths) + ',' + JSON.stringify(@_partialIds) + ','
   initEnd = ',' + JSON.stringify(model.__events.get()) + ',' +
       JSON.stringify(dom.events.get()) +
       ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
