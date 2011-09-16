@@ -6,6 +6,8 @@ derby = require 'derby'
 
 # SERVER & CLIENT VIEW DEFINITION #
 
+# Since double and triple parentheses are used to denote bindings, literal
+# repeated parentheses require HTML escaping.
 view.make 'Title',
   'Chat &lpar;((_session.numMessages))&rpar; - ((_session.user.name))'
 
@@ -25,7 +27,7 @@ view.make 'info', """
   ((/))</div>
   """
 
-# Parentheses can be used to do interpolation within a model name. 
+# Square brackets can be used to do interpolation within a model name. 
 view.make 'message', """
   <li><img src=img/s.png class={{users.[userId].picClass}} alt="">
     <div class=message>
@@ -43,7 +45,7 @@ view.make 'message', """
 ready ->
   # Exported functions are exposed as a global in the browser with the same
   # name as the module that includes Derby. They can also be bound to DOM
-  # events using the "bind" attribute in a template.
+  # events using the "x-bind" attribute in a template.
 
   # Any path name that starts with an underscore is private to the current
   # client. Nothing set under a private path is synced back to the server
