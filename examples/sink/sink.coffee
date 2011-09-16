@@ -25,6 +25,7 @@ view.make 'Body', '''
     <input value=((.prop)) disabled=!((.active))> 
     <input value=((.value)) disabled=!((.active))>
   ((/))</div>
+  <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
   <p>{
     <p class=css>((#x.styles))((> cssProperty))((#.active))<br>((/))((/))
@@ -33,3 +34,5 @@ view.make 'Body', '''
   <p style="((x.styles > cssProperty))" contenteditable>Edit this text...</p>
   '''
 
+exports.addStyle = ->
+  model.push 'x.styles', {}
