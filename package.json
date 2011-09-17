@@ -9,8 +9,8 @@
   "dependencies": {
     "racer": "0.0.13",
     "uglify-js": ">=1.0.6",
-    "stylus": "*",
-    "nib": "*"
+    "stylus": ">=0.15",
+    "nib": ">=0.2"
   },
   "devDependencies": {
     "expresso": ">=0.7.9",

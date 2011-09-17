@@ -17,12 +17,12 @@ Model::_commit = ->
 Model::bundle = ->
 
 module.exports =
-  'test sendHtml with no defined views': ->
+  'test send with no defined views': ->
     view = new View
     model = new Model
     res = new ResMock
-    view.sendHtml res, model
-    res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
+    view.send res, model
+    res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><style><\/style><script>.*<\/script><script.*><\/script>$/
         
   'test rendering a string literal view': ->
     view = new View

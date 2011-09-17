@@ -12,16 +12,17 @@ cssCache = {}
 module.exports =
 
   css: (root, clientName, callback) ->
+    return callback ''  unless clientName
     path = join root, 'styles', clientName, 'index.styl'
     callback css  if isProduction && css = cssCache[path]
     fs.readFile path, 'utf8', (err, styl) ->
       stylus(styl)
         .use(nib())
         .set('filename', path)
-        .set('warn', true)
         .set('compress', true)
         .render (err, css) ->
           throw err if err
+          css = trim css
           callback css
           cssCache[path] = css
 
@@ -38,6 +39,7 @@ module.exports =
           callback()  unless --count
 
   js: (view, parentFilename, options, callback) ->
+    return callback {}  unless parentFilename
     if (base = basename parentFilename, '.js') is 'index'
       base = basename dirname parentFilename
       root = dirname dirname dirname parentFilename
