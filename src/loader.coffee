@@ -12,10 +12,11 @@ cssCache = {}
 module.exports =
 
   css: (root, clientName, callback) ->
-    return callback ''  unless clientName
     path = join root, 'styles', clientName, 'index.styl'
-    callback css  if isProduction && css = cssCache[path]
+    return callback css  if isProduction && css = cssCache[path]
+    return callback ''  unless clientName
     fs.readFile path, 'utf8', (err, styl) ->
+      return callback cssCache[path] = ''  if err
       stylus(styl)
         .use(nib())
         .set('filename', path)
@@ -29,7 +30,7 @@ module.exports =
   views: views = (view, root, clientName, callback) ->
     dir = join root, 'views', clientName
     fs.readdir dir, (err, files) ->
-      return unless files
+      return callback()  unless files
       count = files.length
       for file in files
         do (file) -> fs.readFile join(dir, file), 'utf8', (err, template) ->
