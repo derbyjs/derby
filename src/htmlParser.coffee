@@ -2,6 +2,7 @@ startTag = /^<(\w+)((?:\s+[^\s=\/>]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+
 endTag = /^<\/(\w+)[^>]*>/
 attr = /([^\s=]+)(?:\s*(=)\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+))?)?/g
 comment = /<!--[\s\S]*?-->/g
+exports.uncomment = uncomment = (html) -> html.replace comment, ''
 
 exports.parse = (html, handler = {}) ->
 
@@ -20,7 +21,7 @@ exports.parse = (html, handler = {}) ->
   endHandler = handler.end || empty
 
   # Remove HTML comments before parsing
-  html = html.replace comment, ''
+  html = uncomment html
 
   while html
     last = html

@@ -7,7 +7,14 @@ loader = require './loader'
 # Don't execute before or after functions on the server
 View::before = View::after = ->
 
-View::_load = -> loader.views @, @_root, @_clientName
+View::_load = (callback) ->
+  self = this
+  loader.js this, @_appFilename, @_derbyOptions, (obj) ->
+    self._root = obj.root
+    self._clientName = obj.clientName
+    self._jsFile = obj.jsFile
+    self._require = obj.require
+    callback()
 
 View::_init = (model) ->
   # Initialize view for rendering
@@ -15,10 +22,10 @@ View::_init = (model) ->
   @_idCount = 0
 
 View::send = (res, model, ctx) ->
+  self = this
   @_init model
   dom = @dom
-  self = this
-  loader.css @_root, @_clientName, (css) ->
+  @_load -> loader.css self._root, self._clientName, (css) ->
     self._send res, model, ctx, dom, css
 
 View::_send = (res, model, ctx, dom, css) ->

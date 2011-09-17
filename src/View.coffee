@@ -7,6 +7,7 @@ View = module.exports = ->
   @_paths = {}
   @_onBinds = {}
   @_partialIds = {}
+  @_templates = {}
   @_loadFuncs = ''
   
   # All automatically created ids start with a dollar sign
@@ -121,7 +122,7 @@ View.attrEscape = attrEscape = (s) ->
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
-trim = (s) -> if s then s.replace /(?:^|\n)\s*/g, '' else ''
+View.trim = (s) -> if s then htmlParser.uncomment(s).replace /(?:^|\n)\s*/g, '' else ''
 trimInner = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
 extractPlaceholder = (text) ->

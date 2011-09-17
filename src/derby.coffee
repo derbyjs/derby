@@ -13,12 +13,8 @@ module.exports =
     appExports.send = (res, model, ctx) -> view.send res, model, ctx
     appExports.ready = ->
 
-    loader.js appModule.filename, @options, ({root, clientName, jsFile, require}) ->
-      view._root = root
-      view._clientName = clientName
-      view._jsFile = jsFile
-      view._require = require
-      view._load()
+    view._derbyOptions = @options
+    view._appFilename = appModule.filename
 
     return appExports
 
