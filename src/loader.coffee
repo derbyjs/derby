@@ -6,12 +6,12 @@ nib = require 'nib'
 racer = require 'racer'
 {trim} = require './View'
 
-isProduction = process.env.NODE_ENV is 'production'
 cssCache = {}
 jsCache = {}
 
 module.exports =
-
+  isProduction: isProduction = process.env.NODE_ENV is 'production'
+  
   css: (root, clientName, callback) ->
     # CSS is reloaded on every refresh in development and cached in production
     path = join root, 'styles', clientName, 'index.styl'
@@ -73,9 +73,11 @@ module.exports =
     # page load, even in development. Templates are reloaded every refresh in
     # development and cached in production
     minify = if 'minify' of options then options.minify else isProduction
-    bundle = if js = jsCache[parentFilename] then -> finish js else ->
-      racer.js {minify, require: parentFilename}, (js) ->
-        finish jsCache[parentFilename] = js
+    bundle = if isProduction || js = jsCache[parentFilename]
+        -> finish js
+      else
+        -> racer.js {minify, require: parentFilename}, (js) ->
+          finish jsCache[parentFilename] = js
 
     exists staticPath, (value) ->
       return bundle() if value

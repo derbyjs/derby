@@ -8,6 +8,7 @@ loader = require './loader'
 View::before = View::after = ->
 
 View::_load = (callback) ->
+  if loader.isProduction then @_load = (callback) -> callback()
   self = this
   loader.js this, @_appFilename, @_derbyOptions, (obj) ->
     self._root = obj.root
