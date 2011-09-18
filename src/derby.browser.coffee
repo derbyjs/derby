@@ -21,7 +21,7 @@ exports.createApp = (appModule, appExports) ->
     racer.init modelBundle
     model.__events.set modelEvents
     dom.init domEvents
-    view.make name, template  for name, template of `/*{{templates}}*/`
+    view.make name, template  for name, template of '{{templates}}'
     return appExports
   
   return appExports
