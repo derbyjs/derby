@@ -7,6 +7,8 @@ loader = require './loader'
 # Don't execute before or after functions on the server
 View::before = View::after = ->
 
+View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
+
 View::_load = (callback) ->
   if loader.isProduction then @_load = (callback) -> callback()
   self = this
@@ -54,7 +56,7 @@ View::_send = (res, model, ctx, dom, css) ->
   clientName = @_clientName
   res.write "<script>function $(i){return document.getElementById(i)}" +
     "function #{clientName}(){#{clientName}=1}" +
-    "#{minify @_loadFuncs}</script>" + @get('Script', ctx) +
+    "#{@_inline}</script>" + @get('Script', ctx) +
     "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"
   
   # Initialization script and Tail
@@ -70,7 +72,3 @@ View::_send = (res, model, ctx, dom, css) ->
   model.bundle (bundle) ->
     res.end initStart + bundle.replace(/<\//g, '<\\/') + initEnd
 
-cache = {}
-minify = (js) ->
-  return cache[js]  if cache[js]
-  cache[js] = uglify js

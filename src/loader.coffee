@@ -45,7 +45,8 @@ module.exports =
     return callback {}  unless parentFilename
     if (base = basename parentFilename, '.js') is 'index'
       base = basename dirname parentFilename
-      root = dirname dirname dirname parentFilename
+      dir = dirname parentFilename
+      root = dirname dirname dir
     else
       root = dirname parentFilename
 
@@ -76,8 +77,11 @@ module.exports =
     bundle = if isProduction || js = jsCache[parentFilename]
         -> finish js
       else
-        -> racer.js {minify, require: parentFilename}, (js) ->
-          finish jsCache[parentFilename] = js
+        -> fs.readFile join(dir, 'inline.js'), 'utf8', (err, inline) ->
+          racer.js {minify, require: parentFilename}, (js) ->
+            finish jsCache[parentFilename] = js
+          return  if err
+          view.inline "function(){#{inline}}"
 
     exists staticPath, (value) ->
       return bundle() if value

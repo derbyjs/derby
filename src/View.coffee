@@ -8,7 +8,7 @@ View = module.exports = ->
   @_onBinds = {}
   @_partialIds = {}
   @_templates = {}
-  @_loadFuncs = ''
+  @_inline = ''
   
   # All automatically created ids start with a dollar sign
   @_idCount = 0
@@ -69,8 +69,6 @@ View:: =
       ctx.$i = re.exec(triggerPath)?.slice(1).reverse()
     return view ctx
 
-  inline: (fn) -> @_loadFuncs += "(#{fn})();"
-
   make: (name, template, data = {}) ->
     unless data.$isString
       @make name + '$s', template, extend data, {$isString: true}
@@ -91,6 +89,8 @@ View:: =
     @_views[name] = (ctx) ->
       setTimeout after, 0, ctx
       fn ctx
+
+  inline: ->
 
 extend = (parent, obj) ->
   unless typeof parent is 'object'
