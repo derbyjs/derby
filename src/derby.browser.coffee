@@ -13,6 +13,7 @@ exports.createApp = (appModule, appExports) ->
   model = view.model = racer.model
   dom = view.dom = new Dom model, appExports
   modelHelper.init model, dom, view
+  view.make name, template  for name, template of '{{templates}}'
   
   appModule.exports = (idCount, paths, partialIds, modelBundle, modelEvents, domEvents) ->
     view._idCount = idCount
@@ -21,7 +22,6 @@ exports.createApp = (appModule, appExports) ->
     racer.init modelBundle
     model.__events.set modelEvents
     dom.init domEvents
-    view.make name, template  for name, template of '{{templates}}'
     return appExports
   
   return appExports

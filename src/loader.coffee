@@ -8,10 +8,12 @@ racer = require 'racer'
 
 isProduction = process.env.NODE_ENV is 'production'
 cssCache = {}
+jsCache = {}
 
 module.exports =
 
   css: (root, clientName, callback) ->
+    # CSS is reloaded on every refresh in development and cached in production
     path = join root, 'styles', clientName, 'index.styl'
     return callback css  if isProduction && css = cssCache[path]
     return callback ''  unless clientName
@@ -52,22 +54,28 @@ module.exports =
     staticDir = options.dir || 'gen'
     staticPath = join staticRoot, staticDir
 
+    finish = (js) -> views view, root, clientName, ->
+      js = js.replace "'{{templates}}'", JSON.stringify(view._templates || {})
+      filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
+      # Base64 uses characters reserved in URLs and adds extra padding charcters.
+      # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding
+      filename = filename.replace /[\/\+=]/g, (match) ->
+        switch match
+          when '/' then '-'
+          when '+' then '_'
+          when '=' then ''
+      jsFile = join '/', staticDir, filename
+      filePath = join staticPath, filename
+      fs.writeFile filePath, js, ->
+        callback {root, clientName, jsFile, require: basename parentFilename}
+
+    # Browserifying is very slow, so js files are only bundled up on the first
+    # page load, even in development. Templates are reloaded every refresh in
+    # development and cached in production
     minify = if 'minify' of options then options.minify else isProduction
-    bundle = -> racer.js {minify, require: parentFilename}, (js) ->
-      views view, root, clientName, ->
-        js = js.replace "'{{templates}}'", JSON.stringify(view._templates || {})
-        filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
-        # Base64 uses characters reserved in URLs and adds extra padding charcters.
-        # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding
-        filename = filename.replace /[\/\+=]/g, (match) ->
-          switch match
-            when '/' then '-'
-            when '+' then '_'
-            when '=' then ''
-        jsFile = join '/', staticDir, filename
-        filePath = join staticPath, filename
-        fs.writeFile filePath, js, ->
-          callback {root, clientName, jsFile, require: basename parentFilename}
+    bundle = if js = jsCache[parentFilename] then -> finish js else ->
+      racer.js {minify, require: parentFilename}, (js) ->
+        finish jsCache[parentFilename] = js
 
     exists staticPath, (value) ->
       return bundle() if value
