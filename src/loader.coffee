@@ -56,7 +56,7 @@ module.exports =
     staticPath = join staticRoot, staticDir
 
     finish = (js) -> views view, root, clientName, ->
-      js = js.replace "'{{templates}}'", JSON.stringify(view._templates || {})
+      js = js.replace '"{{templates}}"', JSON.stringify(view._templates || {})
       filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
       # Base64 uses characters reserved in URLs and adds extra padding charcters.
       # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding
@@ -74,14 +74,14 @@ module.exports =
     # page load, even in development. Templates are reloaded every refresh in
     # development and cached in production
     minify = if 'minify' of options then options.minify else isProduction
-    bundle = if isProduction || js = jsCache[parentFilename]
-        -> finish js
-      else
+    bundle = if isProduction || !(js = jsCache[parentFilename])
         -> fs.readFile join(dir, 'inline.js'), 'utf8', (err, inline) ->
           racer.js {minify, require: parentFilename}, (js) ->
             finish jsCache[parentFilename] = js
           return  if err
           view.inline "function(){#{inline}}"
+      else
+        -> finish js
 
     exists staticPath, (value) ->
       return bundle() if value
