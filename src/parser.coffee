@@ -8,6 +8,15 @@ addConditionalStyle = (attrs, name, invert, styleText) ->
   cat = "{{#{type}#{name}}}#{styleText}{{/}}"
   attrs.style = if style = attrs.style then "#{style};#{cat}" else cat
 
+splitBind = (value) ->
+  pairs = value.replace(/\s/g, '').split ','
+  out = {}
+  for pair in pairs
+    [name, value] = pair.split ':'
+    [name, delay] = name.split '/'
+    out[name] = {value, delay}
+  return out
+
 module.exports =
   modelPath: modelPath = (data, name, noReplace) ->
     if (paths = data.$paths) && name.charAt(0) == '.'
@@ -22,9 +31,9 @@ module.exports =
     if isArray = Array.isArray _eventNames
       eventNames = []
       for eventName, i in _eventNames
-        eventNames[i] = eventName.split ','
+        eventNames[i] = eventName.split '/'
     else
-      [eventName, delay] = _eventNames.split ','
+      [eventName, delay] = _eventNames.split '/'
       args.push delay  if delay?
     prefix = if invert then '!' else ''
     events.push (data, modelEvents, domEvents) ->
@@ -40,7 +49,7 @@ module.exports =
       args[1] = attrs._id || attrs.id
       domEvents.bind eventName, args
 
-  textEvents: textEvents = ['keyup', 'keydown', 'paste,0', 'dragover,0']
+  textEvents: textEvents = ['keyup', 'keydown', 'paste/0', 'dragover/0']
 
   parsePlaceholder:
     'value':
@@ -91,21 +100,23 @@ module.exports =
     'x-bind':
       '*': (events, attrs, value) ->
         delete attrs['x-bind']
-        [name, fn] = value.replace(/\s/g, '').split ':'
-        [name, delay] = name.split ','
-        args = [fn, null]
-        args.push delay  if delay?
-        events.push (data, modelEvents, domEvents) ->
-          args[1] = attrs._id || attrs.id
-          domEvents.bind name, args
+        for name, obj of splitBind value
+          do (name) ->
+            {value, delay} = obj
+            console.log name, value, delay
+            args = [value, null]
+            args.push delay  if delay?
+            events.push (data, modelEvents, domEvents) ->
+              args[1] = attrs._id || attrs.id
+              domEvents.bind name, args
         return addId: true
       a: (events, attrs, value) ->
-        name = value.replace(/\s/g, '').split(':')[0]
-        if name is 'click' && !('href' of attrs)
+        obj = splitBind value
+        if 'click' of obj && !('href' of attrs)
           attrs.href = '#'
           attrs.onclick = 'return false'  unless 'onclick' of attrs
       form: (events, attrs, value) ->
-        name = value.replace(/\s/g, '').split(':')[0]
-        if name is 'submit'
+        obj = splitBind value
+        if 'submit' of obj
           attrs.onsubmit = 'return false'  unless 'onsubmit' of attrs
 
