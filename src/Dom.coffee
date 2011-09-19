@@ -9,17 +9,21 @@ emptyEl = doc && doc.createElement 'div'
 
 element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
 
-
+empty = ->
 getMethods = 
   attr: (el, attr) -> el.getAttribute attr
 
   prop: getProp = (el, prop) -> el[prop]
-  
+
   propPolite: getProp
 
+  visible: empty
+
+  displayed: empty
+
   html: (el) -> el.innerHTML
-  
-  appendHtml: ->
+
+  appendHtml: empty
 
 setMethods = 
   attr: (value, el, attr) ->
@@ -31,6 +35,12 @@ setMethods =
   propPolite: (value, el, prop) ->
     el[prop] = value  if el != doc.activeElement
 
+  visible: (value, el) ->
+    el.style.visibility = if value then '' else 'hidden'
+
+  displayed: (value, el) ->
+    el.style.display = if value then '' else 'none'
+
   html: (value, el, escape) ->
     el.innerHTML = if escape then htmlEscape value else value
 
@@ -40,8 +50,7 @@ setMethods =
       el.appendChild child
 
     
-domHandler = ->
-addListener = ->
+addListener = domHandler = empty
 
 dist = (e) -> for child in e.target.childNodes
   return  unless child.nodeType == 1
@@ -67,18 +76,18 @@ Dom = module.exports = (model, appExports) ->
       else
         [path, id, method, property, delay] = listener
         path = path.substr 1  if invert = path.charAt(0) is '!'
-      
+
       return  unless id is targetId
       # Remove this listener if the element doesn't exist
       return false  unless el = element id
-      
+
       # Update the model when the element's value changes
       finish = ->
         value = getMethods[method] el, property
         value = !value  if invert
         return  if model.get(path) == value
         model.set path, value
-      
+
       if delay?
         setTimeout callback || finish, delay, e
       else

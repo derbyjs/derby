@@ -1,5 +1,5 @@
 htmlParser = require './htmlParser'
-{modelPath, parsePlaceholder, parseElement, parseAttr} = require './parser'
+{modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent, textEvents} = require './parser'
 
 View = module.exports = ->
   self = this
@@ -276,55 +276,60 @@ parse = (view, viewName, template, data, onBind) ->
         out = parser(events, attrs) || {}
         addId attrs, uniqueId  if out.addId
 
-      for attr, value of attrs
-        do (attr) ->
-          if match = extractPlaceholder value
-            {pre, post, name, partial, literal} = match
-            addNameToData data, name
-            invert = /^\s*!\s*$/.test pre
-            if (pre && !invert) || post || partial
-              # Attributes must be a single string, so create a string partial
-              partial = partialName()
-              addIdPartial attrs, uniqueId, view._partialIds, partial
-              render = parseString view, partial, value, data, partialName,
-                (events, name) -> events.push (data, modelEvents) ->
-                  return  unless path = modelPath data, name
-                  modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
-              view._views[partial] = (ctx) -> render extend data, ctx
-              attrs[attr] = (data, model) -> attrEscape render(data, model)
-              return
-
-            if parser = parsePlaceholder[attr]
-              if anyParser = parser['*']
-                anyOut = anyParser events, attrs, name, invert
-              if elParser = parser[tagName]
-                elOut = elParser events, attrs, name, invert
-            anyOut ||= {}
-            elOut ||= {}
-            method = elOut.method || anyOut.method || 'attr'
-            bool = elOut.bool || anyOut.bool
-
-            if data[name]?.model && !literal
-              addId attrs, uniqueId
-              events.push (data, modelEvents) ->
+      forAttr = (attr, value) ->
+        if match = extractPlaceholder value
+          {pre, post, name, partial, literal} = match
+          addNameToData data, name
+          invert = /^\s*!\s*$/.test pre
+          if (pre && !invert) || post || partial
+            # Attributes must be a single string, so create a string partial
+            partial = partialName()
+            addIdPartial attrs, uniqueId, view._partialIds, partial
+            render = parseString view, partial, value, data, partialName,
+              (events, name) -> events.push (data, modelEvents) ->
                 return  unless path = modelPath data, name
-                args = [attrs._id || attrs.id, method, attr]
-                args[3] = '$inv'  if invert
-                modelEvents.bind path, args
+                modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
+            view._views[partial] = (ctx) -> render extend data, ctx
+            attrs[attr] = (data, model) -> attrEscape render(data, model)
+            return
 
+          if parser = parsePlaceholder[attr]
+            if anyParser = parser['*']
+              anyOut = anyParser events, attrs, name, invert
+            if elParser = parser[tagName]
+              elOut = elParser events, attrs, name, invert
+          anyOut ||= {}
+          elOut ||= {}
+          method = elOut.method || anyOut.method || 'attr'
+          bool = elOut.bool || anyOut.bool
+          del = elOut.del || anyOut.del
+
+          if data[name]?.model && !literal
+            addId attrs, uniqueId
+            events.push (data, modelEvents) ->
+              return  unless path = modelPath data, name
+              args = [attrs._id || attrs.id, method, attr]
+              args[3] = '$inv'  if invert
+              modelEvents.bind path, args
+
+          if del
+            delete attrs[attr]
+          else
             attrs[attr] = if bool then bool: (data, model) ->
                 if !dataValue(data, name, model) != !invert then ' ' + attr else ''
               else modelText view, name, attrEscape
           
-          return  unless parser = parseAttr[attr]
-          args = value.replace(/\s/g, '').split ':'
-          args.unshift events, attrs
-          addId attrs, uniqueId
-          anyOut = anyParser args...  if anyParser = parser['*']
-          elOut = elParser args...  if elParser = parser[tagName]
-          anyOut ||= {}
-          elOut ||= {}
-          addId attrs, uniqueId  if elOut.addId || anyOut.addId
+        return  unless parser = parseAttr[attr]
+        anyOut = anyParser events, attrs, value  if anyParser = parser['*']
+        elOut = elParser events, attrs, value  if elParser = parser[tagName]
+        anyOut ||= {}
+        elOut ||= {}
+        addId attrs, uniqueId  if elOut.addId || anyOut.addId
+
+      for attr, value of attrs
+        continue if attr is 'style'
+        forAttr attr, value
+      forAttr 'style', attrs.style  if 'style' of attrs
       
       stack.push ['start', tagName, attrs]
 
@@ -347,6 +352,9 @@ parse = (view, viewName, template, data, onBind) ->
             if endBlock then stack.splice i + 1, 0, last else stack.push last
           attrs = last[2]
           addId attrs, uniqueId
+
+          if 'contenteditable' of attrs
+            addDomEvent events, attrs, name, textEvents, 'html'
 
           addEvent = (partial, domMethod) -> events.push (data, modelEvents) ->
             return  unless path = modelPath data, name

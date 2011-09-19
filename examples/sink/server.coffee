@@ -15,6 +15,7 @@ app.get '/', (req, res) ->
       {prop: 'font-weight', value: 'bold', active: true}
       {prop: 'font-size', value: '18px', active: false}
     ]
+    model.setNull 'x.outputText', 'Edit this text...'
     sink.send res, model
 
 app.listen 3000

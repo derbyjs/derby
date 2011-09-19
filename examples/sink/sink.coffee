@@ -31,7 +31,7 @@ view.make 'Body', '''
     <p class=css>((#x.styles))((> cssProperty))((#.active))<br>((/))((/))
   <p>}
   <h3>Output:</h3>
-  <p style="((x.styles > cssProperty))" contenteditable>Edit this text...</p>
+  <p style="((x.styles > cssProperty))" contenteditable>(((x.outputText)))</p>
   '''
 
 exports.addStyle = ->
