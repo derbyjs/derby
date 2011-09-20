@@ -4,6 +4,16 @@ Dom = require './Dom'
 modelHelper = require './modelHelper'
 loader = require './loader'
 
+empty = ->
+emptyRes =
+  getHeader: empty
+  setHeader: empty
+  write: empty
+  end: empty
+emptyModel =
+  get: empty
+  bundle: empty
+
 # Don't execute before or after functions on the server
 View::before = View::after = ->
 
@@ -24,7 +34,7 @@ View::_init = (model) ->
   @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
 
-View::send = (res, model, ctx) ->
+View::send = (res = emptyRes, model = emptyModel, ctx) ->
   self = this
   @_init model
   dom = @dom

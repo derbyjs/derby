@@ -17,16 +17,7 @@ module.exports =
     view._appFilename = appModule.filename
 
     # Call send to trigger a compile as soon as the server starts
-    empty = ->
-    res =
-      getHeader: empty
-      setHeader: empty
-      write: empty
-      end: empty
-    model =
-      get: empty
-      bundle: empty
-    view.send res, model
+    view.send()
 
     return appExports
 

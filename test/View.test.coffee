@@ -19,9 +19,8 @@ Model::bundle = ->
 module.exports =
   'test send with no defined views': ->
     view = new View
-    model = new Model
     res = new ResMock
-    view.send res, model
+    view.send res
     res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><style><\/style><script>.*<\/script><script.*><\/script>$/
         
   'test rendering a string literal view': ->
