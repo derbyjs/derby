@@ -6,6 +6,8 @@ View = module.exports = ->
   @_views = {}
   @_paths = {}
   @_onBinds = {}
+  @_depths = {}
+  @_aliases = {}
   @_partialIds = {}
   @_templates = {}
   @_inline = ''
@@ -137,7 +139,7 @@ extractPlaceholder = (text) ->
   content = ///^
     \s*([\#^/]?)  # Block type
     \s*([^\s>]*)  # Name of context object
-    (?:\s+@([^\s>]))?  # Alias name
+    (?:\s+:([^\s>]+))?  # Alias name
     (?:\s*>\s*([^\s]+)\s*)?  # Partial name
   ///.exec match[3]
   pre: trimInner match[1]
@@ -155,6 +157,20 @@ startsEndBlock = (s) ->
     [/^]  # End block type
     (?:\}{2,3}|\){2,3})  # End placeholder
   ///.test s
+
+currentDepth = (data, queues) ->
+  data.$depth + queues.length
+
+unaliasName = (data, queues, name) ->
+  return name  unless name.charAt(0) is ':'
+  i = name.indexOf '.'
+  aliasName = name.substring 1, i
+  remainder = name.substr i + 1
+  # Calculate depth difference between alias's definition and usage
+  offset = currentDepth(data, queues) - data.$aliases[aliasName]
+  throw "Can't find alias for #{name}"  if offset != offset # If NaN
+  # Convert depth difference to a relative model path
+  return Array(offset + 1).join('.') + remainder
 
 addNameToData = (data, name) ->
   data[name] = {model: name}  if name && !(name of data)
@@ -220,8 +236,13 @@ renderer = (view, items, events) ->
 parsePlaceholderContent = (view, data, partialName, queues, popped, stack, events, block, match, isString, onBind, callbacks) ->
   {literal, type, name, alias, partial} = match
   partial += '$s'  if partial && isString
-  addNameToData data, name
+  
+  # Store depth when an alias is defined
+  data.$aliases[alias] = currentDepth data, queues  if alias
 
+  name = unaliasName data, queues, name
+  addNameToData data, name
+  
   if block && ((endBlock = type is '/') ||
       (autoClosed = type is '^' && (!name || name == block.name) && block.type is '#'))
     {name, partial, literal, lastPartial, lastAutoClosed} = block
@@ -236,6 +257,8 @@ parsePlaceholderContent = (view, data, partialName, queues, popped, stack, event
 
   if partial then partialText = (data, model) ->
     view._onBinds[partial] = onBind
+    view._depths[partial] = currentDepth data, queues
+    view._aliases[partial] = data.$aliases
     view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
 
   if (datum = data[name])?
@@ -257,6 +280,8 @@ parse = (view, viewName, template, data, onBind) ->
   partialCount = 0
   partialName = -> viewName + '$p' + partialCount++
 
+  data.$depth = view._depths[viewName] || 0
+  data.$aliases = view._aliases[viewName] || {}
   if data.$isString
     if viewName is 'Title$s'
       onBind = (events, name) -> events.push (data, modelEvents) ->
@@ -279,7 +304,9 @@ parse = (view, viewName, template, data, onBind) ->
       forAttr = (attr, value) ->
         if match = extractPlaceholder value
           {pre, post, name, partial, literal} = match
+          name = unaliasName data, queues, name
           addNameToData data, name
+          
           invert = /^\s*!\s*$/.test pre
           if (pre && !invert) || post || partial
             # Attributes must be a single string, so create a string partial

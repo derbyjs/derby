@@ -103,7 +103,6 @@ module.exports =
         for name, obj of splitBind value
           do (name) ->
             {value, delay} = obj
-            console.log name, value, delay
             args = [value, null]
             args.push delay  if delay?
             events.push (data, modelEvents, domEvents) ->

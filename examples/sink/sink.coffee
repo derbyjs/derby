@@ -11,7 +11,7 @@ view.make 'Head', '''
   </style>
   '''
 
-view.make 'cssProperty', '((#.active))((..prop)): ((..value));((/))'
+view.make 'cssProperty', '((#:style.active))((:style.prop)): ((:style.value));((/))'
 
 # Option tags must only contain a variable with no additional text
 # For validation, non-closed p elements must be wrapped in a div instead of the
@@ -28,10 +28,10 @@ view.make 'Body', '''
   <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
   <p>{
-    <p class=css>((#x.styles))((> cssProperty))((#.active))<br>((/))((/))
+    <p class=css>((#x.styles :style))((> cssProperty))((#:style.active))<br>((/))((/))
   <p>}
   <h3>Output:</h3>
-  <p style="((x.styles > cssProperty))" contenteditable>(((x.outputText)))</p>
+  <p style="((x.styles :style > cssProperty))" contenteditable>(((x.outputText)))</p>
   '''
 
 exports.addStyle = ->
