@@ -1,5 +1,5 @@
 # Scripts required to properly render the page can be put in a file called
-# "inline.coffee". This file will be automatically inserted before the external
+# "inline.js". This file will be automatically inserted before the external
 # scripts are included.
 
 # For convenience, document.getElementById is aliased as $, but no other

@@ -48,16 +48,15 @@ View::_send = (res, model, ctx, dom, css) ->
   # The view.get function renders and sets event listeners. It must be
   # called for all views before the event listeners are retrieved
   
-  # The first chunk includes everything through head. It is important to get
-  # CSS to the browser as soon as possible, so styles should definately be
-  # within the Head view. In addition, the Head view does not have to be the
-  # same thing as the contents of the HTML head element, and if there is small
-  # amount of header HTML that will display well by itself, it is a good idea
-  # to add this to the Head view so that it renders ASAP.
+  # The first chunk includes everything through header. Head should contain
+  # any meta tags and script tags, since it is included before CSS.
+  # If there is a small amount of header HTML that will display well by itself,
+  # it is a good idea to add this to the Header view so that it renders ASAP.
   doctype = @get('Doctype', ctx) || '<!DOCTYPE html><meta charset=utf-8>'
   title = View.htmlEscape(@get 'Title$s', ctx) || 'Derby app'
   head = @get 'Head', ctx
-  res.write "#{doctype}<title>#{title}</title><style>#{css}</style>#{head}"
+  header = @get 'Header', ctx
+  res.write "#{doctype}<title>#{title}</title>#{head}<style>#{css}</style>#{header}"
 
   # Remaining HTML
   res.write @get 'Body', ctx
