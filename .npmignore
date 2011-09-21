@@ -1,6 +1,5 @@
 node_modules
-examples/chat/public/*.js
-examples/chat/public/*.gz
-examples/sink/public/*.js
-examples/sink/public/*.gz
+public/
+examples/chat/public/gen
+examples/sink/public/gen
 *.gz
