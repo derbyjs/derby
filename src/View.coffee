@@ -395,7 +395,7 @@ parse = (view, viewName, template, data, onBind) ->
           escaped = false  if partialText
           pushText (partialText || modelText view, name, escaped && htmlEscape), endBlock
           stack.push ['end', 'ins']  if wrap
-        
+
         onText: (partialText, value, endBlock) ->
           escaped = false  if partialText
           pushText (partialText || if escaped then htmlEscape value else value.toString()), endBlock
@@ -417,6 +417,10 @@ parse = (view, viewName, template, data, onBind) ->
 
   return renderer view, reduceStack(stack), events
 
+htmlUnescape = (s) ->
+  # TODO: Generalize HTML character entity replacement
+  s.replace('&rpar;', ')').replace('&lpar;', '(')
+
 parseString = (view, viewName, template, data, partialName, onBind) ->
   queues = [{stack: stack = [], events: events = []}]
   popped = []
@@ -426,19 +430,23 @@ parseString = (view, viewName, template, data, partialName, onBind) ->
 
   post = template
   while post
-    {pre, post} = match = extractPlaceholder post
-    # TODO: Generalize HTML character entity replacement
-    pushText pre.replace('&rpar;', ')').replace('&lpar;', '(')
-    
+    match = extractPlaceholder post
+    unless match?
+      pushText htmlUnescape post
+      break
+
+    {pre, post} = match
+    pushText htmlUnescape pre
+
     parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match, true, onBind,
       onBind: (name) -> onBind events, name
-      
+
       onModelText: (partialText, name, endBlock) ->
         pushText (partialText || modelText view, name), endBlock
-      
+
       onText: (partialText, value, endBlock) ->
         pushText (partialText || value.toString()), endBlock
-        
+
       onStartBlock: (_stack, _events, _block) ->
         stack = _stack
         events = _events
