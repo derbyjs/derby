@@ -1,5 +1,5 @@
 node_modules
-public/
+gen
 examples/chat/public/gen
 examples/sink/public/gen
 *.gz
