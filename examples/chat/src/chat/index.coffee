@@ -8,18 +8,16 @@ NUM_USER_IMAGES = 10
 
 get '/:room?', (model, {room}) ->
   # Redirect users to URLs that only contain letters, numbers, and hyphens
-  return view.redirect '/lobby' unless room && /^[-\w ]+$/.test room
+  return view.redirect '/lobby'  unless room && /^[-\w ]+$/.test room
   _room = room.toLowerCase().replace /[_ ]/g, '-'
-  return view.redirect "/#{_room}" if _room != room
+  return view.redirect "/#{_room}"  if _room != room
   
   # Get the userId from session data or select a new id if needed
   userId = model.get '_session.userId'
-  if userId?
+  return getRoom model, room, userId  if userId?
+  model.incr 'nextUserId', (err, userId) ->
+    model.set '_session.userId', userId
     getRoom model, room, userId
-  else
-    model.incr 'nextUserId', (err, userId) ->
-      model.set '_session.userId', userId
-      getRoom model, room, userId
 
 getRoom = (model, room, userId) ->
   # TODO: Limit user data subscription to users in the room. Maybe this could
@@ -49,7 +47,7 @@ view.after 'message', -> $('messages').scrollTop = $('messageList').offsetHeight
 ready ->
   # Exported functions are exposed as a global in the browser with the same
   # name as the module that includes Derby. They can also be bound to DOM
-  # events using the "bind" attribute in a template.
+  # events using the "x-bind" attribute in a template.
   model.set '_showReconnect', true
   exports.connect = ->
     # Hide the reconnect link for a second after clicking it
@@ -60,6 +58,7 @@ ready ->
   exports.reload = -> window.location.reload()
 
   model.on 'push', '_room.messages', -> model.incr '_numMessages'
+
   exports.postMessage = ->
     model.push '_room.messages',
       userId: model.get '_userId'
