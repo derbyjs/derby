@@ -1,5 +1,4 @@
-derby = require 'derby'
-{ready, model, view} = derby.createApp module, exports
+{ready, model, view} = require('derby').createApp module, exports
 
 view.make 'Head', '''
   <style>
