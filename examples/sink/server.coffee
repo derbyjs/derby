@@ -16,7 +16,7 @@ app.get '/', (req, res) ->
       {prop: 'font-size', value: '18px', active: false}
     ]
     model.setNull 'x.outputText', 'Edit this text...'
-    sink.send res, model
+    sink.render res, model
 
 app.listen 3000
 console.log 'Go to http://localhost:3000/'

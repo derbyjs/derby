@@ -10,14 +10,14 @@ module.exports =
     # Expose Racer and Derby methods on the application module
     racer.util.merge appExports, racer
     appExports.view = view = new View
-    appExports.send = (res, model, ctx) -> view.send res, model, ctx
+    appExports.render = (res, model, ctx) -> view.render res, model, ctx
     appExports.ready = ->
 
     view._derbyOptions = @options
     view._appFilename = appModule.filename
 
-    # Call send to trigger a compile as soon as the server starts
-    view.send()
+    # Call render to trigger a compile as soon as the server starts
+    view.render()
 
     return appExports
 
