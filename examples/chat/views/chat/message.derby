@@ -1,6 +1,0 @@
-<!-- Parentheses can be used to do interpolation within a model name. -->
-<li><img src=img/s.png class={{users.[userId].picClass}} alt="">
-  <div class=message>
-    <p><b>((users.[userId].name))</b>
-    <p>{{comment}}
-  </div>

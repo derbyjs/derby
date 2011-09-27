@@ -34,14 +34,14 @@ View::_init = (model) ->
   @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
 
-View::send = (res = emptyRes, model = emptyModel, ctx) ->
+View::render = (res = emptyRes, model = emptyModel, ctx) ->
   self = this
   @_init model
   dom = @dom
   @_load -> loader.css self._root, self._clientName, (css) ->
-    self._send res, model, ctx, dom, css
+    self._render res, model, ctx, dom, css
 
-View::_send = (res, model, ctx, dom, css) ->
+View::_render = (res, model, ctx, dom, css) ->
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
   
