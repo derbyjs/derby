@@ -1,3 +1,19 @@
+<!--
+  Derby templates are similar to Mustache, except that they are first
+  parsed as HTML, and there are a few extensions to make them work directly
+  with models. A single HTML template defines the HTML output, the event
+  handlers that update the model after user interaction, and the event handlers
+  that update the DOM when the model changes.
+
+  Elements that end in colon define the name of views. Built-in views are
+  capitalized, and these views are inserted when the page is rendered.
+-->
+
+<!--
+  As in Mustache, double and triple curly braces output a value literally.
+  Derby templates add double and triple parentheses, which output a value
+  and set up model <-> view bindings for that object.
+-->
 <Title:>
   Chat &lpar;((_numMessages))&rpar; - ((_user.name))
 
@@ -5,14 +21,9 @@
   <meta name=viewport content="width=device-width">
 
 <Body:>
-  <!--
-  Derby templates are similar to Mustache, except that they are first
-  parsed as HTML, and there are a few extensions to make them work directly
-  with models. A single HTML template defines the HTML output, the event
-  handlers that update the model after user interaction, and the event handlers
-  that update the DOM when the model changes.
-  -->
+  <!-- Partials use Mustache syntax -->
   ((> info))
+  <!-- An object can be passed into the partial to set its context -->
   <div id=messages><ul id=messageList>((_room.messages > message))</ul></div>
   <div id=foot>
     <img id=inputPic src=img/s.png class=((_user.picClass)) alt="">
@@ -24,16 +35,18 @@
     </div>
   </div>
 
-<info:>
-  <!--
+<!--
   connected and canConnect are built-in properties of model. If a variable
-  is not defined in the current context, it will be looked up in the model data
-  and the model properties
-  -->
+  is not defined in the current context, it will be looked up in the model
+  data and the model properties
+-->
+<info:>
   <div id=info>
+    <!-- Mustache syntax is used for conditional blocks, except that the
+         name need not be repeated in the closing tag or if-else blocks -->
     ((^connected))
       ((#canConnect))
-        <!-- Leading space is removed, but trailing space is maintained -->
+        <!-- Leading space is removed, and trailing space is maintained -->
         Offline 
         ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
       ((^))
@@ -43,7 +56,7 @@
   </div>
 
 <message:>
-  <!-- Square brackets can be used to do interpolation within a model name. -->
+  <!-- Square brackets perform interpolation within a model name. -->
   <li><img src=img/s.png class={{users.[userId].picClass}} alt="">
     <div class=message>
       <p><b>((users.[userId].name))</b>
