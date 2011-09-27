@@ -11,20 +11,22 @@ view.make 'Head', '''
   </style>
   '''
 
-view.make 'cssProperty', '((#:style.active))((:style.prop)): ((:style.value));((/))'
+view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
 
-# Option tags must only contain a variable with no additional text
+# Option tags & contenteditable must only contain a variable with no additional text
 # For validation, non-closed p elements must be wrapped in a div instead of the
 # default ins. Closed p's are fine in an ins element.
 view.make 'Body', '''
-  <select multiple><optgroup label="CSS properties">((#x.styles))
-    <option selected=((.active))>((.prop))
-  ((/))</select>
-  <div>((#x.styles))
-    <p><input type=checkbox checked=((.active))> 
-    <input value=((.prop)) disabled=!((.active))> 
-    <input value=((.value)) disabled=!((.active))>
-  ((/))</div>
+  <select multiple><optgroup label="CSS properties">
+    ((#x.styles))<option selected=((.active))>((.prop))((/))
+  </select>
+  <div>
+    ((#x.styles))
+      <p><input type=checkbox checked=((.active))> 
+      <input value=((.prop)) disabled=!((.active))> 
+      <input value=((.value)) disabled=!((.active))>
+    ((/))
+  </div>
   <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
   <p>{
