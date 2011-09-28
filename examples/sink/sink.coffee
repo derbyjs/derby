@@ -1,6 +1,6 @@
-{ready, model, view, get} = require('derby').createApp module, exports
+{get, view, ready} = require('derby').createApp module, exports
 
-get '/', (model) ->
+get '/', (render, model) ->
   model.subscribe 'x.**', ->
     model.setNull 'x.styles', [
       {prop: 'color', value: '#c00', active: true}
@@ -8,7 +8,7 @@ get '/', (model) ->
       {prop: 'font-size', value: '18px', active: false}
     ]
     model.setNull 'x.outputText', 'Edit this text...'
-    view.render model
+    render()
 
 view.make 'Head', '''
   <style>
@@ -45,5 +45,6 @@ view.make 'Body', '''
 
 view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
 
-exports.addStyle = ->
-  model.push 'x.styles', {}
+ready (model) ->
+  exports.addStyle = ->
+    model.push 'x.styles', {}

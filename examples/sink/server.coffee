@@ -1,13 +1,14 @@
 express = require 'express'
 sink = require './sink'
-app = express.createServer(
+
+server = express.createServer(
   express.favicon(),
   express.static(__dirname + '/public'),
   sink.router()
 )
 
-store = sink.createStore listen: app
+store = sink.createStore listen: server
 store.flush()
 
-app.listen 3000
+server.listen 3000
 console.log 'Go to http://localhost:3000/'

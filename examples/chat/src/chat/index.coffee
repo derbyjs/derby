@@ -6,7 +6,7 @@
 
 NUM_USER_IMAGES = 10
 
-get '/:room?', (model, {room}) ->
+get '/:room?', (render, model, {room}) ->
   # Redirect users to URLs that only contain letters, numbers, and hyphens
   return view.redirect '/lobby'  unless room && /^[-\w ]+$/.test room
   _room = room.toLowerCase().replace /[_ ]/g, '-'
@@ -15,11 +15,14 @@ get '/:room?', (model, {room}) ->
   # Get the userId from session data or select a new id if needed
   userId = model.get '_session.userId'
   return getRoom model, room, userId  if userId?
+  # The model.incr method can be used in a synchronous or asychronous manner.
+  # The sync method will return a value based on the current model, and the
+  # async method will not callback until the server has responded
   model.incr 'nextUserId', (err, userId) ->
     model.set '_session.userId', userId
-    getRoom model, room, userId
+    getRoom render, model, room, userId
 
-getRoom = (model, room, userId) ->
+getRoom = (render, model, room, userId) ->
   # TODO: Limit user data subscription to users in the room. Maybe this could
   # be implied by an object ref on the room
   model.subscribe _room: "rooms.#{room}.**", "users.**", ->
@@ -34,8 +37,7 @@ getRoom = (model, room, userId) ->
     model.set '_user', model.ref 'users', '_userId'
     model.set '_newComment', ''
     model.set '_numMessages', model.get('_room.messages').length
-
-    view.render model
+    render()
 
 
 # CONTROLLER FUNCTIONS #

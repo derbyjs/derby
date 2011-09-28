@@ -18,12 +18,22 @@ module.exports =
     appExports.view = view = new View
     appExports.render = (res, model, ctx) -> view.render res, model, ctx
     appExports.ready = ->
+    createStore = appExports.createStore
+    store = null
+    appExports.createStore = (options) -> store = createStore options
+    appExports._setStore = (_store) -> store = _store
 
     routes = []
     appExports.get = (pattern, callback) -> routes.push [pattern, callback]
     appExports.router = ->
       router = new Router serverMock
-      router._route 'get', pattern, callback for [pattern, callback] in routes
+      routes.forEach ([pattern, callback]) ->
+        router._route 'get', pattern, (req, res, next) ->
+          render = (ctx) -> view.render res, model, ctx
+          params = Object.create req.params
+          params.url = req.url
+          model = store.createModel()
+          callback render, model, params, next
       return router.middleware
 
     view._derbyOptions = @options
@@ -33,3 +43,11 @@ module.exports =
     view.render()
 
     return appExports
+  
+  createStore: (args...) ->
+    last = args[args.length - 1]
+    # Check to see if last argument is a createStore options object
+    options = args.pop()  unless last.view
+    store = racer.createStore options
+    app._setStore store  for app in args
+    return store
