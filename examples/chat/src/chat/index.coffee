@@ -1,6 +1,6 @@
 # This module's "module" and "exports" objects are passed to Derby, so that it
 # can expose certain functions on this module for the server or client code.
-{model, view, get, ready} = require('derby').createApp module, exports
+{model, view, ready, get} = require('derby').createApp module, exports
 
 ## ROUTES ##
 

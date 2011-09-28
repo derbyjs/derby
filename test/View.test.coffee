@@ -17,11 +17,11 @@ Model::_commit = ->
 Model::bundle = ->
 
 module.exports =
-  'test send with no defined views': ->
+  'test view.render with no defined views': ->
     view = new View
     res = new ResMock
-    view.send res
-    res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><style><\/style><script>.*<\/script><script.*><\/script>$/
+    view.render res
+    res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
         
   'test rendering a string literal view': ->
     view = new View
@@ -114,7 +114,7 @@ module.exports =
     # Attribute values are escaped regardless of placeholder type
     # Ampersands are escaped at the end of a replacement even when not
     # required, because it is sometimes needed depending on the following item
-    template = '<input value=(((html)))> ((html))x(((html)))'
+    template = '''<input value=(((html)))> ((html))x(((html)))'''
     value = '<b id="hey">&Hi! & x& </b>&'
               
     view.make 'test0', template, html: value
@@ -137,7 +137,7 @@ module.exports =
     model = new Model
     view._init model
         
-    template = '((#show))Yep((^))Nope((/))((#show)) Yes!((/)) ((^show))No((/))'
+    template = '''((#show))Yep((^))Nope((/))((#show)) Yes!((/)) ((^show))No((/))'''
         
     literalTruthy = 'Yep Yes! '
     literalFalsey = 'Nope No'

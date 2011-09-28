@@ -56,7 +56,8 @@ View::_render = (res, model, ctx, dom, css) ->
   title = View.htmlEscape(@get 'Title$s', ctx) || 'Derby app'
   head = @get 'Head', ctx
   header = @get 'Header', ctx
-  res.write "#{doctype}<title>#{title}</title>#{head}<style>#{css}</style>#{header}"
+  css = "<style>#{css}</style>"  if css
+  res.write "#{doctype}<title>#{title}</title>#{head}#{css}#{header}"
 
   # Remaining HTML
   res.write @get 'Body', ctx
@@ -81,4 +82,3 @@ View::_render = (res, model, ctx, dom, css) ->
   # Wait for transactions to finish and package up the racer model data
   model.bundle (bundle) ->
     res.end initStart + bundle.replace(/<\//g, '<\\/') + initEnd
-

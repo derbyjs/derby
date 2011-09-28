@@ -1,4 +1,14 @@
-{ready, model, view} = require('derby').createApp module, exports
+{ready, model, view, get} = require('derby').createApp module, exports
+
+get '/', (model) ->
+  model.subscribe 'x.**', ->
+    model.setNull 'x.styles', [
+      {prop: 'color', value: '#c00', active: true}
+      {prop: 'font-weight', value: 'bold', active: true}
+      {prop: 'font-size', value: '18px', active: false}
+    ]
+    model.setNull 'x.outputText', 'Edit this text...'
+    view.render model
 
 view.make 'Head', '''
   <style>
@@ -9,8 +19,6 @@ view.make 'Head', '''
     .css{margin-left:10px}
   </style>
   '''
-
-view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
 
 # Option tags & contenteditable must only contain a variable with no additional text
 # For validation, non-closed p elements must be wrapped in a div instead of the
@@ -34,6 +42,8 @@ view.make 'Body', '''
   <h3>Output:</h3>
   <p style="((x.styles :style > cssProperty))" contenteditable>(((x.outputText)))</p>
   '''
+
+view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
 
 exports.addStyle = ->
   model.push 'x.styles', {}
