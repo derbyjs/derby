@@ -1,7 +1,7 @@
 path = require 'path'
 express = require 'express'
 gzip = require 'connect-gzip'
-chat = require './chat'
+chat = require '../chat'
 
 MAX_AGE_ONE_YEAR = {maxAge: 1000 * 60 * 60 * 24 * 365}
 
@@ -11,9 +11,9 @@ app = express.createServer(
   express.cookieParser(),
   express.session(secret: 'dont_tell', cookie: MAX_AGE_ONE_YEAR),
   # Derby session middleware syncs the session store with _session
-  chat.session(),
+  # chat.session(),
   # The routes method creates an express middleware from the app's routes
-  chat.routes(),
+  chat.router(),
   gzip.gzip()
 )
 
