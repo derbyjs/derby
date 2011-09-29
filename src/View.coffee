@@ -150,7 +150,7 @@ extractPlaceholder = (text) ->
   type: content[1]
   name: content[2]
   alias: content[3]
-  partial: content[4]
+  partial: content[4]?.toLowerCase()
   post: trimInner match[4]
 
 startsEndBlock = (s) ->
