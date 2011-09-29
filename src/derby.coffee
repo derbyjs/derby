@@ -8,6 +8,13 @@ Router = require 'express/lib/router'
 serverMock =
   enabled: -> false
 
+Page = (@view, @res, @model) -> return
+Page:: =
+  render: (ctx) ->
+    @view.render @res, @model, ctx
+  redirect: (url, status) ->
+    @res.redirect url, status
+
 module.exports =
   options: {}
   configure: (@options) ->
@@ -29,11 +36,11 @@ module.exports =
       router = new Router serverMock
       routes.forEach ([pattern, callback]) ->
         router._route 'get', pattern, (req, res, next) ->
-          render = (ctx) -> view.render res, model, ctx
+          model = store.createModel()
+          page = new Page view, res, model
           params = Object.create req.params
           params.url = req.url
-          model = store.createModel()
-          callback render, model, params, next
+          callback page, model, params, next
       return router.middleware
 
     view._derbyOptions = @options

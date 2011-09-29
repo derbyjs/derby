@@ -26,7 +26,7 @@
   <!-- An object can be passed into the partial to set its context -->
   <div id=messages><ul id=messageList>((_room.messages > message))</ul></div>
   <div id=foot>
-    <img id=inputPic src=img/s.png class=((_user.picClass)) alt="">
+    <img id=inputPic src=/img/s.png class=((_user.picClass)) alt="">
     <div id=inputs>
       <input id=inputName value=((_user.name))>
       <form id=inputForm x-bind=submit:postMessage>

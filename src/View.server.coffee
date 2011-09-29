@@ -14,6 +14,8 @@ emptyModel =
   get: empty
   bundle: empty
 
+escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
+
 # Don't execute before or after functions on the server
 View::before = View::after = ->
 
@@ -52,25 +54,25 @@ View::_render = (res, model, ctx, dom, css) ->
   # any meta tags and script tags, since it is included before CSS.
   # If there is a small amount of header HTML that will display well by itself,
   # it is a good idea to add this to the Header view so that it renders ASAP.
-  doctype = @get('Doctype', ctx) || '<!DOCTYPE html><meta charset=utf-8>'
-  title = View.htmlEscape(@get 'Title$s', ctx) || 'Derby app'
-  head = @get 'Head', ctx
-  header = @get 'Header', ctx
+  doctype = @get('doctype', ctx) || '<!DOCTYPE html><meta charset=utf-8>'
+  title = View.htmlEscape(@get 'title$s', ctx) || 'Derby app'
+  head = @get 'head', ctx
+  header = @get 'header', ctx
   css = "<style>#{css}</style>"  if css
   res.write "#{doctype}<title>#{title}</title>#{head}#{css}#{header}"
 
   # Remaining HTML
-  res.write @get 'Body', ctx
+  res.write @get 'body', ctx
 
   # preLoad scripts and external script
   clientName = @_clientName
   res.write "<script>function $(i){return document.getElementById(i)}" +
     "function #{clientName}(){#{clientName}=1}" +
-    "#{@_inline}</script>" + @get('Script', ctx) +
+    "#{escapeInlineScript(@_inline)}</script>" + @get('script', ctx) +
     "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"
   
   # Initialization script and Tail
-  tail = @get 'Tail', ctx
+  tail = @get 'tail', ctx
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
     "#{clientName}=require('./#{@_require}')(#{@_idCount}," +
     JSON.stringify(@_paths) + ',' + JSON.stringify(@_partialIds) + ',' +
@@ -81,4 +83,4 @@ View::_render = (res, model, ctx, dom, css) ->
   
   # Wait for transactions to finish and package up the racer model data
   model.bundle (bundle) ->
-    res.end initStart + bundle.replace(/<\//g, '<\\/') + initEnd
+    res.end initStart + escapeInlineScript(bundle) + initEnd

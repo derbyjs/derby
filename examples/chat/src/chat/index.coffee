@@ -1,16 +1,17 @@
 # This module's "module" and "exports" objects are passed to Derby, so that it
 # can expose certain functions on this module for the server or client code.
-{model, view, ready, get} = require('derby').createApp module, exports
+{get, view, ready} = require('derby').createApp module, exports
 
 ## ROUTES ##
 
 NUM_USER_IMAGES = 10
 
-get '/:room?', (render, model, {room}) ->
+get '/:room?', (page, model, {room}) ->
+  console.log room
   # Redirect users to URLs that only contain letters, numbers, and hyphens
-  return view.redirect '/lobby'  unless room && /^[-\w ]+$/.test room
+  return page.redirect '/lobby'  unless room && /^[-\w ]+$/.test room
   _room = room.toLowerCase().replace /[_ ]/g, '-'
-  return view.redirect "/#{_room}"  if _room != room
+  return page.redirect "/#{_room}"  if _room != room
   
   # Get the userId from session data or select a new id if needed
   userId = model.get '_session.userId'
@@ -18,11 +19,13 @@ get '/:room?', (render, model, {room}) ->
   # The model.incr method can be used in a synchronous or asychronous manner.
   # The sync method will return a value based on the current model, and the
   # async method will not callback until the server has responded
-  model.incr 'nextUserId', (err, userId) ->
+  model.set 'stuff', 1
+  model.incr 'nextUserId', (err, path, userId) ->
+    console.log userId
     model.set '_session.userId', userId
-    getRoom render, model, room, userId
+    getRoom page, model, room, userId
 
-getRoom = (render, model, room, userId) ->
+getRoom = (page, model, room, userId) ->
   # TODO: Limit user data subscription to users in the room. Maybe this could
   # be implied by an object ref on the room
   model.subscribe _room: "rooms.#{room}.**", "users.**", ->
@@ -37,7 +40,7 @@ getRoom = (render, model, room, userId) ->
     model.set '_user', model.ref 'users', '_userId'
     model.set '_newComment', ''
     model.set '_numMessages', model.get('_room.messages').length
-    render()
+    page.render()
 
 
 # CONTROLLER FUNCTIONS #
@@ -46,7 +49,7 @@ getRoom = (render, model, room, userId) ->
 # browser. Note that they are not called on the server.
 view.after 'message', -> $('messages').scrollTop = $('messageList').offsetHeight
 
-ready ->
+ready (model) ->
   # Exported functions are exposed as a global in the browser with the same
   # name as the module that includes Derby. They can also be bound to DOM
   # events using the "x-bind" attribute in a template.

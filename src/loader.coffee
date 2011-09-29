@@ -5,6 +5,7 @@ stylus = require 'stylus'
 nib = require 'nib'
 racer = require 'racer'
 {trim} = require './View'
+htmlParser = require './htmlParser'
 
 cssCache = {}
 jsCache = {}
@@ -34,12 +35,28 @@ module.exports =
     fs.readdir dir, (err, files) ->
       return callback()  unless files
       count = files.length
-      for file in files
-        do (file) -> fs.readFile join(dir, file), 'utf8', (err, template) ->
-          [viewName, scope] = file.split '.'
-          view.make viewName, template
-          view._templates[viewName] = trim template  unless scope is 'server'
+      files.forEach (file) ->
+        # Ignore hidden files
+        if file[0] == '.'
           callback()  unless --count
+          return
+        fs.readFile join(dir, file), 'utf8', (err, template) ->
+          throw err if err
+          viewName = ''
+          htmlParser.parse template,
+            start: (tag, name, attrs) ->
+              i = name.length - 1
+              viewName = if name[i] == ':' then name.substr 0, i else ''
+            chars: (text, literal) ->
+              unless viewName && literal
+                if /^[\s\n]*$/.test text
+                  callback()  unless --count
+                  return
+                throw "Misformed template in #{dir}/#{file}: " + text
+              text = trim text
+              view.make viewName, text
+              view._templates[viewName] = text
+              callback()  unless --count
 
   js: (view, parentFilename, options, callback) ->
     return callback {}  unless parentFilename

@@ -4,9 +4,10 @@ gzip = require 'connect-gzip'
 chat = require '../chat'
 
 MAX_AGE_ONE_YEAR = {maxAge: 1000 * 60 * 60 * 24 * 365}
+root = path.dirname path.dirname __dirname
 
 app = express.createServer(
-  gzip.staticGzip(path.dirname(__dirname) + '/public', MAX_AGE_ONE_YEAR),
+  gzip.staticGzip(root + '/public', MAX_AGE_ONE_YEAR),
   express.favicon(),
   express.cookieParser(),
   express.session(secret: 'dont_tell', cookie: MAX_AGE_ONE_YEAR),

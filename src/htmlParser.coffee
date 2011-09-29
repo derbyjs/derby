@@ -1,10 +1,19 @@
-startTag = /^<(\w+)((?:\s+[^\s=\/>]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+)?)?)*)\s*(\/?)\s*>/
-endTag = /^<\/(\w+)[^>]*>/
+startTag = /^<([^\s=\/>]+)((?:\s+[^\s=\/>]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+)?)?)*)\s*(\/?)\s*>/
+endTag = /^<\/([^\s=\/>]+)[^>]*>/
 attr = /([^\s=]+)(?:\s*(=)\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+))?)?/g
+literalTag = /^(?:[^:]+:|style|script)$/i
+literalEnd = (tagName) -> switch tagName.toLowerCase()
+  when 'style' then /<\/style/i
+  when 'script' then /<\/script/i
+  else /<\/?[^\s=\/>:]+:/
 comment = /<!--[\s\S]*?-->/g
 exports.uncomment = uncomment = (html) -> html.replace comment, ''
 
+empty = ->
 exports.parse = (html, handler = {}) ->
+  charsHandler = handler.chars || empty
+  startHandler = handler.start || empty
+  endHandler = handler.end || empty
 
   parseStartTag = (tag, tagName, rest) ->
     attrs = {}
@@ -15,10 +24,15 @@ exports.parse = (html, handler = {}) ->
   parseEndTag = (tag, tagName) ->
     endHandler tag, tagName.toLowerCase()
 
-  empty = ->
-  charsHandler = handler.chars || empty
-  startHandler = handler.start || empty
-  endHandler = handler.end || empty
+  onChars = (html, index, literal) ->
+    if ~index
+      text = html.substring 0, index
+      html = html.substring index
+    else
+      text = html
+      html = ''
+    charsHandler text, literal  if text
+    return html
 
   # Remove HTML comments before parsing
   html = uncomment html
@@ -29,22 +43,21 @@ exports.parse = (html, handler = {}) ->
 
     if html[0] == '<'
       if html[1] == '/'
-        match = html.match endTag
-        if match
+        if match = html.match endTag
           html = html.substring match[0].length
           match[0].replace endTag, parseEndTag
           chars = false
       else
-        match = html.match startTag
-        if match
+        if match = html.match startTag
           html = html.substring match[0].length
           match[0].replace startTag, parseStartTag
           chars = false
+          if literalTag.test tagName = match[1]
+            index = html.search literalEnd tagName
+            html = onChars html, index, true
 
     if chars
       index = html.indexOf '<'
-      text = if index < 0 then html else html.substring 0, index
-      html = if index < 0 then '' else html.substring index
-      charsHandler text  if text
+      html = onChars html, index
 
-    throw 'Parse error: ' + html  if html == last
+    throw 'HTML parse error: ' + html  if html == last

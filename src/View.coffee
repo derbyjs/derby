@@ -74,6 +74,8 @@ View:: =
   make: (name, template, data = {}) ->
     unless data.$isString
       @make name + '$s', template, extend data, {$isString: true}
+    
+    name = name.toLowerCase()
     self = this
     render = (ctx) ->
       render = parse self, name, template, data, self._onBinds[name]
@@ -360,8 +362,8 @@ parse = (view, viewName, template, data, onBind) ->
       
       stack.push ['start', tagName, attrs]
 
-    chars: chars = (text) ->
-      unless match = extractPlaceholder text
+    chars: chars = (text, literal) ->
+      if literal || !(match = extractPlaceholder text)
         stack.push ['chars', text]  if text = trimInner text
         return
 
