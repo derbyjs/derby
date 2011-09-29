@@ -7,12 +7,16 @@ exports.createApp = (appModule, appExports) ->
   # Expose Racer and Derby methods on the application module
   racer.util.merge appExports, racer
   appExports.view = view = new View
-  
-  appExports.ready = (fn) -> racer.onready = fn
  
   model = view.model = racer.model
   dom = view.dom = new Dom model, appExports
   modelHelper.init model, dom, view
+  appExports.ready = (fn) -> racer.onready = -> fn model
+
+  routes = []
+  appExports.get = (pattern, callback) -> routes.push [pattern, callback]
+  
+  # "{{templates}}" is replaced with an array of templates by loader
   view.make name, template  for name, template of "{{templates}}"
   
   appModule.exports = (idCount, paths, partialIds, aliases, depths, modelBundle, modelEvents, domEvents) ->
