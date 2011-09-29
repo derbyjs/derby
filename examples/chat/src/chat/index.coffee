@@ -12,11 +12,11 @@ get '/:room?', (page, model, {room}) ->
   return page.redirect '/lobby'  unless room && /^[-\w ]+$/.test room
   _room = room.toLowerCase().replace /[_ ]/g, '-'
   return page.redirect "/#{_room}"  if _room != room
-  
+
   # Get the userId from session data or select a new id if needed
   userId = model.get '_session.userId'
   return getRoom model, room, userId  if userId?
-  # The model.incr method can be used in a synchronous or asychronous manner.
+  # Model setter methods can be used in a synchronous or asychronous manner.
   # The sync method will return a value based on the current model, and the
   # async method will not callback until the server has responded
   model.set 'stuff', 1
@@ -32,7 +32,7 @@ getRoom = (page, model, room, userId) ->
     # setNull will set a value if the object is currently null or undefined
     model.setNull '_room.messages', []
     model.setNull "users.#{userId}",
-      name: 'User ' + (userId + 1)
+      name: 'User ' + userId
       picClass: 'pic' + (userId % NUM_USER_IMAGES)
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server

@@ -285,10 +285,10 @@ parse = (view, viewName, template, data, onBind) ->
   data.$depth = view._depths[viewName] || 0
   data.$aliases = view._aliases[viewName] || {}
   if data.$isString
-    if viewName is 'Title$s'
+    if viewName is 'title$s'
       onBind = (events, name) -> events.push (data, modelEvents) ->
         return  unless path = modelPath data, name
-        modelEvents.bind path, ['$doc', 'prop', 'title', 'Title$s']
+        modelEvents.bind path, ['$doc', 'prop', 'title', 'title$s']
     return parseString view, viewName, template, data, partialName, onBind || ->
 
   uniqueId = view._uniqueId
