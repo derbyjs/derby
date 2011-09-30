@@ -25,10 +25,14 @@ module.exports =
     appExports.view = view = new View
     appExports.render = (res, model, ctx) -> view.render res, model, ctx
     appExports.ready = ->
-    createStore = appExports.createStore
+    
     store = null
-    appExports.createStore = (options) -> store = createStore options
-    appExports._setStore = (_store) -> store = _store
+    session = null
+    appExports._setStore = setStore = (_store) ->
+      store = _store
+      session?._setStore _store
+    appExports.createStore = (options) -> setStore racer.createStore options
+    appExports.session = (store) -> session = racer.session store
 
     routes = []
     appExports.get = (pattern, callback) -> routes.push [pattern, callback]
@@ -36,7 +40,7 @@ module.exports =
       router = new Router serverMock
       routes.forEach ([pattern, callback]) ->
         router._route 'get', pattern, (req, res, next) ->
-          model = store.createModel()
+          model = req.model || store.createModel()
           page = new Page view, res, model
           params = Object.create req.params
           params.url = req.url
@@ -58,3 +62,5 @@ module.exports =
     store = racer.createStore options
     app._setStore store  for app in args
     return store
+  
+  session: racer.session

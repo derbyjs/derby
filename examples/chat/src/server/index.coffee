@@ -11,8 +11,8 @@ app = express.createServer(
   express.favicon(),
   express.cookieParser(),
   express.session(secret: 'dont_tell', cookie: MAX_AGE_ONE_YEAR),
-  # Derby session middleware syncs the session store with _session
-  # chat.session(),
+  # Derby session middleware subscribes models to _session
+  chat.session(),
   # The routes method creates an express middleware from the app's routes
   chat.router(),
   gzip.gzip()
