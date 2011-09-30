@@ -32,7 +32,7 @@ module.exports =
       store = _store
       session?._setStore _store
     appExports.createStore = (options) -> setStore racer.createStore options
-    appExports.session = (store) -> session = racer.session store
+    appExports.session = (options) -> session = racer.session store, options
 
     routes = []
     appExports.get = (pattern, callback) -> routes.push [pattern, callback]

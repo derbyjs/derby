@@ -10,9 +10,9 @@ app = express.createServer(
   gzip.staticGzip(root + '/public', MAX_AGE_ONE_YEAR),
   express.favicon(),
   express.cookieParser(),
-  express.session(secret: 'dont_tell', cookie: MAX_AGE_ONE_YEAR),
-  # Derby session middleware subscribes models to _session
-  chat.session(),
+  # Derby session middleware sets up connect session middleware
+  # and subscribes models to _session
+  chat.session(secret: 'dont_tell', cookie: MAX_AGE_ONE_YEAR),
   # The routes method creates an express middleware from the app's routes
   chat.router(),
   gzip.gzip()
