@@ -73,7 +73,7 @@ module.exports =
     staticPath = join staticRoot, staticDir
 
     finish = (js) -> views view, root, clientName, ->
-      js = js.replace '"{{templates}}"', JSON.stringify(view._templates || {})
+      js = js.replace '"$$templates$$"', JSON.stringify(view._templates || {})
       filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
       # Base64 uses characters reserved in URLs and adds extra padding charcters.
       # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding

@@ -27,8 +27,8 @@ exports.createApp = (appModule) ->
   page.view = view
   page.model = model
 
-  # "{{templates}}" is replaced with an array of templates by loader
-  view.make name, template  for name, template of "{{templates}}"
+  # "$$templates$$" is replaced with an array of templates by loader
+  view.make name, template  for name, template of "$$templates$$"
 
   appModule.exports = (idCount, paths, partialIds, aliases, depths, modelBundle, modelEvents, domEvents) ->
     view._idCount = idCount
