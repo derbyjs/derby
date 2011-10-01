@@ -1,5 +1,8 @@
 {get, view, ready} = require('derby').createApp module
 
+
+## Routing ##
+
 pages = [
   {name: 'home', text: 'Home', url: '/'}
   {name: 'liveCss', text: 'Live CSS', url: '/live-css'}
@@ -19,14 +22,17 @@ get '/', (page) ->
   page.render ctxFor 'home'
 
 get '/live-css', (page, model) ->
-  model.subscribe 'x.**', ->
-    model.setNull 'x.styles', [
+  model.subscribe 'liveCss.**', ->
+    model.setNull 'liveCss.styles', [
       {prop: 'color', value: '#c00', active: true}
       {prop: 'font-weight', value: 'bold', active: true}
       {prop: 'font-size', value: '18px', active: false}
     ]
-    model.setNull 'x.outputText', 'Edit this text...'
+    model.setNull 'liveCss.outputText', 'Edit this text...'
     page.render ctxFor 'liveCss'
+
+
+## Views ##
 
 view.make 'Head', '''
   <style>
@@ -62,10 +68,10 @@ view.make 'home', '''
 # default ins. Closed p's are fine in an ins element.
 view.make 'liveCss', '''
   <select multiple><optgroup label="CSS properties">
-    ((#x.styles))<option selected=((.active))>((.prop))((/))
+    ((#liveCss.styles))<option selected=((.active))>((.prop))((/))
   </select>
   <div>
-    ((#x.styles))
+    ((#liveCss.styles))
       <p><input type=checkbox checked=((.active))> 
       <input value=((.prop)) disabled=!((.active))> 
       <input value=((.value)) disabled=!((.active))>
@@ -74,14 +80,19 @@ view.make 'liveCss', '''
   <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
   <p>{
-    <p class=css>((#x.styles :style))((> cssProperty))((#:style.active))<br>((/))((/))
+    <p class=css>((#liveCss.styles :style))((> cssProperty))((#:style.active))<br>((/))((/))
   <p>}
   <h3>Output:</h3>
-  <p style="((x.styles :style > cssProperty))" contenteditable>(((x.outputText)))</p>
+  <p style="((liveCss.styles :style > cssProperty))" contenteditable>
+    (((liveCss.outputText)))
+  </p>
   '''
 
 view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
 
+
+## Controller functions ##
+
 ready (model) ->
   exports.addStyle = ->
-    model.push 'x.styles', {}
+    model.push 'liveCss.styles', {}
