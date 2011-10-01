@@ -92,9 +92,6 @@ module.exports =
       distribute events, attrs, 'change'
       return addId: true
 
-    'a': (events, attrs) ->
-
-
   parseAttr:
     'x-bind':
       '*': (events, attrs, value) ->

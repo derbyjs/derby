@@ -96,6 +96,11 @@ View:: =
 
   inline: ->
 
+  render: (@model, ctx) ->
+    document.title = @get 'title$s', ctx
+    document.body.innerHTML = @get('header', ctx) + @get('body', ctx)
+
+
 extend = (parent, obj) ->
   unless typeof parent is 'object'
     return if typeof obj is 'object' then obj else {}
