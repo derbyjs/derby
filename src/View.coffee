@@ -1,5 +1,5 @@
 htmlParser = require './htmlParser'
-{modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent, textEvents} = require './parser'
+{modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent} = require './parser'
 
 View = module.exports = ->
   self = this
@@ -383,7 +383,7 @@ parse = (view, viewName, template, data, onBind) ->
           addId attrs, uniqueId
 
           if 'contenteditable' of attrs
-            addDomEvent events, attrs, name, textEvents, 'html'
+            addDomEvent events, attrs, name, 'input', 'html'
 
           addEvent = (partial, domMethod) -> events.push (data, modelEvents) ->
             return  unless path = modelPath data, name

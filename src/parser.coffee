@@ -49,8 +49,6 @@ module.exports =
       args[1] = attrs._id || attrs.id
       domEvents.bind eventName, args
 
-  textEvents: textEvents = ['keyup', 'keydown', 'paste/0', 'dragover/0']
-
   parsePlaceholder:
     'value':
       input: (events, attrs, name) ->
@@ -59,10 +57,8 @@ module.exports =
           delete attrs['x-blur']
           eventNames = 'change'
         else
-          # By default, update on any event that could change the value
-          # Note that paste and dragover are emitted after a setTimeout, since
-          # these events are fired before the input value is updated
-          eventNames = textEvents
+          # By default, update as the user types
+          eventNames = 'input'
         
         addDomEvent events, attrs, name, eventNames, 'prop', 'value'
         # Update the element's property unless it has focus
@@ -96,6 +92,9 @@ module.exports =
       distribute events, attrs, 'change'
       return addId: true
 
+    'a': (events, attrs) ->
+
+
   parseAttr:
     'x-bind':
       '*': (events, attrs, value) ->
@@ -118,4 +117,3 @@ module.exports =
         obj = splitBind value
         if 'submit' of obj
           attrs.onsubmit = 'return false'  unless 'onsubmit' of attrs
-
