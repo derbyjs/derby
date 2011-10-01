@@ -3,7 +3,8 @@ modelHelper = require './modelHelper'
 Dom = require './Dom'
 View = require './View'
 
-exports.createApp = (appModule, appExports) ->
+exports.createApp = (appModule) ->
+  appExports = appModule.exports
   # Expose Racer and Derby methods on the application module
   racer.util.merge appExports, racer
   appExports.view = view = new View

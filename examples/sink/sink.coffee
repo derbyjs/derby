@@ -1,4 +1,4 @@
-{get, view, ready} = require('derby').createApp module, exports
+{get, view, ready} = require('derby').createApp module
 
 get '/', (page, model) ->
   model.subscribe 'x.**', ->

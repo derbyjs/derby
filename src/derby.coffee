@@ -19,7 +19,8 @@ module.exports =
   options: {}
   configure: (@options) ->
 
-  createApp: (appModule, appExports) ->
+  createApp: (appModule) ->
+    appExports = appModule.exports
     # Expose Racer and Derby methods on the application module
     racer.util.merge appExports, racer
     appExports.view = view = new View
@@ -29,10 +30,10 @@ module.exports =
     store = null
     session = null
     appExports._setStore = setStore = (_store) ->
-      store = _store
       session?._setStore _store
+      return store = _store
     appExports.createStore = (options) -> setStore racer.createStore options
-    appExports.session = (options) -> session = racer.session store, options
+    appExports.session = -> session = racer.session store
 
     routes = []
     appExports.get = (pattern, callback) -> routes.push [pattern, callback]
