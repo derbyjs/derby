@@ -3,12 +3,14 @@ modelHelper = require './modelHelper'
 Dom = require './Dom'
 View = require './View'
 History = require './History'
+Route = require 'express/lib/router/route'
 
 Page = -> return
 Page:: =
   render: (ctx) ->
     @view.render @model, ctx
   redirect: (url) ->
+    @history.replace url, true
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports
@@ -17,7 +19,8 @@ exports.createApp = (appModule) ->
   appExports.view = view = new View
 
   routes = []
-  appExports.get = (pattern, callback) -> routes.push [pattern, callback]
+  appExports.get = (pattern, callback) ->
+    routes.push new Route 'get', pattern, callback
   history = new History routes, page = new Page
 
   model = view.model = racer.model

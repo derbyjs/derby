@@ -1,22 +1,28 @@
 win = window
 winHistory = win.history
-winLocation = win.location
 
-History = module.exports = (@_routes, @_page) -> return
+History = module.exports = (@_routes, page) ->
+  page.history = this
+  @_page = page
+  return
+
+# TODO: Deal with full URLs and relative URLs
+# TODO: Pop state handling
 
 History:: =
 
-  push: (url, render) ->
-    winHistory.pushState null, null, url
-    return unless render
-    page = @_page
-    for route in @_routes
-      console.log url, route[0]
-      route[1] page, page.model  if route[0] == url
-    return
+  push: (url, render, e) ->
+    @_update 'pushState', url, render, e
 
-  replace: (url, render) ->
-    winHistory.replaceState null, null, url
+  replace: (url, render, e) ->
+    @_update 'replaceState', url, render, e
+
+  _update: (method, url, render, e) -> 
+    winHistory[method] {render}, null, url
+    renderRoute url, @_page, @_routes, 0, e  if render
+
+  _onClickLink: (e, href) ->
+    @push href, true, e
 
   back: winHistory.back
 
@@ -24,6 +30,19 @@ History:: =
 
   go: winHistory.go
 
-  _onClickLink: (e, href) ->
-    e.preventDefault()
-    @push href, true
+renderRoute = (url, page, routes, i, e) ->
+    while route = routes[i++]
+      continue unless match = route.match url
+      # Cancel the default link action
+      e.preventDefault()  if e
+
+      params = url: match[0]
+      for {name}, j in route.keys
+        params[name] = match[j + 1]
+      next = -> renderRoute url, page, routes, i
+      route.callbacks page, page.model, params, next
+      return
+
+    # Update the location if the route can't be handled
+    # and it has been cancelled or is not from a link
+    win.location = url  unless e
