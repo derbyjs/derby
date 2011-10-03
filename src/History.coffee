@@ -16,7 +16,7 @@ History:: =
     @_update 'replaceState', url, render, e
 
   _update: (method, url, render, e) -> 
-    winHistory[method] {render}, url, url
+    winHistory[method] {render}, null, url
     renderRoute url, @_page, @_routes, 0, e  if render
 
   _onClickLink: (e) ->
@@ -28,7 +28,6 @@ History:: =
     @push path, true, e
 
   _onPop: (e) ->
-    e.preventDefault()
     unless e.state && !e.state.render
       renderRoute winLocation.pathname, @_page, @_routes, 0
 
