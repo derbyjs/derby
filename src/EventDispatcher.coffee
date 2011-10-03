@@ -55,3 +55,6 @@ EventDispatcher:: =
       obj = names[name] = {}
       for listener in listeners
         obj[swapQuotes listener] = true
+
+  clear: ->
+    @_names = {}

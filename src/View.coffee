@@ -97,6 +97,7 @@ View:: =
   inline: ->
 
   render: (@model, ctx) ->
+    @dom.events.clear()
     document.title = @get 'title$s', ctx
     document.body.innerHTML = @get('header', ctx) + @get('body', ctx)
 

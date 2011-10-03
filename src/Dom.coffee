@@ -67,7 +67,7 @@ distribute = (e) ->
 
 Dom = module.exports = (model, appExports, @history) ->
   @events = events = new EventDispatcher
-    onBind: (name) -> addListener name  unless name of events._names
+    onBind: (name) -> addListener doc, name  unless name of events._names
     onTrigger: (name, listener, targetId, e) ->
       if listener.length <= 3
         [fn, id, delay] = listener
@@ -107,24 +107,25 @@ Dom:: =
       events.trigger e.type, target.id, e
     
     if doc.addEventListener
-      addListener = (name, cb) ->
-        doc.addEventListener name, cb, false
+      addListener = (el, name, cb, captures = false) ->
+        el.addEventListener name, cb, captures
     else if doc.attachEvent
-      addListener = (name, cb) ->
-        doc.attachEvent 'on' + name, ->
+      addListener = (el, name, cb) ->
+        el.attachEvent 'on' + name, ->
           event.target || event.target = event.srcElement
           cb event
     
     events.set domEvents
-    addListener name, domHandler for name of events._names
+    addListener doc, name, domHandler for name of events._names
 
-    addListener 'click', (e) ->
-      # Detect clicks on links to a new location
-      if e.target.href && (href = e.target.getAttribute 'href') && href.charAt(0) != '#' &&
-          # Command click, control click, and middle click should open
-          # links in a new tab
-          !event.metaKey && event.which == 1
-        history._onClickLink e, href
+    addListener doc, 'click', (e) ->
+      # Detect clicks on links
+      # Ignore command click, control click, and middle click
+      if e.target.href && !e.metaKey && e.which == 1
+        history._onClickLink e
+
+    addListener win, 'popstate', (e) ->
+      history._onPop e
 
   update: (id, method, property, value, type, local) ->
     return false  unless el = element id
