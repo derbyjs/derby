@@ -7,6 +7,8 @@ History = module.exports = (@_routes, page) ->
   @_page = page
   return
 
+# TODO: Add support for get & post form submissions
+
 History:: =
 
   push: (url, render, e) ->

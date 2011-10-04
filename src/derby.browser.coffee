@@ -19,8 +19,9 @@ exports.createApp = (appModule) ->
   appExports.view = view = new View
 
   routes = []
-  appExports.get = (pattern, callback) ->
-    routes.push new Route 'get', pattern, callback
+  ['get', 'post'].forEach (method) ->
+    appExports[method] = (pattern, callback) ->
+      routes.push new Route method, pattern, callback
   history = new History routes, page = new Page
 
   model = view.model = racer.model

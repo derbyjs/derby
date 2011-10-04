@@ -36,15 +36,18 @@ module.exports =
     appExports.session = -> session = racer.session store
 
     routes = []
-    appExports.get = (pattern, callback) -> routes.push [pattern, callback]
+    ['get', 'post'].forEach (method) ->
+      appExports[method] = (pattern, callback) ->
+        routes.push [method, pattern, callback]
     appExports.router = ->
       router = new Router serverMock
-      routes.forEach ([pattern, callback]) ->
-        router._route 'get', pattern, (req, res, next) ->
+      routes.forEach ([method, pattern, callback]) ->
+        router._route method, pattern, (req, res, next) ->
           model = req.model || store.createModel()
           page = new Page view, res, model
           params = Object.create req.params
           params.url = req.url
+          params.body = req.body
           callback page, model, params, next
       return router.middleware
 
