@@ -9,12 +9,14 @@ pages = [
 ]
 ctxFor = (name) ->
   ctx = {}
-  ctx[name] = true
+  ctx[name + 'Visible'] = true
   last = pages.length - 1
   ctx.pages = for page, i in pages
     page = Object.create page
-    page.current = true  if page.name == name
-    page.last = true  if i == last
+    if page.name is name
+      page.current = true
+      ctx.title = page.text
+    page.last = i is last
     page
   return ctx
 
@@ -23,16 +25,20 @@ get '/', (page) ->
 
 get '/live-css', (page, model) ->
   model.subscribe 'liveCss.**', ->
+    console.log model.get('liveCss'), model.get('liveCss.styles')
     model.setNull 'liveCss.styles', [
       {prop: 'color', value: '#c00', active: true}
       {prop: 'font-weight', value: 'bold', active: true}
       {prop: 'font-size', value: '18px', active: false}
     ]
     model.setNull 'liveCss.outputText', 'Edit this text...'
+    console.log model.get('liveCss'), model.get('liveCss.styles')
     page.render ctxFor 'liveCss'
 
 
 ## Views ##
+
+view.make 'Title', '''Derby demo: {{title}}'''
 
 view.make 'Head', '''
   <style>
@@ -54,8 +60,8 @@ view.make 'Body', '''
     {{/}}
   {{/}}
   <hr>
-  {{#home}}{{> home}}{{/}}
-  {{#liveCss}}{{> liveCss}}{{/}}
+  {{#homeVisible}}{{> home}}{{/}}
+  {{#liveCssVisible}}{{> liveCss}}{{/}}
   '''
 
 view.make 'home', '''

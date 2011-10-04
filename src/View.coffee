@@ -47,14 +47,14 @@ View:: =
     # TODO: This is a hack to detect arrays, since Array.isArray doesn't work
     # on speculative array objects right now. This should be fixed in Racer
     if ctx && ctx.splice && ctx.slice
-      if paths
-        paths[0] += '.$#'
-        parentCtx = Object.create parentCtx
-        parentCtx.$paths = paths
       if ctx.length
         return ''  if type is '^'
         out = ''
-        indicies = parentCtx.$i || []
+        if parentCtx
+          parentCtx = Object.create parentCtx
+          parentCtx.$paths = paths.slice()
+          parentCtx.$paths[0] += '.$#'
+          indicies = parentCtx.$i || []
         for item, i in ctx
           obj = extend parentCtx, item
           obj.$i = [i].concat indicies
@@ -97,9 +97,10 @@ View:: =
   inline: ->
 
   render: (@model, ctx) ->
+    @model.__events.clear()
     @dom.events.clear()
-    document.title = @get 'title$s', ctx
     document.body.innerHTML = @get('header', ctx) + @get('body', ctx)
+    document.title = @get 'title$s', ctx
 
 
 extend = (parent, obj) ->
