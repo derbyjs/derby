@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "racer": "0.0.13",
+    "express": ">=2.4.3",
+    "qs": ">= 0.3.1",
     "uglify-js": ">=1.0.6",
     "stylus": ">=0.15",
     "nib": ">=0.2"
@@ -15,8 +17,7 @@
   "devDependencies": {
     "expresso": ">=0.7.9",
     "should": ">=0.2.1",
-    "coffee-script": ">=1.1.1",
-    "express": ">=2.4.2"
+    "coffee-script": ">=1.1.1"
   },
   "engines": {
     "node": ">=0.4.0"

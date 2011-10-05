@@ -18,10 +18,11 @@ exports.createApp = (appModule) ->
   racer.util.merge appExports, racer
   appExports.view = view = new View
 
-  routes = []
+  routes = {}
   ['get', 'post'].forEach (method) ->
+    queue = routes[method] = []
     appExports[method] = (pattern, callback) ->
-      routes.push new Route method, pattern, callback
+      queue.push new Route method, pattern, callback
   history = new History routes, page = new Page
 
   model = view.model = racer.model

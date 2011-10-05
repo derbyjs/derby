@@ -4,6 +4,7 @@ sink = require './sink'
 server = express.createServer(
   express.favicon(),
   express.static(__dirname + '/public'),
+  express.bodyParser(),
   sink.router()
 )
 

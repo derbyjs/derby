@@ -1,4 +1,4 @@
-{get, view, ready} = require('derby').createApp module
+{get, post, view, ready} = require('derby').createApp module
 
 
 ## Routing ##
@@ -6,6 +6,7 @@
 pages = [
   {name: 'home', text: 'Home', url: '/'}
   {name: 'liveCss', text: 'Live CSS', url: '/live-css'}
+  {name: 'submit', text: 'Submit form', url: '/submit'}
 ]
 ctxFor = (name) ->
   ctx = {}
@@ -25,16 +26,23 @@ get '/', (page) ->
 
 get '/live-css', (page, model) ->
   model.subscribe 'liveCss.**', ->
-    console.log model.get('liveCss'), model.get('liveCss.styles')
+    console.log model.get('liveCss.styles')?
     model.setNull 'liveCss.styles', [
       {prop: 'color', value: '#c00', active: true}
       {prop: 'font-weight', value: 'bold', active: true}
       {prop: 'font-size', value: '18px', active: false}
     ]
     model.setNull 'liveCss.outputText', 'Edit this text...'
-    console.log model.get('liveCss'), model.get('liveCss.styles')
+    console.log model.get('liveCss.outputText'), model.get('liveCss.styles')
     page.render ctxFor 'liveCss'
 
+get '/submit', (page, model, {body, query}) ->
+  console.log 'get', body, query
+  page.render ctxFor 'submit'
+
+post '/submit', (page, model, {body, query}) ->
+  console.log 'post', body, query
+  page.render ctxFor 'submit'
 
 ## Views ##
 
@@ -62,6 +70,7 @@ view.make 'Body', '''
   <hr>
   {{#homeVisible}}{{> home}}{{/}}
   {{#liveCssVisible}}{{> liveCss}}{{/}}
+  {{#submitVisible}}{{> submit}}{{/}}
   '''
 
 view.make 'home', '''
@@ -95,6 +104,13 @@ view.make 'liveCss', '''
   '''
 
 view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
+
+view.make 'submit', '''
+  <form action=submit>
+    <input name=name>
+    <input type=submit>
+  </form>
+  '''
 
 
 ## Controller functions ##

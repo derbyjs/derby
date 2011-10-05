@@ -107,10 +107,10 @@ Dom:: =
       events.trigger e.type, target.id, e
     
     if doc.addEventListener
-      addListener = (el, name, cb, captures = false) ->
+      @addListener = addListener = (el, name, cb, captures = false) ->
         el.addEventListener name, cb, captures
     else if doc.attachEvent
-      addListener = (el, name, cb) ->
+      @addListener = addListener = (el, name, cb) ->
         el.attachEvent 'on' + name, ->
           event.target || event.target = event.srcElement
           cb event
@@ -123,6 +123,10 @@ Dom:: =
       # Ignore command click, control click, and middle click
       if e.target.href && !e.metaKey && e.which == 1
         history._onClickLink e
+
+    addListener doc, 'submit', (e) ->
+      if e.target.tagName.toLowerCase() is 'form'
+        history._onSubmitForm e
 
     addListener win, 'popstate', (e) ->
       history._onPop e

@@ -45,9 +45,8 @@ module.exports =
         router._route method, pattern, (req, res, next) ->
           model = req.model || store.createModel()
           page = new Page view, res, model
-          params = Object.create req.params
-          params.url = req.url
-          params.body = req.body
+          params = {url, body, query} = req
+          params[k] = v for k, v of req.params
           callback page, model, params, next
       return router.middleware
 
