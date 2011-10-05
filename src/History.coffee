@@ -23,6 +23,12 @@ History:: =
   replace: (url, render, e) ->
     @_update 'replaceState', url, render, e
 
+  back: winHistory.back
+
+  forward: winHistory.forward
+
+  go: winHistory.go
+
   _update: (historyMethod, url, render, e) ->
     # If this is a form submisssion, extract the form data and
     # append it to the url for a get or params.body for a post
@@ -47,7 +53,7 @@ History:: =
       method = 'get'
 
     winHistory[historyMethod] {render, method}, null, url
-    renderRoute url, body, @_page, @_routes[method], 0, e  if render
+    renderRoute url, body, @_page, @_routes[method], 0, form, e  if render
 
   _onClickLink: (e) ->
     url = e.target.href
@@ -58,7 +64,7 @@ History:: =
 
   _onSubmitForm: (e) ->
     form = e.target
-    return if !(path = routePath form.action) ||
+    return if !(path = routePath form.action) || form._forceSubmit ||
       form.enctype == 'multipart/form-data'
     @push path, true, e
 
@@ -70,14 +76,18 @@ History:: =
     # and null is sent if the state is later popped
     renderRoute winLocation.pathname, null, @_page, @_routes[state.method], 0, e
 
-  back: winHistory.back
+cancelRender = (url, form, e) ->
+  # Don't do anything if this is the result of an event, since the
+  # appropriate action will happen by default
+  return if e
+  # Otherwise, manually perform appropriate action
+  if form
+    form._forceSubmit = true
+    form.submit()
+  else
+    win.location = url  
 
-  forward: winHistory.forward
-
-  go: winHistory.go
-
-
-renderRoute = (url, body, page, routes, i, e) ->
+renderRoute = (url, body, page, routes, i, form, e) ->
   url = url.replace /#.*/, ''
   console.log 'requesting', url
   [path, query] = url.split '?'
@@ -89,13 +99,17 @@ renderRoute = (url, body, page, routes, i, e) ->
     params = {url, body, query: if query then qs.parse query else {}}
     for {name}, j in route.keys
       params[name] = match[j + 1]
-    next = -> renderRoute url, body, page, routes, i
-    route.callbacks page, page.model, params, next
+    next = (err) ->
+      return cancelRender url, form  if err?
+      renderRoute url, body, page, routes, i, form
+    try
+      route.callbacks page, page.model, params, next
+    catch err
+      cancelRender url, form
     return
 
-  # Update the location if the route can't be handled
-  # and it has been cancelled or is not from an event
-  win.location = url  unless e
+  # Cancel rendering by this app if no routes match
+  cancelRender url, form, e
 
 routePath = (url) ->
   # Get the pathname if it is on the same protocol and domain

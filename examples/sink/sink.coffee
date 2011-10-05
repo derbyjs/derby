@@ -7,6 +7,7 @@ pages = [
   {name: 'home', text: 'Home', url: '/'}
   {name: 'liveCss', text: 'Live CSS', url: '/live-css'}
   {name: 'submit', text: 'Submit form', url: '/submit'}
+  {name: 'error', text: 'Error test', url: '/error'}
 ]
 ctxFor = (name) ->
   ctx = {}
@@ -40,6 +41,9 @@ get '/live-css', (page, model) ->
   sink[method] '/submit', (page, model, {body, query}) ->
     console.log method, body, query
     page.render ctxFor 'submit'
+
+get '/error', () ->
+  throw new Error 500
 
 ## Views ##
 
