@@ -4,6 +4,10 @@ win = window
 winHistory = win.history
 winLocation = win.location
 
+# Replace the initial state with the current URL immediately,
+# so that it will be rendered if the state is later popped
+winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
+
 History = module.exports = (@_routes, page) ->
   page.history = this
   @_page = page
@@ -40,11 +44,15 @@ History:: =
     else
       method = 'get'
 
-    winHistory[historyMethod] {render}, null, url
+    winHistory[historyMethod] {render, method}, null, url
     renderRoute url, body, @_page, @_routes[method], 0, e  if render
 
   _onClickLink: (e) ->
-    @push path, true, e  if path = routePath e.target.href
+    url = e.target.href
+    # Ignore hash links to the same page
+    return if ~(i = url.indexOf '#') && 
+      url.substr(0, i) == winLocation.href.replace(/#.*/, '')
+    @push path, true, e  if path = routePath url
 
   _onSubmitForm: (e) ->
     form = e.target
@@ -53,10 +61,12 @@ History:: =
     @push path, true, e
 
   _onPop: (e) ->
+    # Pop states without a state object were generated externally,
+    # such as by a jump link, so they shouldn't be handled 
+    return unless (state = e.state) && state.render
     # Note that the post body is only sent on the initial reqest
     # and null is sent if the state is later popped
-    unless e.state && !e.state.render
-      renderRoute winLocation.pathname, null, @_page, @_routes, 0
+    renderRoute winLocation.pathname, null, @_page, @_routes[state.method], 0, e
 
   back: winHistory.back
 
@@ -66,6 +76,7 @@ History:: =
 
 
 renderRoute = (url, body, page, routes, i, e) ->
+  url = url.replace /#.*/, ''
   console.log 'requesting', url
   [path, query] = url.split '?'
   while route = routes[i++]
@@ -85,8 +96,7 @@ renderRoute = (url, body, page, routes, i, e) ->
   win.location = url  unless e
 
 routePath = (url) ->
-  # TODO: Ignore skip links
-
-  # Get the pathname if it is on the same domain
-  match = /^https?:\/\/([^\/]+)([^#]+)/.exec url
-  return match && match[1] == winLocation.host && match[2]
+  # Get the pathname if it is on the same protocol and domain
+  match = /^(https?:)\/\/([^\/]+)(.*)/.exec url
+  return match && match[1] == winLocation.protocol &&
+    match[2] == winLocation.host && match[3]

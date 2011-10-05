@@ -72,7 +72,9 @@ view.make 'Body', '''
 
 view.make 'home', '''
   <h1>Welcome!</h1>
-  This is a collection of random demos. Check 'em out!
+  <p>This is a collection of random demos. Check 'em out! <a href=#jump>Test jump link</a>
+  <p style=margin-top:1000px>
+  <a name=jump>Jumped!</a>
   '''
 
 # Option tags & contenteditable must only contain a variable with no additional text
