@@ -1,0 +1,93 @@
+@import "./reset";
+@import "nib/vendor";
+
+body {
+  background: #bbb;
+  color: #000;
+  overflow: hidden;
+}
+a {
+  color: #01c;
+}
+#info {
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  z-index: 99;
+}
+#info > ins {
+  background: #fff1a8;
+  border: 1px solid #999;
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+  display: inline-block;
+  line-height: 21px;
+  padding: 0 12px;  
+}
+li {
+  margin: 8px 0;
+  clear: both;
+}
+input {
+  margin: 0;
+  padding: 1px;
+}
+#messages {
+  overflow-y: scroll;
+}
+#messageList {
+  list-style: none;
+  position: relative;
+  overflow: hidden;
+}
+.message,#inputs {
+  margin: 0 8px 0 64px;
+}
+.message {
+  background: #fff;
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 8px 12px;
+  white-space: pre;
+}
+.pic,.pic0,.pic1,.pic2,.pic3,.pic4,.pic5,.pic6,.pic7,.pic8,.pic9 {
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  left: 0;
+  margin: 0 8px;
+}
+.pic0,.pic1,.pic2,.pic3,.pic4,.pic5,.pic6,.pic7,.pic8,.pic9 {
+  height: 480px;
+}
+picClip(num) {
+  clip: rect(48px * num, 48px, 48px * (num + 1), 0);
+  margin-top: -48px * num;
+}
+.pic0 { picClip: 0 }
+.pic1 { picClip: 1 }
+.pic2 { picClip: 2 }
+.pic3 { picClip: 3 }
+.pic4 { picClip: 4 }
+.pic5 { picClip: 5 }
+.pic6 { picClip: 6 }
+.pic7 { picClip: 7 }
+.pic8 { picClip: 8 }
+.pic9 { picClip: 9 }
+
+#foot {
+  background: #ddd;
+  width: 100%;
+  border-top: 1px solid #eee;
+  position: absolute;
+  bottom: 0;
+  padding: 8px 0;
+}
+#inputForm {
+  margin-top: 4px;
+  padding-right: 8px;
+  position: relative;
+}
+#commentInput {
+  width: 100%;
+}

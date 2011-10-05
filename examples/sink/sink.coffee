@@ -42,7 +42,7 @@ get '/live-css', (page, model) ->
     console.log method, body, query
     page.render ctxFor 'submit'
 
-get '/error', () ->
+get '/error', ->
   throw new Error 500
 
 ## Views ##
