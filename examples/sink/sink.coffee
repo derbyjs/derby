@@ -107,8 +107,9 @@ view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));
 view.make 'submit', '''
   <form action=submit method=post>
     <input type=hidden name=_method value=put>
-    <input name=name>
-    <input type=submit>
+    <p><label>Name: <input type=text name=user[name]></label>
+    <p><label>Email: <input type=text name=user[email]></label>
+    <p><input type=submit>
   </form>
   '''
 

@@ -28,19 +28,21 @@ History:: =
     # append it to the url for a get or params.body for a post
     if e && e.type is 'submit'
       form = e.target
-      obj = {}
+      query = []
       for el in form.elements
         if name = el.name
-          obj[name] = el.value
+          query.push encodeURIComponent(name) + '=' + encodeURIComponent(el.value)
           if name is '_method'
             override = el.value.toLowerCase()
             override = 'del' if override is 'delete'
+      query = query.join '&'
+
       if form.method.toLowerCase() is 'post'
         method = override || 'post'
-        body = obj
+        body = qs.parse query
       else
-        method = override || 'get'
-        url += '?' + qs.stringify obj
+        method = 'get'
+        url += '?' + query
     else
       method = 'get'
 
