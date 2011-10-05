@@ -20,12 +20,12 @@ findPath = (root, clientName, dir, extension, callback) ->
 
 module.exports =
   isProduction: isProduction = process.env.NODE_ENV is 'production'
-  
+
   css: (root, clientName, callback) ->
-    return callback ''  unless clientName
     # CSS is reloaded on every refresh in development and cached in production
     return callback css  if isProduction && css = cssCache[clientName]
     findPath root, clientName, 'styles', '.styl', (path) ->
+      return callback cssCache[path] = ''  unless path
       fs.readFile path, 'utf8', (err, styl) ->
         return callback cssCache[path] = ''  if err
         stylus(styl)
@@ -35,8 +35,7 @@ module.exports =
           .render (err, css) ->
             throw err if err
             css = trim css
-            callback css
-            cssCache[path] = css
+            callback cssCache[path] = css
 
   views: views = (view, root, clientName, callback) ->
     findPath root, clientName, 'views', '.html', (path) ->
@@ -59,16 +58,16 @@ module.exports =
 
   js: (view, parentFilename, options, callback) ->
     return callback {}  unless parentFilename
+    root = parentDir = dirname parentFilename
     if (base = basename parentFilename, '.js') is 'index'
-      base = basename dirname parentFilename
-      dir = dirname parentFilename
-      root = dirname dirname dir
-    else
-      root = dirname parentFilename
+      base = basename parentDir
+      root = dirname dirname parentDir
+    else if basename(parentDir) is 'lib'
+      root = dirname parentDir
 
     clientName = options.name || base
-    staticRoot = options.root || join root, 'public'
-    staticDir = options.dir || 'gen'
+    staticRoot = options.staticRoot || join root, 'public'
+    staticDir = options.staticDir || 'gen'
     staticPath = join staticRoot, staticDir
 
     finish = (js) -> views view, root, clientName, ->
@@ -91,7 +90,7 @@ module.exports =
     # development and cached in production
     minify = if 'minify' of options then options.minify else isProduction
     bundle = if isProduction || !(js = jsCache[parentFilename])
-        -> fs.readFile join(dir, 'inline.js'), 'utf8', (err, inline) ->
+        -> fs.readFile join(parentDir, 'inline.js'), 'utf8', (err, inline) ->
           racer.js {minify, require: parentFilename}, (js) ->
             finish jsCache[parentFilename] = js
           return  if err
