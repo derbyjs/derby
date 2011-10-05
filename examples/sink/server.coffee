@@ -5,6 +5,7 @@ server = express.createServer(
   express.favicon(),
   express.static(__dirname + '/public'),
   express.bodyParser(),
+  express.methodOverride(),
   sink.router()
 )
 

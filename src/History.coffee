@@ -22,17 +22,23 @@ History:: =
   _update: (historyMethod, url, render, e) ->
     # If this is a form submisssion, extract the form data and
     # append it to the url for a get or params.body for a post
-    method = 'get'
     if e && e.type is 'submit'
       form = e.target
       obj = {}
       for el in form.elements
-        obj[name] = el.value  if name = el.name
+        if name = el.name
+          obj[name] = el.value
+          if name is '_method'
+            override = el.value.toLowerCase()
+            override = 'del' if override is 'delete'
       if form.method.toLowerCase() is 'post'
+        method = override || 'post'
         body = obj
-        method = 'post'
       else
+        method = override || 'get'
         url += '?' + qs.stringify obj
+    else
+      method = 'get'
 
     winHistory[historyMethod] {render}, null, url
     renderRoute url, body, @_page, @_routes[method], 0, e  if render

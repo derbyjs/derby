@@ -36,7 +36,7 @@ module.exports =
     appExports.session = -> session = racer.session store
 
     routes = []
-    ['get', 'post'].forEach (method) ->
+    ['get', 'post', 'put', 'del'].forEach (method) ->
       appExports[method] = (pattern, callback) ->
         routes.push [method, pattern, callback]
     appExports.router = ->

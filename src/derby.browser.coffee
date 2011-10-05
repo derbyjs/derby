@@ -19,7 +19,7 @@ exports.createApp = (appModule) ->
   appExports.view = view = new View
 
   routes = {}
-  ['get', 'post'].forEach (method) ->
+  ['get', 'post', 'put', 'del'].forEach (method) ->
     queue = routes[method] = []
     appExports[method] = (pattern, callback) ->
       queue.push new Route method, pattern, callback

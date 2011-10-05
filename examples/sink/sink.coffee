@@ -1,4 +1,4 @@
-{get, post, view, ready} = require('derby').createApp module
+{get, view, ready} = sink = require('derby').createApp module
 
 
 ## Routing ##
@@ -36,13 +36,10 @@ get '/live-css', (page, model) ->
     console.log model.get('liveCss.outputText'), model.get('liveCss.styles')
     page.render ctxFor 'liveCss'
 
-get '/submit', (page, model, {body, query}) ->
-  console.log 'get', body, query
-  page.render ctxFor 'submit'
-
-post '/submit', (page, model, {body, query}) ->
-  console.log 'post', body, query
-  page.render ctxFor 'submit'
+['get', 'post', 'put', 'del'].forEach (method) ->
+  sink[method] '/submit', (page, model, {body, query}) ->
+    console.log method, body, query
+    page.render ctxFor 'submit'
 
 ## Views ##
 
@@ -106,7 +103,8 @@ view.make 'liveCss', '''
 view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
 
 view.make 'submit', '''
-  <form action=submit>
+  <form action=submit method=post>
+    <input type=hidden name=_method value=put>
     <input name=name>
     <input type=submit>
   </form>
