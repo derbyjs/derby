@@ -51,7 +51,7 @@ module.exports =
             unless viewName && literal
               return if /^[\s\n]*$/.test text
               throw "Misformed template in #{path}: #{text}"
-            text = trim text
+            text = trim htmlParser.uncomment text
             view.make viewName, text
             view._templates[viewName] = text
         callback()

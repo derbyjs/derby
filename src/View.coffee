@@ -133,8 +133,7 @@ View.attrEscape = attrEscape = (s) ->
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
-View.trim = (s) -> if s then htmlParser.uncomment(s).replace /(?:^|\n)\s*/g, '' else ''
-trimInner = (s) -> if s then s.replace /\n\s*/g, '' else ''
+View.trim = trim = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
 extractPlaceholder = (text) ->
   match = ///^
@@ -151,14 +150,14 @@ extractPlaceholder = (text) ->
     (?:\s+:([^\s>]+))?  # Alias name
     (?:\s*>\s*([^\s]+)\s*)?  # Partial name
   ///.exec match[3]
-  pre: trimInner match[1]
+  pre: trim match[1]
   escaped: match[2].length is 2
   literal: match[2].charAt(0) is '{'
   type: content[1]
   name: content[2]
   alias: content[3]
   partial: content[4]?.toLowerCase()
-  post: trimInner match[4]
+  post: trim match[4]
 
 startsEndBlock = (s) ->
   ///^
@@ -371,7 +370,7 @@ parse = (view, viewName, template, data, onBind) ->
 
     chars: chars = (text, literal) ->
       if literal || !(match = extractPlaceholder text)
-        stack.push ['chars', text]  if text = trimInner text
+        stack.push ['chars', text]  if text = trim text
         return
 
       {pre, post, escaped} = match

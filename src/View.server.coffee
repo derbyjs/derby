@@ -1,3 +1,4 @@
+{Model} = require 'racer'
 uglify = require 'uglify-js'
 module.exports = View = require './View'
 Dom = require './Dom'
@@ -21,8 +22,9 @@ View::before = View::after = ->
 
 View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
 
-View::_load = (callback) ->
-  if loader.isProduction then @_load = (callback) -> callback()
+View::_load = (isStatic, callback) ->
+  if loader.isProduction then @_load = (isStatic, callback) -> callback()
+  return loader.views this, @_root, @_clientName, callback  if isStatic
   self = this
   loader.js this, @_appFilename, @_derbyOptions, (obj) ->
     self._root = obj.root
@@ -36,14 +38,25 @@ View::_init = (model) ->
   @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
 
-View::render = (res = emptyRes, model = emptyModel, ctx) ->
+View::render = (res = emptyRes, args...) ->
+  for arg in args
+    if arg instanceof Model
+      model = arg
+    else if typeof arg is 'object'
+      ctx = arg
+    else if typeof arg is 'number'
+      res.statusCode = arg
+    else if typeof arg is 'boolean'
+      isStatic = arg
+  model = emptyModel  unless model?
+
   self = this
   @_init model
   dom = @dom
-  @_load -> loader.css self._root, self._clientName, (css) ->
-    self._render res, model, ctx, dom, css
+  @_load isStatic, -> loader.css self._root, self._clientName, (css) ->
+    self._render res, model, ctx, isStatic, dom, css
 
-View::_render = (res, model, ctx, dom, css) ->
+View::_render = (res, model, ctx, isStatic, dom, css) ->
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
   
@@ -64,15 +77,19 @@ View::_render = (res, model, ctx, dom, css) ->
   # Remaining HTML
   res.write @get 'body', ctx
 
-  # preLoad scripts and external script
+  # Inline scripts and external scripts
   clientName = @_clientName
-  res.write "<script>function $(i){return document.getElementById(i)}" +
-    "function #{clientName}(){#{clientName}=1}" +
-    "#{escapeInlineScript(@_inline)}</script>" + @get('script', ctx) +
-    "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"
-  
+  scripts = "<script>function $(i){return document.getElementById(i)}" +
+    escapeInlineScript(@_inline)
+  scripts += "function #{clientName}(){#{clientName}=1}"  unless isStatic
+  scripts += "</script>" + @get('script', ctx)
+  scripts += "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"  unless isStatic
+  res.write scripts
+
   # Initialization script and Tail
   tail = @get 'tail', ctx
+  return res.end tail  if isStatic
+  
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
     "#{clientName}=require('./#{@_require}')(#{@_idCount}," +
     JSON.stringify(@_paths) + ',' + JSON.stringify(@_partialIds) + ',' +

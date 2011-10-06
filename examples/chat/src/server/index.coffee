@@ -1,10 +1,12 @@
 path = require 'path'
 express = require 'express'
+derby = require 'derby'
 gzip = require 'connect-gzip'
 chat = require '../chat'
 
 MAX_AGE_ONE_YEAR = {maxAge: 1000 * 60 * 60 * 24 * 365}
 root = path.dirname path.dirname __dirname
+static = derby.createStatic root
 
 (server = express.createServer())
   .use(gzip.staticGzip(root + '/public', MAX_AGE_ONE_YEAR))
@@ -27,7 +29,7 @@ server.configure 'development', ->
 server.error (err, req, res) ->
   ## Add custom error handling here ## 
   switch err.message
-    when '404' then res.send "Can't seem to find that page.", 404
+    when '404' then static.render '404', res, {url: req.url}, 404
     else res.send if (code = +err.message) && 400 <= code < 600 then code else 500
 
 ## Add server only routes here ##

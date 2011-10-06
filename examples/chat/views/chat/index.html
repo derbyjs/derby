@@ -6,8 +6,12 @@
   that update the DOM when the model changes.
 
   Elements that end in colon define the name of views. Built-in views are
-  capitalized, and these views are inserted when the page is rendered.
+  capitalized by convention, but view names are case-insensitive. Built-in views
+  are inserted when the page is rendered.
 -->
+
+<!-- Views can be imported using relative paths -->
+<Head: from=../shared>
 
 <!--
   As in Mustache, double and triple curly braces output a value literally.
@@ -16,9 +20,6 @@
 -->
 <Title:>
   Chat &lpar;((_numMessages))&rpar; - ((_user.name))
-
-<Head:>
-  <meta name=viewport content="width=device-width">
 
 <Body:>
   <!-- Partials use Mustache syntax -->
@@ -42,8 +43,10 @@
 -->
 <info:>
   <div id=info>
-    <!-- Mustache syntax is used for conditional blocks, except that the
-         name need not be repeated in the closing tag or if-else blocks -->
+    <!--
+      Mustache syntax is used for conditional blocks, except that the
+      name need not be repeated in the closing tag or if-else blocks
+    -->
     ((^connected))
       ((#canConnect))
         <!-- Leading space is removed, and trailing space is maintained -->

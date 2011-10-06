@@ -15,6 +15,17 @@ Page:: =
   redirect: (url, status) ->
     @res.redirect url, status
 
+Static = (@root) ->
+  @views = {}
+  return
+Static:: =
+  render: (name, res, model, ctx, status) ->
+    unless view = @views[name]
+      view = @views[name] = new View
+      view._root = @root
+      view._clientName = name
+    view.render res, model, ctx, status, true
+
 module.exports =
   options: {}
   configure: (@options) ->
@@ -57,7 +68,10 @@ module.exports =
     view.render()
 
     return appExports
-  
+
+  createStatic: (root) ->
+    return new Static root
+
   createStore: (args...) ->
     last = args[args.length - 1]
     # Check to see if last argument is a createStore options object
