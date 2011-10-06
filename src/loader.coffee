@@ -20,7 +20,7 @@ findPath = (root, name, dir, extension, callback) ->
     exists path, (value) ->
       callback if value then path else null
 
-loadTemplates = (root, fileName, get, templates, callback) ->
+loadTemplates = (root, fileName, get, alias, templates, callback) ->
   callback.count = (callback.count || 0) + 1
   findPath root, fileName, 'views', '.html', (path) ->
     unless path
@@ -29,6 +29,7 @@ loadTemplates = (root, fileName, get, templates, callback) ->
       if fileName then return callback {}
       else throw new Error "Can't find #{root}/views/#{fileName}"
 
+    got = false
     fs.readFile path, 'utf8', (err, template) ->
       return callback err  if err
       name = ''
@@ -39,20 +40,25 @@ loadTemplates = (root, fileName, get, templates, callback) ->
           i = tagName.length - 1
           name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()
           from = attrs.from
-          importName = attrs.import
+          importName = attrs.import && attrs.import.toLowerCase()
           if name is 'all' && importName
             throw new Error "Can't specify import attribute with All in #{path}"
         chars: (text, literal) ->
           return unless get == 'all' || get == name
+          got = true
           if from
             unless onlyWhitespace.test text
               throw new Error "Template import '#{name}' in #{path} can't contain content"
-            return loadTemplates join(dirname(path), from), null, name, templates, callback
+            if importName
+              _alias = name
+              name = importName
+            return loadTemplates join(dirname(path), from), null, name, _alias, templates, callback
           unless name && literal
             return if onlyWhitespace.test text
             throw new Error "Can't read template in #{path} near the text: #{text}"
-          templates[name] = trim text
+          templates[alias || name] = trim text
 
+      throw new Error "Can't find template '#{get}' in #{path}"  unless got
       callback templates unless --callback.count
 
 module.exports =
@@ -75,7 +81,7 @@ module.exports =
             callback cssCache[path] = css
 
   views: views = (view, root, clientName, callback) ->
-    loadTemplates root, clientName, 'all', {}, (templates) ->
+    loadTemplates root, clientName, 'all', null, {}, (templates) ->
       for name, text of templates
         view.make name, text
         view._templates[name] = text
