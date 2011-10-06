@@ -9,14 +9,51 @@ htmlParser = require './htmlParser'
 
 cssCache = {}
 jsCache = {}
+onlyWhitespace = /^[\s\n]*$/
 
-findPath = (root, clientName, dir, extension, callback) ->
-  path = join root, dir, clientName + extension
+findPath = (root, name, dir, extension, callback) ->
+  root = join root, dir, name  if name
+  path = root + extension
   exists path, (value) ->
     return callback path  if value
-    path = join root, dir, clientName, 'index' + extension
+    path = join root, 'index' + extension
     exists path, (value) ->
       callback if value then path else null
+
+loadTemplates = (root, fileName, get, templates, callback) ->
+  callback.count = (callback.count || 0) + 1
+  findPath root, fileName, 'views', '.html', (path) ->
+    unless path
+      # Return without doing anything if the path isn't found, and this is the
+      # initial lookup based on the clientName. Otherwise, throw an error
+      if fileName then return callback {}
+      else throw new Error "Can't find #{root}/views/#{fileName}"
+
+    fs.readFile path, 'utf8', (err, template) ->
+      return callback err  if err
+      name = ''
+      from = ''
+      importName = ''
+      htmlParser.parse template,
+        start: (tag, tagName, attrs) ->
+          i = tagName.length - 1
+          name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()
+          from = attrs.from
+          importName = attrs.import
+          if name is 'all' && importName
+            throw new Error "Can't specify import attribute with All in #{path}"
+        chars: (text, literal) ->
+          return unless get == 'all' || get == name
+          if from
+            unless onlyWhitespace.test text
+              throw new Error "Template import '#{name}' in #{path} can't contain content"
+            return loadTemplates join(dirname(path), from), null, name, templates, callback
+          unless name && literal
+            return if onlyWhitespace.test text
+            throw new Error "Can't read template in #{path} near the text: #{text}"
+          templates[name] = trim text
+
+      callback templates unless --callback.count
 
 module.exports =
   isProduction: isProduction = process.env.NODE_ENV is 'production'
@@ -38,23 +75,11 @@ module.exports =
             callback cssCache[path] = css
 
   views: views = (view, root, clientName, callback) ->
-    findPath root, clientName, 'views', '.html', (path) ->
-      return callback new Error "Can't find #{root}/views/#{clientName}"  unless path
-      fs.readFile path, 'utf8', (err, template) ->
-        return callback err  if err
-        viewName = ''
-        htmlParser.parse template,
-          start: (tag, name, attrs) ->
-            i = name.length - 1
-            viewName = if name[i] == ':' then name.substr 0, i else ''
-          chars: (text, literal) ->
-            unless viewName && literal
-              return if /^[\s\n]*$/.test text
-              throw "Misformed template in #{path}: #{text}"
-            text = trim htmlParser.uncomment text
-            view.make viewName, text
-            view._templates[viewName] = text
-        callback()
+    loadTemplates root, clientName, 'all', {}, (templates) ->
+      for name, text of templates
+        view.make name, text
+        view._templates[name] = text
+      callback()
 
   js: (view, parentFilename, options, callback) ->
     return callback {}  unless parentFilename

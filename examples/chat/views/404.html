@@ -2,9 +2,11 @@
   This is a static page, so it has views and styles, but no associated scripts
 -->
 
-<Head: from=./shared>
+<!-- The reserved name "All" will import all templates from another file -->
+<All: from=./shared>
 
-<Title:> Chat
+<Title:>
+  Chat
 
 <!--
   Static pages don't include the Derby client library, so they can't have bound

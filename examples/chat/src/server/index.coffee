@@ -21,21 +21,22 @@ static = derby.createStatic root
   .use(gzip.gzip())
 
 server.configure 'development', ->
-  # Log stack traces in development only
+  # Log errors in development only
   server.error (err, req, res, next) ->
-    console.log err.stack  if err && err.stack
+    if err then console.log(if err.stack then err.stack else err)
     next err
 
 server.error (err, req, res) ->
-  ## Add custom error handling here ## 
-  switch err.message
-    when '404' then static.render '404', res, {url: req.url}, 404
-    else res.send if (code = +err.message) && 400 <= code < 600 then code else 500
+  ## Customize error handling here ##
+  message = err.message || err.toString()
+  status = parseInt message
+  if status is 404 then static.render '404', res, {url: req.url}, 404
+  else res.send if 400 <= status < 600 then status else 500
 
 ## Add server only routes here ##
 
-server.all '*', ->
-  throw new Error 404
+server.all '*', (req) ->
+  throw "404: #{req.url}"
 
 store = chat.createStore redis: {db: 3}, listen: server
 # Clear all data every time node server is started
