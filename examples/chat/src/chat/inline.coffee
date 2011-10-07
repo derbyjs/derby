@@ -7,10 +7,9 @@
 
 messages = $ 'messages'
 messageList = $ 'messageList'
-foot = $ 'foot'
 commentInput = $ 'commentInput'
 do window.onresize = ->
-  messages.style.height = (window.innerHeight - foot.offsetHeight) + 'px'
+  # Scroll the message list to the bottom
   messages.scrollTop = messageList.offsetHeight
 # Use HTML5 autofocus if supported. Otherwise, focus manually
 commentInput.focus()  unless 'autofocus' of commentInput

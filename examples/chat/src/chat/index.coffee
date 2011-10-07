@@ -22,15 +22,23 @@ get '/:room?', (page, model, {room}) ->
       picClass: 'pic' + (userId % NUM_USER_IMAGES)
     getRoom page, model, room
 
+, (model) ->
+  # Routes also accept a second callback for when the user leaves the page.
+  # On the client, this happens when the user navigates to a new route, and
+  # on the server, this happens when the user's socket is disconnected.
+  model.del '_room.users.' + model.get '_session.userId'
+
 getRoom = (page, model, room) ->
-  # TODO: Limit user data subscription to users in the room. Maybe this could
-  # be implied by an object ref on the room
-  model.subscribe _room: "rooms.#{room}.**", "users.**", ->
+  model.subscribe _room: "rooms.#{room}.(*,users.*.*)", ->
     # setNull will set a value if the object is currently null or undefined
     model.setNull '_room.messages', []
+
+    userId = model.get '_session.userId'
+    user = model.ref "users.#{userId}"
+    model.set "_room.users.#{userId}", user
     # Any path name that starts with an underscore is private to the current
-    # client. Nothing set under a private path is synced back to the server
-    model.set '_user', model.ref 'users', '_session.userId'
+    # client. Nothing set under a private path is synced back to the server.
+    model.set '_user', user
     model.set '_newComment', ''
     model.set '_numMessages', model.get('_room.messages').length
     page.render()
