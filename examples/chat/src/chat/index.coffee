@@ -5,6 +5,19 @@
 
 NUM_USER_IMAGES = 10
 
+# hook.of '/:room?', unique: 'room',
+#   connect: (model) ->
+#     # The connect hook is called before the page is rendered on the server
+#     # and whenever the client reconnects after being disconnected. It also
+#     # runs on the client before a new unique route is rendered
+#     userId = model.get '_session.userId'
+#     model.set "_room.users.#{userId}", model.ref "users.#{userId}"
+#   disconnect: (model) ->
+#     # The disconnect hook only has access to items in _window and _session,
+#     # because it runs on the server after the client disconnects. It also
+#     # runs on the client when going between unique routes
+#     model.del model.get '_window.roomUser'
+
 get '/:room?', (page, model, {room}) ->
   # Redirect users to URLs that only contain letters, numbers, and hyphens
   return page.redirect '/lobby'  unless room && /^[-\w ]+$/.test room
@@ -12,7 +25,8 @@ get '/:room?', (page, model, {room}) ->
   return page.redirect "/#{_room}"  if _room != room
 
   # Render page if a userId is already stored in session data
-  return getRoom page, model, room  if model.get '_session.userId'
+  if userId = model.get '_session.userId'
+    return getRoom page, model, room, userId
 
   # Otherwise, select a new userId and initialize user
   model.async.incr 'nextUserId', (err, userId) ->
@@ -20,25 +34,19 @@ get '/:room?', (page, model, {room}) ->
     model.set "users.#{userId}",
       name: 'User ' + userId
       picClass: 'pic' + (userId % NUM_USER_IMAGES)
-    getRoom page, model, room
+    getRoom page, model, room, userId
 
-, (model) ->
-  # Routes also accept a second callback for when the user leaves the page.
-  # On the client, this happens when the user navigates to a new route, and
-  # on the server, this happens when the user's socket is disconnected.
-  model.del '_room.users.' + model.get '_session.userId'
-
-getRoom = (page, model, room) ->
-  model.subscribe _room: "rooms.#{room}.(*,users.*.*)", ->
+getRoom = (page, model, room, userId) ->
+  model.subscribe _room: "rooms.#{room}.(*,users.*)", ->
+    # This is set for use by the disconnect function, which only gets data
+    # set on _window and _session
+    model.set '_window.roomUser', "rooms.#{room}.users.#{userId}"
     # setNull will set a value if the object is currently null or undefined
     model.setNull '_room.messages', []
 
-    userId = model.get '_session.userId'
-    user = model.ref "users.#{userId}"
-    model.set "_room.users.#{userId}", user
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server.
-    model.set '_user', user
+    model.set '_user', model.ref "users.#{userId}"
     model.set '_newComment', ''
     model.set '_numMessages', model.get('_room.messages').length
     page.render()
