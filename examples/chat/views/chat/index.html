@@ -28,7 +28,7 @@
     <!-- An object can be passed into the partial to set its context -->
     <div id=messages><ul id=messageList>((_room.messages > message))</ul></div>
     <div id=foot>
-      <img id=inputPic src=/img/s.png class=((_user.picClass)) alt="">
+      <img id=inputPic src=/img/s.png class="pic ((_user.picClass))" alt="">
       <div id=inputs>
         <input id=inputName value=((_user.name))>
         <form id=inputForm x-bind=submit:postMessage>
@@ -62,7 +62,7 @@
 
 <message:>
   <!-- Square brackets perform interpolation within a model name. -->
-  <li><img src=img/s.png class={{users.[userId].picClass}} alt="">
+  <li><img src=img/s.png class="pic {{users.[userId].picClass}}" alt="">
     <div class=message>
       <p><b>((users.[userId].name))</b>
       <p>{{comment}}
