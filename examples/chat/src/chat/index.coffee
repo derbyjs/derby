@@ -38,10 +38,9 @@ get '/:room?', (page, model, {room}) ->
 
 getRoom = (page, model, room, userId) ->
   # Subscribe to everything set on this room as well as all of the user data
-  # for each of the users in the room. Note that a '*' at the end of the path
-  # subscribes to all items, but it does not follow references. Reference values
-  # are subscribed to by explicitly including them, as in ...users.*.*
-  model.subscribe _room: "rooms.#{room}.(*,users.*.*)", ->
+  # for each of the users in the room. Note that subscriptions don't follow
+  # references unless explicitly included in the paths
+  model.subscribe _room: "rooms.#{room}(,.users.*)", ->
     # This is set for use by the disconnect function, which only gets data
     # set on _window and _session
     model.set '_window.roomUser', "rooms.#{room}.users.#{userId}"

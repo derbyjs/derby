@@ -25,7 +25,7 @@ get '/', (page) ->
   page.render ctxFor 'home'
 
 get '/live-css', (page, model) ->
-  model.subscribe 'liveCss.*', ->
+  model.subscribe 'liveCss', ->
     console.log model.get('liveCss.styles')?
     model.setNull 'liveCss.styles', [
       {prop: 'color', value: '#c00', active: true}

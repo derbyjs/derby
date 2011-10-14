@@ -44,9 +44,7 @@ View:: =
     else
       @_paths[viewName] = paths ||= @_paths[viewName]
 
-    # TODO: This is a hack to detect arrays, since Array.isArray doesn't work
-    # on speculative array objects right now. This should be fixed in Racer
-    if ctx && ctx.splice && ctx.slice
+    if Array.isArray ctx
       if ctx.length
         return ''  if type is '^'
         out = ''
