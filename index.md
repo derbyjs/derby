@@ -29,6 +29,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
 
 ### server.js
 
+{% highlight javascript %}
     var express = require('express'),
         hello = require('./hello'),
         server = express.createServer()
@@ -40,6 +41,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
         store = hello.createStore({ listen: server });
     
     server.listen(3000);
+{% endhighlight %}
 
 ### hello.coffee
 
@@ -48,7 +50,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
     x = 3
     # Templates define both HTML and model <--> view bindings
     view.make 'Body',
-      '{% highlight html %}Holler: <input value="((message))"><h1>((message))</h1>{% endhighlight %}'
+      'Holler: <input value="((message))"><h1>((message))</h1>'
 
     # Routes render on client as well as server
     get '/', (page, model) ->
@@ -59,6 +61,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
 
 ### server.coffee
 
+{% highlight coffeescript %}
     express = require 'express'
     hello = require './hello'
     server = express.createServer()
@@ -70,6 +73,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
     store = hello.createStore listen: server
     
     server.listen 3000
+{% endhighlight %}
 
 ## Instant by default
 
