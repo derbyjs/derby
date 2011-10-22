@@ -8,7 +8,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
 
 ### hello.js
 
-``` javascript
+    { % highlight javascript %}
     var hello = require('derby').createApp(module),
         view = hello.view,
         get = hello.get;
@@ -25,7 +25,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
         page.render();
       });
     });
-```
+    { % endhighlight %}
 
 ### server.js
 
