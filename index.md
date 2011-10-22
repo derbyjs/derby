@@ -45,10 +45,10 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
 
 {% highlight coffeescript %}
     {view, get} = require('derby').createApp module
-    
+    x = 3
     # Templates define both HTML and model <--> view bindings
     view.make 'Body',
-      'Holler: <input value="((message))"><h1>((message))</h1>'
+      '{% highlight html %}Holler: <input value="((message))"><h1>((message))</h1>{% endhighlight %}'
 
     # Routes render on client as well as server
     get '/', (page, model) ->
