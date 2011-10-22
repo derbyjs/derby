@@ -43,6 +43,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
 
 ### hello.coffee
 
+{% highlight coffeescript %}
     {view, get} = require('derby').createApp module
     
     # Templates define both HTML and model <--> view bindings
@@ -54,6 +55,7 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
       # Subscribe specifies the data to sync
       model.subscribe 'message', ->
         page.render()
+{% endhighlight %}
 
 ### server.coffee
 
