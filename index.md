@@ -1,3 +1,7 @@
+---
+layout: default
+---
+
 # Derby
 
 Derby is an MVC framework for realtime, collaborative Node.js apps. You write HTML templates, routes, and business logic; Derby produces an Express server and web app, which synchronize all users in realtime via Socket.IO.
