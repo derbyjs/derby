@@ -2,25 +2,40 @@
 <meta charset=utf-8>
 <title>Derby</title>
 <style>
+html,body,h1,h2,h3,h4,p,ul,li,pre,code{
+  margin: 0;
+  padding: 0;
+  font: 16px/1.3125 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+body{
+  padding: 16px;
+  color: #2b2d2d;
+}
+pre,code{
+  font: 14px/19px Consolas, monospace;
+}
+h1{font-size: 36px; font-weight: 500}
+h2{font-size: 28px; font-weight: 500}
+h3{font-size: 21px; font-weight: 600; padding: 8px 0 4px}
+h4{font-size:16px; font-weight: 600}
+#page{max-width: 572px;}
+.promo{font-size: 21px; font-weight: 300; padding: 4px 0 8px}
 .highlight{
   background: #2b2d2d;
   color: #f6f0e1;
-  padding: 16px;
-  border-radius: 8px;
+  padding: 10px 16px 13px;
+  border-radius: 3px;
+  width: 540px;
 }
-pre,code{
-  margin: 0;
-  padding: 0;
-  font: 14px/19px Consolas, monospace;
-}
-.highlight > pre {padding: 0}
-.kd {color: #56b3a6} /* Keyword.Declaration */
-.o {color: #56b3a6; font-weight: bold} /* Operator */
-.s1 {color: #e84c52} /* Literal.String.Single */
-.s2 {color: #e84c52} /* Literal.String.Double */
-.mi {color: #e59e4b} /* Literal.Number.Integer */
-.mf {color: #e59e4b} /* Literal.Number.Float */
-.c1 {color: #b6ae99; font-style: italic} /* Comment.Single */
-.p {color: #dfdbce;}
+.kd{color: #56b3a6}
+.o{color: #56b3a6; font-weight: bold}
+.s1{color: #e84c52}
+.s2{color: #e84c52}
+.mi{color: #e59e4b}
+.mf{color: #e59e4b}
+.c1{color: #b6ae99; font-style: italic}
+.p{color: #dfdbce}
 </style>
+<div id=page>
 {{content}}
+</div>
