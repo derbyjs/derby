@@ -7,8 +7,7 @@ layout: default
 <p class="promo">MVC framework for realtime, collaborative Node.js apps. Write HTML templates, routes, and application logic; Derby creates the realtime synchronized server and web app.</p>
 
 <div class="js">
-### hello.js
-
+<h3>hello.js</h3>
 {% highlight javascript %}
 var hello = require('derby').createApp(module),
     view = hello.view,
@@ -28,8 +27,7 @@ get('/', function (page, model) {
 });
 {% endhighlight %}
 
-### server.js
-
+<h3>server.js</h3>
 {% highlight javascript %}
 var express = require('express'),
     hello = require('./hello'),
@@ -46,8 +44,7 @@ server.listen(3000);
 </div>
 
 <div class="coffee">
-### hello.coffee
-
+<h3>hello.coffee</h3>
 {% highlight coffeescript %}
 {view, get} = require('derby').createApp module
 # Templates define both HTML and model <--> view bindings
@@ -61,8 +58,7 @@ get '/', (page, model) ->
     page.render()
 {% endhighlight %}
 
-### server.coffee
-
+<h3>server.coffee</h3>
 {% highlight coffeescript %}
 express = require 'express'
 hello = require './hello'
