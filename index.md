@@ -6,6 +6,8 @@ layout: default
 
 <p class="promo">MVC framework for realtime, collaborative Node.js apps. Write HTML templates, routes, and application logic; Derby creates the realtime synchronized server and web app.</p>
 
+<div class="example">
+<button class="jsb">JavaScript</button><button class="csb">CoffeeScript</button>
 <div class="js">
 <h3>hello.js</h3>
 {% highlight javascript %}
@@ -34,7 +36,7 @@ var express = require('express'),
     server = express.createServer()
       .use(express.static(__dirname + '/public'))
       // Apps create an Express middleware
-      .use(hello.router())
+      .use(hello.router()),
 
     // Apps also provide a server-side store for syncing data
     store = hello.createStore({ listen: server });
@@ -72,6 +74,7 @@ store = hello.createStore listen: server
 
 server.listen 3000
 {% endhighlight %}
+</div>
 </div>
 
 ## Instant by default
