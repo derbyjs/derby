@@ -4,7 +4,7 @@ layout: default
 
 # Derby
 
-<p class="promo">Derby is an MVC framework for realtime, collaborative Node.js apps. You write HTML templates, routes, and business logic; Derby produces an Express server and web app, which synchronize all users in realtime via Socket.IO.</p>
+<p class="promo">MVC framework for realtime, collaborative Node.js apps. Write HTML templates, routes, and application logic; Derby creates the realtime synchronized server and web app.</p>
 
 ### hello.js
 
