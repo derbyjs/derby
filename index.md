@@ -6,7 +6,7 @@ layout: default
 
 <p class="promo">MVC framework for realtime, collaborative Node.js apps. Write HTML templates, routes, and application logic; Derby creates the realtime synchronized server and web app.</p>
 
-<div class=js>
+<div class="js">
 ### hello.js
 
 {% highlight javascript %}
@@ -45,7 +45,7 @@ server.listen(3000);
 {% endhighlight %}
 </div>
 
-<div class=coffee>
+<div class="coffee">
 ### hello.coffee
 
 {% highlight coffeescript %}
