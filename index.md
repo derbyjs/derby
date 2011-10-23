@@ -9,69 +9,69 @@ Derby is an MVC framework for realtime, collaborative Node.js apps. You write HT
 ### hello.js
 
 {% highlight javascript %}
-    var hello = require('derby').createApp(module),
-        view = hello.view,
-        get = hello.get;
-    
-    // Templates define both HTML and model <--> view bindings
-    view.make('Body',
-      'Holler: <input value="((message))"><h1>((message))</h1>'
-    );
+var hello = require('derby').createApp(module),
+    view = hello.view,
+    get = hello.get;
 
-    // Routes render on client as well as server
-    get('/', function (page, model) {
-      // Subscribe specifies the data to sync
-      model.subscribe('message', function () {
-        page.render();
-      });
-    });
+// Templates define both HTML and model <--> view bindings
+view.make('Body',
+  'Holler: <input value="((message))"><h1>((message))</h1>'
+);
+
+// Routes render on client as well as server
+get('/', function (page, model) {
+  // Subscribe specifies the data to sync
+  model.subscribe('message', function () {
+    page.render();
+  });
+});
 {% endhighlight %}
 
 ### server.js
 
 {% highlight javascript %}
-    var express = require('express'),
-        hello = require('./hello'),
-        server = express.createServer()
-          .use(express.static(__dirname + '/public'))
-          // Apps create an Express middleware
-          .use(hello.router())
-    
-        // Apps also provide a server-side store for syncing data
-        store = hello.createStore({ listen: server });
-    
-    server.listen(3000);
+var express = require('express'),
+    hello = require('./hello'),
+    server = express.createServer()
+      .use(express.static(__dirname + '/public'))
+      // Apps create an Express middleware
+      .use(hello.router())
+
+    // Apps also provide a server-side store for syncing data
+    store = hello.createStore({ listen: server });
+
+server.listen(3000);
 {% endhighlight %}
 
 ### hello.coffee
 
 {% highlight coffeescript %}
-    {view, get} = require('derby').createApp module
-    # Templates define both HTML and model <--> view bindings
-    view.make 'Body',
-      'Holler: <input value="((message))"><h1>((message))</h1>'
+{view, get} = require('derby').createApp module
+# Templates define both HTML and model <--> view bindings
+view.make 'Body',
+  'Holler: <input value="((message))"><h1>((message))</h1>'
 
-    # Routes render on client as well as server
-    get '/', (page, model) ->
-      # Subscribe specifies the data to sync
-      model.subscribe 'message', ->
-        page.render()
+# Routes render on client as well as server
+get '/', (page, model) ->
+  # Subscribe specifies the data to sync
+  model.subscribe 'message', ->
+    page.render()
 {% endhighlight %}
 
 ### server.coffee
 
 {% highlight coffeescript %}
-    express = require 'express'
-    hello = require './hello'
-    server = express.createServer()
-      .use(express.static __dirname + '/public')
-      # Apps create an Express middleware
-      .use(hello.router())
-    
-    # Apps also provide a server-side store for syncing data
-    store = hello.createStore listen: server
-    
-    server.listen 3000
+express = require 'express'
+hello = require './hello'
+server = express.createServer()
+  .use(express.static __dirname + '/public')
+  # Apps create an Express middleware
+  .use(hello.router())
+
+# Apps also provide a server-side store for syncing data
+store = hello.createStore listen: server
+
+server.listen 3000
 {% endhighlight %}
 
 ## Instant by default
