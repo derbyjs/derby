@@ -1,34 +1,107 @@
 <!DOCTYPE html>
 <meta charset=utf-8>
 <title>Derby</title>
+<script>
+function setLang(lang) {
+  styles = document.getElementById('langDisplay');
+  styles.innerHTML = lang == 'js' ?
+    '.coffee{display:none}' : '.js{display:none}';
+  return false;
+}
+</script>
 <style>
-html,body,h1,h2,h3,h4,p,ul,li,pre,code,button{
+html,body,h1,h2,h3,h4,p,ul,li,pre,code,form,input,td,th,hr{
   margin: 0;
   padding: 0;
+}
+body,h1,h2,h3,h4{
   font: 16px/1.3125 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
-body{
-  padding: 16px;
-  color: #2b2d2d;
-}
-pre,code{
-  font: 14px/19px Consolas, monospace;
-}
-h1{font-size: 36px; font-weight: 500}
-h2{font-size: 27px; font-weight: 500}
-h3{font-size: 21px; line-height: 27px; font-weight: 600; padding: 8px 0 4px}
+table{border-collapse:collapse;border-spacing:0}
+img{border:0}
+body{color: #2b2d2d}
+pre,code{font: 14px/19px Consolas, monospace}
+h1{font-size: 36px; font-weight: 500; margin: 36px 0 4px}
+h2{font-size: 27px; font-weight: 500; margin: 21px 0 4px}
+h3{font-size: 21px; line-height: 27px; font-weight: 600; margin: 16px 0 4px}
 h4{font-size:16px; font-weight: 600}
-#page{max-width: 572px;}
-.promo{font-size: 21px; font-weight: 300; padding: 4px 0 8px}
+ul{padding-left: 27px}
+p,li{margin-bottom: 8px}
+a{color: #2a766b}
+
+#nav{
+  font-size: 14px;
+  position: fixed;
+  left: 16px;
+  top: 46px;
+  width: 186px;
+}
+#page{
+  max-width: 572px;
+  margin-left: 218px;
+}
+.promo{
+  font-size: 21px;
+  font-weight: 300;
+}
 .highlight{
-  margin-top: -2px;
+  margin:0;
   background: #2b2d2d;
   color: #f6f0e1;
   padding: 10px 16px 13px;
   border-radius: 3px;
   width: 540px;
 }
-.coffee{display: none}
+#groups-form{
+  padding: 8px 0 16px;
+}
+#groups-logo{
+  line-height: 0;
+  margin-bottom: 3px;
+  display: block;
+  width: 143px;
+  height: 27px;
+}
+#groups-logo > img{
+  display: block;
+}
+#email{
+  width: 143px;
+}
+::-moz-focus-inner {
+  border: 0;
+}
+input{
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  border: 1px solid #dfdbce;
+  border-top-color: #c6bca1;
+  -webkit-box-shadow: inset 0 1px 4px -2px #a79f88;
+  box-shadow: inset 0 1px 4px -2px #a79f88;
+  -moz-box-shadow: inset 0 1px 2px -2px #a79f88;
+  padding: 1px 4px 2px;
+  margin-bottom: 4px;
+  font: 13px/normal 'Lucida Grande', Tahoma, sans-serif;
+  color: #2b2d2d;
+  border-radius: 2px;
+}
+input[type="submit"]{
+  border-color: #dfdbce #c6bca1 #a79f88;
+  -webkit-box-shadow: inset 0 -1px #f1ebda, inset 0 1px #f6f0e1, inset 0 -3px 8px -1px #dfdbce;
+  box-shadow: inset 0 -1px #f1ebda, inset 0 1px #f6f0e1, inset 0 -3px 8px -1px #dfdbce;
+  -moz-box-shadow: inset 0 -1px #f1ebda, inset 0 1px #f6f0e1, inset 0 -3px 4px -1px #dfdbce;
+  text-shadow: 0 1px #f6f0e1;
+  background: #f6f0e1;
+}
+::-webkit-input-placeholder{
+  color: #a79f88;
+}
+:-moz-placeholder{
+  color: #a79f88;
+}
+
 .kd{color: #56b3a6}
 .o{color: #56b3a6; font-weight: bold}
 .s1{color: #e84c52}
@@ -38,6 +111,23 @@ h4{font-size:16px; font-weight: 600}
 .c1{color: #b6ae99; font-style: italic}
 .p{color: #dfdbce}
 </style>
+<style id="langDisplay">
+.coffee{display: none}
+</style>
+<div id="nav">
+<p><b><a href="#">Derby v0.1</a></b>
+<p><a href="https://github.com/codeparty/derby">Source on GitHub</a>
+
+<form id="groups-form" action="http://groups.google.com/group/derbyjs/boxsubscribe">
+<input type="hidden" name="hl" value="en">
+<a id="groups-logo" href="http://groups.google.com/group/derbyjs"><img src="groups_logo.png" alt="Google Groups"></a>
+<input type="email" name="email" id="email" placeholder="Email">
+<input type="submit" name="sub" value="Subscribe">
+</form>
+<p>Examples in:<br>
+<span class='js'><b>JavaScript</b> | <a href="#" onclick="return setLang('coffe')">CoffeeScript</a></span>
+<span class='coffee'><a href="#" onclick="return setLang('js')">JavaScript</a> | <b>CoffeeScript</b></span>
+</div>
 <div id=page>
 {{content}}
 </div>

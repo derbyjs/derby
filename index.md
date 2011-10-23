@@ -47,6 +47,7 @@ server.listen(3000);
 <h3>hello.coffee</h3>
 {% highlight coffeescript %}
 {view, get} = require('derby').createApp module
+
 # Templates define both HTML and model <--> view bindings
 view.make 'Body',
   'Holler: <input value="((message))"><h1>((message))</h1>'
