@@ -52,15 +52,32 @@ a:visited{color: #78396a}
   font-weight: 300;
   margin-top: -8px;
 }
+code,pre{
+  background: #f6f0e1;
+  border: 1px;
+  border-radius: 3px;
+  padding: 2px;
+}
+pre{
+  background: #f6f0e1;
+  margin: -4px 0 16px;
+  padding: 10px 16px 13px;
+  width: 540px;
+}
 .highlight{
+  border-radius: 3px;
   background: #2b2d2d;
   color: #f6f0e1;
 }
-pre{
-  margin: -4px 0 16px;
-  padding: 10px 16px 13px;
-  border-radius: 3px;
-  width: 540px;
+.highlight > pre{
+  background: #2b2d2d;
+  border: 0;
+  border-radius: 0;
+}
+pre > code{
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 #groups-form{
   padding: 8px 0 16px;

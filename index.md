@@ -107,7 +107,7 @@ Instal Derby with:
 
     $ npm install -g derby
 
-Derby requires Redis [2.2-scripting](https://github.com/antirez/redis/tree/2.2-scripting). [Racer](http://racerjs.com/), which powers models in Derby, uses Redis to store all data transactions and for PubSub. Racer requires Redis Lua scripting, which [will be included](http://antirez.com/post/everything-about-redis-24) in the next stable release, Redis 2.6.
+Derby requires [Redis 2.2-scripting](https://github.com/antirez/redis/tree/2.2-scripting). Derby's models are powered by [Racer](http://racerjs.com/), which uses Redis to store all data transactions and for PubSub. Racer requires Redis Lua scripting, which [will be included](http://antirez.com/post/everything-about-redis-24) in the next stable release, Redis 2.6.
 
 Download, extract, and compile Redis 2.2-scripting:
 
