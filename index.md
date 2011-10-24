@@ -107,7 +107,7 @@ Instal Derby with:
 
     $ npm install -g derby
 
-Derby requires [Redis 2.2-scripting](https://github.com/antirez/redis/tree/2.2-scripting). Derby's models are powered by [Racer](http://racerjs.com/), which uses Redis to store all data transactions and for PubSub. Racer requires Redis Lua scripting, which [will be included](http://antirez.com/post/everything-about-redis-24) in the next stable release, Redis 2.6.
+Derby requires [Redis 2.2-scripting](https://github.com/antirez/redis/tree/2.2-scripting). Derby's models are powered by [Racer](http://racerjs.com/), which uses Redis to store data transactions and manage PubSub. Racer uses Redis Lua scripting, which [will be included](http://antirez.com/post/everything-about-redis-24) in the next stable release, Redis 2.6.
 
 Download, extract, and compile Redis 2.2-scripting:
 
@@ -176,7 +176,7 @@ Derby uses a file naming convention similar to Node.js modules. Script, style, a
 
 Apps are associated with their respective styles and views by filename only. The app filename also becomes the name of the global variable that the application exposes in the browser. Therefore, app names should be valid JavaScript variable names, starting with a letter and containing only alphanumeric characters and underscores.
 
-Static files are placed in the public folder. Derby compiles scripts for the browser into the `public\gen` folder. Note that styles are included automatically by Derby, and they should not be placed in the public folder. Styles and views both support includes, so shared styles and templates may be defined in separate files.
+Static files are placed in the public folder. Derby compiles scripts for the browser into the `public\gen` folder. Styles and templates are included in pages automatically by Derby. They both support includes, so shared styles and templates may be defined in separate files.
 
 # Views
 
