@@ -62,18 +62,24 @@ pre{
   background: #f6f0e1;
   margin: -4px 0 16px;
   padding: 9px 15px 12px;
-  width: 540px;
+  min-width: 540px;
+  display: inline-block;
+}
+.highlight>pre{
+  padding: 10px 16px 13px;
 }
 .highlight{
   border-radius: 3px;
   background: #2b2d2d;
   color: #f6f0e1;
 }
+pre>code{
+  padding: 0;
+}
 .highlight>pre,pre>code{
   background: transparent;
   border: 0;
   border-radius: 0;
-  padding: 0;
 }
 #groups-form{
   padding: 8px 0 16px;
