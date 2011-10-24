@@ -111,7 +111,7 @@ Derby requires [Redis 2.2-scripting](https://github.com/antirez/redis/tree/2.2-s
 
 Download, extract, and compile Redis 2.2-scripting:
 
-    $ wget http://redis.googlecode.com/files/redis-2.2.111-scripting.tar.gz
+    $ curl -O http://redis.googlecode.com/files/redis-2.2.111-scripting.tar.gz
     $ tar xzf redis-2.2.111-scripting.tar.gz
     $ cd redis-2.2.111-scripting
     $ make
