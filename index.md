@@ -79,11 +79,11 @@ server.listen 3000
 
 Derby apps are instant loading, instant updating, multi-user, and offline-capable by default. Here's how they work:
 
-* **HTML templates**: [Mustache](http://mustache.github.com/mustache.5.html)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately--even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
+* **HTML templates**: [Mustache](http://mustache.github.com/mustache.5.html)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
 
 * **Client and server routing**: The same routes produce a single-page browser app and an [Express](http://expressjs.com/) server app. Links render instantly with push/pop state changes in modern browsers, while server rendering provides access to search engines and browsers without JavaScript.
 
-* **View bindings**: In addition to HTML rendering, templates specify live bindings between the view and model. When model data change, the view updates the properties, text, or HTML neccessary to reflect the new data. When the user interacts with the page--such as editing the value of a text input--the model data are updated.
+* **View bindings**: In addition to HTML rendering, templates specify live bindings between the view and model. When model data change, the view updates the properties, text, or HTML neccessary to reflect the new data. When the user interacts with the page---such as editing the value of a text input---the model data are updated.
 
 * **Model syncing**: Model changes are automatically sychronized with the server and all clients subscribed to the same data over [Socket.IO](http://socket.io/).
 
