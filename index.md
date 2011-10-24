@@ -132,14 +132,14 @@ Derby includes a simple project generator:
     $ derby new first_project
     $ cd first_project
 
-or, if you prefer CoffeeScript:
+or, for CoffeeScript:
 
     $ cd ~
     $ derby new --coffee first_project
     $ cd first_project
     $ make
 
-`make compile` will execute coffee with the watch option, so leave it running in a separate terminal.
+`make` will execute the coffee compiler with the watch option, so leave it running in a separate terminal.
 
 Make sure Redis is running, and fire up Node:
 
