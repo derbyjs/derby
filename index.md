@@ -4,7 +4,7 @@ layout: default
 
 # Derby
 
-<p class="promo">MVC framework for realtime, collaborative Node.js apps. Write HTML templates, routes, and application logic; Derby creates the realtime synchronized server and web app.</p>
+<p class="promo">MVC framework for realtime, collaborative applications that run in both Node.js and browsers.</p>
 
 <div class="js">
 <h3>hello.js</h3>
@@ -75,9 +75,15 @@ server.listen 3000
 {% endhighlight %}
 </div>
 
-## Instant by default
+## The realtime future of applications
 
-Derby apps are instant loading, instant updating, multi-user, and offline-capable by default. Here's how they work:
+Web apps have been converging toward increasingly realtime interaction, but frameworks have not kept pace. In the web's initial request / response model, all rendering and logic could be organized neatly within server code. AJAX complicated matters, and client-side frameworks emerged to update specific parts of a page. However, as realtime interactions become more commonplace, users will expect all data to update in realtime, across all browsers and all users. Derby is designed for the future when all apps are realtime and collaborative by default.
+
+Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/) that automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications.
+
+Derby applications load immediately and can be indexed by search engines, because the same templates render on both server and client. In addition, templates define bindings, which instantly update the view when the model changes and vice versa. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
+
+## Features
 
 * **HTML templates**: [Mustache](http://mustache.github.com/mustache.5.html)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
 
