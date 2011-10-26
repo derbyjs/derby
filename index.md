@@ -221,6 +221,7 @@ Template files are also HTML, but each template is wrapped in a tag that names t
   Silly example
 
 <Body:>
+  <!-- tst -->
   <h1 test="stuff">Howdy!</h1>
 {% endhighlight %}
 
