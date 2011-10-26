@@ -319,7 +319,7 @@ Logic-less templates better enforce separation of logic from presentation by mak
 
 With Mustache, application code generates a context object before rendering the view. It then passes that object along with the template at render time. Derby templates can be used this way as well. However, in addition to looking for objects in a context object, Derby assumes that the model is part of the context. Even better, Derby is able to automatically establish live bindings between the view and objects in the model. Derby slightly extends the Mustache syntax in order to support these featueres.
 
-The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within text, within attribute values, and surrounding elements.
+The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within text, within attribute values, and surrounding elements. In addition, template tags may *not* be used within the value of an `id` attribute.
 
 #### Invalid template tag placements
 {% highlight html %}
@@ -334,6 +334,9 @@ The other major difference between Mustache and Derby templates is that Derby te
 
 <!-- INVALID: Splitting an element -->
 {{"{{"}}#maybe}}<b>{{"{{"}}/maybe}}Bad boy!</b>
+
+<!-- INVALID: Within an id attribute value -->
+<b id="{{"{{"}}id}}">Bad boy!</b>
 {% endhighlight %}
 
 #### Valid placements
@@ -341,7 +344,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 <!-- Within text -->
 <b>Let's go {{"{{"}}activity}}!</b>
 
-<!-- Within attribute values -->
+<!-- Within attribute values (other than id) -->
 <b style="color:{{"{{"}}displayColor}}">Let's go running!</b>
 
 <!-- Surrounding an element -->
@@ -487,28 +490,110 @@ As in Mustache, partials are included by name with the syntax `{{"{{"}}> profile
 
 {% highlight html %}
 <Body:>
-  
+  {{"{{"}}> nav}}
+
+<nav:>
+  <ul>{{"{{"}}navItems > navItem}}</ul>
+
+<navItem:>
+  <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a>
 {% endhighlight %}
 
 #### Context
 
 {% highlight javascript %}
 page.render({
-  
+  navItems: [
+    { title: 'Home', link '/' },
+    { title: 'About', link '/about' },
+    { title: 'Contact us', link '/contact' }
+  ]
 });
 {% endhighlight %}
 {% highlight coffeescript %}
 page.render
-  
+  navItems: [
+    { title: 'Home', link '/' }
+    { title: 'About', link '/about' }
+    { title: 'Contact us', link '/contact' }
+  ]
 {% endhighlight %}
 
 #### Output
 
 {% highlight html %}
-
+<ul>
+  <li><a href="/">Home</a>
+  <li><a href="/about">About</a>
+  <li><a href="/contact">Contact us</a>
+</ul>
 {% endhighlight %}
 
 ### Bindings
+
+Model-view binding is a new approach to adding dyanmic interaction to a page using a declarative approach. It dramatically lowers the amount of repetative, error-prone DOM manipulation code in an application. In fact, with Derby's bindings system, it should rarely be neccessary to write any DOM code at all.
+
+Derby templates create bindings by using double or triple parentheses instead of curly braces. Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for items that change upon user interaction, like input values, Derby will update the model automatically.
+
+Any template tag may be live bound, but bindings only work with data in the model. Since the context data is passed in at render time, it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model. Since the model is dynamic, the path name may become defined after render time.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  Holler: <input value="((message))"><h1>((message))</h1>
+{% endhighlight %}
+
+#### Context
+  
+{% highlight javascript %}
+model.set('message', 'Yo, dude.');
+page.render();
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'message', 'Yo, dude.'
+page.render()
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+Holler: <input value="Yo, dude." id="$0"><h1 id="$1">Yo, dude.</h1>
+{% endhighlight %}
+
+Note that the value in the model at render time is inserted into the HTML, as with a non-bound template tag. In addition, Derby establishes an event listener for the input element that sets the value of `message` whenever the user modifies the text of the input element. It also sets up a listeners for both the input and the h1 element to update their displayed values whenever `message` changes.
+
+Rather than re-rendering the entire template when a value changes, only the individual elements are updated. In the case of the input, its `value` property is set; in the case of the h1, its `innerHTML` is set. Since neither of these elements have an `id` attribute specified in the template, Derby automatically creates ids for them. All DOM ids created by Derby begin with a dollar sign ($). If an element already has an id, Derby will use that instead.
+
+Derby associates all DOM event listeners with an `id`, because getting objects by id is a very fast DOM operation, it makes dealing with DOM events much more efficient, event listeners continue working even if other scripts modify the DOM unexpectedly, and most critically, event listeners can be established at render time on the server and passed to the client via a JSON literal. Derby's event system is unique in that it internally describes all events via literal objects instead of JavaScript callbacks. This makes it possible to render the page on the server and then re-establish the same event listeners on the client very efficiently.
+
+If a bound template tag is not fully contained by an HTML tag, Derby will use an `<ins>` element to wrap the template. By default, most browsers will display `<ins>` elements with an underline, which can be removed using a CSS reset or by adding `ins{text-decoration:none}` to the page's stylesheet.
+
+Semantically, it would be more correct to use a `<div>` or `<span>`, depending on context. However, this is difficult to do automatcially. For example, `<div>` elements cannot be contained within a `<p>`, and `<span>` elements may not be wrapped around a `<div>`. Attemting to detect each of these situations and choose the proper wrapper element would significantly complicate the Derby renderer and make it more brittle to changes in HTML. In contrast, `<ins>` and `<del>` elements have a [transparent content model](http://www.w3.org/TR/html5/content-models.html#transparent-content-models), enabling them to be included inside or around most other HTML elements. Note that there are still some restrictions on where these elements may be used. For example, an `<option>` element may only contain text and no other elements. MDN has [good documentation](https://developer.mozilla.org/Special:Tags?tag=HTML:Element+Reference) of the usage context for various HTML elements. When in doubt, use an [HTML5 validator](http://html5.validator.nu/).
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  Welcome to our ((adjective)) city!
+{% endhighlight %}
+
+#### Context
+  
+{% highlight javascript %}
+model.set('adjective', 'funny');
+page.render();
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'adjective', 'funny'
+page.render()
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+Welcome to our <ins id="$0">funny</ins> city!
+{% endhighlight %}
 
 ### Relative model paths and aliases
 
