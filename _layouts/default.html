@@ -5,7 +5,7 @@
 function setLang(lang) {
   styles = document.getElementById('langDisplay');
   styles.innerHTML = lang == 'js' ?
-    '.coffeescript{display:none}' : '.javascript{display:none}';
+    '.coffeescript{display:none!important}' : '.javascript{display:none!important}';
   return false;
 }
 </script>
@@ -68,6 +68,13 @@ pre{
 pre+p{
   margin-top: 16px;
 }
+.highlight>pre,pre>code{
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
 .highlight>pre>code{
   margin: -4px 0 0;
   padding: 8px 16px;
@@ -75,12 +82,6 @@ pre+p{
   background: #2b2d2d;
   color: #f6f0e1;
   display: block;
-}
-.highlight>pre,pre>code{
-  padding: 0;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
 }
 #groups-form{
   padding: 8px 0 16px;
@@ -142,7 +143,7 @@ input[type="submit"]{
 .p{color: #dfdbce}
 </style>
 <style id="langDisplay">
-.coffeescript{display: none}
+.coffeescript{display: none !important}
 </style>
 <div id="nav">
 <p><b><a href="#">Derby v0.1</a></b>
