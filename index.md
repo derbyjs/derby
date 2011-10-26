@@ -294,11 +294,11 @@ Derby's template syntax is largely based on [Mustache](http://mustache.github.co
 
 A typical Mustache template:
 
-    Hello {&#123;name}}
-    You have just won ${&#123;value}}!
-    {&#123;#in_ca}}
-    Well, ${&#123;taxed_value}}, after taxes.
-    {&#123;/in_ca}}
+    Hello {{"{{"}}name}}
+    You have just won ${{"{{"}}value}}!
+    {{"{{"}}#in_ca}}
+    Well, ${{"{{"}}taxed_value}}, after taxes.
+    {{"{{"}}/in_ca}}
 
 Given the following hash:
 
@@ -324,27 +324,27 @@ The other major difference between Mustache and Derby templates is that Derby te
 ### Invalid template tag placements
 {% highlight html %}
 <!-- INVALID: Within element names -->
-<{&#123;tagName}}>Bad boy!</{&#123;tagName}}>
+<{{"{{"}}tagName}}>Bad boy!</{{"{{"}}tagName}}>
 
 <!-- INVALID: Within attribute names -->
-<b {&#123;attrName}}="confused" {&#123;booleanAttr}}>Bad boy!</b>
+<b {{"{{"}}attrName}}="confused" {{"{{"}}booleanAttr}}>Bad boy!</b>
 
 <!-- INVALID: Splitting an html tag -->
-<b{&#123;#maybe}}>Bad boy!</b{&#123;/maybe}}>
+<b{{"{{"}}#maybe}}>Bad boy!</b{{"{{"}}/maybe}}>
 
 <!-- INVALID: Splitting an element -->
-{&#123;#maybe}}<b>{&#123;/maybe}}Bad boy!</b>
+{{"{{"}}#maybe}}<b>{{"{{"}}/maybe}}Bad boy!</b>
 {% endhighlight %}
 
 ### Valid placements
 {% highlight html %}
 <!-- Within text -->
-<b>Let's go {&#123;activity}}!</b>
+<b>Let's go {{"{{"}}activity}}!</b>
 
 <!-- Within attribute values -->
-<b class="{&#123;type}}" style="color:{&#123;displayColor}}">Let's go running!</b>
+<b class="{{"{{"}}type}}" style="color:{{"{{"}}displayColor}}">Let's go running!</b>
 
 <!-- Surrounding an element -->
-{&#123;#maybe}}<b>Let's go dancing!</b>{&#123;/maybe}}
+{{"{{"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}/maybe}}
 {% endhighlight %}
 
