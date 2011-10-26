@@ -252,14 +252,20 @@ Derby sends a page in a number of chunks optimized for load time:
 1. **`Script`:** Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
 1. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
 
-#### Forth chunk
+#### Fourth chunk
 
 1. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads.
 1. **`Tail`:** Optional location for additional scripts to be included at the very end of the page.
 
 <style>
-#second_chunk+ol{counter-reset: item 6}
-#third_chunk+ol{counter-reset: item 7}
-#fourth_chunk+ol{counter-reset: item 10}
+ol{counter-reset: item}
+ol>li{display: block}
+ol>li:before{
+  content: counter(item) ". ";
+  counter-increment: item
+}
+#second_chunk+ol{counter-reset: item 5}
+#third_chunk+ol{counter-reset: item 6}
+#fourth_chunk+ol{counter-reset: item 9}
 </style>
 
