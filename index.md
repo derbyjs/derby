@@ -6,7 +6,7 @@ layout: default
 
 <p class="promo">MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.</p>
 
-<div class="js">
+<div class="javascript">
 <h3>hello.js</h3>
 {% highlight javascript %}
 var hello = require('derby').createApp(module),
@@ -43,7 +43,7 @@ server.listen(3000);
 {% endhighlight %}
 </div>
 
-<div class="coffee">
+<div class="coffeescript">
 <h3>hello.coffee</h3>
 {% highlight coffeescript %}
 {view, get} = require('derby').createApp module
@@ -198,7 +198,7 @@ Typically, writing Derby apps begins with HTML templates.
 
 ## Templates
 
-Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Each page usually defines at least a `Title` and `Body` template. Templates may be created programatically via the `view.make` method:
+Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Each page usually defines at least a `Title` and `Body` template. Templates may be created programatically via the `view.make()` method:
 
 {% highlight javascript %}
 var view = require('derby').createApp(module).view;
@@ -228,7 +228,7 @@ Template files are also HTML, but each template is wrapped in a tag that names t
 
 Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times.
 
-Some templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does __not__ include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>`. Browsers don't need them, and pages will validate as proper HTML5.
+Some templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>`. Browsers don't need them, and pages will validate as proper HTML5.
 
 By convention, Pre-defined template names are capitalized to indicate that page renderer will include them by default. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
 
@@ -236,11 +236,11 @@ Derby sends a page in a number of chunks optimized for load time:
 
 #### First chunk
 
-1. `Doctype`: Standard HTML5 doctype and character set definition (`<!DOCTYPE html><meta charset=utf-8>`) unless overridden 
+1. `Doctype`: Standard HTML5 doctype and character set definition---`<!DOCTYPE html><meta charset=utf-8>`---unless overridden 
 1. `Title`: "Derby app" unless overridden
-1. `Head`: Optional location for meta tags, scripts that must be placed in the HTML <head>, and manually included stylesheets
+1. `Head`: Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
 1. CSS is compiled and inserted after the Head template automatically.
-1. `Header`: Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML <body>, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
+1. `Header`: Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
 
 #### Second chunk
 
@@ -248,7 +248,7 @@ Derby sends a page in a number of chunks optimized for load time:
 
 #### Third chunk
 
-1. Inline scripts placed in a file named `inline.js` or added via the `view.inline` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
+1. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
 1. `Script`: Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
 1. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
 
