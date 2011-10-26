@@ -484,7 +484,7 @@ I like <a href="http://derbyjs.com/">turtles</a>.
 
 Partials are used to include one template inside of another. The scope of the parent context is inherited inside of the partial. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use partials for each significant unit.
 
-As in Mustache, partials are included by name with the syntax `{{"{{"}}> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{"{{"}}users > profile}}` syntax. This is similar to `{{"{{"}}#users}}{{"{{"}}> profile}}{{/}}`, except that it only sets the scope and will always render whether or not `users` is defined. If the partial should always be rendered, the shorter syntax is preferred; it is more readable and more efficient to render.
+As in Mustache, partials are included by name with the syntax `{{"{{"}}> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{"{{"}}users > profile}}` syntax. This is similar to `{{"{{"}}#users}}{{"{{"}}> profile}}{{"{{"}}/}}`, except that it only sets the scope and will always render whether or not `users` is defined. If the partial should always be rendered, the shorter syntax is preferred; it is more readable and more efficient to render.
 
 #### Template
 
