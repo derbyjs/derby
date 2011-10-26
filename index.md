@@ -322,9 +322,9 @@ With Mustache, application code generates a context object before rendering the 
 The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within attribute values, within text, and surrounding elements.
 
 ### Invalid template tag placements
-{% highlight html %}{%"
+{% highlight html %}
 <!-- INVALID: Within element names -->
-<{{tagName}}>Bad boy!</{{tagName}}>
+<{\{tagName}}>Bad boy!</{{tagName}}>
 
 <!-- INVALID: Within attribute names -->
 <b {{attrName}}="confused" {{booleanAttr}}>Bad boy!</b>
@@ -334,7 +334,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 
 <!-- INVALID: Splitting an element -->
 {{#maybe}}<b>{{/maybe}}Bad boy!</b>
-"%}{% endhighlight %}
+{% endhighlight %}
 
 ### Valid placements
 {% highlight html %}
