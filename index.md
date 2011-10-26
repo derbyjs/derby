@@ -342,7 +342,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 <b>Let's go {{"{{"}}activity}}!</b>
 
 <!-- Within attribute values -->
-<b class="{{"{{"}}type}}" style="color:{{"{{"}}displayColor}}">Let's go running!</b>
+<b style="color:{{"{{"}}displayColor}}">Let's go running!</b>
 
 <!-- Surrounding an element -->
 {{"{{"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}/maybe}}
