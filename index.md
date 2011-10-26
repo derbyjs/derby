@@ -294,11 +294,11 @@ Derby's template syntax is largely based on [Mustache](http://mustache.github.co
 
 A typical Mustache template:
 
-    Hello {{"{{"}}name}}
-    You have just won ${{"{{"}}value}}!
-    {{"{{"}}#in_ca}}
-    Well, ${{"{{"}}taxed_value}}, after taxes.
-    {{"{{"}}/in_ca}}
+    Hello {{"{{"}}"{{"{{"}}"}}name}}
+    You have just won ${{"{{"}}"{{"{{"}}"}}value}}!
+    {{"{{"}}"{{"{{"}}"}}#in_ca}}
+    Well, ${{"{{"}}"{{"{{"}}"}}taxed_value}}, after taxes.
+    {{"{{"}}"{{"{{"}}"}}/in_ca}}
 
 Given the following data context:
 
@@ -324,28 +324,28 @@ The other major difference between Mustache and Derby templates is that Derby te
 #### Invalid template tag placements
 {% highlight html %}
 <!-- INVALID: Within element names -->
-<{{"{{"}}tagName}}>Bad boy!</{{"{{"}}tagName}}>
+<{{"{{"}}"{{"{{"}}"}}tagName}}>Bad boy!</{{"{{"}}"{{"{{"}}"}}tagName}}>
 
 <!-- INVALID: Within attribute names -->
-<b {{"{{"}}attrName}}="confused" {{"{{"}}booleanAttr}}>Bad boy!</b>
+<b {{"{{"}}"{{"{{"}}"}}attrName}}="confused" {{"{{"}}"{{"{{"}}"}}booleanAttr}}>Bad boy!</b>
 
 <!-- INVALID: Splitting an html tag -->
-<b{{"{{"}}#maybe}}>Bad boy!</b{{"{{"}}/maybe}}>
+<b{{"{{"}}"{{"{{"}}"}}#maybe}}>Bad boy!</b{{"{{"}}"{{"{{"}}"}}/maybe}}>
 
 <!-- INVALID: Splitting an element -->
-{{"{{"}}#maybe}}<b>{{"{{"}}/maybe}}Bad boy!</b>
+{{"{{"}}"{{"{{"}}"}}#maybe}}<b>{{"{{"}}"{{"{{"}}"}}/maybe}}Bad boy!</b>
 {% endhighlight %}
 
 #### Valid placements
 {% highlight html %}
 <!-- Within text -->
-<b>Let's go {{"{{"}}activity}}!</b>
+<b>Let's go {{"{{"}}"{{"{{"}}"}}activity}}!</b>
 
 <!-- Within attribute values -->
-<b style="color:{{"{{"}}displayColor}}">Let's go running!</b>
+<b style="color:{{"{{"}}"{{"{{"}}"}}displayColor}}">Let's go running!</b>
 
 <!-- Surrounding an element -->
-{{"{{"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}/maybe}}
+{{"{{"}}"{{"{{"}}"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}"{{"{{"}}"}}/maybe}}
 {% endhighlight %}
 
 ### Variables
@@ -356,10 +356,10 @@ Variables insert a value from the context or model with a given name. If the nam
 
 {% highlight html %}
 <Body:>
-  <p>{{"{{"}}name}}
-  <p>{{"{{"}}age}}
-  <p>{{"{{"}}location}}
-  <p>{{"{{"}}{location}}}
+  <p>{{"{{"}}"{{"{{"}}"}}name}}
+  <p>{{"{{"}}"{{"{{"}}"}}age}}
+  <p>{{"{{"}}"{{"{{"}}"}}location}}
+  <p>{{"{{"}}"{{"{{"}}"}}{location}}}
 {% endhighlight %}
 
 #### Context
@@ -382,11 +382,100 @@ page.render name: 'Parker', location: '<b>500 ft</b> away'
 
 ### Sections
 
-Sections both cause their contents to be conditionally rendered and set the scope of the context for their contents. In Mustatche, sections must begin and end with the same name, but Derby requires only an end tag without the name.
+Sections cause their contents to be conditionally rendered. They also set the scope of the context for their contents. In Mustatche, sections must begin and end with the same name, but Derby requires only an end tag without the name.
 
-Sections of the form `{{"{{"}}#shown}}Example{{"{{"}}/}}` render their contents when the name matches a truthy value. If the section matches an array, it will render the contents once for each item in the array.
+Sections of the form `{{"{{"}}"{{"{{"}}"}}#shown}}Example{{"{{"}}"{{"{{"}}"}}/}}` render their contents when the name matches a truthy value. If the section matches an array, it will render the contents once for each item in the array.
 
-Inverted sections take the form `{{"{{"}}^shown}}Counter example{{"{{"}}/}}`. Their contents render when the name matches a falsey value (false, null, undefined, 0, '', or NaN) or an empty array. Derby also provides a shorthand syntax for defining a section and inverted section together: `{{"{{"}}#shown}}Example{{"{{"}}^}}Counter example{{"{{"}}/}}`
+Inverted sections take the form `{{"{{"}}"{{"{{"}}"}}^shown}}Counter example{{"{{"}}"{{"{{"}}"}}/}}`. Their contents render when the name matches a falsey value (false, null, undefined, 0, '', or NaN) or an empty array. Derby also provides a shorthand syntax for defining a section and inverted section together: `{{"{{"}}"{{"{{"}}"}}#shown}}Example{{"{{"}}"{{"{{"}}"}}^}}Counter example{{"{{"}}"{{"{{"}}"}}/}}`
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  <h1>
+    {{"{{"}}#visited}}
+      Welcome back!
+    {{"{{"}}^}}
+      Welcome to the party!
+    {{"{{"}}/}}
+  </h1>
+  <ul>
+    {{"{{"}}#users}}
+      <li>{{"{{"}}name}}: {{"{{"}}motto}}
+    {{"{{"}}/}}
+  </ul>
+  {{"{{"}}^hideFooter}}
+    <small>Copyright &copy; 1999 Party Like It's.</small>
+  {{"{{"}}/}}
+{% endhighlight %}
+
+#### Context
+
+{% highlight javascript %}
+page.render({
+  visited: true,
+  users: [
+    { name: 'Billy', motto: "Shufflin', shufflin'" },
+    { name: 'Ringo', motto: "Make haste slowly." }
+  ]
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+page.render
+  visited: true
+  users: [
+    { name: 'Billy', motto: "Shufflin', shufflin'" }
+    { name: 'Ringo', motto: "Make haste slowly." }
+  ]
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+<h1>Welcome back!</h1>
+<ul>
+  <li>Billy: Shufflin', shufflin'
+  <li>Ringo: Make haste slowly
+</ul>
+<small>Copyright &copy; 1999 Party Like It's.</small>
+{% endhighlight %}
+
+Note how in the above example, the context becomes each array item inside of the `#users` section. Similarly, sections set scope when reffering to the name of an object. In addition to the local scope, template tags may refer to anything in the parent scope.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  {{"{{"}}#users}}
+    {{"{{"}}#jill}}I like <a href="{{"{{"}}link}}">{{"{{"}}favorite}}</a>.{{"{{"}}/}}
+  {{"{{"}}/}}
+{% endhighlight %}
+
+#### Context
+
+{% highlight javascript %}
+page.render({
+  users: {
+    jill: {
+      favorite: 'turtles'
+    }
+  },
+  link: 'http://derbyjs.com/'
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+page.render
+  users:
+    jill:
+      favorite: 'turtles'
+  link: 'http://derbyjs.com/'
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+I like <a href="http://derbyjs.com/">turtles</a>.
+{% endhighlight %}
 
 ### Partials
 
