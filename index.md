@@ -479,6 +479,35 @@ I like <a href="http://derbyjs.com/">turtles</a>.
 
 ### Partials
 
+Partials are used to include one template inside of another. The scope of the parent context is inherited inside of the partial. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use partials for each significant unit.
+
+As in Mustache, partials are included by name with the syntax `{{> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{users > profile}}` syntax. This will produce the same output as `{{#users}}{{> profile}}{{/}}`. The shorter syntax is preferred, since it is more readable and faster to parse.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  
+{% endhighlight %}
+
+#### Context
+
+{% highlight javascript %}
+page.render({
+  
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+page.render
+  
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+
+{% endhighlight %}
+
 ### Bindings
 
 ### Relative model paths and aliases
