@@ -324,7 +324,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 ### Invalid template tag placements
 {% highlight html %}
 <!-- INVALID: Within element names -->
-<{{"{{tagName}}"}}>Bad boy!</{{"{{tagName}}"}}>
+<{{"{{"}}tagName}}>Bad boy!</{{"{{tagName}}"}}>
 
 <!-- INVALID: Within attribute names -->
 <b {{attrName}}="confused" {{booleanAttr}}>Bad boy!</b>
