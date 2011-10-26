@@ -103,7 +103,7 @@ Derby radically simplifies this process of adding dynamic interactions. It runs 
 
 * **Conflict resolution**: The server detects conflicts, enabling clients to respond instantly and work offline. Multiple powerful techniques for conflict resolution are included.
 
-* **Customizable persistence**: Apps function fully with in-memory, dynamic models. After the design crystalizes and the logic is written, schemas can be added to provide validation and automatic persistence of data to one or more databases.
+* **Customizable persistence**: Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, schemas can be added to provide validation and automatic persistence of data to one or more databases.
 
 ### Flexibility without the glue code
 
@@ -193,4 +193,67 @@ Apps are associated with their respective styles and views by filename only. The
 Static files are placed in the public folder. Derby compiles scripts for the browser into the `public\gen` folder. Styles and templates are included in pages automatically by Derby. They both support includes, so shared styles and templates may be defined in separate files.
 
 # Views
+
+Typically, writing Derby apps begins with HTML templates.
+
+## Templates
+
+Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Each page usually defines at least a `Title` and `Body` template. Templates may be created programatically via the `view.make` method:
+
+{% highlight javascript %}
+var view = require('derby').createApp(module).view;
+
+view.make('Body', '<h1>Howdy!</h1>');
+{% endhighlight %}
+
+{% highlight coffeescript %}
+{view} = require('derby').createApp module
+
+view.make 'Body', '<h1>Howdy!</h1>'
+{% endhighlight %}
+
+However, they are generally placed in template files within the `views` directory. Each app automatically looks for a template file that shares the same name and calls view.make for each template. Templates placed in a template file are also automatically bundled with the application scripts so that they can be rendered on the client.
+
+Template files are also HTML, but each template is wrapped in a tag that names the template. This name must end in a colon to differentiate it from a normal HTML tag. These tags need not be closed. For example:
+
+{% highlight html %}
+<Title:>
+  Silly example
+
+<Body:>
+  <h1>Howdy!</h1>
+{% endhighlight %}
+
+### Pre-defined templates
+
+Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times.
+
+Some templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does __not__ include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>`. Browsers don't need them, and pages will validate as proper HTML5.
+
+By convention, Pre-defined template names are capitalized to indicate that page renderer will include them by default. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
+
+Derby sends a page in a number of chunks optimized for load time:
+
+#### First chunk
+
+1. `Doctype`: Standard HTML5 doctype and character set definition (`<!DOCTYPE html><meta charset=utf-8>`) unless overridden 
+1. `Title`: "Derby app" unless overridden
+1. `Head`: Optional location for meta tags, scripts that must be placed in the HTML <head>, and manually included stylesheets
+1. CSS is compiled and inserted after the Head template automatically.
+1. `Header`: Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML <body>, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
+
+#### Second chunk
+
+1. `Body`: The page's content.
+
+#### Third chunk
+
+1. Inline scripts placed in a file named `inline.js` or added via the `view.inline` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
+1. `Script`: Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
+1. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
+
+#### Forth chunk
+
+1. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads.
+1. `Tail`: Optional location for additional scripts to be included at the very end of the page.
 
