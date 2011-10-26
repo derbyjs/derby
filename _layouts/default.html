@@ -5,7 +5,7 @@
 function setLang(lang) {
   styles = document.getElementById('langDisplay');
   styles.innerHTML = lang == 'js' ?
-    '.coffee{display:none}' : '.js{display:none}';
+    '.coffeescript{display:none}' : '.javascript{display:none}';
   return false;
 }
 </script>
@@ -68,7 +68,7 @@ pre{
 pre+p{
   margin-top: 16px;
 }
-.highlight>pre{
+.highlight>pre>code{
   margin: -4px 0 0;
   padding: 8px 16px;
   border-radius: 3px;
@@ -154,8 +154,8 @@ input[type="submit"]{
 <input type="submit" name="sub" value="Subscribe">
 </form>
 <p>Examples in:<br>
-<span class='js'><b>JavaScript</b> | <a href="#" onclick="return setLang('coffe')">CoffeeScript</a></span>
-<span class='coffee'><a href="#" onclick="return setLang('js')">JavaScript</a> | <b>CoffeeScript</b></span>
+<span class='javascript'><b>JavaScript</b> | <a href="#" onclick="return setLang('coffe')">CoffeeScript</a></span>
+<span class='coffeescript'><a href="#" onclick="return setLang('js')">JavaScript</a> | <b>CoffeeScript</b></span>
 </div>
 <div id=page>
 {{content}}
