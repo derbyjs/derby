@@ -257,3 +257,9 @@ Derby sends a page in a number of chunks optimized for load time:
 1. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads.
 1. **`Tail`:** Optional location for additional scripts to be included at the very end of the page.
 
+<style>
+#second_chunk+ol{counter-reset: item 6}
+#third_chunk+ol{counter-reset: item 7}
+#fourth_chunk+ol{counter-reset: item 10}
+</style>
+
