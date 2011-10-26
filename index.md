@@ -244,7 +244,7 @@ Derby sends a page in a number of chunks optimized for load time:
 
 #### Second chunk
 
-1. `Body`: The page's content.
+1. **`Body`:** The page's content.
 
 #### Third chunk
 
