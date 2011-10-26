@@ -228,9 +228,9 @@ Template files are also HTML, but each template is wrapped in a tag that names t
 
 Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times.
 
-Some templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>`. Browsers don't need them, and pages will validate as proper HTML5.
+Some templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>`. Browsers don't need them, and pages will still validate as proper HTML5.
 
-By convention, Pre-defined template names are capitalized to indicate that page renderer will include them by default. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
+By convention, Pre-defined template names are capitalized to indicate that the page renderer will include them by default. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
 
 Derby sends a page in a number of chunks optimized for load time:
 
@@ -240,7 +240,7 @@ Derby sends a page in a number of chunks optimized for load time:
 2. **`Title:`** "Derby app" unless overridden
 3. **`Head:`** Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
 4. CSS is compiled and inserted after the Head template automatically.
-5. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
+5. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it should render correctly by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
 
 #### Second chunk
 
