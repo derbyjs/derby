@@ -228,13 +228,13 @@ Template files are also HTML, but each template is wrapped in a tag that names t
 
 Templates can be imported from another file for sharing among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. A single template may be imported, or all templates in the file may be imported with the reserved template name `All`.
 
-### shared.html
+#### shared.html
 {% highlight html %}
 <sharedTitle:>
   Too awesome not to share
 {% endhighlight %}
 
-### app.html
+#### app.html
 {% highlight html %}
 <!-- import template keeping the same name -->
 <sharedTitle: from="./shared">
@@ -321,7 +321,7 @@ With Mustache, application code generates a context object before rendering the 
 
 The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within text, within attribute values, and surrounding elements.
 
-### Invalid template tag placements
+#### Invalid template tag placements
 {% highlight html %}
 <!-- INVALID: Within element names -->
 <{{"{{"}}tagName}}>Bad boy!</{{"{{"}}tagName}}>
@@ -336,7 +336,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 {{"{{"}}#maybe}}<b>{{"{{"}}/maybe}}Bad boy!</b>
 {% endhighlight %}
 
-### Valid placements
+#### Valid placements
 {% highlight html %}
 <!-- Within text -->
 <b>Let's go {{"{{"}}activity}}!</b>
@@ -386,7 +386,7 @@ Sections both cause their contents to be conditionally rendered and set the scop
 
 Sections of the form `{{"{{"}}#shown}}Example{{"{{"}}/}}` render their contents when the name matches a truthy value. If the section matches an array, it will render the contents once for each item in the array.
 
-Sections of the form `{{"{{"}}^shown}}Counter example{{"{{"}}/}}` are inverted. They render their contents when the name matches a falsey value (false, null, undefined, 0, '', or NaN) or an empty array. Derby also provides a shorthand syntax for defining a section and inverted section together: `{{"{{"}}#shown}}Example{{"{{"}}^}}Counter example{{"{{"}}/}}`
+Inverted sections take the form `{{"{{"}}^shown}}Counter example{{"{{"}}/}}`. Their contents render when the name matches a falsey value (false, null, undefined, 0, '', or NaN) or an empty array. Derby also provides a shorthand syntax for defining a section and inverted section together: `{{"{{"}}#shown}}Example{{"{{"}}^}}Counter example{{"{{"}}/}}`
 
 ### Partials
 
