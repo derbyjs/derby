@@ -260,10 +260,7 @@ Derby sends a page in a number of chunks optimized for load time:
 <style>
 ol{counter-reset: item}
 ol>li{display: block}
-ol>li:before{
-  content: counter(item) ". ";
-  counter-increment: item
-}
+ol>li:before{content: counter(item) ". "; counter-increment: item}
 #second_chunk+ol{counter-reset: item 5}
 #third_chunk+ol{counter-reset: item 6}
 #fourth_chunk+ol{counter-reset: item 9}
