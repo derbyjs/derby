@@ -352,7 +352,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 
 Variables insert a value from the context or model with a given name. If the name isn't found, nothing will be inserted. Values are HTML escaped by default. Triple braces may be used to insert a value without escaping.
 
-Template:
+#### Template
 
 {% highlight html %}
 <Body:>
@@ -362,7 +362,7 @@ Template:
   <p>{{"{{"}}{location}}}
 {% endhighlight %}
 
-Context:
+#### Context
 
 {% highlight javascript %}
 page.render({ name: 'Parker', location: '<b>500 ft</b> away' });
@@ -371,7 +371,7 @@ page.render({ name: 'Parker', location: '<b>500 ft</b> away' });
 page.render name: 'Parker', location: '<b>500 ft</b> away'
 {% endhighlight %}
 
-Output:
+#### Output
 
 {% highlight html %}
 <p>Parker
