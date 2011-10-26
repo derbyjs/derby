@@ -93,17 +93,17 @@ Derby radically simplifies this process of adding dynamic interactions. It runs 
 
 ### Features
 
-* **HTML templates**: [Mustache](http://mustache.github.com/mustache.5.html)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
+* **HTML templates:** [Mustache](http://mustache.github.com/mustache.5.html)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
 
-* **View bindings**: In addition to HTML rendering, templates specify live bindings between the view and model. When model data change, the view updates the properties, text, or HTML neccessary to reflect the new data. When the user interacts with the page---such as editing the value of a text input---the model data are updated.
+* **View bindings:** In addition to HTML rendering, templates specify live bindings between the view and model. When model data change, the view updates the properties, text, or HTML neccessary to reflect the new data. When the user interacts with the page---such as editing the value of a text input---the model data are updated.
 
-* **Client and server routing**: The same routes produce a single-page browser app and an [Express](http://expressjs.com/) server app. Links render instantly with push/pop state changes in modern browsers, while server rendering provides access to search engines and browsers without JavaScript.
+* **Client and server routing:** The same routes produce a single-page browser app and an [Express](http://expressjs.com/) server app. Links render instantly with push/pop state changes in modern browsers, while server rendering provides access to search engines and browsers without JavaScript.
 
-* **Model syncing**: Model changes are automatically sychronized with the server and all clients subscribed to the same data over [Socket.IO](http://socket.io/).
+* **Model syncing:** Model changes are automatically sychronized with the server and all clients subscribed to the same data over [Socket.IO](http://socket.io/).
 
-* **Conflict resolution**: The server detects conflicts, enabling clients to respond instantly and work offline. Multiple powerful techniques for conflict resolution are included.
+* **Conflict resolution:** The server detects conflicts, enabling clients to respond instantly and work offline. Multiple powerful techniques for conflict resolution are included.
 
-* **Customizable persistence**: Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, schemas can be added to provide validation and automatic persistence of data to one or more databases.
+* **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, schemas can be added to provide validation and automatic persistence of data to one or more databases.
 
 ### Flexibility without the glue code
 
@@ -198,7 +198,7 @@ Typically, writing Derby apps begins with HTML templates.
 
 ## Templates
 
-Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Each page usually defines at least a `Title` and `Body` template. Templates may be created programatically via the `view.make()` method:
+Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Pages usually define at least a `Title` and `Body` template. Templates may be created programatically via the `view.make()` method:
 
 {% highlight javascript %}
 var view = require('derby').createApp(module).view;
@@ -236,11 +236,11 @@ Derby sends a page in a number of chunks optimized for load time:
 
 #### First chunk
 
-1. `Doctype`: Standard HTML5 doctype and character set definition---`<!DOCTYPE html><meta charset=utf-8>`---unless overridden 
-1. `Title`: "Derby app" unless overridden
-1. `Head`: Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
+1. **`Doctype`:** Standard HTML5 doctype and character set definition---`<!DOCTYPE html><meta charset=utf-8>`---unless overridden 
+1. **`Title`:** "Derby app" unless overridden
+1. **`Head`:** Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
 1. CSS is compiled and inserted after the Head template automatically.
-1. `Header`: Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
+1. **`Header`:** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
 
 #### Second chunk
 
@@ -249,11 +249,11 @@ Derby sends a page in a number of chunks optimized for load time:
 #### Third chunk
 
 1. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
-1. `Script`: Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
+1. **`Script`:** Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
 1. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
 
 #### Forth chunk
 
 1. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads.
-1. `Tail`: Optional location for additional scripts to be included at the very end of the page.
+1. **`Tail`:** Optional location for additional scripts to be included at the very end of the page.
 
