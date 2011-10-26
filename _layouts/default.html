@@ -65,8 +65,11 @@ pre{
   padding: 7px 15px;
   min-width: 540px;
 }
-pre+p{
+.highlight+p,pre+p{
   margin-top: 16px;
+}
+.highlight{
+  line-height: 0;
 }
 .highlight>pre,pre>code{
   padding: 0;
@@ -76,7 +79,6 @@ pre+p{
   border-radius: 0;
 }
 .highlight>pre>code{
-  margin: -4px 0 0;
   padding: 8px 16px;
   border-radius: 3px;
   background: #2b2d2d;
