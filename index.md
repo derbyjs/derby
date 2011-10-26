@@ -237,25 +237,25 @@ Derby sends a page in a number of chunks optimized for load time:
 #### First chunk
 
 1. **`Doctype:`** Standard HTML5 doctype and character set definition---`<!DOCTYPE html><meta charset=utf-8>`---unless overridden 
-1. **`Title:`** "Derby app" unless overridden
-1. **`Head:`** Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
-1. CSS is compiled and inserted after the Head template automatically.
-1. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
+2. **`Title:`** "Derby app" unless overridden
+3. **`Head:`** Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
+4. CSS is compiled and inserted after the Head template automatically.
+5. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it stands alone well by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
 
 #### Second chunk
 
-1. **`Body:`** The page's content.
+6. **`Body:`** The page's content.
 
 #### Third chunk
 
-1. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
-1. **`Script:`** Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
-1. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
+7. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
+8. **`Script:`** Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
+9. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
 
 #### Fourth chunk
 
-1. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads.
-1. **`Tail:`** Optional location for additional scripts to be included at the very end of the page.
+10. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads.
+11. **`Tail:`** Optional location for additional scripts to be included at the very end of the page.
 
 <style>
 ol{counter-reset: item}
