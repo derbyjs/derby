@@ -300,13 +300,13 @@ A typical Mustache template:
     Well, ${{"{{"}}taxed_value}}, after taxes.
     {{"{{"}}/in_ca}}
 
-Given the following hash:
+Given the following data context:
 
     {
-      "name": "Chris",
-      "value": 10000,
-      "taxed_value": 10000 - (10000 * 0.4),
-      "in_ca": true
+      name: "Chris",
+      value: 10000,
+      taxed_value: 10000 - (10000 * 0.4),
+      in_ca: true
     }
 
 Will produce the following:
@@ -319,7 +319,7 @@ Logic-less templates better enforce separation of logic from presentation by mak
 
 With Mustache, application code generates a context object before rendering the view. It then passes that object along with the template at render time. Derby templates can be used this way as well. However, in addition to looking for objects in a context object, Derby assumes that the model is part of the context. Even better, Derby is able to automatically establish live bindings between the view and objects in the model. Derby slightly extends the Mustache syntax in order to support these featueres.
 
-The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within attribute values, within text, and surrounding elements.
+The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within text, within attribute values, and surrounding elements.
 
 ### Invalid template tag placements
 {% highlight html %}
@@ -347,4 +347,50 @@ The other major difference between Mustache and Derby templates is that Derby te
 <!-- Surrounding an element -->
 {{"{{"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}/maybe}}
 {% endhighlight %}
+
+### Variables
+
+Variables insert a value from the context or model with a given name. If the name isn't found, nothing will be inserted. Values are HTML escaped by default. Triple braces may be used to insert a value without escaping.
+
+Template:
+
+{% highlight html %}
+<Body:>
+  <p>{{"{{"}}name}}
+  <p>{{"{{"}}age}}
+  <p>{{"{{"}}location}}
+  <p>{{"{{"}}{location}}}
+{% endhighlight %}
+
+Context:
+
+{% highlight javascript %}
+page.render({ name: 'Parker', location: '<b>500 ft</b> away' });
+{% endhighlight %}
+{% highlight coffeescript %}
+page.render name: 'Parker', location: '<b>500 ft</b> away'
+{% endhighlight %}
+
+Output:
+
+{% highlight html %}
+<p>Parker
+<p>
+<p>&lt;b>500 ft&lt;/b> away
+<p><b>500 ft</b> away
+{% endhighlight %}
+
+### Sections
+
+Sections both cause their contents to be conditionally rendered and set the scope of the context for their contents. In Mustatche, sections must begin and end with the same name, but Derby requires only an end tag without the name.
+
+Sections of the form `{{"{{"}}#shown}}Example{{"{{"}}/}}` render their contents when the name matches a truthy value. If the section matches an array, it will render the contents once for each item in the array.
+
+Sections of the form `{{"{{"}}^shown}}Counter example{{"{{"}}/}}` are inverted. They render their contents when the name matches a falsey value (false, null, undefined, 0, '', or NaN) or an empty array. Derby also provides a shorthand syntax for defining a section and inverted section together: `{{"{{"}}#shown}}Example{{"{{"}}^}}Counter example{{"{{"}}/}}`
+
+### Partials
+
+### Bindings
+
+### Relative model paths and aliases
 
