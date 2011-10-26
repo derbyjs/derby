@@ -194,7 +194,7 @@ Static files are placed in the public folder. Derby compiles scripts for the bro
 
 # Views
 
-Typically, writing Derby apps begins with HTML templates.
+Typically, writing Derby apps begins with HTML templates. These templates define the rendered HTML as well as model-view bindings.
 
 ## Templates
 
@@ -224,6 +224,26 @@ Template files are also HTML, but each template is wrapped in a tag that names t
   <h1>Howdy!</h1>
 {% endhighlight %}
 
+Templates can be imported from another file for sharing among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. A single template may be imported, or all templates in the file may be imported with the reserved template name `All`.
+
+### shared.html
+{% highlight html %}
+<sharedTitle:>
+  Too awesome not to share
+{% endhighlight %}
+
+### app.html
+{% highlight html %}
+<!-- import template keeping the same name -->
+<sharedTitle: from="./shared">
+
+<!-- import template and change its name -->
+<Title: from="./shared" import="sharedTitle">
+
+<!-- import all templates in a file keeping the same names -->
+<All: from="./shared">
+{% endhighlight %}
+
 ### Pre-defined templates
 
 Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times.
@@ -249,7 +269,7 @@ Derby sends a page in a number of chunks optimized for load time:
 #### Third chunk
 
 7. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
-8. **`Script:`** Optional location for external scripts loaded before the client scripts. This is where you would put a script tag to include jQuery, for example. Note that this template is just a location within the page, and it is not wrapped in a script tag.
+8. **`Script:`** Optional location for external scripts loaded before the client scripts. For example, this is where a script tag that includes jQuery would be placed. Note that this template is just a location within the page, and it is not wrapped in a script tag.
 9. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
 
 #### Fourth chunk
