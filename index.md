@@ -164,14 +164,14 @@ Make sure Redis is running, and fire up Node:
 
 The default file structure is:
 
-    /public
-      /img
-      /gen
     /lib
       /app
         index.js
       /server
         index.js
+    /public
+      /img
+      /gen
     /styles
       /app
         index.styl
@@ -198,7 +198,7 @@ Static files can be placed in the public folder. Derby compiles scripts for the 
 
 Typically, writing Derby apps begins with HTML templates. These templates define the rendered HTML as well as model-view bindings.
 
-## Defining templates
+## Creating templates
 
 Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Pages usually define at least a `Title` and `Body` template. Templates may be created programatically via the `view.make()` method:
 
@@ -248,13 +248,13 @@ Templates can be imported from another file for sharing among multiple pages. Fi
 
 ### Pre-defined templates
 
-Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times.
+By default, Derby includes templates with the names `Doctype`, `Title`, `Head`, `Header`, `Body`, `Script`, and `Tail` when it renders a page.
 
-Some templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>`. Browsers don't need them, and pages will validate as proper HTML5 without them.
+Some of these templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>` by default. Browsers don't need them, and pages will validate as proper HTML5 without them.
 
-By convention, Pre-defined template names are capitalized to indicate that the page renderer will include them by default. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
+By convention, Pre-defined template names are capitalized to indicate that the page renderer will include them automatically. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
 
-Derby sends a page in a number of chunks optimized for load time:
+Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times. Also to optimize load time, it sends pages a number of chunks:
 
 #### First chunk
 
@@ -541,11 +541,11 @@ page.render
 
 ### Bindings
 
-Model-view binding is a new approach to adding dyanmic interaction to a page using a declarative approach. It dramatically lowers the amount of repetative, error-prone DOM manipulation code in an application. In fact, with Derby's bindings system, it should rarely be neccessary to write any DOM code at all.
+Model-view binding is a relatively recent approach to adding dyanmic interaction to a page. Its use of declarative syntax dramatically lowers the amount of repetative, error-prone DOM manipulation code in an application. With Derby's bindings system, it should rarely be neccessary to write any DOM code at all.
 
-Derby templates create bindings by using double or triple parentheses instead of curly braces. Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for items that change upon user interaction, like input values, Derby will update the model automatically.
+Derby templates declare bindings by using double or triple parentheses instead of curly braces. Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for elements that change upon user interaction---such as form inputs---Derby will update the model automatically as their values change.
 
-Any template tag may be live bound, but bindings only work with data in the model. Since the context data is passed in at render time, it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model. Since the model is dynamic, the path name may become defined after render time.
+Any template tag may be live bound, but bindings only work for data in the model. Context data is passed in at render time, and it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model, since the path may be defined later.
 
 #### Template
 
@@ -706,4 +706,24 @@ page.render()
   <p>Truck on the <ins id="$8">shelf</ins></ins>
 </ins>
 {% endhighlight %}
+
+## Performance
+
+While Derby's rendering performance has yet to be benchmarked and optimized, its architecture will ultimately enable it to outperform most current web application rendering approaches in real usage.
+
+When large chunks of a page requires updating, rendering HTML and then updating the innerHTML of an element is the fastest approach. However, when small changes to one item in a template occur, rerendering the entire template and replacing an entire section of the DOM is *much* slower than simply updating a single property or single element's innerHTML.
+
+In addition, only rendering certain sections or an entire page client-side dramatically slows page loads. Even an extremely fast client-only renderer causes the browser to wait for the page to load a script (most likely via an additional request), interpret the script, render the template, and update the DOM before it has a chance to start performing layout of the HTML content.
+
+Derby's architecture optimizes time to load the initial page, re-render sections of the page or the entire page client-side, and update individual elements in realtime. It makes it easy for designers and developers to create application views with HTML-based templates, and it provides instant responsiveness with model-view bindings.
+
+## Stylesheets
+
+Derby automatically compiles and includes styles for each page using [Stylus](http://learnboost.github.com/stylus/). Like [Sass](http://sass-lang.com/) and [LESS](http://lesscss.org/), Stylus extends CSS with variables, mixins, functions, and other awesome features. It supports CSS style syntax interchangeably with a minimal whitespace based syntax. 
+
+Derby also includes [Nib](http://visionmedia.github.com/nib/), which adds a number of convenient CSS3 mixins to Stylus. Nib takes care of adding vendor prefixes, makes CSS gradients *much* easier, and has bunch of other useful features.
+
+Stylus requires that files end in a `.styl` extension. It supports [importing other files](http://learnboost.github.com/stylus/docs/import.html), including support for `index.styl` files. Since Node.js, Derby templates, and Stylus all support similar file importing conventions, it is easy to use the same directory structure for analogous files in the `lib`/`src`, `views`, and `styles` directories.
+
+Derby includes compiled CSS at the top of each page. Inlining CSS almost always decreases load time, and Stylus file importing makes it easy to break up shared styles into files that are only included in the appropriate pages. Note, however, that it is not optimial to include a very large amount of CSS, such large data URI encoded images at the top of the page. Any large inline images should be included at the bottom of the page, so that the rest of the page may be displayed first.
 
