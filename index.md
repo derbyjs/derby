@@ -625,17 +625,17 @@ Yet, a template might need to define how each item in an array should be rendere
 
 {% highlight javascript %}
 model.set('items', [
-  { name: 'Widget wonder', price: 5.99, url: '/products/0' },
-  { name: 'Fun fin', price: 10.99, url: '/products/1' },
-  { name: 'Bam bot', price: 24.95, url: '/products/2' }
+  { name: 'Cool can', price: 5.99, url: '/p/0' },
+  { name: 'Fun fin', price: 10.99, url: '/p/1' },
+  { name: 'Bam bot', price: 24.95, url: '/p/2' }
 ]);
 page.render();
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'items', [
-  { name: 'Widget wonder', price: 5.99, url: '/products/0' }
-  { name: 'Fun fin', price: 10.99, url: '/products/1' }
-  { name: 'Bam bot', price: 24.95, url: '/products/2' }
+  { name: 'Cool can', price: 5.99, url: '/p/0' }
+  { name: 'Fun fin', price: 10.99, url: '/p/1' }
+  { name: 'Bam bot', price: 24.95, url: '/p/2' }
 ]
 page.render()
 {% endhighlight %}
@@ -644,9 +644,9 @@ page.render()
 
 {% highlight html %}
 <ul id="$0">
-  <li><a href="/products/0" id="$1">Widget wonder</a>: $<ins id="$2">5.99</ins>
-  <li><a href="/products/1" id="$3">Fun fin</a>: $<ins id="$4">10.99</ins>
-  <li><a href="/products/2" id="$5">Bam bot</a>: $<ins id="$6">24.95</ins>
+  <li><a href="/p/0" id="$1">Widget wonder</a>: $<ins id="$2">5.99</ins>
+  <li><a href="/p/1" id="$3">Fun fin</a>: $<ins id="$4">10.99</ins>
+  <li><a href="/p/2" id="$5">Bam bot</a>: $<ins id="$6">24.95</ins>
 </ul>
 {% endhighlight %}
 
