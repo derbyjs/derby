@@ -192,7 +192,7 @@ Apps are associated with their respective styles and views by filename only. Der
 
 The app filename also becomes the name of the global variable that the application exposes in the browser. Therefore, app names should be valid JavaScript variable names, starting with a letter and containing only alphanumeric characters and underscores.
 
-Static files can be placed in the public folder. Derby compiles scripts for the browser into the `public\gen` folder by default.
+Static files can be placed in the public folder. The default Express server created by the Derby project generator sets a cache time of one year for all static files. Therefore, new file versions must be given new filenames. Derby compiles scripts for the browser into the `public\gen` folder by default. Each script's filename is generated from a hash, so that it can be cached long term.
 
 # Views
 
@@ -725,5 +725,5 @@ Derby also includes **[Nib](http://visionmedia.github.com/nib/)**, which adds a 
 
 Stylus requires that files end in a `.styl` extension. It supports [importing other files](http://learnboost.github.com/stylus/docs/import.html), including support for `index.styl` files. Since Node.js, Derby templates, and Stylus all support similar file importing conventions, it is easy to use the same directory structure for analogous files in the `lib`/`src`, `views`, and `styles` directories.
 
-Derby includes compiled CSS at the top of each page. Inlining CSS almost always decreases load time, and Stylus file importing makes it easy to break up shared styles into files that are only included in the appropriate pages. Note, however, that it is not optimial to include a very large amount of CSS, such large data URI encoded images at the top of the page. Any large inline images should be included at the bottom of the page, so that the rest of the page may be displayed first.
+Derby includes compiled CSS at the top of each page. Inlining CSS almost always decreases load time, and Stylus importing makes it easy to break up shared styles into files included in the appropriate pages. Note, however, that it is not optimial to include a very large amount of CSS, such as large data URI encoded images, at the top of the page. Large images are best loaded as separate files or inline at the bottom of the page, so that the rest of the page may be displayed first.
 
