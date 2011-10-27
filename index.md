@@ -694,16 +694,16 @@ page.render()
 
 {% highlight html %}
 <h2>Toys in use:</h2>
-<ins id=$0>
-  <ins id=$1><p>Ball on the <ins id=$2>floor</ins></ins>
-  <ins id=$3></ins>
-  <ins id=$4></ins>
+<ins id="$0">
+  <ins id="$1"><p>Ball on the <ins id="$2">floor</ins></ins>
+  <ins id="$3"></ins>
+  <ins id="$4"></ins>
 </ins>
 <h2>All toys:</h2>
-<ins id=$5>
-  <p>Ball on the <ins id=$6>floor</ins></ins>
-  <p>Blocks on the <ins id=$7>shelf</ins></ins>
-  <p>Truck on the <ins id=$8>shelf</ins></ins>
+<ins id="$5">
+  <p>Ball on the <ins id="$6">floor</ins></ins>
+  <p>Blocks on the <ins id="$7">shelf</ins></ins>
+  <p>Truck on the <ins id="$8">shelf</ins></ins>
 </ins>
 {% endhighlight %}
 
