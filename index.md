@@ -351,6 +351,16 @@ The other major difference between Mustache and Derby templates is that Derby te
 {{"{{"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}/maybe}}
 {% endhighlight %}
 
+### Whitespace, HTML conformance, and escaping
+
+Before parsing, all HTML comments, leading whitespace, and new lines are removed from templates. Whitespace at the end of lines is maintained, in case a space is desired in the HTML output. The contents of `<script>` and `<style>` tags are passed through literally.
+
+Derby's HTML parser should be able to parse any valid HTML, including elements that don't require closing tags and unquoted attributes. HTML attribute values only need to be quoted if they are the empty string or if they contain a space, equals sign, or greater than sign. Note that since Derby templates are parsed as HTML first, any of these characters within a template tag require an attribute to be escaped. When in doubt, add quotes around attributes---Derby will remove them from the output HTML when they are not required.
+
+Because it understands the HTML context, Derby's HTML escaping is much more minimal than that of most templating libraries. You may be surprised to see unescaped `>` and `&` characters. These only need to be escaped in certain contexts, and Derby only escapes them when needed. If you are skeptical, an [HTML5 validator](http://html5.validator.nu/) will detect most escaping bugs.
+
+Throughout these docs, the output of templates is shown indented and on multiple lines for the sake of readability. However, Derby's renderer would not output any indentation or line breaks. In addition, output attribute values are quoted, but Derby only includes quotes around attribute values if they are needed.
+
 ### Variables
 
 Variables insert a value from the context or model with a given name. If the name isn't found, nothing will be inserted. Values are HTML escaped by default. Triple braces may be used to insert a value without escaping.
@@ -567,7 +577,7 @@ Rather than re-rendering the entire template when a value changes, only the indi
 
 Derby associates all DOM event listeners with an `id`, because getting objects by id is a very fast DOM operation, it makes dealing with DOM events much more efficient, event listeners continue working even if other scripts modify the DOM unexpectedly, and most critically, event listeners can be established at render time on the server and passed to the client via a JSON literal. Derby's event system is unique in that it internally describes all events via literal objects instead of JavaScript callbacks. This makes it possible to render the page on the server and then re-establish the same event listeners on the client very efficiently.
 
-If a bound template tag is not fully contained by an HTML tag, Derby will use an `<ins>` element to wrap the template. By default, most browsers will display `<ins>` elements with an underline, which can be removed using a CSS reset or by adding `ins{text-decoration:none}` to the page's stylesheet.
+If a bound template tag is not fully contained by an HTML tag, Derby will use an `<ins>` element to wrap the template. By default, most browsers will display `<ins>` elements with an underline, which can be removed by adding `ins{text-decoration:none}` to the page's stylesheet.
 
 Semantically, it would be more correct to use a `<div>` or `<span>`, depending on context. However, this is difficult to do automatcially. For example, `<div>` elements cannot be contained within a `<p>`, and `<span>` elements may not be wrapped around a `<div>`. Attemting to detect each of these situations and choose the proper wrapper element would significantly complicate the Derby renderer and make it more brittle to changes in HTML. In contrast, `<ins>` and `<del>` elements have a [transparent content model](http://www.w3.org/TR/html5/content-models.html#transparent-content-models), enabling them to be included inside or around most other HTML elements. Note that there are still some restrictions on where these elements may be used. For example, an `<option>` element may only contain text and no other elements. MDN has [good documentation](https://developer.mozilla.org/Special:Tags?tag=HTML:Element+Reference) of the usage context for various HTML elements. When in doubt, use an [HTML5 validator](http://html5.validator.nu/).
 
@@ -596,4 +606,104 @@ Welcome to our <ins id="$0">funny</ins> city!
 {% endhighlight %}
 
 ### Relative model paths and aliases
+
+For items in the context object, objects from the parent scope can still be referred to directly from within sections. However, bindings are set up when templates are initially compiled, and objects defined in the model may change. Thus, model paths must refer to the full path regardless of location within the template.
+
+Yet, a template might need to define how each item in an array should be rendered as well as bind to those items. In this case, relative model paths may be used. Paths relative to the current scope begin with a dot (`.`).
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  <ul>((items > item))</ul>
+
+<item:>
+  <li><a href="{{url}}">((.name))</a>: $((.price))
+{% endhighlight %}
+
+#### Context
+
+{% highlight javascript %}
+model.set('items', [
+  { name: 'Widget wonder', price: 5.99, url: '/products/0' },
+  { name: 'Fun fin', price: 10.99, url: '/products/1' },
+  { name: 'Bam bot', price: 24.95, url: '/products/2' }
+]);
+page.render();
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'items', [
+  { name: 'Widget wonder', price: 5.99, url: '/products/0' }
+  { name: 'Fun fin', price: 10.99, url: '/products/1' }
+  { name: 'Bam bot', price: 24.95, url: '/products/2' }
+]
+page.render()
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+<ul id="$0">
+  <li><a href="/products/0" id="$1">Widget wonder</a>: $<ins id="$2">5.99</ins>
+  <li><a href="/products/1" id="$3">Fun fin</a>: $<ins id="$4">10.99</ins>
+  <li><a href="/products/2" id="$5">Bam bot</a>: $<ins id="$6">24.95</ins>
+</ul>
+{% endhighlight %}
+
+In the above example, note that the `url` is not bound, and it does not start with a dot. Since the context of the partial will be set to the array item at render time, this will render the value correctly, but it will not update if the value changes. `.name` and `.price` start with a dot, because they are bound to paths in the model relative to the item being rendered. Whenever the name or the price of an item changes, the appropriate fields will be updated in realtime. In addition, the entire list is bound. If a new item is added, an item is removed, or the items are reordered, the list will be updated in realtime.
+
+Aliases to a specific scope may be defined, enabling relative model path references within nested sections. Aliases begin with a colon (`:`), and can be defined within a section tag or a partial tag that sets the scope.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  <h2>Toys in use:</h2>
+  ((#toys :toy))
+    ((#:toy.inUse))
+      {{> toyStatus}}
+    ((/))
+  ((/))
+  <h2>All toys:</h2>
+  ((toys :toy > toyStatus))
+
+<toyStatus:>
+  <p>{{name}} on the ((:toy.location))
+{% endhighlight %}
+
+#### Context
+
+{% highlight javascript %}
+model.set('toys', [
+  { name: 'Ball', location: 'floor', inUse: true },
+  { name: 'Blocks', location: 'shelf' },
+  { name: 'Truck', location: 'shelf' }
+]);
+page.render();
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'toys', [
+  { name: 'Ball', location: 'floor', inUse: true }
+  { name: 'Blocks', location: 'shelf' }
+  { name: 'Truck', location: 'shelf' }
+]
+page.render()
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+<h2>Toys in use:</h2>
+<ins id=$0>
+  <ins id=$1><p>Ball on the <ins id=$2>floor</ins></ins>
+  <ins id=$3></ins>
+  <ins id=$4></ins>
+</ins>
+<h2>All toys:</h2>
+<ins id=$5>
+  <p>Ball on the <ins id=$6>floor</ins></ins>
+  <p>Blocks on the <ins id=$7>shelf</ins></ins>
+  <p>Truck on the <ins id=$8>shelf</ins></ins>
+</ins>
+{% endhighlight %}
 
