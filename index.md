@@ -644,7 +644,7 @@ page.render()
 
 {% highlight html %}
 <ul id="$0">
-  <li><a href="/p/0" id="$1">Widget wonder</a>: $<ins id="$2">5.99</ins>
+  <li><a href="/p/0" id="$1">Cool can</a>: $<ins id="$2">5.99</ins>
   <li><a href="/p/1" id="$3">Fun fin</a>: $<ins id="$4">10.99</ins>
   <li><a href="/p/2" id="$5">Bam bot</a>: $<ins id="$6">24.95</ins>
 </ul>
