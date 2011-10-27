@@ -733,7 +733,6 @@ Views are rendered in response to [routes](#routes), which map URLs to actions. 
 
 ### `page.render([context])`
 
-<dl><dt>context
-<dd>(optional) Object specifying additional context objects to use in rendering templates. Note that the model is associated with the page by default.
-</dl>
+<dl><dt>context</dt>
+<dd>(optional) Object specifying additional context objects to use in rendering templates. Note that the model is associated with the page by default.</dd></dl>
 
