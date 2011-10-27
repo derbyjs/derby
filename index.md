@@ -618,7 +618,7 @@ Yet, a template might need to define how each item in an array should be rendere
   <ul>((items > item))</ul>
 
 <item:>
-  <li><a href="{{url}}">((.name))</a>: $((.price))
+  <li><a href="{{"{{"}}url}}">((.name))</a>: $((.price))
 {% endhighlight %}
 
 #### Context
@@ -661,14 +661,14 @@ Aliases to a specific scope may be defined, enabling relative model path referen
   <h2>Toys in use:</h2>
   ((#toys :toy))
     ((#:toy.inUse))
-      {{> toyStatus}}
+      {{"{{"}}> toyStatus}}
     ((/))
   ((/))
   <h2>All toys:</h2>
   ((toys :toy > toyStatus))
 
 <toyStatus:>
-  <p>{{name}} on the ((:toy.location))
+  <p>{{"{{"}}name}} on the ((:toy.location))
 {% endhighlight %}
 
 #### Context
