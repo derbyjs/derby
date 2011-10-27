@@ -731,7 +731,7 @@ Derby includes compiled CSS at the top of each page. Inlining CSS almost always 
 
 Views are rendered in response to [routes](#routes), which map URLs to actions. Most routes should be defined inside of an app so that they can be handled both on the client and the server. Views can also be rendered in response to server only routes.
 
-### `page.render([context])`
+### `page.render( [context] )`
 
 <dl><dt>context</dt>
 <dd>(optional) Object specifying additional context objects to use in rendering templates. Note that the model is associated with the page by default.</dd></dl>
