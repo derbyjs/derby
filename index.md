@@ -727,3 +727,13 @@ Stylus requires that files end in a `.styl` extension. It supports [importing ot
 
 Derby includes compiled CSS at the top of each page. Inlining CSS almost always decreases load time, and Stylus importing makes it easy to break up shared styles into files included in the appropriate pages. Note, however, that it is not optimial to include a very large amount of CSS, such as large data URI encoded images, at the top of the page. Large images are best loaded as separate files or inline at the bottom of the page, so that the rest of the page may be displayed first.
 
+## Rendering
+
+Views are rendered in response to [routes](#routes), which map URLs to actions. Most routes should be defined inside of an app so that they can be handled both on the client and the server. Views can also be rendered in response to server only routes.
+
+### page.render
+
+    page.render([context])
+
+  **context**: Optional object specifying additional context objects to use in rendering templates. Note that the model is associated with the page by default.
+
