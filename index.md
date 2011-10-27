@@ -579,8 +579,6 @@ Derby associates all DOM event listeners with an `id`, because getting objects b
 
 If a bound template tag is not fully contained by an HTML tag, Derby will wrap the template in an `<ins>` element. Most browsers will display `<ins>` elements with an underline by default. For Derby apps, this should be removed by adding `ins{text-decoration:none}` to the page's stylesheet.
 
-Semantically, it would be more correct to use a `<div>` or `<span>`, depending on context. However, this is difficult to do automatcially. For example, `<div>` elements cannot be contained within a `<p>`, and `<span>` elements may not be wrapped around a `<div>`. Attemting to detect each of these situations and choose the proper wrapper element would significantly complicate the Derby renderer and make it more brittle to changes in HTML. In contrast, `<ins>` and `<del>` elements have a [transparent content model](http://www.w3.org/TR/html5/content-models.html#transparent-content-models), enabling them to be included inside or around most other HTML elements. Note that there are still some restrictions on where these elements may be used. For example, an `<option>` element may only contain text and no other elements. MDN has [good documentation](https://developer.mozilla.org/Special:Tags?tag=HTML:Element+Reference) of the usage context for various HTML elements. When in doubt, use an [HTML5 validator](http://html5.validator.nu/).
-
 #### Template
 
 {% highlight html %}
@@ -604,6 +602,8 @@ page.render()
 {% highlight html %}
 Welcome to our <ins id="$0">funny</ins> city!
 {% endhighlight %}
+
+Semantically, it would be more correct to use a `<div>` or `<span>`, depending on context. However, this is difficult to do automatcially. For example, `<div>` elements cannot be contained within a `<p>`, and `<span>` elements may not be wrapped around a `<div>`. Attemting to detect each of these situations and choose the proper wrapper element would significantly complicate the Derby renderer and make it more brittle to changes in HTML. In contrast, `<ins>` and `<del>` elements have a [transparent content model](http://www.w3.org/TR/html5/content-models.html#transparent-content-models), enabling them to be included inside or around most other HTML elements. Note that there are still some restrictions on where these elements may be used. For example, an `<option>` element may only contain text and no other elements. MDN has [good documentation](https://developer.mozilla.org/Special:Tags?tag=HTML:Element+Reference) of the usage context for various HTML elements. When in doubt, use an [HTML5 validator](http://html5.validator.nu/).
 
 ### Relative model paths and aliases
 
