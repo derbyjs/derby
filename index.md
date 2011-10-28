@@ -787,7 +787,7 @@ App routes supply a page object, which provides a consistent interface for rende
 
 The page's render function implicitly renders in the context of the app's model. An additional context object may be supplied for items that are only needed at render time.
 
-### `app.render ( res, model, [context], [status] )`
+### app.render `( res, model, [context], [status] )`
 
 **res:** Response object passed to the Express routing callback
 
@@ -799,7 +799,7 @@ The page's render function implicitly renders in the context of the app's model.
 
 Apps may also be rendered within server only Express routes. In this case, it is neccessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
 
-### `static.render ( name, res, [model], [context], [status] )`
+### static.render `( name, res, [model], [context], [status] )`
 
 **name:** Name of the view and style files to render
 
