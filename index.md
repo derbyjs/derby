@@ -206,7 +206,7 @@ Derby works great with only a single app, though developers may wish to create s
 
 Apps are created in the file that defines the app's controller code. They are then associated with a server by requiring the app within the server file.
 
-### `app = derby.createApp ( module )`
+### `app = `derby.createApp` ( module )`
 
 **module:** Derby uses the module object to create an app. The app's name is taken from its filename, and Derby exports a number of methods on the app.
 
@@ -230,7 +230,7 @@ The server also needs to create a `store` object, which is what Racer uses to se
 
 Derby can also render static pages from templates and styles that are not associated with an app.
 
-### `static = derby.createStatic ( root )`
+### `static = `derby.createStatic` ( root )`
 
 **root:** The root path that contains the "views" and "styles" directories.
 
@@ -777,7 +777,7 @@ Views are rendered in response to [routes](#routes). Most routes should be defin
 
 In each render method, `model`, `context`, and `status` arguments may be in any order.
 
-### `page.render ( [context], [status] )`
+### page.render` ( [context], [status] )`
 
 **context:** *(optional)* Object specifying additional context objects to use in rendering templates.
 
@@ -787,7 +787,7 @@ App routes supply a page object, which provides a consistent interface for rende
 
 The page's render function implicitly renders in the context of the app's model. An additional context object may be supplied for items that are only needed at render time.
 
-### app.render `( res, model, [context], [status] )`
+### app.render` ( res, model, [context], [status] )`
 
 **res:** Response object passed to the Express routing callback
 
@@ -799,7 +799,7 @@ The page's render function implicitly renders in the context of the app's model.
 
 Apps may also be rendered within server only Express routes. In this case, it is neccessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
 
-### static.render `( name, res, [model], [context], [status] )`
+### static.render` ( name, res, [model], [context], [status] )`
 
 **name:** Name of the view and style files to render
 
