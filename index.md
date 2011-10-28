@@ -208,7 +208,7 @@ Apps are created in the file that defines the app's controller code. They are th
 
 > ### `app = `derby.createApp` ( module )`
 > 
-> **module:** Derby uses the module object to create an app. The app's name is > taken from its filename, and Derby exports a number of methods on the app.
+> **module:** Derby uses the module object to create an app. The app's name is taken from its filename, and Derby exports a number of methods on the app.
 > 
 > **app:** Returns an app object, which is equivalent to `module.exports`.
 
