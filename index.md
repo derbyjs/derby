@@ -783,7 +783,7 @@ In each render method, `model`, `context`, and `status` arguments may be in any 
 
 **status:** *(optional)* Number specifying the HTTP status code. 200 by default. Has no effect when rendering on the client.
 
-App routes supply a page object, which provides a consistent interface for rendering an entire page on both server and client. On the server, the page is rendered by calling Node.js response object methods like `res.write`. On the client, Derby renders the page locally. It then replaces the `document.body.innerHTML` and `document.title`, and updates the URL with `window.history.pushState`.
+App routes supply a page object, which provides a consistent interface for rendering an entire page on both server and client. On the server, the page is rendered by calling Node.js response object methods like `res.write`. On the client, Derby renders the page locally. It then replaces the `document.title` and `document.body.innerHTML`, and updates the URL with `window.history.pushState`.
 
 The page's render function implicitly renders in the context of the app's model. An additional context object may be supplied for items that are only needed at render time.
 
