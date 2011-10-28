@@ -232,7 +232,7 @@ Derby can also render static pages from templates and styles that are not associ
 
 ### `static = derby.createStatic( root )`
 
-**root:** The root path that contains a "views" and "styles" directory for generating static pages.
+**root:** The root path that contains the "views" and "styles" directories.
 
 **static:** Returns a static object, which has a render method.
 
