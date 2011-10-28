@@ -815,16 +815,42 @@ For creating error pages and other static pages, Derby provides a `static` objec
 
 ## app.view
 
-Derby adds an `app.view` object to the app for creating and rendering views.
+Derby adds an `app.view` object for creating and rendering views.
 
 > ### view.after` ( name, callback )`
 > 
-> **name:** Name of the view
+> **name:** Name of the template
 > 
-> **res:** Response object passed to the Express routing callback
+> **callback:** Function called after the template is rendered on the client each time. The callback is passed the context object used to render the template.
+
+> ### view.before` ( name, callback )`
 > 
-> **model:** *(optional)* A Derby model object. A model object may be used for rendering, but it will not be serialized and included with a static page. Static pages don't have an associated app, and they don't include scripts by default.
+> **name:** Name of the template
 > 
-> **context:** *(optional)* Additional context objects to use in rendering templates.
+> **callback:** Function called before the template is rendered on the client each time. The callback is passed the context object used to render the template.
+
+The `view.after()` and `view.before()` methods are used to attach a function to a view that is called each time the view is rendered. For example, this might be useful for creating animations in JavaScript, or for scrolling the page when new messages are pushed to a chat window.
+
+Calling these methods on the server has no effect, and their callbacks will not be invoked on the server.
+
+> ### view.make` ( name, template )`
 > 
-> **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
+> **name:** Name of the template
+> 
+> **template:** A string containing the Derby template. Note that this should be only the content of the template, and it should not have a template name element, such as `<Body:>` at the start.
+
+Apps should typically place all templates in a template file in the `views` folder instead of calling `view.make()` directly. However, templates may be added to an app this way as well.
+
+Note that calling `view.make()` only renders the template; it does not include the template in the external script file separately. Thus, it must be called again on the client when the app loads.
+
+> ### view.inline` ( fn )`
+> 
+> **fn:** Function to be inlined in the page and called immediately when the page loads.
+
+This method is intended solely for server use and has no effect when called in the browser.
+
+Scripts should be included inline in the page if needed to properly render the page. For example, a script might adjust the layout based on the window size, or it might autofocus a sign in box in browsers that don't support the HTML5 autofocus attribute.
+
+Usually, it is preferable to place such scripts in a separate file called `inline.js` in the same directory as the app. This file will be automatically inlined when the app is created. Calling `view.inline()` directly does the same thing, but it is redundant to send the script inline and also include it in the app's external script file.
+
+# Controllers
