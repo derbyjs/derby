@@ -775,7 +775,7 @@ Derby includes compiled CSS at the top of each page. Inlining CSS almost always 
 
 Views are rendered in response to [routes](#routes). Most routes should be defined inside of an app so that they can be handled both on the client and the server. Views can also be rendered in response to server only routes.
 
-In each render method, `model`, `context`, and `status` arguments may be in any order.
+In each render method, `model`, `context`, and `status` arguments may be in any order or omitted.
 
 > ### page.render` ( [context], [status] )`
 > 
@@ -813,3 +813,18 @@ Apps may also be rendered within server only Express routes. In this case, it is
 
 For creating error pages and other static pages, Derby provides a `static` object that renders a template and script file specified by name. Typically, this is used without a model object, but it is possible to supply a model object that is used for rendering only. See [Static pages](#static_pages).
 
+## app.view
+
+Derby adds an `app.view` object to the app for creating and rendering views.
+
+> ### view.after` ( name, callback )`
+> 
+> **name:** Name of the view
+> 
+> **res:** Response object passed to the Express routing callback
+> 
+> **model:** *(optional)* A Derby model object. A model object may be used for rendering, but it will not be serialized and included with a static page. Static pages don't have an associated app, and they don't include scripts by default.
+> 
+> **context:** *(optional)* Additional context objects to use in rendering templates.
+> 
+> **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
