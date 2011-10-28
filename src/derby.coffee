@@ -10,8 +10,8 @@ serverMock =
 
 Page = (@view, @res, @model) -> return
 Page:: =
-  render: (ctx) ->
-    @view.render @res, @model, ctx
+  render: (ctx, status) ->
+    @view.render @res, @model, ctx, status
   redirect: (url, status) ->
     @res.redirect url, status
 
@@ -32,10 +32,9 @@ module.exports =
 
   createApp: (appModule) ->
     appExports = appModule.exports
-    # Expose Racer and Derby methods on the application module
-    racer.util.merge appExports, racer
+    # Expose methods on the application module
     appExports.view = view = new View
-    appExports.render = (res, model, ctx) -> view.render res, model, ctx
+    appExports.render = (res, model, ctx, status) -> view.render res, model, ctx, status
     appExports.ready = ->
     
     store = null

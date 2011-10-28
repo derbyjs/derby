@@ -5,19 +5,6 @@
 
 NUM_USER_IMAGES = 10
 
-# hook.of '/:room?', unique: 'room',
-#   connect: (model) ->
-#     # The connect hook is called before the page is rendered on the server
-#     # and whenever the client reconnects after being disconnected. It also
-#     # runs on the client before a new unique route is rendered
-#     userId = model.get '_session.userId'
-#     model.set "_room.users.#{userId}", model.ref "users.#{userId}"
-#   disconnect: (model) ->
-#     # The disconnect hook only has access to items in _window and _session,
-#     # because it runs on the server after the client disconnects. It also
-#     # runs on the client when going between unique routes
-#     model.del model.get '_window.roomUser'
-
 get '/:room?', (page, model, {room}) ->
   # Redirect users to URLs that only contain letters, numbers, and hyphens
   return page.redirect '/lobby'  unless room && /^[-\w ]+$/.test room
@@ -37,13 +24,8 @@ get '/:room?', (page, model, {room}) ->
     getRoom page, model, room, userId
 
 getRoom = (page, model, room, userId) ->
-  # Subscribe to everything set on this room as well as all of the user data
-  # for each of the users in the room. Note that subscriptions don't follow
-  # references unless explicitly included in the paths
-  model.subscribe _room: "rooms.#{room}(,.users.*)", ->
-    # This is set for use by the disconnect function, which only gets data
-    # set on _window and _session
-    model.set '_window.roomUser', "rooms.#{room}.users.#{userId}"
+  model.subscribe _room: "rooms.#{room}", 'users', ->
+
     # setNull will set a value if the object is currently null or undefined
     model.setNull '_room.messages', []
 
@@ -52,10 +34,6 @@ getRoom = (page, model, room, userId) ->
     model.set '_user', model.ref "users.#{userId}"
     model.set '_newComment', ''
     model.set '_numMessages', model.get('_room.messages').length
-
-    # Should be in connect hook:
-    userId = model.get '_session.userId'
-    model.set "_room.users.#{userId}", model.ref "users.#{userId}"
 
     page.render()
 

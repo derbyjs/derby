@@ -14,8 +14,7 @@ Page:: =
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports
-  # Expose Racer and Derby methods on the application module
-  racer.util.merge appExports, racer
+  # Expose methods on the application module
   appExports.view = view = new View
 
   routes = {}
