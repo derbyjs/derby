@@ -190,9 +190,59 @@ Derby uses a filename based convention similar to Node.js modules. A file named 
 
 Apps are associated with their respective styles and views by filename only. Derby automatically includes them when rendering. Both support importing, so shared styles and templates may be defined in separate files.
 
-The app filename also becomes the name of the global variable that the application exposes in the browser. Therefore, app names should be valid JavaScript variable names, starting with a letter and containing only alphanumeric characters and underscores.
-
 Static files can be placed in the public folder. The default Express server created by the Derby project generator sets a cache time of one year for all static files. Therefore, new file versions must be given new filenames. Derby compiles scripts for the browser into the `public\gen` folder by default. Each script's filename is generated from a hash, so that it can be cached long term.
+
+# Apps and static pages
+
+Derby projects support one or more single-page apps as well as static pages. Apps have a full MVC structure, including a model provided by Racer, a template and styles based view, and controller code with application logic and routes (which map URLs to actions). Static pages consist of only templates and styles.
+
+On the server, apps provide a router middleware for Express. One or more app routers as well as server only routes can be included in the same Express server. 
+
+Derby packages up all of an app's templates, routes, and application code when rendering. Regardless of which app URL the browser requests initially, the app is able to render any other state within the same application client-side. If the app cannot handle a URL, it will fall through and request from the server. Errors thrown during route handling also cause requests to fall through to the server.
+
+Derby works great with only a single app, though developers may wish to create separate apps if only certain sets of pages are likely to be used together. For example, a project might have a separate desktop web app and mobile web app. Or a project might have an internal administration panel app and a public content app.
+
+## Creating apps
+
+Apps are created in the file that defines the app's controller code. They are then associated with a server by requiring the app within the server file.
+
+### `app = derby.createApp( module )`
+
+<dl>
+  <dt>module</dt>
+  <dd>Derby uses the module object to create an app. The app's name is taken from its filename, and Derby exports a number of methods on the app.</dd>
+  <dt>app</dt>
+  <dd>Returns an app object, which is equivalent to `module.exports`.</dd>
+</dl>
+
+The app's filename is used to determine the name of the app. App names are used to automatically associate an app with template and styles files of the same name.
+
+The app name is also used as the name of the global variable that the application exposes in the browser. Therefore, app names should be valid JavaScript variable names, starting with a letter and containing only alphanumeric characters and underscores.
+
+The `createApp` method adds a number of methods to the app. On both the client and the server, these are `view`, `render`, `ready`, `get`, `post`, `put`, `del`, and `hook`. On the server only, Derby also adds `router`, `createStore`, and `session`.
+
+## Connecting servers to apps
+
+The Derby project generator outputs an Express server for a typical setup. Because Derby shares most code between server and client, Derby server files can be very minimal.
+
+The server includes an app with a standard Node.js require statement. It can then use the `app.router()` method to create a router middleware for Express that handles all of the app's routes.
+
+The server also needs to create a `store` object, which is what Racer uses to setup Socket.IO, create models, coordinate data syncing, and interface with databases. Typically, a project will have only one store, even if it has multiple apps. It is possible to have multiple stores, though an app can only be associated with one store. A store associated with one app can be created using that app's `app.createStore()` method. If a store is shared among multiple apps, it should be created using the `derby.createStore()` method, which is passed each of the apps as aruguments.
+
+## Static pages
+
+Derby can also render static pages from templates and styles that are not associated with an app.
+
+### `static = derby.createStatic( root )`
+
+<dl>
+  <dt>root</dt>
+  <dd>The root path that contains a "views" and "styles" directory for generating static pages.</dd>
+  <dt>static</dt>
+  <dd>Returns a static object, which has a render method.</dd>
+</dl>
+
+The static object simply keeps a reference to the directory root and provides a renderer for static pages. It supplies a `static.render()` method, which is intended for use in a server-only Express route. This is useful for error pages and other pages that don't need dynamic content. See [Rendering](#rendering).
 
 # Views
 
@@ -729,10 +779,60 @@ Derby includes compiled CSS at the top of each page. Inlining CSS almost always 
 
 ## Rendering
 
-Views are rendered in response to [routes](#routes), which map URLs to actions. Most routes should be defined inside of an app so that they can be handled both on the client and the server. Views can also be rendered in response to server only routes.
+Views are rendered in response to [routes](#routes). Most routes should be defined inside of an app so that they can be handled both on the client and the server. Views can also be rendered in response to server only routes.
 
-### `page.render( [context] )`
+In each render method, `model`, `context`, and `status` arguments may be in any order.
 
-<dl><dt>context</dt>
-<dd>*(optional)* Object specifying additional context objects to use in rendering templates. Note that the model is associated with the page by default.</dd></dl>
+### `page.render( [context], [status] )`
+
+<dl>
+  <dt>context</dt>
+  <dd><i>(optional)</i> Object specifying additional context objects to use in rendering templates.</dd>
+
+  <dt>status</dt>
+  <dd><i>(optional)</i> Number specifying the HTTP status code. 200 by default. Has no effect when rendering on the client.
+</dl>
+
+App routes supply a page object, which provides a consistent interface for rendering an entire page on both server and client. On the server, the page is rendered by calling Node.js response object methods like `res.write`. On the client, Derby renders the page locally. It then replaces the `document.body.innerHTML` and `document.title`, and updates the URL with `window.history.pushState`.
+
+The page's render function implicitly renders in the context of the app's model. An additional context object may be supplied for items that are only needed at render time.
+
+### `app.render( res, model, [context], [status] )`
+
+<dl>
+  <dt>res</dt>
+  <dd>Response object passed to the Express routing callback</dd>
+
+  <dt>model</dt>
+  <dd>A Derby model object used for rendering. The contents of the model will be serialized and initialized into the same state in the browser once the page loads.</dd>
+
+  <dt>context</dt>
+  <dd><i>(optional)</i> Additional context objects to use in rendering templates.</dd>
+
+  <dt>status</dt>
+  <dd><i>(optional)</i> Number specifying the HTTP status code. 200 by default.
+</dl>
+
+Apps may also be rendered within server only Express routes. In this case, it is neccessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
+
+### `static.render( name, res, [model], [context], [status] )`
+
+<dl>
+  <dt>name</dt>
+  <dd>Name of the view and style files to render.</dd>
+
+  <dt>res</dt>
+  <dd>Response object passed to the Express routing callback</dd>
+
+  <dt>model</dt>
+  <dd><i>(optional)</i> A Derby model object. A model object may be used for rendering, but it will not be serialized and included with a static page. Static pages don't have an associated app, and they don't include scripts by default.</dd>
+
+  <dt>context</dt>
+  <dd><i>(optional)</i> Additional context objects to use in rendering templates.</dd>
+
+  <dt>status</dt>
+  <dd><i>(optional)</i> Number specifying the HTTP status code. 200 by default.
+</dl>
+
+For creating error pages and other static pages, Derby provides a `static` object that renders a template and script file specified by name. Typically, this is used without a model object, but it is possible to supply a model object that is used for rendering only. See [Static pages](#static_pages).
 
