@@ -1,6 +1,15 @@
 ---
 layout: default
 version: 0.1.0alpha
+headers:
+  - text: Introduction
+    type: h2
+  - text: Why not use Rails and Backbone?
+    type: h3
+  - text: Features
+    type: h3
+  - text: Flexibility without the glue code
+    type: h3
 ---
 
 # Derby

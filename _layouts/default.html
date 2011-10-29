@@ -191,7 +191,12 @@ input[type="submit"]{
 <p>Examples in:<br>
 <span class='javascript'><b>JavaScript</b> | <a href="#" onclick="return setLang('coffe')">CoffeeScript</a></span>
 <span class='coffeescript'><a href="#" onclick="return setLang('js')">JavaScript</a> | <b>CoffeeScript</b></span>
+
+{% for header in page.headers %}
+  <p>{{ header.text }}
+{% endfor %}
 </div>
+
 <div id=page>
 {{content}}
 </div>
