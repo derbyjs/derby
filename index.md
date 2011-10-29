@@ -230,15 +230,15 @@ The server also needs to create a `store` object, which is what Racer uses to se
 
 ## Static pages
 
-Derby can also render static pages from templates and styles that are not associated with an app.
+Derby can also render static pages from templates and styles not associated with an app. This is useful for error pages and other pages that don't need dynamic content.
 
-> ### `static = `derby.createStatic` ( root )`
+> ### `staticPages = `derby.createStatic` ( root )`
 > 
 > **root:** The root path that contains the "views" and "styles" directories.
 > 
-> **static:** Returns a static object, which has a render method.
+> **staticPages:** Returns a staticPages object, which has a render method. (`static` is a [reserved keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words) in JavaScript, and it cannot be used as a variable name.)
 
-The static object simply keeps a reference to the directory root and provides a renderer for static pages. It supplies a `static.render()` method, which is intended for use in a server-only Express route. This is useful for error pages and other pages that don't need dynamic content. See [Rendering](#rendering).
+The staticPages object keeps a reference to the directory root and provides a `staticPages.render()` method. It is intended for use in server-only Express routes. See [Rendering](#rendering).
 
 # Views
 
@@ -308,7 +308,7 @@ Note that template files don't contain boilerplate HTML, such as doctype definit
 2. **`Title:`** "Derby app" unless overridden
 3. **`Head:`** Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
 4. CSS is compiled and inserted after the Head template automatically.
-5. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it should render correctly by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes static content, such as a logo and a top navigation bar.
+5. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it should render correctly by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes fixed content, such as a logo and a top navigation bar.
 
 #### Second chunk
 
@@ -801,7 +801,7 @@ The page's render function implicitly renders in the context of the app's model.
 
 Apps may also be rendered within server only Express routes. In this case, it is neccessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
 
-> ### static.render` ( name, res, [model], [context], [status] )`
+> ### staticPages.render` ( name, res, [model], [context], [status] )`
 > 
 > **name:** Name of the view and style files to render
 > 
@@ -813,7 +813,7 @@ Apps may also be rendered within server only Express routes. In this case, it is
 > 
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
 
-For creating error pages and other static pages, Derby provides a `static` object that renders a template and script file specified by name. Typically, this is used without a model object, but it is possible to supply a model object that is used for rendering only. See [Static pages](#static_pages).
+For creating error pages and other static pages, Derby provides a `staticPages` object that renders a template and script file specified by name. Typically, this is used without a model object, but it is possible to supply a model object that is used for rendering only. See [Static pages](#static_pages).
 
 ## app.view
 
