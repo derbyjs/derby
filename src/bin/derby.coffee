@@ -15,6 +15,8 @@ APP_COFFEE = '''
 
 ## ROUTES ##
 
+start = +new Date()
+
 # Derby routes can be rendered on the client and the server
 get '/:room?', (page, model, {room}) ->
   room ||= 'home'
@@ -28,6 +30,11 @@ get '/:room?', (page, model, {room}) ->
     model.setNull '_room.welcome', "Welcome to #{room}!"
 
     model.incr '_room.visits'
+
+    # This value is set for when the page initially renders
+    model.set '_timer', '0.0'
+    # Reset the counter when visiting a new route client-side
+    start = +new Date()
 
     # Render will use the model data as well as an optional context object
     page.render
@@ -47,18 +54,80 @@ ready (model) ->
 
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server.
-    model.set '_timing', false
+    model.set '_stopped', true
     clearInterval timer
 
   do exports.start = ->
-    model.set '_timing', true
+    model.set '_stopped', false
     timer = setInterval ->
-      model.incr '_timer', 0.1
+      model.set '_timer', (((+new Date()) - start) / 1000).toFixed(1)
     , 100
 
 '''
 
 APP_JS = '''
+var <<app>> = require('derby').createApp(module),
+    get = <<app>>.get,
+    view = <<app>>.view,
+    ready = <<app>>.ready,
+    start;
+
+// ROUTES //
+
+start = +new Date();
+
+// Derby routes can be rendered on the client and the server
+get('/:room?', function(page, model, params) {
+  var room = params.room || 'home';
+
+  // Subscribes the model to any updates on this room's object. Also sets a
+  // model reference to the room. This is equivalent to:
+  //   model.set('_room', model.ref('rooms.' + room));
+  model.subscribe({ _room: 'rooms.' + room }, function() {
+
+    // setNull will set a value if the object is currently null or undefined
+    model.setNull('_room.welcome', 'Welcome to ' + room + '!');
+
+    model.incr('_room.visits');
+
+    // This value is set for when the page initially renders
+    model.set('_timer', '0.0');
+    // Reset the counter when visiting a new route client-side
+    start = +new Date();
+
+    // Render will use the model data as well as an optional context object
+    page.render({
+      room: room,
+      randomUrl: parseInt(Math.random() * 1e9).toString(36)
+    });
+  });
+});
+
+
+// CONTROLLER FUNCTIONS //
+
+ready(function(model) {
+  var timer;
+
+  // Exported functions are exposed as a global in the browser with the same
+  // name as the module that includes Derby. They can also be bound to DOM
+  // events using the "x-bind" attribute in a template.
+  exports.stop = function() {
+
+    // Any path name that starts with an underscore is private to the current
+    // client. Nothing set under a private path is synced back to the server.
+    model.set('_stopped', true);
+    clearInterval(timer);
+  }
+
+  var fn = function() {
+    model.set('_stopped', false);
+    timer = setInterval(function() {
+      model.set('_timer', (((+new Date()) - start) / 1000).toFixed(1));
+    }, 100);
+  };
+  (exports.start = fn)();
+});
 
 '''
 
@@ -131,19 +200,20 @@ store = <<app>>.createStore listen: server
 store.flush()
 
 server.listen 3000
-console.log 'Go to: http://localhost:3000/'
+console.log 'Express server started in %s mode', server.settings.env
+console.log 'Go to: http://localhost:%d/', server.address().port
 
 '''
 
 SERVER_JS = '''
-path = require 'path'
-express = require 'express'
-derby = require 'derby'
-gzip = require 'connect-gzip'
-<<app>> = require '../<<app>>'
+var path = require('path'),
+    express = require('express'),
+    derby = require('derby'),
+    gzip = require('connect-gzip'),
+    <<app>> = require('../<<app>>');
 
 
-//// SERVER CONFIGURATION ////
+// SERVER CONFIGURATION //
 
 var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
     root = path.dirname(path.dirname(__dirname)),
@@ -174,7 +244,7 @@ var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
   .use(gzip.gzip());
 
 
-//// ERROR HANDLING ////
+// ERROR HANDLING //
 
 server.configure('development', function() {
   // Log errors in development only
@@ -185,7 +255,7 @@ server.configure('development', function() {
 });
 
 server.error(function(err, req, res) {
-  //// Customize error handling here ////
+  // Customize error handling here //
   var message = err.message || err.toString(),
       status = parseInt(message);
   if (status === 404) {
@@ -196,23 +266,24 @@ server.error(function(err, req, res) {
 });
 
 
-//// SERVER ONLY ROUTES ////
+// SERVER ONLY ROUTES //
 
 server.all('*', function(req) {
   throw '404: ' + req.url;
 });
 
 
-//// STORE SETUP ////
+// STORE SETUP //
 
 store = <<app>>.createStore({ listen: server });
 
-//// TODO: Remove when using a database ////
+// TODO: Remove when using a database //
 // Clear all data every time the node server is started
 store.flush();
 
 server.listen(3000);
-console.log('Go to: http://localhost:3000/');
+console.log('Express server started in %s mode', server.settings.env);
+console.log('Go to: http://localhost:%d/', server.address().port);
 
 '''
 
@@ -240,16 +311,15 @@ APP_HTML = '''
   <h1>((_room.welcome))</h1>
   <p><label>Welcome message: <input value="((_room.welcome))"></label>
 
-  <p>{{> timer}}
+  <p>This page has been visted ((_room.visits)) times. {{> timer}}
 
   <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.
 
 <timer:>
-  You have been on this page for ((_timer)) seconds. 
-  ((#_timing))
-    <a x-bind="click:stop">Stop</a>
+  ((#_stopped))
+    <a x-bind="click:start">Start timer</a>
   ((^))
-    <a x-bind="click:start">Start</a>
+    You have been here for ((_timer)) seconds. <a x-bind="click:stop">Stop</a>
   ((/))
 
 '''
@@ -335,8 +405,8 @@ require('./lib/server');
 '''
 
 MAKEFILE_COFFEE = '''
-all:
-  ./node_modules/coffee-script/bin/coffee -bw -o ./lib -c ./src
+compile:
+	./node_modules/coffee-script/bin/coffee -bw -o ./lib -c ./src
 
 '''
 
@@ -364,8 +434,9 @@ packageJson = (project, useCoffee) ->
   package =
     name: project
     description: ''
+    version: '0.0.0'
     main: './server.js'
-    dependencies
+    dependencies:
       derby: '*'
       express: '>=2 <3'
       'connect-gzip': '>=0.1.4'
@@ -421,16 +492,17 @@ emptyDirectory = (path, callback) ->
     throw err  if err && err.code isnt 'ENOENT'
     callback !files || !files.length
 
-mkdir = (path, callback) ->
-  mkdirp path, 0755, (err) ->
+makeCallback = (path, callback) ->
+  (err) ->
     throw err if err
-    console.log style('green', 'created: ') + path
+    console.log style('green', '  created: ') + path
     callback() if callback
 
-writeFile = (path, text) ->
-  fs.writeFile path, text, (err) ->
-    throw err if err
-    console.log style('green', 'created: ') + path
+mkdir = (path, callback) ->
+  mkdirp path, 0755, makeCallback(path, callback)
+
+writeFile = (path, text, callback) ->
+  fs.writeFile path, text, makeCallback(path, callback)
 
 render = (template, ctx) ->
   for key, value of ctx
@@ -438,62 +510,100 @@ render = (template, ctx) ->
     template = template.replace re, value
   return template
 
-abort = (message = 'aborting') ->
+abort = (message) ->
+  message ||= style 'red bold', '\n  Aborted  \n'
   console.error message
   process.exit 1
 
 
 createProject = (dir, app, useCoffee) ->
-  project = if dir == '.' then 'Derby App' else dir
+  dirPath = join process.cwd(), dir
+  project = if dir == '.' then 'derby-app' else dir
   views = dir + '/views'
   styles = dir + '/styles'
-  scripts = if useCoffee then dir + '/lib' else dir + '/src'
+  scripts = if useCoffee then dir + '/src' else dir + '/lib'
   appViews = join views, app
   appStyles = join styles, app
   appScripts = join scripts, app
   serverScripts = scripts + '/server'
 
-  mkdir dir + '/public/img'
-  mkdir appViews, ->
-    writeFile appViews + '/index.html', APP_HTML
-    writeFile views + '/404.html', _404_HTML
-  mkdir appStyles, ->
-    writeFile appStyles + '/index.styl', APP_STYL
-    writeFile styles + '/404.styl', _404_STYL
-    writeFile styles + '/reset.styl', RESET_STYL
-    writeFile styles + '/base.styl', BASE_STYL
-  
-  if useCoffee
-    mkdir appScripts, ->
-      writeFile appScripts + '/index.coffee', render APP_COFFEE, {app}
-    mkdir serverScripts, ->
-      writeFile serverScripts + '/index.coffee', render SERVER_COFFEE, {app}
-    writeFile dir + '/Makefile', MAKEFILE_COFFEE
-    writeFile dir + '/.gitignore', GITIGNORE_COFFEE
-  else
-    mkdir appScripts, ->
-      writeFile appScripts + '/index.js', render APP_JS, {app}
-    mkdir serverScripts, ->
-      writeFile serverScripts + '/index.js', render SERVER_JS, {app}
-    writeFile dir + '/.gitignore', GITIGNORE_JS
-  
-  writeFile dir + '/server.js', SERVER
-  writeFile dir + '/package.json', packageJson(project, useCoffee)
-  writeFile dir + '/README.md', render README, {project}
+  logComplete = ->
+    message = style('green bold', '\n  Project created!') + '\n\n  Try it out:'
+    message += "\n    $ cd #{dir}"  if dir != '.'
+    message += '\n    $ npm install'  if program.noinstall
+    if useCoffee
+      message += """
+      \n    $ make
+
+        Then in a new terminal:
+          $ cd #{dirPath}
+      """
+    message += """
+    \n    $ node server.js
+
+      More info at: http://derbyjs.com/
+
+    """
+    console.log message
+
+  finish = ->
+    return logComplete()  if program.noinstall
+    process.chdir dir
+    console.log '\n  Installing dependencies. This may take a little while...'
+    exec 'npm install', (err, stdout, stderr) ->
+      return console.error stderr if err
+      console.log stdout.replace /^|\n/g, '\n  '  if stdout
+      logComplete()
+
+  count = 0
+  wait = (callback) ->
+    count++
+    return ->
+      callback()  if callback
+      finish()  unless --count
+
+  mkdir dir, ->
+    mkdir dir + '/public/img', wait()
+    mkdir appViews, wait ->
+      writeFile appViews + '/index.html', APP_HTML, wait()
+      writeFile views + '/404.html', _404_HTML, wait()
+    mkdir appStyles, wait ->
+      writeFile appStyles + '/index.styl', APP_STYL, wait()
+      writeFile styles + '/404.styl', _404_STYL, wait()
+      writeFile styles + '/reset.styl', RESET_STYL, wait()
+      writeFile styles + '/base.styl', BASE_STYL, wait()
+    
+    if useCoffee
+      mkdir appScripts, wait ->
+        writeFile appScripts + '/index.coffee', render(APP_COFFEE, {app}), wait()
+      mkdir serverScripts, wait ->
+        writeFile serverScripts + '/index.coffee', render(SERVER_COFFEE, {app}), wait()
+      writeFile dir + '/Makefile', MAKEFILE_COFFEE, wait()
+      writeFile dir + '/.gitignore', GITIGNORE_COFFEE, wait()
+    else
+      mkdir appScripts, wait ->
+        writeFile appScripts + '/index.js', render(APP_JS, {app}), wait()
+      mkdir serverScripts, wait ->
+        writeFile serverScripts + '/index.js', render(SERVER_JS, {app}), wait()
+      writeFile dir + '/.gitignore', GITIGNORE_JS, wait()
+
+    writeFile dir + '/server.js', SERVER, wait()
+    writeFile dir + '/package.json', packageJson(project, useCoffee), wait()
+    writeFile dir + '/README.md', render(README, {project}), wait()
 
 newProject = (dir = '.', app = 'app') ->
   printUsage = false
   useCoffee = program.coffee
 
   type = if useCoffee then 'CoffeeScript ' else ''
-  directory = style 'magenta',
+  directory = style 'bold',
     if dir is '.' then 'the current directory' else dir
-  console.log "creating #{type}project in #{directory} with the application " +
-    style('magenta', app)
+  console.log "\n  Creating #{type}project in #{directory} with the application " +
+    style('bold', app) + '\n'
 
   emptyDirectory dir, (empty) ->
     unless empty
-      return program.confirm 'destination is not empty; continue? ', (ok) ->
+      return program.confirm '  Destination is not empty. Continue? ', (ok) ->
         abort() unless ok
         process.stdin.destroy()
         createProject dir, app, useCoffee
@@ -506,6 +616,7 @@ newProject = (dir = '.', app = 'app') ->
 program
   .version(derby.version)
   .option('-c, --coffee', 'create files using CoffeeScript')
+  .option('-n, --noinstall', "don't run `npm install`")
 
 program
   .command('new [dir] [app]')
@@ -517,4 +628,4 @@ program
 
 program.parse process.argv
 
-console.log 'see `derby --help` for usage' if printUsage
+console.log '\n  see `derby --help` for usage\n' if printUsage
