@@ -193,9 +193,7 @@ input[type="submit"]{
 <span class='coffeescript'><a href="#" onclick="return setLang('js')">JavaScript</a> | <b>CoffeeScript</b></span>
 
 {% for header in page.headers %}
-  <p><a href="#{{ header.text | downcase | replace:' ','_' | replace:'.','' |
-    replace:'?','' | replace:'!',''
-  }}">{{ header.text }}</a>
+  <p><a href="#{{ header.text | downcase | replace:' ','_' | replace:'.','' | replace:'?','' | replace:'!','' }}">{{ header.text }}</a>
 {% endfor %}
 </div>
 
