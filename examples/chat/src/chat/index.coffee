@@ -38,7 +38,7 @@ getRoom = (page, model, room, userId) ->
     page.render()
 
 
-# CONTROLLER FUNCTIONS #
+## CONTROLLER FUNCTIONS ##
 
 # "before" and "after" functions are called when the view is rendered in the
 # browser. Note that they are not called on the server.

@@ -6,13 +6,18 @@
   "browserify": {
     "main": "./lib/derby.browser.js"
   },
+  "bin": {
+    "derby": "./lib/bin/derby.js"
+  },
   "dependencies": {
     "racer": "0.0.13",
     "express": ">=2.4.3",
     "qs": ">= 0.3.1",
     "uglify-js": ">=1.0.6",
     "stylus": ">=0.15",
-    "nib": ">=0.2"
+    "nib": ">=0.2",
+    "commander": "0.2.1",
+    "mkdirp": "0.0.7"
   },
   "devDependencies": {
     "expresso": ">=0.7.9",

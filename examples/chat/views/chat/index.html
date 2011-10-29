@@ -5,19 +5,18 @@
   handlers that update the model after user interaction, and the event handlers
   that update the DOM when the model changes.
 
-  Elements that end in colon define the name of views. Built-in views are
-  capitalized by convention, but view names are case-insensitive. Built-in views
-  are inserted when the page is rendered.
+  As in Mustache, double and triple curly braces output a value literally.
+  Derby templates add double and triple parentheses, which output a value
+  and set up model <- -> view bindings for that object.
+
+  Elements that end in colon define the names of views. Pre-defined views are
+  capitalized by convention, but view names are case-insensitive. Pre-defined views
+  are automatically included when the page is rendered.
 -->
 
 <!-- Views can be imported using relative paths -->
 <Head: from=../shared>
 
-<!--
-  As in Mustache, double and triple curly braces output a value literally.
-  Derby templates add double and triple parentheses, which output a value
-  and set up model <-> view bindings for that object.
--->
 <Title:>
   Chat &lpar;((_numMessages))&rpar; - ((_user.name))
 
@@ -61,7 +60,7 @@
   </div>
 
 <message:>
-  <!-- Square brackets perform interpolation within a model name. -->
+  <!-- Square brackets perform interpolation within a model name -->
   <li><img src=img/s.png class="pic {{users.[userId].picClass}}" alt="">
     <div class=message>
       <p><b>((users.[userId].name))</b>

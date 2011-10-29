@@ -28,6 +28,9 @@ Static:: =
 
 module.exports =
   options: {}
+
+  version: '0.1alpha'
+
   configure: (@options) ->
 
   createApp: (appModule) ->
