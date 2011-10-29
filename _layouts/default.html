@@ -56,6 +56,19 @@ blockquote>h3{
 #nav p{
   margin-bottom: 8px;
 }
+#nav .h1{
+  font-size: 18px;
+  font-weight: 600;
+}
+#nav .h2{
+  font-weight: 600;
+}
+#nav .h3{
+  margin-left: 16px;
+}
+#nav toc{
+  margin-top: 36px;
+}
 #page{
   max-width: 572px;
   margin: 36px 0 27px 218px;
@@ -179,7 +192,7 @@ input[type="submit"]{
 .coffeescript{display: none !important}
 </style>
 <div id="nav">
-<p><b><a href="#">Derby v{{page.version}}</a></b>
+<p class="h1"><a href="#">Derby v{{page.version}}</a>
 <p><a href="https://github.com/codeparty/derby">Source on GitHub</a>
 
 <form id="groups-form" action="http://groups.google.com/group/derbyjs/boxsubscribe">
@@ -192,9 +205,11 @@ input[type="submit"]{
 <span class='javascript'><b>JavaScript</b> | <a href="#" onclick="return setLang('coffe')">CoffeeScript</a></span>
 <span class='coffeescript'><a href="#" onclick="return setLang('js')">JavaScript</a> | <b>CoffeeScript</b></span>
 
+<div id="toc">
 {% for header in page.headers %}
-  <p><a href="#{{ header.text | downcase | replace:' ','_' | replace:'.','' | replace:'?','' | replace:'!','' }}">{{ header.text }}</a>
+  <p class="{{header.type}}"><a href="#{{ header.text | downcase | replace:' ','_' | replace:'.','' | replace:'?','' | replace:'!','' }}">{{ header.text }}</a>
 {% endfor %}
+</div>
 </div>
 
 <div id=page>
