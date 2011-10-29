@@ -13,7 +13,7 @@ var hello = require('derby').createApp(module),
     view = hello.view,
     get = hello.get;
 
-// Templates define both HTML and model <--> view bindings
+// Templates define both HTML and model <- -> view bindings
 view.make('Body',
   'Holler: <input value="((message))"><h1>((message))</h1>'
 );
@@ -48,7 +48,7 @@ server.listen(3000);
 {% highlight coffeescript %}
 {view, get} = require('derby').createApp module
 
-# Templates define both HTML and model <--> view bindings
+# Templates define both HTML and model <- -> view bindings
 view.make 'Body',
   'Holler: <input value="((message))"><h1>((message))</h1>'
 
@@ -232,7 +232,7 @@ Derby can also render static pages from templates and styles not associated with
 > 
 > **root:** The root path that contains the "views" and "styles" directories.
 > 
-> **staticPages:** Returns a staticPages object, which has a render method. (`static` is a [reserved keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words) in JavaScript, and it cannot be used as a variable name.)
+> **staticPages:** Returns a staticPages object, which has a render method. (While unused, `static` is a [reserved JavaScript keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words), and it cannot be a variable name.)
 
 The staticPages object keeps a reference to the directory root and provides a `staticPages.render()` method. It is intended for use in server-only Express routes. See [Rendering](#rendering).
 
