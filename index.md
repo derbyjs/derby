@@ -143,14 +143,14 @@ If you prefer to use [CoffeeScript](http://jashkenas.github.com/coffee-script/),
 Derby includes a simple project generator:
 
     $ cd ~
-    $ derby new first_project
-    $ cd first_project
+    $ derby new first-project
+    $ cd first-project
 
 or, for CoffeeScript:
 
     $ cd ~
-    $ derby new --coffee first_project
-    $ cd first_project
+    $ derby new --coffee first-project
+    $ cd first-project
     $ make
 
 `make` will execute the coffee compiler with the watch option, so leave it running in a separate terminal.
