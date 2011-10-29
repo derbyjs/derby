@@ -3,13 +3,13 @@ layout: default
 version: 0.1.0alpha
 headers:
   - text: Introduction
-    type: h2
+    type: h1
   - text: Why not use Rails and Backbone?
-    type: h3
+    type: h2
   - text: Features
-    type: h3
+    type: h2
   - text: Flexibility without the glue code
-    type: h3
+    type: h2
   - text: Getting started
     type: h1
   - text: Create an app
@@ -129,13 +129,13 @@ server.listen 3000
 {% endhighlight %}
 </div>
 
-## Introduction
+# Introduction
 
 Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/) that automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications.
 
 Derby applications load immediately and can be indexed by search engines, because the same templates render on both server and client. In addition, templates define bindings, which instantly update the view when the model changes and vice versa. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
 
-### Why not use Rails and Backbone?
+## Why not use Rails and Backbone?
 
 Derby represents a new breed of application frameworks, which we believe will replace currently popular libraries like [Rails](http://rubyonrails.org/) and [Backbone](http://documentcloud.github.com/backbone/).
 
@@ -145,7 +145,7 @@ Many developers now include a client MVC framework like [Backbone](http://docume
 
 Derby radically simplifies this process of adding dynamic interactions. It runs the same code in servers and browsers, and it syncs data automatically. Derby takes care of template rendering, packaging, and model-view bindings out of the box. Since all features are designed to work together, no code duplication and glue code are needed. Derby equips developers for a future when all data in all apps are realtime.
 
-### Features
+## Features
 
 * **HTML templates:** [Mustache](http://mustache.github.com/mustache.5.html)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
 
@@ -159,7 +159,7 @@ Derby radically simplifies this process of adding dynamic interactions. It runs 
 
 * **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, schemas can be added to provide validation and automatic persistence of data to one or more databases.
 
-### Flexibility without the glue code
+## Flexibility without the glue code
 
 Derby eliminates the tedium of wiring together a server, server templating engine, CSS compiler, script packager, minifier, client MVC framework, client JavaScript library, client templating and/or bindings engine, client history library, realtime transport, ORM, and database. It elminates the complexity of keeping state synchronized among models and views, clients and servers, multiple windows, multiple users, and models and databases.
 
