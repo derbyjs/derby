@@ -192,7 +192,7 @@ Static files can be placed in the public folder. The default Express server crea
 
 # Apps and static pages
 
-Derby projects support one or more single-page apps as well as static pages. Apps have a full MVC structure, including a model provided by Racer, a template and styles based view, and controller code with application logic and routes (which map URLs to actions). Static pages consist of only templates and styles.
+Derby projects support one or more single-page apps as well as static pages. Apps have a full MVC structure, including a model provided by [Racer](http://racerjs.com/), a template and styles based view, and controller code with application logic and routes (which map URLs to actions). Static pages consist of only templates and styles.
 
 On the server, apps provide a router middleware for Express. One or more app routers as well as server only routes can be included in the same Express server. 
 
@@ -232,7 +232,7 @@ Derby can also render static pages from templates and styles not associated with
 > 
 > **root:** The root path that contains the "views" and "styles" directories.
 > 
-> **staticPages:** Returns a staticPages object, which has a render method. (While unused, `static` is a [reserved JavaScript keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words), and it cannot be a variable name.)
+> **staticPages:** Returns a staticPages object, which has a render method. (While unused, static is a [reserved JavaScript keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words), and it cannot be a variable name.)
 
 The staticPages object keeps a reference to the directory root and provides a `staticPages.render()` method. It is intended for use in server-only Express routes. See [Rendering](#rendering).
 
@@ -753,7 +753,7 @@ page.render()
 
 While Derby's rendering performance has yet to be benchmarked and optimized, its architecture will ultimately enable it to outperform most current web application rendering approaches in real usage.
 
-When large chunks of a page requires updating, rendering HTML and then updating the innerHTML of an element is the fastest approach. However, when small changes to one item in a template occur, rerendering the entire template and replacing an entire section of the DOM is much slower than simply updating a single property or single element's innerHTML.
+When large chunks of a page require updating, rendering HTML and then updating the innerHTML of an element is the fastest approach. However, when small changes to one item in a template occur, rerendering the entire template and replacing an entire section of the DOM is much slower than simply updating a single property or single element's innerHTML.
 
 In addition, only rendering certain sections or an entire page client-side dramatically slows page loads. Even an extremely fast client-only renderer causes the browser to wait for the page to load a script (most likely via an additional request), interpret the script, render the template, and update the DOM before it has a chance to start performing layout of the HTML content.
 
@@ -852,3 +852,4 @@ Scripts should be included inline in the page if needed to properly render the p
 Usually, it is preferable to place such scripts in a separate file called `inline.js` in the same directory as the app. This file will be automatically inlined when the app is created. Calling `view.inline()` directly does the same thing, but it is redundant to send the script inline and also include it in the app's external script file.
 
 # Controllers
+
