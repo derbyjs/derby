@@ -144,7 +144,7 @@ gzip = require 'connect-gzip'
 MAX_AGE_ONE_YEAR = maxAge: 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
 publicPath = path.join root, 'public'
-static = derby.createStatic root
+staticPages = derby.createStatic root
 
 (server = express.createServer())
   # The express.static middleware can be used instead of gzip.staticGzip
@@ -181,7 +181,7 @@ server.error (err, req, res) ->
   ## Customize error handling here ##
   message = err.message || err.toString()
   status = parseInt message
-  if status is 404 then static.render '404', res, {url: req.url}, 404
+  if status is 404 then staticPages.render '404', res, {url: req.url}, 404
   else res.send if 400 <= status < 600 then status else 500
 
 
@@ -218,7 +218,7 @@ var path = require('path'),
 var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
     root = path.dirname(path.dirname(__dirname)),
     publicPath = path.join(root, 'public'),
-    static = derby.createStatic(root),
+    staticPages = derby.createStatic(root),
     server, store;
 
 (server = express.createServer())
@@ -259,7 +259,7 @@ server.error(function(err, req, res) {
   var message = err.message || err.toString(),
       status = parseInt(message);
   if (status === 404) {
-    static.render('404', res, {url: req.url}, 404);
+    staticPages.render('404', res, {url: req.url}, 404);
   } else {
     res.send( ((status >= 400) && (status < 600)) ? status : 500 );
   }
@@ -327,7 +327,7 @@ APP_HTML = '''
 _404_HTML = '''
 <!--
   This is a static template file, so it doesn't have an associated app.
-  It is rendered by the server via a static renderer.
+  It is rendered by the server via a staticPages renderer.
 
   Since static pages don't include the Derby client library, they can't have
   bound variables that automatically update. However, they do support initial
@@ -628,4 +628,4 @@ program
 
 program.parse process.argv
 
-console.log '\n  see `derby --help` for usage\n' if printUsage
+console.log '\n  See `derby --help` for usage\n' if printUsage
