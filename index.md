@@ -10,6 +10,50 @@ headers:
     type: h3
   - text: Flexibility without the glue code
     type: h3
+  - text: Getting started
+    type: h1
+  - text: Create an app
+    type: h2
+  - text: File structure
+    type: h2
+  - text: Apps and static pages
+    type: h1
+  - text: Creating apps
+    type: h2
+  - text: Connecting servers to apps
+    type: h2
+  - text: Static pages
+    type: h2
+  - text: Views
+    type: h1
+  - text: Creating templates
+    type: h2
+  - text: Pre-defined templates
+    type: h3
+  - text: Template syntax
+    type: h2
+  - text: Whitespace and HTML conformance
+    type: h3
+  - text: Variables
+    type: h3
+  - text: Sections
+    type: h3
+  - text: Partials
+    type: h3
+  - text: Bindings
+    type: h3
+  - text: Relative model paths and aliases
+    type: h3
+  - text: Performance
+    type: h2
+  - text: Stylesheets
+    type: h2
+  - text: Rendering
+    type: h2
+  - text: app.view
+    type: h2
+  - text: Controllers
+    type: h1
 ---
 
 # Derby
@@ -403,7 +447,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 {{"{{"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}/maybe}}
 {% endhighlight %}
 
-### Whitespace, HTML conformance, and escaping
+### Whitespace and HTML conformance
 
 Before parsing, all HTML comments, leading whitespace, and new lines are removed from templates. Whitespace at the end of lines is maintained, in case a space is desired in the HTML output. The contents of `<script>` and `<style>` tags are passed through literally.
 
