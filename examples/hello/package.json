@@ -1,0 +1,11 @@
+{
+  "name": "derby-hello-example",
+  "description": "Hello world demo for Derby",
+  "version": "0.0.0",
+  "main": "./server.js",
+  "dependencies": {
+    "derby": "*",
+    "express": ">=2"
+  },
+  "private": true
+}

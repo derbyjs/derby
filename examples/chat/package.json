@@ -6,7 +6,7 @@
   "dependencies": {
     "derby": "*",
     "express": ">=2",
-    "connect-gzip": ">=0.1"
+    "connect-gzip": ">=0.1.4"
   },
   "private": true
 }

@@ -148,7 +148,7 @@ staticPages = derby.createStatic root
 
 (server = express.createServer())
   # The express.static middleware can be used instead of gzip.staticGzip
-  .use(gzip.staticGzip(publicPath, MAX_AGE_ONE_YEAR))
+  .use(gzip.staticGzip publicPath, MAX_AGE_ONE_YEAR)
   .use(express.favicon())
 
   # Uncomment to add form data parsing support

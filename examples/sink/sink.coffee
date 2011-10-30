@@ -8,8 +8,7 @@ pages = [
   {name: 'submit', text: 'Submit form', url: '/submit'}
   {name: 'error', text: 'Error test', url: '/error'}
 ]
-ctxFor = (name) ->
-  ctx = {}
+ctxFor = (name, ctx = {}) ->
   ctx[name + 'Visible'] = true
   last = pages.length - 1
   ctx.pages = for page, i in pages
@@ -38,9 +37,8 @@ get '/live-css', (page, model) ->
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
   sink[method] '/submit', (page, model, {body, query}) ->
-    console.log method, body, query
-    page.render ctxFor 'submit'
-
+    args = JSON.stringify {method, body, query}, null, '  '
+    page.render ctxFor 'submit', {args}
 get '/error', ->
   throw new Error 500
 
@@ -115,6 +113,8 @@ view.make 'submit', '''
     <p><label>Email: <input type=text name=user[email]></label>
     <p><input type=submit>
   </form>
+  <h3>Arguments:</h3>
+  <pre><code>{{args}}</code></pre>
   '''
 
 

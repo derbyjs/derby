@@ -1,13 +1,35 @@
+path = require 'path'
 express = require 'express'
+derby = require 'derby'
+gzip = require 'connect-gzip'
 sink = require './sink'
 
+
+## SERVER CONFIGURATION ##
+
+MAX_AGE_ONE_YEAR = maxAge: 1000 * 60 * 60 * 24 * 365
+root = __dirname
+publicPath = path.join root, 'public'
+staticPages = derby.createStatic root
+
 (server = express.createServer())
+  # The express.static middleware can be used instead of gzip.staticGzip
+  .use(gzip.staticGzip publicPath, MAX_AGE_ONE_YEAR)
   .use(express.favicon())
-  .use(express.static(__dirname + '/public'))
+
+  # Form data parsing support
   .use(express.bodyParser())
   .use(express.methodOverride())
+
+  # The router method creates an express middleware from the app's routes
   .use(sink.router())
   .use(server.router)
+
+  # Remove to disable dynamic gzipping
+  .use(gzip.gzip())
+
+
+## ERROR HANDLING ##
 
 server.configure 'development', ->
   # Log errors in development only
@@ -19,16 +41,24 @@ server.error (err, req, res) ->
   ## Customize error handling here ##
   message = err.message || err.toString()
   status = parseInt message
-  if status is 404 then res.send "Can't seem to find that page", 404
+  if status is 404 then staticPages.render '404', res, {url: req.url}, 404
   else res.send if 400 <= status < 600 then status else 500
 
-## Add server only routes here ##
+
+## SERVER ONLY ROUTES ##
 
 server.all '*', (req) ->
   throw "404: #{req.url}"
 
-store = sink.createStore listen: server
+
+## STORE SETUP ##
+
+store = sink.createStore redis: {db: 1}, listen: server
+
+## TODO: Remove when using a database ##
+# Clear all data every time the node server is started
 store.flush()
 
-server.listen 3000
-console.log 'Go to http://localhost:3000/'
+server.listen 3001
+console.log 'Express server started in %s mode', server.settings.env
+console.log 'Go to: http://localhost:%d/', server.address().port

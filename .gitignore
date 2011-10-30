@@ -1,8 +1,10 @@
 node_modules
-lib/
+lib
 gen
-examples/chat/lib/
-examples/chat/public/gen
+examples/hello/*.js
+examples/hello/public/gen
 examples/sink/*.js
 examples/sink/public/gen
+examples/chat/lib
+examples/chat/public/gen
 *.gz
