@@ -60,8 +60,7 @@ headers:
 
 <p class="promo">MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.</p>
 
-<div class="javascript">
-<h3>hello.js</h3>
+<h3 class="javascript">hello.js</h3>
 {% highlight javascript %}
 var hello = require('derby').createApp(module),
     view = hello.view,
@@ -81,7 +80,7 @@ get('/', function (page, model) {
 });
 {% endhighlight %}
 
-<h3>server.js</h3>
+<h3 class="javascript">server.js</h3>
 {% highlight javascript %}
 var express = require('express'),
     hello = require('./hello'),
@@ -95,10 +94,8 @@ var express = require('express'),
 
 server.listen(3000);
 {% endhighlight %}
-</div>
 
-<div class="coffeescript">
-<h3>hello.coffee</h3>
+<h3 class="coffeescript">hello.coffee</h3>
 {% highlight coffeescript %}
 {view, get} = require('derby').createApp module
 
@@ -113,7 +110,7 @@ get '/', (page, model) ->
     page.render()
 {% endhighlight %}
 
-<h3>server.coffee</h3>
+<h3 class="coffeescript">server.coffee</h3>
 {% highlight coffeescript %}
 express = require 'express'
 hello = require './hello'
@@ -127,7 +124,6 @@ store = hello.createStore listen: server
 
 server.listen 3000
 {% endhighlight %}
-</div>
 
 # Introduction
 
