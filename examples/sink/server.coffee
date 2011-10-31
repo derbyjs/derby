@@ -21,12 +21,12 @@ staticPages = derby.createStatic root
   .use(express.bodyParser())
   .use(express.methodOverride())
 
+  # Remove to disable dynamic gzipping
+  .use(gzip.gzip())
+
   # The router method creates an express middleware from the app's routes
   .use(sink.router())
   .use(server.router)
-
-  # Remove to disable dynamic gzipping
-  .use(gzip.gzip())
 
 
 ## ERROR HANDLING ##

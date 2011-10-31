@@ -22,12 +22,12 @@ staticPages = derby.createStatic root
   .use(express.session(secret: 'dont_tell', cookie: MAX_AGE_ONE_YEAR))
   .use(chat.session())
 
+  # Remove to disable dynamic gzipping
+  .use(gzip.gzip())
+
   # The router method creates an express middleware from the app's routes
   .use(chat.router())
   .use(server.router)
-
-  # Remove to disable dynamic gzipping
-  .use(gzip.gzip())
 
 
 ## ERROR HANDLING ##

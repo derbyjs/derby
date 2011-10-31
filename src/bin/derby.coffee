@@ -161,12 +161,12 @@ staticPages = derby.createStatic root
   # .use(express.session(secret: '', cookie: MAX_AGE_ONE_YEAR))
   # .use(<<app>>.session())
 
+  # Remove to disable dynamic gzipping
+  .use(gzip.gzip())
+
   # The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
   .use(server.router)
-
-  # Remove to disable dynamic gzipping
-  .use(gzip.gzip())
 
 
 ## ERROR HANDLING ##
@@ -236,12 +236,12 @@ var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
   // .use(express.session({ secret: '', cookie: MAX_AGE_ONE_YEAR }))
   // .use(<<app>>.session())
 
+  // Remove to disable dynamic gzipping
+  .use(gzip.gzip());
+
   // The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
   .use(server.router)
-
-  // Remove to disable dynamic gzipping
-  .use(gzip.gzip());
 
 
 // ERROR HANDLING //
