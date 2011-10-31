@@ -125,6 +125,8 @@ store = hello.createStore listen: server
 server.listen 3000
 {% endhighlight %}
 
+<iframe src="http://hello.derbyjs.com/" height=80></iframe>
+
 # Introduction
 
 Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/) that automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications.
