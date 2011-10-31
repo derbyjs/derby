@@ -127,7 +127,7 @@ server.listen 3000
 
 ### Add water and...
 
-<iframe src="http://hello.derbyjs.com/" id="hello-iframe" seamless> </iframe>
+<iframe src="http://hello.derbyjs.com/" id="hello-iframe" seamless="seamless"> </iframe>
 
 # Introduction
 
