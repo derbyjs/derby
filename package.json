@@ -1,7 +1,7 @@
 {
   "name": "derby",
   "description": "Reactive MVC framework with automatically synced models and views. Supports server and client rendering of multi-user, realtime applications.",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "main": "./lib/derby.js",
   "browserify": {
     "main": "./lib/derby.browser.js"
