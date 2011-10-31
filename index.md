@@ -125,7 +125,9 @@ store = hello.createStore listen: server
 server.listen 3000
 {% endhighlight %}
 
-<iframe src="http://hello.derbyjs.com/" height="80"> </iframe>
+### Add water and...
+
+<iframe src="http://hello.derbyjs.com/" id="hello-iframe" seamless> </iframe>
 
 # Introduction
 
