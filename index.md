@@ -44,6 +44,16 @@ headers:
     type: h3
   - text: Relative model paths and aliases
     type: h3
+  - text: HTML extensions
+    type: h2
+  - text: x-bind
+    type: h3
+  - text: Boolean attributes
+    type: h3
+  - text: x-visible and x-displayed
+    type: h3
+  - text: Miscellaneous
+    type: h3
   - text: Performance
     type: h2
   - text: Stylesheets
@@ -54,6 +64,8 @@ headers:
     type: h2
   - text: Controllers
     type: h1
+  - text: Routes
+    type: h2
 ---
 
 # Derby
@@ -72,9 +84,9 @@ view.make('Body',
 );
 
 // Routes render on client as well as server
-get('/', function (page, model) {
+get('/', function(page, model) {
   // Subscribe specifies the data to sync
-  model.subscribe('message', function () {
+  model.subscribe('message', function() {
     page.render();
   });
 });
@@ -803,6 +815,99 @@ page.render()
 </ins>
 {% endhighlight %}
 
+## HTML extensions
+
+Derby provides a few extensions to HTML that make it easier to bind models and views.
+
+Custom attributes used during template parsing start with the prefix `x-` to avoid conflicts with future extensions to HTML. Note that Derby uses this prefix instead of `data-`, since that prefix is intended for custom data attributes that are included in the DOM. Derby removes `x-` attributes as it parses, and the output HTML does not include these non-standard attributes.
+
+### x-bind
+
+The `x-bind` attribute may be added to any HTML element to bind one or more DOM events to a controller function by name. The bound function must be exported on the app.
+
+If the click event is bound on an `<a>` tag without an `href` attribute, Derby will add the attributes `href="#"` and `onclick="return false"` automatically. If the submit event is bound on a '<form>' tag, `onsubmit="return false"` will be added to prevent a default redirect action.
+
+`x-bind` can also delay the callback's execution after a timeout, which can be useful when handling events like paste, which are fired before the contents are inserted. The value of the delay in milliseconds is included after the name of the event, such as `x-bind="paste/0:afterPaste"`.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  <button x-bind="click:start">Start</button>
+
+  <!-- href="#" and onclick="return false" will be added -->
+  <a x-bind="click:cancel">Cancel</a>
+
+  <!-- onsubmit="return false" will be added -->
+  <form x-bind="submit:search"> </form>
+
+  <!-- Multiple events on one element -->
+  <img src="example.png" x-bind="mousedown:down,mouseup:up">
+
+  <!-- Wait for timeout of 50ms before calling back -->
+  <input x-bind="paste/50:afterPaste">
+{% endhighlight %}
+
+#### App
+
+{% highlight javascript %}
+exports.start = function(e) { }
+exports.cancel = function(e) { }
+exports.search = function(e) { }
+exports.down = function(e) { }
+exports.up = function(e) { }
+exports.afterPaste = function(e) { }
+{% endhighlight %}
+{% highlight coffeescript %}
+exports.start = (e) ->
+exports.cancel = (e) ->
+exports.search = (e) ->
+exports.down = (e) ->
+exports.up = (e) ->
+exports.afterPaste = (e) ->
+{% endhighlight %}
+
+### Boolean attributes
+
+In HTML, boolean attributes are true when they are included and false when they are excluded. Since Derby only allows template tags inside attribute values, this makes it difficult to bind such attributes to model objects. Therefore, Derby uses a slightly modified syntax that works more naturally with the templating syntax for the attributes `checked`, `selected`, and `disabled`, which are likely to be bound to data.
+
+There is also a special syntax for boolean attributes only where a data value can be inverted by putting a `!` before the template tag. This is especially useful with the disabled attribute.
+
+{% highlight html %}
+<Body:>
+  <!-- Outputs:
+    <input type="checkbox" checked>
+    - or -
+    <input type="checkbox">
+  -->
+  <input type="checkbox" checked="{{active}}">
+
+  <!-- Bound to model -->
+  <input type="checkbox" checked="((active))">
+
+  <!-- Inverted value -->
+  <input type="checkbox" disabled="!((active))">
+{% endhighlight %}
+
+### x-visible and x-displayed
+
+While template sections may be used to conditionally hide and show elements, it is sometimes preferrable to use CSS to set `visibility: hidden` or `display: none` on an element. The `x-visible` and `x-displayed` attributes are boolean attributes that make it easier to bind these CSS properties to a boolean value. They will append to or add a style attribute on the element with the proper CSS.
+
+Note that `x-displayed` may be useful in cases where HTML elements should be shown conditionally, and they cannot be wrapped in an element for live binding. For example, list items might need to be shown conditionally, but a `<ul>` element must only contain `<li>` elements.
+
+{% highlight html %}
+<Body:>
+  <ul>
+    ((#items))
+      <li x-displayed="((.shown))">((.text))
+    ((/))
+  </ul>
+{% endhighlight %}
+
+### Miscellaneous
+
+Binding the selected attribute of `<option>` elements in a `<select>` is difficult, because the `change` event is only fired on the `<select>` element, and the `selected` attribute must be place on the options. Therefore, Derby distributes the change event to each of the children of a select element, raising the event on each of the options as well. This makes it possible to bind the selected state on each of the options.
+
 ## Performance
 
 While Derby's rendering performance has yet to be benchmarked and optimized, its architecture will ultimately enable it to outperform most current web application rendering approaches in real usage.
@@ -869,13 +974,13 @@ For creating error pages and other static pages, Derby provides a `staticPages` 
 
 Derby adds an `app.view` object for creating and rendering views.
 
-> ### view.after` ( name, callback )`
+> ### view.after` ( name, callback(context) )`
 > 
 > **name:** Name of the template
 > 
 > **callback:** Function called after the template is rendered on the client each time. The callback is passed the context object used to render the template.
 
-> ### view.before` ( name, callback )`
+> ### view.before` ( name, callback(context) )`
 > 
 > **name:** Name of the template
 > 
@@ -906,4 +1011,41 @@ Scripts should be included inline in the page if needed to properly render the p
 Usually, it is preferable to place such scripts in a separate file called `inline.js` in the same directory as the app. This file will be automatically inlined when the app is created. Calling `view.inline()` directly does the same thing, but it is redundant to send the script inline and also include it in the app's external script file.
 
 # Controllers
+
+Derby controllers are defined in the `lib\app_name\index.js` or `src\app_name\index.coffee` file. See [Creating apps](#creating_apps).
+
+Controllers include routes, application logic, and interaction event handlers. Becasue model data is synced automatically and models and views are automatically bound, much of what would typically be done in client controller code is unneccessary---it should rarely be neccessary to directly manipulate the DOM or manage sending requests to the server.
+
+## Routes
+
+Routes map URL patterns to actions. Derby routes are powered by [Express](http://expressjs.com/), which is similar to [Sinatra](http://www.sinatrarb.com/). Within apps, routes are defined via the `get`, `post`, `put`, and `del` methods of the app created by `derby.createApp()`.
+
+> ### app.get` ( pattern, callback(page, model, params, next) )`
+> ### app.post` ( pattern, callback(page, model, params, next) )`
+> ### app.put` ( pattern, callback(page, model, params, next) )`
+> ### app.del` ( pattern, callback(page, model, params, next) )`
+>
+> **pattern:** A string containing a literal URL, an Express route pattern, or a regular expression. See [Express's routing documentation](http://expressjs.com/guide.html#routing) for more info.
+>
+> **callback:** Function invoked when a request for a URL matching the appropriate HTTP method and pattern is received. Note that this function is called both on the server and the client.
+>
+> **page:** Object with the methods [`page.render()`](#pagerender)  and `page.redirect()`. All app routes should call one of these two methods or pass control by calling `next()`.
+>
+> **model:** Derby model object
+>
+> **params:** An object containing the matching URL parameters. The `url`, `query`, and `body` properties typically available on `req` in Express are also added to this object.
+>
+> **next:** A function that can be called to pass control to the next matching route. If this is called on the client, control will be passed to the next route defined in the app. If no other routes in the same app match, it will fall through to a server request.
+
+> ### page.redirect` ( url, [status] )`
+>
+> **url:** Destination of redirect. [Like Express](http://expressjs.com/guide.html#res.redirect()), may also be the string 'home' or 'back'.
+>
+> **status:** Number specifying HTTP status code. Defaults to 302 on the server. Has no effect on the client.
+
+Unlike Express, which provides direct access to the `req` and `res` objects created by Node HTTP servers, Derby returns `page`, `model`, and `params` objects. These provide the same interface on the client and the server, so that route handlers may be executed in both environments. 
+
+Express is used directly on the server. On the client, Derby inclues Express's route matching module. When a link is clicked or a form is submitted, Derby first tries to render the new URL on the client.
+
+Derby can also capture form submissions client-side. It provides support for `post`, `put`, and `del` HTTP methods using the same hidden form field [override approach](http://expressjs.com/guide.html#http-methods) as Express.
 
