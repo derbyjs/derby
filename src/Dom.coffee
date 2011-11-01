@@ -105,18 +105,18 @@ Dom:: =
       target = e.target
       target = target.parentNode  if target.nodeType == 3
       events.trigger e.type, target.id, e
-    
+
     if doc.addEventListener
-      @addListener = addListener = (el, name, cb, captures = false) ->
+      @addListener = addListener = (el, name, cb = domHandler, captures = false) ->
         el.addEventListener name, cb, captures
     else if doc.attachEvent
-      @addListener = addListener = (el, name, cb) ->
+      @addListener = addListener = (el, name, cb = domHandler) ->
         el.attachEvent 'on' + name, ->
           event.target || event.target = event.srcElement
           cb event
-    
+
     events.set domEvents
-    addListener doc, name, domHandler for name of events._names
+    addListener doc, name for name of events._names
 
     addListener doc, 'click', (e) ->
       # Detect clicks on links
