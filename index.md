@@ -825,7 +825,7 @@ Custom attributes used during template parsing start with the prefix `x-` to avo
 
 The `x-bind` attribute may be added to any HTML element to bind one or more DOM events to a controller function by name. The bound function must be exported on the app.
 
-If the click event is bound on an `<a>` tag without an `href` attribute, Derby will add the attributes `href="#"` and `onclick="return false"` automatically. If the submit event is bound on a '<form>' tag, `onsubmit="return false"` will be added to prevent a default redirect action.
+If the click event is bound on an `<a>` tag without an `href` attribute, Derby will add the attributes `href="#"` and `onclick="return false"` automatically. If the submit event is bound on a `<form>` tag, `onsubmit="return false"` will be added to prevent a default redirect action.
 
 `x-bind` can also delay the callback's execution after a timeout, which can be useful when handling events like paste, which are fired before the contents are inserted. The value of the delay in milliseconds is included after the name of the event, such as `x-bind="paste/0:afterPaste"`.
 
