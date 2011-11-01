@@ -23,11 +23,11 @@ History:: =
   replace: (url, render, e) ->
     @_update 'replaceState', url, render, e
 
-  back: winHistory.back
+  back: -> winHistory.back()
 
-  forward: winHistory.forward
+  forward: -> winHistory.forward()
 
-  go: winHistory.go
+  go: (i) -> winHistory.go i
 
   _update: (historyMethod, url, render, e) ->
     # If this is a form submisssion, extract the form data and

@@ -10,6 +10,9 @@ Page:: =
   render: (ctx) ->
     @view.render @model, ctx
   redirect: (url) ->
+    return @history.back()  if url is 'back'
+    # TODO: Add support for `basepath` option like Express
+    url = '\\'  if url is 'home'
     @history.replace url, true
 
 exports.createApp = (appModule) ->

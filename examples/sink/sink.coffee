@@ -6,6 +6,7 @@ pages = [
   {name: 'home', text: 'Home', url: '/'}
   {name: 'liveCss', text: 'Live CSS', url: '/live-css'}
   {name: 'submit', text: 'Submit form', url: '/submit'}
+  {name: 'back', text: 'Back redirect', url: '/back'}
   {name: 'error', text: 'Error test', url: '/error'}
 ]
 ctxFor = (name, ctx = {}) ->
@@ -39,9 +40,12 @@ get '/live-css', (page, model) ->
   sink[method] '/submit', (page, model, {body, query}) ->
     args = JSON.stringify {method, body, query}, null, '  '
     page.render ctxFor 'submit', {args}
+
 get '/error', ->
   throw new Error 500
 
+get '/back', (page) ->
+  page.redirect 'back'
 
 ## Views ##
 

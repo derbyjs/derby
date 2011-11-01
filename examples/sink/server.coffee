@@ -41,8 +41,7 @@ server.error (err, req, res) ->
   ## Customize error handling here ##
   message = err.message || err.toString()
   status = parseInt message
-  if status is 404 then staticPages.render '404', res, {url: req.url}, 404
-  else res.send if 400 <= status < 600 then status else 500
+  res.send if 400 <= status < 600 then status else 500
 
 
 ## SERVER ONLY ROUTES ##
