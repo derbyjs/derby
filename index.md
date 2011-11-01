@@ -1012,9 +1012,9 @@ Usually, it is preferable to place such scripts in a separate file called `inlin
 
 # Controllers
 
-Derby controllers are defined in the `lib\app_name\index.js` or `src\app_name\index.coffee` file. See [Creating apps](#creating_apps).
+Derby controllers are defined in the script file that invokes `derby.createApp()`. Typically, controllers are located at `lib\app_name\index.js` or `src\app_name\index.coffee`. See [Creating apps](#creating_apps).
 
-Controllers include routes, application logic, and interaction event handlers. Becasue model data is synced automatically and models and views are automatically bound, much of what would typically be done in client controller code is unneccessary---it should rarely be neccessary to directly manipulate the DOM or manage sending requests to the server.
+Controllers include routes, application logic, and interaction event handlers. Because Derby provides model-view bindings and syncs models automatically, directly manipulating the DOM and manually sending messages to the server should rarely be neccessary.
 
 ## Routes
 
@@ -1033,13 +1033,13 @@ Routes map URL patterns to actions. Derby routes are powered by [Express](http:/
 >
 > **model:** Derby model object
 >
-> **params:** An object containing the matching URL parameters. The `url`, `query`, and `body` properties typically available on `req` in Express are also added to this object.
+> **params:** An object containing the matching URL parameters. The `url`, `query`, and `body` properties typically available on `req` are also added to this object.
 >
 > **next:** A function that can be called to pass control to the next matching route. If this is called on the client, control will be passed to the next route defined in the app. If no other routes in the same app match, it will fall through to a server request.
 
 > ### page.redirect` ( url, [status] )`
 >
-> **url:** Destination of redirect. [Like Express](http://expressjs.com/guide.html#res.redirect()), may also be the string 'home' or 'back'.
+> **url:** Destination of redirect. [Like Express](http://expressjs.com/guide.html#res.redirect()), may also be the string 'home' (which redirects to '/') or 'back' (which goes back to the previous URL).
 >
 > **status:** Number specifying HTTP status code. Defaults to 302 on the server. Has no effect on the client.
 
