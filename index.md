@@ -143,7 +143,7 @@ server.listen 3000
 
 # Introduction
 
-Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/) that automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications.
+Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/). While it works differently, Racer is to Derby somewhat like ActiveRecord is to Rails. Racer automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications.
 
 Derby applications load immediately and can be indexed by search engines, because the same templates render on both server and client. In addition, templates define bindings, which instantly update the view when the model changes and vice versa. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
 
@@ -823,11 +823,13 @@ Custom attributes used during template parsing start with the prefix `x-` to avo
 
 ### x-bind
 
-The `x-bind` attribute may be added to any HTML element to bind one or more DOM events to a controller function by name. The bound function must be exported on the app.
+The `x-bind` attribute may be added to any HTML element to bind one or more DOM events to a controller function by name. The bound function must be exported on the app. Bound functions are passed the original event object, and should use `e.target` to get a reference to the element on which the event was raised.
 
 If the click event is bound on an `<a>` tag without an `href` attribute, Derby will add the attributes `href="#"` and `onclick="return false"` automatically. If the submit event is bound on a `<form>` tag, `onsubmit="return false"` will be added to prevent a default redirect action.
 
 `x-bind` can also delay the callback's execution after a timeout, which can be useful when handling events like paste, which are fired before the contents are inserted. The value of the delay in milliseconds is included after the name of the event, such as `x-bind="paste/0:afterPaste"`.
+
+Internally, Derby only binds each type of event once to the `document` and performs event delegation. It uses element ids to keep track of which elements should be bound to which events. Thus, much like with mode-view bindings, Derby will add an automatically generated `id` attribute to an element that uses `x-bind` if it does not already have an id.
 
 #### Template
 
@@ -978,13 +980,17 @@ Derby adds an `app.view` object for creating and rendering views.
 > 
 > **name:** Name of the template
 > 
-> **callback:** Function called after the template is rendered on the client each time. The callback is passed the context object used to render the template.
+> **callback:** Function called after the template is rendered on the client each time.
+>
+> **context:** The callback is passed the context object used to render the template.
 
 > ### view.before` ( name, callback(context) )`
 > 
 > **name:** Name of the template
 > 
-> **callback:** Function called before the template is rendered on the client each time. The callback is passed the context object used to render the template.
+> **callback:** Function called after the template is rendered on the client each time.
+>
+> **context:** The callback is passed the context object used to render the template.
 
 The `view.after()` and `view.before()` methods are used to attach a function to a view that is called each time the view is rendered. For example, this might be useful for creating animations in JavaScript, or for scrolling the page when new messages are pushed to a chat window.
 
@@ -1014,7 +1020,7 @@ Usually, it is preferable to place such scripts in a separate file called `inlin
 
 Derby controllers are defined in the script file that invokes `derby.createApp()`. Typically, controllers are located at `lib\app_name\index.js` or `src\app_name\index.coffee`. See [Creating apps](#creating_apps).
 
-Controllers include routes, application logic, and interaction event handlers. Because Derby provides model-view bindings and syncs models automatically, directly manipulating the DOM and manually sending messages to the server should rarely be neccessary.
+Controllers include routes, user event handlers, and application logic. Because Derby provides model-view bindings and syncs models automatically, directly manipulating the DOM and manually sending messages to the server should rarely be neccessary.
 
 ## Routes
 
@@ -1050,4 +1056,50 @@ Unlike Express, which provides direct access to the `req` and `res` objects crea
 Express is used directly on the server. On the client, Derby inclues Express's route matching module. When a link is clicked or a form is submitted, Derby first tries to render the new URL on the client.
 
 Derby can also capture form submissions client-side. It provides support for `post`, `put`, and `del` HTTP methods using the same hidden form field [override approach](http://expressjs.com/guide.html#http-methods) as Express.
+
+## User events
+
+Derby automates a great deal of user event handling via [model-view binding](#bindings). This should be used for any data that is tied directly to an element's attribute or HTML content. For example, as users interact with an `<input>`, value and checked properties will be updated. In addition, the `selected` attribute of `<option>` elements and edits to the innerHTML of `contenteditable` elements will update bound model objects.
+
+For other types of user events, such as `click` or `dragover`, Derby's [`x-bind`](#xbind) attribute can be used to tie DOM events on a specific element to a callback function in the controller. Such functions must be exported on the app module.
+
+Even if controller code is responding to a DOM event, it should typically only update the view indirectly by manipulating data in the model. Since views are bound to model data, the view will update automatically when the correct data is set. While this way of writing client code may take some getting used to, it is ultimately much simpler and less error-prone.
+
+## Model events
+
+[Model events](#model_events) are emitted in response to changes in the model. These may be used directly to update other model items and the resulting views, such as updating a count of the items in a list every time it is modified.
+
+## Application logic
+
+Application logic executes in response to routes, user events, and model events. Code that responds to user events and model events should be placed within the `app.ready()` callback. This provides the model object for the client and makes sure that the code is only executed on the client.
+
+> ### app.ready` ( callback(model) )`
+>
+> **callback:** Function called as soon as the Derby app is loaded on the client. Note that any code within this callback is only executed on the client and not on the server.
+>
+> **model:** The Derby model object for the given client
+
+Application logic should be written to share as much code between servers and clients as possible. For security reasons or for direct access to backend services, it may be neccessary to only perform certain functions on servers. However, placing as much code as possible in a shared location allows Derby apps to be extremely responsive and work offline by default.
+
+# Models
+
+Derby models are powered by [Racer](http://racerjs.com/), a realtime model synchronization engine. Racer enables mutliple users to interact with the same data objects via sophisticated conflict detection and resolution algorithms. At the same time, it provides a simple object accessor and event interface for writing application logic.
+
+## Introduction to Racer
+
+On the server, Racer creates a `store`, which manages data updates. It is possible to directly manipulate data via asynchronous methods on a store, similar to interacting with a database. Stores also create `model` objects, which provide a synchronous interface more like interacting directly with objects.
+
+Models maintain their own copy of a subset of the global state. This subset is defined via subscriptions to certain paths. Models perform operations independently, and they automatically synchronize their state with the associated store over [Socket.IO](http://socket.io/).
+
+When models are modified, they will immediately reflect the changes. In the background, Racer turns operations into transactions that are sent to the server and applied or rejected. If the transactions are accepted, they are sent to all other clients subscribed to the same data. This optimistic approach provides immediate interaction for the user, makes writing application logic easier, and enables Racer to work offline.
+
+Model methods provide callbacks invoked after success or failure of a transaction. These callbacks can be used to provide application-specific conflict resolution UIs. Models also emit events when their contents are updated, which Derby uses to update the view in realtime.
+
+Racer is designed for intially prototyping applications using dynamic, in-memory models. Once features are complete, schemas can be written to associate the model with persistent storage. Racer then automatically persists all data defined in a schema. Initially, Racer supports [MongoDB](http://www.mongodb.org/), and support for other popular databases and datastores will be added soon. It will even support simulataneous use of different types of databases with a single application.
+
+### STM and OT
+
+The store provides conflict resolution via a [Software Transactional Memory (STM)](http://en.wikipedia.org/wiki/Software_transactional_memory) or [Operational Transform (OT)](http://en.wikipedia.org/wiki/Operational_transformation). While OT is conceptually straightforward, writing OT algorithms that work reliably is difficult. Racer's OT algorithms are provided by [Share.js](http://sharejs.org/), a well tested JavaScript OT library.
+
+To perform these algorithms, Racer stores a journal of all transactions in Redis. When new transactions arrive, their paths and versions are compared to the transactions already commited to the journal. STM, which is the default, accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
 
