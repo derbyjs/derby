@@ -1039,7 +1039,7 @@ Routes map URL patterns to actions. Derby routes are powered by [Express](http:/
 
 > ### page.redirect` ( url, [status] )`
 >
-> **url:** Destination of redirect. [Like Express](http://expressjs.com/guide.html#res.redirect()), may also be the string 'home' (which redirects to '/') or 'back' (which goes back to the previous URL).
+> **url:** Destination of redirect. [Like Express](<http://expressjs.com/guide.html#res.redirect()>), may also be the string 'home' (which redirects to '/') or 'back' (which goes back to the previous URL).
 >
 > **status:** Number specifying HTTP status code. Defaults to 302 on the server. Has no effect on the client.
 
