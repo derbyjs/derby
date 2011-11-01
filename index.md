@@ -288,7 +288,7 @@ The Derby project generator outputs an Express server for a typical setup. Becau
 
 The server includes an app with a standard Node.js require statement. It can then use the `app.router()` method to create a router middleware for Express that handles all of the app's routes.
 
-The server also needs to create a `store` object, which is what Racer uses to setup Socket.IO, create models, coordinate data syncing, and interface with databases. Typically, a project will have only one store, even if it has multiple apps. It is possible to have multiple stores, though an app can only be associated with one store. A store associated with one app can be created using that app's `app.createStore()` method. If a store is shared among multiple apps, it should be created using the `derby.createStore()` method, which is passed each of the apps as aruguments.
+The server also needs to create a `store` object, which is what sets up Socket.IO, creates models, coordinates data syncing, and interfaces with databases. A store associated with one app can be created using that app's `app.createStore()` method. If a store is shared among multiple apps, it should be created using the `derby.createStore()` method, which is passed each of the apps as aruguments. See [Creating stores](#creating_stores).
 
 ## Static pages
 
@@ -1102,4 +1102,41 @@ Racer is designed for intially prototyping applications using dynamic, in-memory
 The store provides conflict resolution via a [Software Transactional Memory (STM)](http://en.wikipedia.org/wiki/Software_transactional_memory) or [Operational Transform (OT)](http://en.wikipedia.org/wiki/Operational_transformation). While OT is conceptually straightforward, writing OT algorithms that work reliably is difficult. Racer's OT algorithms are provided by [Share.js](http://sharejs.org/), a well tested JavaScript OT library.
 
 To perform these algorithms, Racer stores a journal of all transactions in Redis. When new transactions arrive, their paths and versions are compared to the transactions already commited to the journal. STM, which is the default, accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
+
+## Creating stores
+
+The default server produced by the Derby project generator will create a store asoociated with an app. Derby will then use that store to create models when invoking app routes.
+
+> ### `store = `app.createStore` ( options )`
+> ### `store = `derby.createStore` ( apps..., options )`
+>
+> **options:** An object that configures the store
+>
+> **store:** Returns a Racer store object
+>
+> **apps:** The `derby.createStore()` method accepts one or more Derby applications as arguments. Each of these apps is associated with the created store.
+
+Typically, a project will have only one store, even if it has multiple apps. It is possible to have multiple stores, though an app can only be associated with one store.
+
+### Configuration options
+
+Typically a `listen` option is specified, which is used to setup Socket.IO. This option may be an Express server or a port number. In addition to listen, a `namespace` argument may be provided to setup Socket.IO under a namespace. See "Restricting yourself to a namespace" in the [Socket.IO guide](http://socket.io/#how-to-use).
+
+Alternatively, options may specify `sockets` and `socketUri` if the Socket.IO sockets object is already created. The `sockets` option should be the object returned from Socket.IO's `io.listen().sockets` or `io.listen().of()`.
+
+Options may also specify Redis configuration options within a `redis` object. The Redis options can include the `port`, `host`, and `parser` arguments passed to [node-redis's](https://github.com/mranney/node_redis) createClient method. It can also include the number of the Redis database to select via the `db` option.
+
+## Creating models
+
+Derby provides a model when calling application routes. On the server, it creates an empty model from the `store` associated with an app. When the server renders the page, the model is serialized. It is then reinitialized into the same state on the client. This model object is passed to the `app.ready()` callback and app routes rendered on the client.
+
+If a model is assigned to `req.model`, Derby uses that instead of creating a new model. This can be used to pass data from server middleware to an application route. The Racer session middleware uses this to create a model with a `_session` object for a given cookie.
+
+> ### `model = `store.createModel` ( )`
+>
+> **model:** A Racer model object associated with the given store
+
+If using the the Racer session middleware, server-side routes can use the model supplied on `req.model`. Otherwise, they can manually create a model via `store.createModel()`.
+
+## Model methods
 
