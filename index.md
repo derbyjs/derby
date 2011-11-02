@@ -1126,6 +1126,8 @@ Alternatively, options may specify `sockets` and `socketUri` if the Socket.IO so
 
 Options may also specify Redis configuration options within a `redis` object. The Redis options can include the `port`, `host`, and `parser` arguments passed to [node-redis's](https://github.com/mranney/node_redis) createClient method. It can also include the number of the Redis database to select via the `db` option.
 
+If multiple stores are used, each should have its own Redis DB for maintaining its own transaction journal. If multiple stores are used on the same port, they should use Socket.IO namespaces to avoid conflicts.
+
 ## Creating models
 
 Derby provides a model when calling application routes. On the server, it creates an empty model from the `store` associated with an app. When the server renders the page, the model is serialized. It is then reinitialized into the same state on the client. This model object is passed to the `app.ready()` callback and app routes rendered on the client.
@@ -1138,5 +1140,88 @@ If a model is assigned to `req.model`, Derby uses that instead of creating a new
 
 If using the the Racer session middleware, server-side routes can use the model supplied on `req.model`. Otherwise, they can manually create a model via `store.createModel()`.
 
-## Model methods
+## Model features
 
+### Paths
+
+All model operations happen on paths which represent literal nested objects. These paths must be globally unique within a particular store.
+
+For example, the model:
+
+    {
+      title: 'Fruit store',
+      fruits: [
+        { name: 'banana', color: 'yellow' },
+        { name: 'apple', color: 'red' },
+        { name: 'lime', color: 'green' }
+      ]
+    }
+
+Would have paths like 'title', 'fruits.1', and 'fruits.0.color'. Paths consist of valid JavaScript variable names---alphanumeric characters or underscore (`_`), beginning with a letter or underscore---or array indicies joined by dots ('.'). They should not contain dollar signs (`$`), which are reserved for internal use.
+
+#### Private paths
+
+Paths that contain a segment starting with an underscore (e.g. '_showFooter' or 'flowers.10._hovered') have a special meaning. These paths are considered "private," and they are not synced back to the server or to other clients. Private paths are frequently used with (references)[#references] and for rendering purposes.
+
+### Methods
+
+The primary model methods use STM by default. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model methods are synchronous and provide an optional callback.
+
+#### Basic methods
+
+These methods can be used on any model path to get, set, or delete an object.
+
+> ### `value = `model.get` ( [path] )`
+>
+> **path:** *(optional)* Path of object to get. Not supplying a path will return all data in the model
+>
+> **value:** Current value of the object at the given path. Note that objects are returned by reference and should not be modified directly
+
+> ### `value = `model.set` ( path, value, callback(err, path, value) )`
+>
+> **path:** Model path to set
+>
+> **value:** Value to assign
+>
+> **callback:** Invoked upon completion of a successful or failed transaction
+>
+> **err:** String containing an error message. `'conflict'` if there is a conflict with another transaction
+>
+> **value:** Returns the original value
+
+> ### `value = `model.del` ( path, callback(err, path) )`
+>
+> **path:** Model path of object to delete
+>
+> **value:** Returns the deleted object
+
+> ### `value = `model.del` ( path, callback(err, path) )`
+>
+> **path:** Model path of object to delete
+>
+> **value:** Returns the deleted object
+
+Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
+
+{% highlight javascript %}
+var model = store.createModel();
+model.set('cars.DeLorean.DMC12.color', 'silver');
+// Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
+console.log(model.get());
+{% endhighlight %}
+{% highlight coffeescript %}
+model = store.createModel()
+model.set 'cars.DeLorean.DMC12.color', 'silver'
+# Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
+console.log model.get()
+{% endhighlight %}
+
+#### Array methods
+
+Array methods can only be used on a path pointing to an array object or a path that is currently null or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
+
+#### OT methods
+
+### Events
+
+### References
