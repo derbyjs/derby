@@ -1195,12 +1195,6 @@ These methods can be used on any model path to get, set, or delete an object.
 >
 > **value:** Returns the deleted object
 
-> ### `value = `model.del` ( path, callback(err, path) )`
->
-> **path:** Model path of object to delete
->
-> **value:** Returns the deleted object
-
 Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
 
 {% highlight javascript %}
