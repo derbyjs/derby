@@ -1177,23 +1177,21 @@ These methods can be used on any model path to get, set, or delete an object.
 >
 > **value:** Current value of the object at the given path. Note that objects are returned by reference and should not be modified directly
 
-> ### `value = `model.set` ( path, value, callback(err, path, value) )`
+All model mutators have a callback with the arguments `callback(err, methodArgs...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'conflict'` if when there is a conflict with another transaction. The method arguments used to call the original function (e.g. `path, value` for the `model.set()` method) are also passed back to the callback.
+
+> ### `value = `model.set` ( path, value, callback )`
 >
 > **path:** Model path to set
 >
-> **value:** Value to assign
+> **value:** Value to assign. Also returns this value
 >
 > **callback:** Invoked upon completion of a successful or failed transaction
->
-> **err:** String containing an error message. `'conflict'` if there is a conflict with another transaction
->
-> **value:** Returns the original value
 
-> ### `value = `model.del` ( path, callback(err, path) )`
+> ### `obj = `model.del` ( path, callback )`
 >
 > **path:** Model path of object to delete
 >
-> **value:** Returns the deleted object
+> **obj:** Returns the deleted object
 
 Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
 
@@ -1210,9 +1208,107 @@ model.set 'cars.DeLorean.DMC12.color', 'silver'
 console.log model.get()
 {% endhighlight %}
 
+> ### `obj = `model.setNull` ( path, value, callback )`
+>
+> **path:** Model path to set
+>
+> **value:** Value to assign only if the path is null or undefined
+>
+> **obj:** Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
+
+> ### `num = `model.incr` ( path, [byNum], callback )`
+>
+> **path:** Model path to set
+>
+> **byNum:** *(optional)* Number specifying amount to increment or decrement if negative. Defaults to 1
+>
+> **num:** Returns the new value that was set after incrementing
+
+The `model.setNull()` and `model.incr()` methods provide a more convenient way to perform common get and set combinations. Internally, they perform a `model.get()` and a `model.set()`, so the model events raised by both of these methods are `set` events and *not* `setNull` or `incr`. Note that `incr` can be called on a null path, in which case the value will be set to `byNum`.
+
 #### Array methods
 
-Array methods can only be used on a path pointing to an array object or a path that is currently null or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
+Array methods can only be used on a paths set to arrays, null, or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
+
+> ### `length = `model.push` ( path, items..., callback )`
+>
+> **path:** Model path to an array
+>
+> **items:** One or more arguments specifying items to add to the *end* of the array
+>
+> **length:** Returns the length of the array with the new items added
+
+> ### `length = `model.unshift` ( path, items..., callback )`
+>
+> **path:** Model path to an array
+>
+> **items:** One or more arguments specifying items to add to the *beginning* of the array
+>
+> **length:** Returns the length of the array with the new items added
+
+> ### `item = `model.pop` ( path, callback )`
+>
+> **path:** Model path to an array
+>
+> **item:** Removes the last item in the array and returns it
+
+> ### `item = `model.shift` ( path, callback )`
+>
+> **path:** Model path to an array
+>
+> **item:** Removes the first item in the array and returns it
+
+> ### `removed = `model.splice` ( path, index, howMany, [items...], callback )`
+>
+> **path:** Model path to an array
+>
+> **index:** Index at which to start removing or inserting items
+>
+> **howMany:** The number of items to remove. No elements are removed if 0
+>
+> **items:** *(optional)* Items to insert at the index
+>
+> **removed:** Returns an array of removed items
+
+> ### `length = `model.insertBefore` ( path, index, item, callback )`
+>
+> **path:** Model path to an array
+>
+> **index:** Index of the item to insert before
+>
+> **item:** Item to insert
+>
+> **length:** Returns the length of the array with the new items added
+
+> ### `length = `model.insertAfter` ( path, index, item, callback )`
+>
+> **path:** Model path to an array
+>
+> **index:** Index of the item to insert after
+>
+> **item:** Item to insert
+>
+> **length:** Returns the length of the array with the new item added
+
+> ### `removed = `model.remove` ( path, index, howMany, callback )`
+>
+> **path:** Model path to an array
+>
+> **index:** Index at which to start removing items
+>
+> **howMany:** Number of items to remove. Defaults to 1
+>
+> **removed:** Returns an array of removed items
+
+> ### `item = `model.move` ( path, from, to, callback )`
+>
+> **path:** Model path to an array
+>
+> **from:** Starting index of the item to move
+>
+> **to:** New index where the item should be moved
+>
+> **item:** Returns the item that was moved
 
 #### OT methods
 
