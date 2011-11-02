@@ -1157,7 +1157,7 @@ For example, the model:
       ]
     }
 
-Would have paths like `title`, `fruits.1`, and `fruits.0.color`. Paths consist of valid JavaScript variable names---alphanumeric characters or underscore (`_`), beginning with a letter or underscore---or array indicies joined by dots ('.'). They should not contain dollar signs (`$`), which are reserved for internal use.
+Would have paths like `title`, `fruits.1`, and `fruits.0.color`. Paths consist of valid JavaScript variable names---alphanumeric characters or underscore (`_`), beginning with a letter or underscore---or array indicies joined by dots (`.`). They should not contain dollar signs (`$`), which are reserved for internal use.
 
 #### Private paths
 
