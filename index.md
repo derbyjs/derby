@@ -1179,15 +1179,15 @@ These methods can be used on any model path to get, set, or delete an object.
 
 All model mutators have a callback with the arguments `callback(err, methodArgs...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'conflict'` if when there is a conflict with another transaction. The method arguments used to call the original function (e.g. `path, value` for the `model.set()` method) are also passed back to the callback.
 
-> ### `value = `model.set` ( path, value, callback )`
+> ### `value = `model.set` ( path, value, [callback] )`
 >
 > **path:** Model path to set
 >
 > **value:** Value to assign. Also returns this value
 >
-> **callback:** Invoked upon completion of a successful or failed transaction
+> **callback:** *(optional)* Invoked upon completion of a successful or failed transaction
 
-> ### `obj = `model.del` ( path, callback )`
+> ### `obj = `model.del` ( path, [callback] )`
 >
 > **path:** Model path of object to delete
 >
@@ -1208,7 +1208,7 @@ model.set 'cars.DeLorean.DMC12.color', 'silver'
 console.log model.get()
 {% endhighlight %}
 
-> ### `obj = `model.setNull` ( path, value, callback )`
+> ### `obj = `model.setNull` ( path, value, [callback] )`
 >
 > **path:** Model path to set
 >
@@ -1216,7 +1216,7 @@ console.log model.get()
 >
 > **obj:** Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
 
-> ### `num = `model.incr` ( path, [byNum], callback )`
+> ### `num = `model.incr` ( path, [byNum], [callback] )`
 >
 > **path:** Model path to set
 >
@@ -1230,7 +1230,7 @@ The `model.setNull()` and `model.incr()` methods provide a more convenient way t
 
 Array methods can only be used on a paths set to arrays, null, or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
 
-> ### `length = `model.push` ( path, items..., callback )`
+> ### `length = `model.push` ( path, items..., [callback] )`
 >
 > **path:** Model path to an array
 >
@@ -1238,7 +1238,7 @@ Array methods can only be used on a paths set to arrays, null, or undefined. If 
 >
 > **length:** Returns the length of the array with the new items added
 
-> ### `length = `model.unshift` ( path, items..., callback )`
+> ### `length = `model.unshift` ( path, items..., [callback] )`
 >
 > **path:** Model path to an array
 >
@@ -1246,19 +1246,19 @@ Array methods can only be used on a paths set to arrays, null, or undefined. If 
 >
 > **length:** Returns the length of the array with the new items added
 
-> ### `item = `model.pop` ( path, callback )`
+> ### `item = `model.pop` ( path, [callback] )`
 >
 > **path:** Model path to an array
 >
 > **item:** Removes the last item in the array and returns it
 
-> ### `item = `model.shift` ( path, callback )`
+> ### `item = `model.shift` ( path, [callback] )`
 >
 > **path:** Model path to an array
 >
 > **item:** Removes the first item in the array and returns it
 
-> ### `removed = `model.splice` ( path, index, howMany, [items...], callback )`
+> ### `removed = `model.splice` ( path, index, howMany, [items...], [callback] )`
 >
 > **path:** Model path to an array
 >
@@ -1270,7 +1270,7 @@ Array methods can only be used on a paths set to arrays, null, or undefined. If 
 >
 > **removed:** Returns an array of removed items
 
-> ### `length = `model.insertBefore` ( path, index, item, callback )`
+> ### `length = `model.insertBefore` ( path, index, item, [callback] )`
 >
 > **path:** Model path to an array
 >
@@ -1280,7 +1280,7 @@ Array methods can only be used on a paths set to arrays, null, or undefined. If 
 >
 > **length:** Returns the length of the array with the new items added
 
-> ### `length = `model.insertAfter` ( path, index, item, callback )`
+> ### `length = `model.insertAfter` ( path, index, item, [callback] )`
 >
 > **path:** Model path to an array
 >
@@ -1290,17 +1290,17 @@ Array methods can only be used on a paths set to arrays, null, or undefined. If 
 >
 > **length:** Returns the length of the array with the new item added
 
-> ### `removed = `model.remove` ( path, index, howMany, callback )`
+> ### `removed = `model.remove` ( path, index, [howMany], [callback] )`
 >
 > **path:** Model path to an array
 >
 > **index:** Index at which to start removing items
 >
-> **howMany:** Number of items to remove. Defaults to 1
+> **howMany:** *(optional)* Number of items to remove. Defaults to 1
 >
 > **removed:** Returns an array of removed items
 
-> ### `item = `model.move` ( path, from, to, callback )`
+> ### `item = `model.move` ( path, from, to, [callback] )`
 >
 > **path:** Model path to an array
 >
@@ -1311,6 +1311,30 @@ Array methods can only be used on a paths set to arrays, null, or undefined. If 
 > **item:** Returns the item that was moved
 
 #### OT methods
+
+> ### `otObj = `model.ot` ( [init] )`
+>
+> **init:** *(optional)* A string to use as the initial value of the OT field. Defaults to the empty string.
+>
+> **otObj:** Returns an object that can be set on a model path to declare that model path as an OT path.
+
+> ### model.insertOT` ( path, index, text, [callback] )`
+>
+> **path:** Model path to an OT field
+>
+> **index:** Position within the current OT field at which to insert
+>
+> **text:** String to insert
+
+> ### `deleted = `model.delOT` ( path, index, length, [callback] )`
+>
+> **path:** Model path to an OT field
+>
+> **index:** Position within the current OT field at which to start deleting
+>
+> **length:** Number of characters to delete
+>
+> **deleted:** Returns the string that was deleted
 
 ### Events
 
