@@ -1,18 +1,18 @@
 # Derby
 
-Derby is a reactive MVC framework for writing realtime applications in Node.js. It leverages [Racer](https://github.com/codeparty/racer) to automatically sync model data among all clients and servers, and it automatically binds models and views based on logic-less templates.
+The Derby MVC framework makes it easy to write realtime, collaborative applications that run in both Node.js and browsers.
 
-Derby not only simplifies writing applications, it also makes them load as fast as a static web page. Traditional web frameworks, such as Rails, Django, and PHP, render application views on the server. This approach provides fast load times but complicates adding interactivity in the browser. Often, code written with these frameworks eventually turns into a mess of complex, interdependent server code that renders an initial state and jQuery, Prototype, etc. code that manipulates state in the browser.
+Derby includes a powerful data synchronization engine called Racer that automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications.
 
-To avoid this problem, most interactive web application frameworks, such as SproutCore, YUI, Dojo, Google Closure, GWT, etc., render applications entirely in the browser. In this architecture, the server mostly sends resources and data back and forth. This makes writing complex apps a lot easier, but it also means that as a code base becomes more complex, page loads get slower and slower. It also can make it difficult for search engines to index such pages.
+Derby applications load immediately and can be indexed by search engines, because the same templates render on both server and client. In addition, templates define bindings, which instantly update the view when the model changes and vice versa. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
 
-Racer and Derby are both designed to run the same code equally well on the server and client from the get-go. This means that applications are rendered into HTML on the server and also include the code to update the page as things change in realtime. Thus, pages load quickly, provide immediate interaction, and continue to work offline.
+See **http://derbyjs.com/**
 
 ## Disclaimer
 
-Neither Derby nor Racer are ready for use, so **please do not report bugs or contribute pull requests yet**. Lots of the code is being actively rewritten, and the API is likely to change substantially.
+Derby and Racer are alpha software. While Derby should work well enough for prototyping and weekend projects, it is still undergoing major development. APIs are subject to change.
 
-If you have feedback, ideas, or suggestions, feel free to leave them on the [wiki](https://github.com/codeparty/derby/wiki). If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps) first.
+If you have feedback, ideas, or suggestions, feel free to leave them on the [wiki](https://github.com/codeparty/derby/wiki). If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps).
 
 ## Demos
 
@@ -20,13 +20,21 @@ If you have feedback, ideas, or suggestions, feel free to leave them on the [wik
 
 http://chat.derbyjs.com/lobby
 
-A very simple chat demo. Note that as you edit your name, it updates in realtime. Check out the source in the examples directory to see how these bindings are created automatically.
+A simple chat demo. Note that as you edit your name, it updates in realtime. Name changes also show up in the page title and other rooms. Check out the source in the examples directory to see how these bindings are created automatically.
 
-## Usage
+### Hello
 
-Like, Racer, Derby is not fully baked yet. It only has the basic structure and enough specifics to handle the chat demo. More will come soon!
+http://hello.derbyjs.com/
 
-### MIT License
+Hello world example.
+
+### Sink
+
+http://sink.derbyjs.com/
+
+A kitchen-sink style example with a bunch of random features. Largely used for testing.
+
+## MIT License
 Copyright (c) 2011 by Nate Smith and Brian Noguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
