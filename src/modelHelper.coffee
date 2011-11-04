@@ -21,30 +21,31 @@ exports.init = (model, dom, view) ->
 
       if partial is '$inv'
         value = !value
-      else if partial && method is 'html'
-        if type is 'remove'
-          method = 'remove'
-        else if type is 'move'
-          method = 'move'
-          [value, property] = value
-        else
-          # Append index of array element
+      else if partial
+        if method is 'html'
+          # Handle array updates
+          method = type
           if type is 'append'
             oldPath += '.' + (model.get(path).length - 1)
           else if type is 'insert'
             [value, index] = value
             oldPath += '.' + index
-          value = view.get partial, value, null, null, oldPath
+          else if type is 'remove'
+            noRender = true
+          else if type is 'move'
+            noRender = true
+            [value, property] = value
+        value = view.get partial, value, null, null, oldPath  unless noRender
 
       # Remove this listener if the DOM update fails. Happens when an id cannot be found
       return dom.update id, method, value, property, index
 
 
   model.on 'set', ([path, value], local) ->
-    events.trigger path, value, 'set', local
+    events.trigger path, value, 'html', local
 
   model.on 'del', ([path], local) ->
-    events.trigger path, undefined, 'set', local
+    events.trigger path, undefined, 'html', local
   
   model.on 'push', ([path, vals...], local) ->
     events.trigger path, value, 'append', local  for value in vals

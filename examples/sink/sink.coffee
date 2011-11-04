@@ -26,14 +26,12 @@ get '/', (page) ->
 
 get '/live-css', (page, model) ->
   model.subscribe 'liveCss', ->
-    console.log model.get('liveCss.styles')?
     model.setNull 'liveCss.styles', [
       {prop: 'color', value: '#c00', active: true}
       {prop: 'font-weight', value: 'bold', active: true}
       {prop: 'font-size', value: '18px', active: false}
     ]
     model.setNull 'liveCss.outputText', 'Edit this text...'
-    console.log model.get('liveCss.outputText'), model.get('liveCss.styles')
     page.render ctxFor 'liveCss'
 
 ['get', 'post', 'put', 'del'].forEach (method) ->

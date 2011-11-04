@@ -89,7 +89,6 @@ cancelRender = (url, form, e) ->
 
 renderRoute = (url, body, page, routes, i, form, e) ->
   url = url.replace /#.*/, ''
-  console.log 'requesting', url
   [path, query] = url.split '?'
   while route = routes[i++]
     continue unless match = route.match path

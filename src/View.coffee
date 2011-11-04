@@ -395,7 +395,7 @@ parse = (view, viewName, template, data, onBind) ->
             params[3] = partial  if partial
             modelEvents.bind path, params
           addEvent partial, 'html'
-          addEvent lastPartial, 'appendHtml'  if lastAutoClosed
+          addEvent lastPartial, 'append'  if lastAutoClosed
 
         onModelText: (partialText, name, endBlock) ->
           escaped = false  if partialText
