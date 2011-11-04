@@ -10,6 +10,8 @@ emptyEl = doc && doc.createElement 'div'
 element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
 
 empty = ->
+
+
 getMethods = 
   attr: (el, attr) -> el.getAttribute attr
 
@@ -49,7 +51,13 @@ setMethods =
     while child = emptyEl.firstChild
       el.appendChild child
 
-    
+  insertHtml: (value, el, index) ->
+    ref = el.childNodes[index]
+    emptyEl.innerHTML = value
+    while child = emptyEl.firstChild
+      el.insertBefore child, ref
+
+
 addListener = domHandler = empty
 
 dist = (e) -> for child in e.target.childNodes

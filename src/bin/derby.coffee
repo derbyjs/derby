@@ -1,5 +1,5 @@
-#!/usr/bin/env node
-
+`#!/usr/bin/env node
+`
 derby = require '../derby'
 {exec} = require 'child_process'
 program = require 'commander'
@@ -120,13 +120,12 @@ ready(function(model) {
     clearInterval(timer);
   }
 
-  var fn = function() {
+  (exports.start = function() {
     model.set('_stopped', false);
     timer = setInterval(function() {
       model.set('_timer', (((+new Date()) - start) / 1000).toFixed(1));
     }, 100);
-  };
-  (exports.start = fn)();
+  })();
 });
 
 '''
@@ -237,11 +236,11 @@ var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
   // .use(<<app>>.session())
 
   // Remove to disable dynamic gzipping
-  .use(gzip.gzip());
+  .use(gzip.gzip())
 
   // The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
-  .use(server.router)
+  .use(server.router);
 
 
 // ERROR HANDLING //
