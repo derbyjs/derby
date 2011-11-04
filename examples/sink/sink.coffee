@@ -92,7 +92,8 @@ view.make 'liveCss', '''
     ((#liveCss.styles))
       <p><input type=checkbox checked=((.active))> 
       <input value=((.prop)) disabled=!((.active))> 
-      <input value=((.value)) disabled=!((.active))>
+      <input value=((.value)) disabled=!((.active))> 
+      <button x-bind=click:deleteStyle>Delete</button>
     ((/))
   </div>
   <button x-bind=click:addStyle>Add</button>
@@ -125,3 +126,8 @@ view.make 'submit', '''
 ready (model) ->
   exports.addStyle = ->
     model.push 'liveCss.styles', {}
+  
+  exports.deleteStyle = (e) ->
+    item = e.target.parentNode
+    for child, i in item.parentNode.childNodes
+      return model.remove 'liveCss.styles', i  if child == item

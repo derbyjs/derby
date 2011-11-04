@@ -22,20 +22,21 @@ exports.init = (model, dom, view) ->
       if partial is '$inv'
         value = !value
       else if partial
-        if method is 'html'
+        if method is 'html' && type
           # Handle array updates
-          if type
-            method = type
-            if type is 'append'
-              oldPath += '.' + (model.get(path).length - 1)
-            else if type is 'insert'
-              [value, index] = value
-              oldPath += '.' + index
-            else if type is 'remove'
-              noRender = true
-            else if type is 'move'
-              noRender = true
-              [value, property] = value
+          method = type
+          if type is 'append'
+            oldPath += '.' + (model.get(path).length - 1)
+          else if type is 'insert'
+            [value, index] = value
+            oldPath += '.' + index
+          else if type is 'remove'
+            noRender = true
+          else if type is 'move'
+            noRender = true
+            [value, property] = value
+        else if method is 'attr'
+          value = null
         value = view.get partial, value, null, null, oldPath  unless noRender
 
       # Remove this listener if the DOM update fails. Happens when an id cannot be found

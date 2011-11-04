@@ -1,4 +1,4 @@
-htmlParser = require './htmlParser'
+{parse: parseHtml, unescapeEntities} = require './html'
 {modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent} = require './parser'
 
 View = module.exports = ->
@@ -301,7 +301,7 @@ parse = (view, viewName, template, data, onBind) ->
   popped = []
   block = null
 
-  htmlParser.parse template,
+  parseHtml template,
     start: (tag, tagName, attrs) ->
       if parser = parseElement[tagName]
         out = parser(events, attrs) || {}
@@ -423,10 +423,6 @@ parse = (view, viewName, template, data, onBind) ->
 
   return renderer view, reduceStack(stack), events
 
-htmlUnescape = (s) ->
-  # TODO: Generalize HTML character entity replacement
-  s.replace('&rpar;', ')').replace('&lpar;', '(')
-
 parseString = (view, viewName, template, data, partialName, onBind) ->
   queues = [{stack: stack = [], events: events = []}]
   popped = []
@@ -438,11 +434,11 @@ parseString = (view, viewName, template, data, partialName, onBind) ->
   while post
     match = extractPlaceholder post
     unless match?
-      pushText htmlUnescape post
+      pushText unescapeEntities post
       break
 
     {pre, post} = match
-    pushText htmlUnescape pre
+    pushText unescapeEntities pre
 
     parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match, true, onBind,
       onBind: (name) -> onBind events, name

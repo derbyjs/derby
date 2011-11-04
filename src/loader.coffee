@@ -5,7 +5,7 @@ stylus = require 'stylus'
 nib = require 'nib'
 racer = require 'racer'
 {trim} = require './View'
-htmlParser = require './htmlParser'
+{parse: parseHtml} = require './html'
 
 cssCache = {}
 jsCache = {}
@@ -35,7 +35,7 @@ loadTemplates = (root, fileName, get, alias, templates, callback) ->
       name = ''
       from = ''
       importName = ''
-      htmlParser.parse template,
+      parseHtml template,
         start: (tag, tagName, attrs) ->
           i = tagName.length - 1
           name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()

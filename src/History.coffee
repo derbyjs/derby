@@ -74,7 +74,7 @@ History:: =
     return unless (state = e.state) && state.render
     # Note that the post body is only sent on the initial reqest
     # and null is sent if the state is later popped
-    renderRoute winLocation.pathname, null, @_page, @_routes[state.method], 0, e
+    renderRoute winLocation.pathname, null, @_page, @_routes[state.method], 0, null, e
 
 cancelRender = (url, form, e) ->
   # Don't do anything if this is the result of an event, since the

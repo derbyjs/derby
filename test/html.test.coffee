@@ -1,12 +1,12 @@
 {wrapTest} = require './util'
 should = require 'should'
-htmlParser = require 'htmlParser'
+html = require 'html'
 
 module.exports =
-  'test htmlParser no handlers': ->
-    htmlParser.parse '<p id=stuff>Heyo</p>'
+  'test html parse with no handlers': ->
+    html.parse '<p id=stuff>Heyo</p>'
 
-  'test htmlParser basic HTML': ->
+  'test html parse with basic HTML': ->
     html =
       '<h1>Willow ' + # Tag containing chars
         '<EM ID=h1 CLASS=head>' + # Nested tag, attributes, uppercase
@@ -61,7 +61,7 @@ module.exports =
     ]
 
     stack = []
-    htmlParser.parse html,
+    html.parse html,
       chars: (text) -> stack.push ['chars', text]
       start: (tag, tagName, attrs) -> stack.push ['start', tagName, attrs]
       end: (tag, tagName) -> stack.push ['end', tagName]
