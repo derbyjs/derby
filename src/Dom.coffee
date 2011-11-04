@@ -9,9 +9,7 @@ emptyEl = doc && doc.createElement 'div'
 
 element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
 
-empty = ->
-
-
+getNaN = -> NaN
 getMethods = 
   attr: (el, attr) -> el.getAttribute attr
 
@@ -19,46 +17,58 @@ getMethods =
 
   propPolite: getProp
 
-  visible: empty
-
-  displayed: empty
-
   html: (el) -> el.innerHTML
 
-  appendHtml: empty
+  # These methods return NaN, because it never equals anything else. Thus,
+  # when compared against the new value, the new value will always be set
+  visible: getNaN
+  displayed: getNaN
+  append: getNaN
+  insert: getNaN
+  remove: getNaN
+  move: getNaN
 
 setMethods = 
-  attr: (value, el, attr) ->
+  attr: (el, value, attr) ->
     el.setAttribute attr, value
 
-  prop: (value, el, prop) ->
+  prop: (el, value, prop) ->
     el[prop] = value
 
-  propPolite: (value, el, prop) ->
+  propPolite: (el, value, prop) ->
     el[prop] = value  if el != doc.activeElement
 
-  visible: (value, el) ->
+  visible: (el, value) ->
     el.style.visibility = if value then '' else 'hidden'
 
-  displayed: (value, el) ->
+  displayed: (el, value) ->
     el.style.display = if value then '' else 'none'
 
-  html: (value, el, escape) ->
+  html: html = (el, value, escape) ->
     el.innerHTML = if escape then htmlEscape value else value
 
-  appendHtml: (value, el) ->
-    emptyEl.innerHTML = value
+  append: (el, value, escape) ->
+    html emptyEl, value, escape
     while child = emptyEl.firstChild
       el.appendChild child
 
-  insertHtml: (value, el, index) ->
+  insert: (el, value, escape, index) ->
     ref = el.childNodes[index]
-    emptyEl.innerHTML = value
+    html emptyEl, value, escape
     while child = emptyEl.firstChild
       el.insertBefore child, ref
 
+  remove: (el, index) ->
+    child = el.childNodes[index]
+    el.removeChild child
+  
+  move: (el, from, to) ->
+    child = el.childNodes[from]
+    ref = el.childNodes[to]
+    el.insertBefore child, ref
 
-addListener = domHandler = empty
+
+addListener = domHandler = ->
 
 dist = (e) -> for child in e.target.childNodes
   return  unless child.nodeType == 1
@@ -139,18 +149,15 @@ Dom:: =
     addListener win, 'popstate', (e) ->
       history._onPop e
 
-  update: (id, method, property, value, type, local) ->
+  update: (id, method, value, property, index) ->
+    # Fail and remove the listener if the element can't be found
     return false  unless el = element id
-    
-    if type is 'push' && method is 'html'
-      method = 'appendHtml'  
-    else if method is 'propPolite' && local
-      method = 'prop'
-    
+
+    # Don't do anything if the element is already up to date
     return  if value == getMethods[method] el, property
-    setMethods[method] value, el, property
+
+    setMethods[method] el, value, property, index
     return
 
 Dom.getMethods = getMethods
 Dom.setMethods = setMethods
-

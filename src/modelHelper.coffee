@@ -12,25 +12,69 @@ exports.init = (model, dom, view) ->
     onBind: onBind
     onTrigger: (path, listener, value, type, local) ->
       [oldPath, id, method, property, partial] = listener
-      
+
       # Check to see if this event is triggering for the right object. Remove
       # this listener if it is now stale
       return false  unless oldPath == path || model.get(oldPath) == model.get(path)
-     
+
+      method = 'prop'  if method is 'propPolite' && local
+
       if partial is '$inv'
         value = !value
-      else if partial
-        # Append index of pushed element
-        oldPath += '.' + (model.get(path).length - 1)  if type is 'push'
-        value = view.get partial, value, null, null, oldPath
-      # Remove this listener if the DOM update fails. This usually happens
-      # when an id cannot be found
-      return dom.update id, method, property, value, type, local
-    
-  for event in ['set', 'push']
-    do (event) -> model.on event, ([path, value], local) ->
-      events.trigger path, value, event, local
+      else if partial && method is 'html'
+        if type is 'remove'
+          method = 'remove'
+        else if type is 'move'
+          method = 'move'
+          [value, property] = value
+        else
+          # Append index of array element
+          if type is 'append'
+            oldPath += '.' + (model.get(path).length - 1)
+          else if type is 'insert'
+            [value, index] = value
+            oldPath += '.' + index
+          value = view.get partial, value, null, null, oldPath
 
+      # Remove this listener if the DOM update fails. Happens when an id cannot be found
+      return dom.update id, method, value, property, index
+
+
+  model.on 'set', ([path, value], local) ->
+    events.trigger path, value, 'set', local
+
+  model.on 'del', ([path], local) ->
+    events.trigger path, undefined, 'set', local
+  
+  model.on 'push', ([path, vals...], local) ->
+    events.trigger path, value, 'append', local  for value in vals
+
+  model.on 'unshift', ([path, vals...], local) ->
+    events.trigger path, [value, 0], 'insert', local  for value in vals.reverse()
+
+  model.on 'insertBefore', ([path, index, value], local) ->
+    events.trigger path, [value, index], 'insert', local
+  
+  model.on 'insertAfter', ([path, index, value], local) ->
+    events.trigger path, [value, index + 1], 'insert', local
+  
+  model.on 'splice', ([path, start, howMany, vals...], local) ->
+    events.trigger path, index, 'remove', local  for index in [start..start + howMany]
+    events.trigger path, [value, index], 'insert', local  for value in vals
+  
+  model.on 'remove', ([path, start, howMany], local) ->
+    events.trigger path, index, 'remove', local  for index in [start..start + howMany]
+
+  model.on 'pop', ([path], local) ->
+    index = model.get(path).length
+    events.trigger path, index, 'remove', local
+
+  model.on 'shift', ([path], local) ->
+    events.trigger path, 0, 'remove', local
+
+  model.on 'move', ([path, from, to], local) ->
+    events.trigger path, [from, to], 'move', local
+    
   for event in ['connected', 'canConnect']
     do (event) -> model.on event, (value) ->
       events.trigger event, value
