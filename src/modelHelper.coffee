@@ -28,7 +28,7 @@ exports.init = (model, dom, view) ->
           if type is 'append'
             oldPath += '.' + (model.get(path).length - 1)
           else if type is 'insert'
-            [value, index] = value
+            [index, value] = value
             oldPath += '.' + index
           else if type is 'remove'
             noRender = true
@@ -50,34 +50,47 @@ exports.init = (model, dom, view) ->
     events.trigger path, undefined, 'html', local
   
   model.on 'push', ([path, vals...], local) ->
-    events.trigger path, value, 'append', local  for value in vals
+    for value in vals
+      events.trigger path, value, 'append', local
+    return
 
-  model.on 'unshift', ([path, vals...], local) ->
-    events.trigger path, [value, 0], 'insert', local  for value in vals.reverse()
+  insert = (path, index, values, local) ->
+    i = values.length
+    while i--
+      value = values[i]
+      events.trigger path, [index, value], 'insert', local
+    return
+
+  remove = (path, start, howMany, local) ->
+    for index in [start..start + howMany - 1]
+      events.trigger path, index, 'remove', local
+    return
+
+  model.on 'unshift', ([path, values...], local) ->
+    insert path, 0, values, local
 
   model.on 'insertBefore', ([path, index, value], local) ->
-    events.trigger path, [value, index], 'insert', local
-  
+    insert path, index, [value], local
+
   model.on 'insertAfter', ([path, index, value], local) ->
-    events.trigger path, [value, index + 1], 'insert', local
-  
-  model.on 'splice', ([path, start, howMany, vals...], local) ->
-    events.trigger path, index, 'remove', local  for index in [start..start + howMany]
-    events.trigger path, [value, index], 'insert', local  for value in vals
-  
+    insert path, index + 1, [value], local
+
   model.on 'remove', ([path, start, howMany], local) ->
-    events.trigger path, index, 'remove', local  for index in [start..start + howMany]
+    remove path, start, howMany, local
 
   model.on 'pop', ([path], local) ->
-    index = model.get(path).length
-    events.trigger path, index, 'remove', local
+    remove path, model.get(path).length, 1, local
 
   model.on 'shift', ([path], local) ->
-    events.trigger path, 0, 'remove', local
+    remove path, 0, 1, local
+
+  model.on 'splice', ([path, start, howMany, values...], local) ->
+    remove path, start, howMany, local
+    insert path, index, values, local
 
   model.on 'move', ([path, from, to], local) ->
     events.trigger path, [from, to], 'move', local
-    
+
   for event in ['connected', 'canConnect']
     do (event) -> model.on event, (value) ->
       events.trigger event, value

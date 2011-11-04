@@ -51,12 +51,14 @@ setMethods =
     html emptyEl, value, escape
     while child = emptyEl.firstChild
       el.appendChild child
+    return
 
   insert: (el, value, escape, index) ->
     ref = el.childNodes[index]
     html emptyEl, value, escape
     while child = emptyEl.firstChild
       el.insertBefore child, ref
+    return
 
   remove: (el, index) ->
     child = el.childNodes[index]
