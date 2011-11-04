@@ -118,7 +118,7 @@ ready(function(model) {
     // client. Nothing set under a private path is synced back to the server.
     model.set('_stopped', true);
     clearInterval(timer);
-  }
+  };
 
   (exports.start = function() {
     model.set('_stopped', false);
