@@ -63,6 +63,7 @@ setMethods =
     el.removeChild child
   
   move: (el, from, to) ->
+    to++ if to > from
     child = el.childNodes[from]
     ref = el.childNodes[to]
     el.insertBefore child, ref
