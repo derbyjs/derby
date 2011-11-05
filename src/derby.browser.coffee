@@ -1,4 +1,5 @@
 racer = require 'racer'
+{merge} = racer.util
 modelHelper = require './modelHelper'
 Dom = require './Dom'
 View = require './View'
@@ -37,11 +38,12 @@ exports.createApp = (appModule) ->
   # "$$templates$$" is replaced with an array of templates by loader
   view.make name, template  for name, template of "$$templates$$"
 
-  appModule.exports = (idCount, paths, partialIds, aliases, modelBundle, modelEvents, domEvents) ->
+  appModule.exports = (idCount, paths, partialIds, aliases, pathMap, modelBundle, modelEvents, domEvents) ->
     view._idCount = idCount
     view._paths = paths
     view._partialIds = partialIds
     view._aliases = aliases
+    merge model.__pathMap, pathMap
     racer.init modelBundle
     model.__events.set modelEvents
     dom.init domEvents

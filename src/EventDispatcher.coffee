@@ -13,7 +13,7 @@ EventDispatcher = module.exports = (options = {}) ->
 
 EventDispatcher:: = 
   bind: (name, listener) ->
-    return  if @_onBind(name, listener) == false
+    @_onBind name, listener
     names = @_names
     key = if `listener == null` then 'null' else JSON.stringify listener
     obj = names[name] || {}
@@ -21,7 +21,7 @@ EventDispatcher:: =
     names[name] = obj
   
   unbind: (name, listener) ->
-    return  if @_onUnbind(name, listener) == false
+    @_onUnbind name, listener
     names = @_names
     return unless obj = names[name]
     delete obj[JSON.stringify listener]

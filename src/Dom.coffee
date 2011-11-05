@@ -88,14 +88,18 @@ distribute = (e) ->
 
 Dom = module.exports = (model, appExports, @history) ->
   @events = events = new EventDispatcher
-    onBind: (name) -> addListener doc, name  unless name of events._names
+    onBind: (name, listener) ->
+      if listener.length > 3
+        listener[0] = model.__pathMap.id listener[0]
+      addListener doc, name  unless name of events._names
     onTrigger: (name, listener, targetId, e) ->
       if listener.length <= 3
         [fn, id, delay] = listener
         callback = if fn is '$dist' then distribute else appExports[fn]
         return  unless callback
       else
-        [path, id, method, property, delay] = listener
+        [pathId, id, method, property, delay] = listener
+        path = model.__pathMap.paths[pathId]
         path = path.substr 1  if invert = path.charAt(0) is '!'
 
       return  unless id is targetId

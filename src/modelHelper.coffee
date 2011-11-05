@@ -1,21 +1,26 @@
 EventDispatcher = require './EventDispatcher'
 
+# Keeps track of each unique path via an ID
+PathMap = ->
+  @count = 1
+  @ids = {}
+  @paths = {}
+  return
+
+PathMap:: =
+
+  id: (path) ->
+    # Return the path for an id, or create a new id and double index it
+    this.ids[path] || (this.paths[id = this.count++] = path; this.ids[path] = id)
+
+
 exports.init = (model, dom, view) ->
-  # Save the original path in the listener to be checked at trigger time
-  onBind = (path, listener) -> listener.unshift path
+  pathMap = model.__pathMap = new PathMap
 
-  unless dom
-    model.__events = new EventDispatcher {onBind} 
-    return model
-
-  events = model.__events = new EventDispatcher
-    onBind: onBind
-    onTrigger: (path, listener, value, type, local) ->
-      [oldPath, id, method, property, partial] = listener
-
-      # Check to see if this event is triggering for the right object. Remove
-      # this listener if it is now stale
-      return false  unless oldPath == path || model.get(oldPath) == model.get(path)
+  if dom then events = model.__events = new EventDispatcher
+    onTrigger: (name, listener, value, type, local) ->
+      [id, method, property, partial] = listener
+      path = pathMap.paths[name]
 
       method = 'prop'  if method is 'propPolite' && local
 
@@ -26,10 +31,10 @@ exports.init = (model, dom, view) ->
           # Handle array updates
           method = type
           if type is 'append'
-            oldPath += '.' + (model.get(path).length - 1)
+            path += '.' + (model.get(path).length - 1)
           else if type is 'insert'
             [index, value] = value
-            oldPath += '.' + index
+            path += '.' + index
           else if type is 'remove'
             noRender = true
           else if type is 'move'
@@ -37,34 +42,45 @@ exports.init = (model, dom, view) ->
             [value, property] = value
         else if method is 'attr'
           value = null
-        value = view.get partial, value, null, null, oldPath  unless noRender
+        value = view.get partial, value, null, null, path  unless noRender
 
       # Remove this listener if the DOM update fails. Happens when an id cannot be found
       return dom.update id, method, value, property, index
+  
+  else events = model.__events = new EventDispatcher
+
+  events.__bind = events.bind
+  events.bind = (name, listener) ->
+    events.__bind pathMap.id(name), listener
+
+  return model unless dom
 
 
   model.on 'set', ([path, value], local) ->
-    events.trigger path, value, 'html', local
+    events.trigger pathMap.id(path), value, 'html', local
 
   model.on 'del', ([path], local) ->
-    events.trigger path, undefined, 'html', local
+    events.trigger pathMap.id(path), undefined, 'html', local
 
   model.on 'push', ([path, values...], local) ->
+    id = pathMap.id path
     for value in values
-      events.trigger path, value, 'append', local
+      events.trigger id, value, 'append', local
     return
 
   model.on 'move', ([path, from, to], local) ->
-    events.trigger path, [from, to], 'move', local
+    events.trigger pathMap.id(path), [from, to], 'move', local
 
   insert = (path, index, values, local) ->
+    id = pathMap.id path
     for value, i in values
-      events.trigger path, [index + i, value], 'insert', local
+      events.trigger id, [index + i, value], 'insert', local
     return
 
   remove = (path, start, howMany, local) ->
+    id = pathMap.id path
     for index in [start..start + howMany - 1]
-      events.trigger path, index, 'remove', local
+      events.trigger id, index, 'remove', local
     return
 
   model.on 'unshift', ([path, values...], local) ->
@@ -91,6 +107,6 @@ exports.init = (model, dom, view) ->
 
   for event in ['connected', 'canConnect']
     do (event) -> model.on event, (value) ->
-      events.trigger event, value
+      events.trigger pathMap.id(event), value
 
   return model
