@@ -65,7 +65,16 @@ View:: =
     
     ctx = extend parentCtx, ctx
     if (ctx.$paths = paths) && (triggerPath ||= ctx.$triggerPath)
-      re = RegExp(paths[0].replace(/\$#|\./g, (match) -> if match is '.' then '\\.' else '(\\d+)'))
+      path = paths[0]
+      if path.charAt(path.length - 1) != '#' && /\.\d+$/.test triggerPath
+        # If path points to an array and an event was triggered on an item
+        # in the array, add the index placeholder to the first path
+        ctx.$paths = paths = paths.slice()
+        paths[0] = path += '.$#'
+      re = RegExp(
+        path.replace /\.|\$#/g, (match) ->
+          if match is '.' then '\\.' else '(\\d+)'
+      )
       ctx.$i = re.exec(triggerPath)?.slice(1).reverse()
     return view ctx
 
