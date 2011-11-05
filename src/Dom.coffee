@@ -99,7 +99,8 @@ Dom = module.exports = (model, appExports, @history) ->
         return  unless callback
       else
         [pathId, id, method, property, delay] = listener
-        path = model.__pathMap.paths[pathId]
+        # Remove this listener if its path id is no longer registered
+        return false  unless path = model.__pathMap.paths[pathId]
         path = path.substr 1  if invert = path.charAt(0) is '!'
 
       return  unless id is targetId

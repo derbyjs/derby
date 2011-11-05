@@ -93,7 +93,8 @@ View::_render = (res, model, ctx, isStatic, dom, css) ->
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
     "#{clientName}=require('./#{@_require}')(#{@_idCount}," +
     JSON.stringify(@_paths) + ',' + JSON.stringify(@_partialIds) + ',' +
-    JSON.stringify(@_aliases) + ',' + JSON.stringify(model.__pathMap.paths) + ','
+    JSON.stringify(@_aliases) + ',' + model.__pathMap.count + ',' +
+    JSON.stringify(model.__pathMap.ids) + ','
   initEnd = ',' + JSON.stringify(model.__events.get()) + ',' +
     JSON.stringify(dom.events.get()) +
     ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"

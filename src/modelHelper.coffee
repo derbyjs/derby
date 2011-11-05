@@ -2,8 +2,9 @@ EventDispatcher = require './EventDispatcher'
 
 # Keeps track of each unique path via an ID
 PathMap = ->
+  @count = 0
   @ids = {}
-  @paths = [0]  # Make the path ids one based
+  @paths = {}
   @arrays = {}
   return
 
@@ -12,14 +13,14 @@ PathMap:: =
   id: (path) ->
     # Return the path for an id, or create a new id and index it
     this.ids[path] || (
-      id = this.paths.push(path) - 1
+      this.paths[id = ++@count] = path
       @indexArray path, id
       this.ids[path] = id
     )
 
   indexArray: (path, id) ->
     # TODO: Nested arrays
-    if match = /^(.+)\.(\d+)(\.|$)/.exec path
+    if match = /^(.+)\.(\d+)(\..+|$)/.exec path
       name = match[1]
       index = +match[2]
       remainder = match[3]
@@ -27,10 +28,10 @@ PathMap:: =
       set = arr[index] || arr[index] = {}
       set[id] = remainder
 
-  init: (@paths) ->
-    ids = @ids
-    for path, id in @paths
-      ids[path] = id
+  init: (@count, @ids) ->
+    paths = @paths
+    for path, id of @ids
+      paths[id] = path
       @indexArray path, id
 
 
@@ -98,8 +99,31 @@ exports.init = (model, dom, view) ->
     return
 
   remove = (path, start, howMany, local) ->
+    end = start + howMany
+
+    # Update indicies in pathMap before removing
+    if map = pathMap.arrays[path]
+      len = map.length
+      for i in [start...len]
+        continue unless ids = map[i]
+        if i < end
+          # Delete indicies for removed items
+          for id of ids
+            itemPath = pathMap.paths[id]
+            delete pathMap.ids[itemPath]
+            delete pathMap.paths[id]
+        else
+          # Decrement indicies of later items
+          for id, remainder of ids
+            itemPath = pathMap.paths[id]
+            delete pathMap.ids[itemPath]
+            itemPath = path + '.' + (i - howMany) + remainder
+            pathMap.paths[id] = itemPath
+            pathMap.ids[itemPath] = +id
+      map.splice start, howMany
+
     id = pathMap.id path
-    for index in [start..start + howMany - 1]
+    for index in [start...end]
       events.trigger id, index, 'remove', local
     return
 
