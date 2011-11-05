@@ -48,17 +48,18 @@ exports.init = (model, dom, view) ->
 
   model.on 'del', ([path], local) ->
     events.trigger path, undefined, 'html', local
-  
-  model.on 'push', ([path, vals...], local) ->
-    for value in vals
+
+  model.on 'push', ([path, values...], local) ->
+    for value in values
       events.trigger path, value, 'append', local
     return
 
+  model.on 'move', ([path, from, to], local) ->
+    events.trigger path, [from, to], 'move', local
+
   insert = (path, index, values, local) ->
-    i = values.length
-    while i--
-      value = values[i]
-      events.trigger path, [index, value], 'insert', local
+    for value, i in values
+      events.trigger path, [index + i, value], 'insert', local
     return
 
   remove = (path, start, howMany, local) ->
@@ -87,9 +88,6 @@ exports.init = (model, dom, view) ->
   model.on 'splice', ([path, start, howMany, values...], local) ->
     remove path, start, howMany, local
     insert path, index, values, local
-
-  model.on 'move', ([path, from, to], local) ->
-    events.trigger path, [from, to], 'move', local
 
   for event in ['connected', 'canConnect']
     do (event) -> model.on event, (value) ->
