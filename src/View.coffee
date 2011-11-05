@@ -1,12 +1,12 @@
 {parse: parseHtml, unescapeEntities} = require './html'
 {modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent} = require './parser'
 
+empty = ->
 View = module.exports = ->
   self = this
   @_views = {}
   @_paths = {}
   @_onBinds = {}
-  @_depths = {}
   @_aliases = {}
   @_partialIds = {}
   @_templates = {}
@@ -31,9 +31,9 @@ View:: =
       if ~(i = viewName.indexOf '$p')
         start = if type is '#' or type is '^' then 1 else 0
         parentView = viewName.substr start, i - start
-        # Make sure the parent view exists to avoid an infinte loop
+        # Make sure the parent view exists to avoid an infinite loop
         @_find parentView
-        @get parentView, {$triggerPath: triggerPath}
+        @get parentView, $triggerPath: triggerPath
         return @get viewName, ctx, parentCtx, null, triggerPath
       # Return an empty string when a view can't be found
       return ''
@@ -76,7 +76,7 @@ View:: =
     name = name.toLowerCase()
     self = this
     render = (ctx) ->
-      render = parse self, name, template, data, self._onBinds[name]
+      render = parse self, name, template, data, ctx, self._onBinds[name]
       render ctx
     @_views[name] = (ctx) -> render extend data, ctx
 
@@ -92,7 +92,7 @@ View:: =
       setTimeout after, 0, ctx
       fn ctx
 
-  inline: ->
+  inline: empty
 
   render: (@model, ctx) ->
     @model.__events.clear()
@@ -164,22 +164,21 @@ startsEndBlock = (s) ->
     (?:\}{2,3}|\){2,3})  # End placeholder
   ///.test s
 
-currentDepth = (data, queues) ->
-  data.$depth + queues.length
-
-unaliasName = (data, queues, name) ->
+unaliasName = (data, depth, name) ->
   return name  unless name.charAt(0) is ':'
   i = name.indexOf '.'
   aliasName = name.substring 1, i
   remainder = name.substr i + 1
   # Calculate depth difference between alias's definition and usage
-  offset = currentDepth(data, queues) - data.$aliases[aliasName]
+  offset = depth - data.$aliases[aliasName]
   throw "Can't find alias for #{name}"  if offset != offset # If NaN
   # Convert depth difference to a relative model path
   return Array(offset + 1).join('.') + remainder
 
-addNameToData = (data, name) ->
-  data[name] = {model: name}  if name && !(name of data)
+addNameToData = (data, depth, name) ->
+  name = unaliasName data, depth, name
+  data[name] = {model: name}
+  return name
 
 dataValue = (data, name, model) ->
   # Get the value from the model if the name is a model path
@@ -239,15 +238,14 @@ renderer = (view, items, events) ->
     event data, modelEvents, domEvents for event in events
     return html
 
-parsePlaceholderContent = (view, data, partialName, queues, popped, stack, events, block, match, isString, onBind, callbacks) ->
+parsePlaceholderContent = (view, data, depth, partialName, queues, popped, stack, events, block, match, isString, onBind, callbacks) ->
   {literal, type, name, alias, partial} = match
   partial += '$s'  if partial && isString
   
   # Store depth when an alias is defined
-  data.$aliases[alias] = currentDepth data, queues  if alias
+  data.$aliases[alias] = depth + queues.length  if alias
 
-  name = unaliasName data, queues, name
-  addNameToData data, name
+  name = addNameToData data, depth + queues.length, name
   
   if block && ((endBlock = type is '/') ||
       (autoClosed = type is '^' && (!name || name == block.name) && block.type is '#'))
@@ -261,11 +259,11 @@ parsePlaceholderContent = (view, data, partialName, queues, popped, stack, event
     partial = type + partialName()
     block = {type, name, partial, literal, lastPartial, lastAutoClosed: autoClosed}
 
-  if partial then partialText = (data, model) ->
-    view._onBinds[partial] = onBind
-    view._depths[partial] = currentDepth data, queues
-    view._aliases[partial] = data.$aliases
-    view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
+  if partial
+    partialText = (data, model) ->
+      view._onBinds[partial] = onBind
+      data.$depth = depth + queues.length
+      view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
 
   if (datum = data[name])?
     if datum.model && !startBlock
@@ -282,18 +280,27 @@ parsePlaceholderContent = (view, data, partialName, queues, popped, stack, event
       block: block
     callbacks.onStartBlock stack, events, block
 
-parse = (view, viewName, template, data, onBind) ->
+parse = (view, viewName, template, data, ctx, onBind) ->
   partialCount = 0
   partialName = -> viewName + '$p' + partialCount++
 
-  data.$depth = view._depths[viewName] || 0
-  data.$aliases = view._aliases[viewName] || {}
+  if ctx.$aliases
+    view._aliases[viewName] = [
+      data.$aliases = ctx.$aliases
+      depth = ctx.$depth || 0
+    ]
+  else if aliases = view._aliases[viewName]
+    [data.$aliases, depth] = aliases
+  else
+    data.$aliases = {}
+    depth = ctx.$depth || 0
+
   if data.$isString
     if viewName is 'title$s'
       onBind = (events, name) -> events.push (data, modelEvents) ->
         return  unless path = modelPath data, name
         modelEvents.bind path, ['$doc', 'prop', 'title', 'title$s']
-    return parseString view, viewName, template, data, partialName, onBind || ->
+    return parseString view, viewName, template, data, depth, partialName, onBind || empty
 
   uniqueId = view._uniqueId
   
@@ -310,15 +317,14 @@ parse = (view, viewName, template, data, onBind) ->
       forAttr = (attr, value) ->
         if match = extractPlaceholder value
           {pre, post, name, partial, literal} = match
-          name = unaliasName data, queues, name
-          addNameToData data, name
+          name = addNameToData data, depth + queues.length, name
           
           invert = /^\s*!\s*$/.test pre
           if (pre && !invert) || post || partial
             # Attributes must be a single string, so create a string partial
             partial = partialName()
             addIdPartial attrs, uniqueId, view._partialIds, partial
-            render = parseString view, partial, value, data, partialName,
+            render = parseString view, partial, value, data, depth, partialName,
               (events, name) -> events.push (data, modelEvents) ->
                 return  unless path = modelPath data, name
                 modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
@@ -376,7 +382,7 @@ parse = (view, viewName, template, data, onBind) ->
       pushText pre
 
       wrap = null
-      parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match, false, null,
+      parsePlaceholderContent view, data, depth, partialName, queues, popped, stack, events, block, match, false, null,
         onBind: (name, partial, endBlock, lastAutoClosed, lastPartial) ->
           i = stack.length - (if endBlock then (if lastAutoClosed then 3 else 2) else 1)
           last = stack[i]
@@ -423,7 +429,7 @@ parse = (view, viewName, template, data, onBind) ->
 
   return renderer view, reduceStack(stack), events
 
-parseString = (view, viewName, template, data, partialName, onBind) ->
+parseString = (view, viewName, template, data, depth, partialName, onBind) ->
   queues = [{stack: stack = [], events: events = []}]
   popped = []
   block = null
@@ -440,7 +446,7 @@ parseString = (view, viewName, template, data, partialName, onBind) ->
     {pre, post} = match
     pushText unescapeEntities pre
 
-    parsePlaceholderContent view, data, partialName, queues, popped, stack, events, block, match, true, onBind,
+    parsePlaceholderContent view, data, depth, partialName, queues, popped, stack, events, block, match, true, onBind,
       onBind: (name) -> onBind events, name
 
       onModelText: (partialText, name, endBlock) ->
