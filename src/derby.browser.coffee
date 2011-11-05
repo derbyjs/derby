@@ -43,9 +43,9 @@ exports.createApp = (appModule) ->
     view._partialIds = partialIds
     view._aliases = aliases
     model.__pathMap.init pathMapCount, pathMapIds
-    racer.init modelBundle
     model.__events.set modelEvents
     dom.init domEvents
+    racer.init modelBundle
     return appExports
 
   return appExports
