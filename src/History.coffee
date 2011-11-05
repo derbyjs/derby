@@ -4,11 +4,14 @@ win = window
 winHistory = win.history
 winLocation = win.location
 
-# Replace the initial state with the current URL immediately,
-# so that it will be rendered if the state is later popped
-winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
+if winHistory.replaceState
+  # Replace the initial state with the current URL immediately,
+  # so that it will be rendered if the state is later popped
+  winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
 
 History = module.exports = (@_routes, page) ->
+  unless winHistory.pushState
+    @push = @replace = ->
   page.history = this
   @_page = page
   return
