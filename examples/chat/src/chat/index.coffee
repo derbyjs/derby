@@ -45,6 +45,26 @@ getRoom = (page, model, room, userId) ->
 view.after 'message', -> $('messages').scrollTop = $('messageList').offsetHeight
 
 ready (model) ->
+  # Times are all set client-side for now, since the locale is not known
+  # when performing server-side rendering
+  months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  displayTime = (time) ->
+    time = new Date time
+    hours = time.getHours()
+    period = if hours < 12 then ' am, ' else ' pm, '
+    hours = (hours % 12) || 12
+    hours + ':' + time.getMinutes() + period + months[time.getMonth()] +
+      ' ' + time.getDate() + ', ' + time.getFullYear()
+
+  model.on 'set', '_room.messages.*.time', (i, time) ->
+    model.set "_room.messages.#{i}._displayTime", displayTime time 
+
+  for message, i in model.get '_room.messages'
+    messagePath = "_room.messages.#{i}"
+    if time = model.get messagePath + '.time'
+      model.set messagePath + '._displayTime', displayTime time
+
+
   # Exported functions are exposed as a global in the browser with the same
   # name as the module that includes Derby. They can also be bound to DOM
   # events using the "x-bind" attribute in a template.
@@ -63,4 +83,5 @@ ready (model) ->
     model.push '_room.messages',
       userId: model.get '_session.userId'
       comment: model.get '_newComment'
+
     model.set '_newComment', ''

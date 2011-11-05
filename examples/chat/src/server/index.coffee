@@ -60,6 +60,18 @@ store = chat.createStore redis: {db: 2}, listen: server
 # Clear all data every time the node server is started
 store.flush()
 
+# Add a time stamp to new messages
+# TODO: Figure out a better way to do server-side events that are not
+# tied to a model, since keeping the model data in memory is bad
+model = store.createModel()
+model.subscribe 'rooms.*.messages', ->
+  model.on 'push', 'rooms.*.messages', (room) ->
+    # TODO: Pass the return value to event listeners
+    # (should get the array length as a callback argument)
+    path = "rooms.#{room}.messages"
+    i = model.get(path).length - 1
+    model.set "#{path}.#{i}.time", +new Date
+
 server.listen 3002
 console.log 'Express server started in %s mode', server.settings.env
 console.log 'Go to: http://localhost:%d/', server.address().port
