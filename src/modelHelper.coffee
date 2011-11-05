@@ -2,20 +2,35 @@ EventDispatcher = require './EventDispatcher'
 
 # Keeps track of each unique path via an ID
 PathMap = ->
-  @count = 1
   @ids = {}
-  @paths = {}
+  @paths = [0]  # Make the path ids one based
+  @arrays = {}
   return
 
 PathMap:: =
 
   id: (path) ->
-    # Return the path for an id, or create a new id and double index it
-    this.ids[path] || (this.paths[id = this.count++] = path; this.ids[path] = id)
-  
-  init: (@count, @ids) ->
-    paths = @paths
-    paths[id] = path  for path, id of @ids
+    # Return the path for an id, or create a new id and index it
+    this.ids[path] || (
+      id = this.paths.push(path) - 1
+      @indexArray path, id
+      this.ids[path] = id
+    )
+
+  indexArray: (path, id) ->
+    # TODO: Nested arrays
+    if match = /^(.+)\.(\d+)(?:\.|$)/.exec path
+      name = match[1]
+      index = +match[2]
+      arr = @arrays[name] || @arrays[name] = []
+      set = arr[index] || arr[index] = {}
+      set[id] = true
+
+  init: (@paths) ->
+    ids = @ids
+    for path, id in @paths
+      ids[path] = id
+      @indexArray path, id
 
 
 exports.init = (model, dom, view) ->
