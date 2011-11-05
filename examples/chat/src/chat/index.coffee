@@ -53,11 +53,10 @@ ready (model) ->
     hours = time.getHours()
     period = if hours < 12 then ' am, ' else ' pm, '
     hours = (hours % 12) || 12
-    hours + ':' + time.getMinutes() + period + months[time.getMonth()] +
+    minutes = time.getMinutes()
+    minutes = '0' + minutes if minutes < 10
+    hours + ':' + minutes + period + months[time.getMonth()] +
       ' ' + time.getDate() + ', ' + time.getFullYear()
-
-  model.on 'set', '_room.messages.*.time', (i, time) ->
-    model.set "_room.messages.#{i}._displayTime", displayTime time 
 
   for message, i in model.get '_room.messages'
     messagePath = "_room.messages.#{i}"
@@ -77,11 +76,17 @@ ready (model) ->
 
   exports.reload = -> window.location.reload()
 
-  model.on 'push', '_room.messages', -> model.incr '_numMessages'
+  model.on 'push', '_room.messages', (message) ->
+    len = model.incr '_numMessages'
+    # TODO: There is a bug with pushing and setting private paths
+    # under the same array. The following should work:
+    model.set '_room.messages.' + (len - 1) + '._displayTime',
+      displayTime message.time
 
   exports.postMessage = ->
     model.push '_room.messages',
       userId: model.get '_session.userId'
       comment: model.get '_newComment'
+      time: +new Date
 
     model.set '_newComment', ''
