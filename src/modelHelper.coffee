@@ -19,12 +19,13 @@ PathMap:: =
 
   indexArray: (path, id) ->
     # TODO: Nested arrays
-    if match = /^(.+)\.(\d+)(?:\.|$)/.exec path
+    if match = /^(.+)\.(\d+)(\.|$)/.exec path
       name = match[1]
       index = +match[2]
+      remainder = match[3]
       arr = @arrays[name] || @arrays[name] = []
       set = arr[index] || arr[index] = {}
-      set[id] = true
+      set[id] = remainder
 
   init: (@paths) ->
     ids = @ids

@@ -99,7 +99,11 @@ view.make 'liveCss', '''
   <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
   <p>{
-    <p class=css>((#liveCss.styles :style))((> cssProperty))((#:style.active))<br>((/))((/))
+    <div>
+      ((#liveCss.styles :style))
+        <p class=css x-displayed=((:style.active))>((> cssProperty))</p>
+      ((/))
+    </div>
   <p>}
   <h3>Output:</h3>
   <p style="((liveCss.styles :style > cssProperty))" contenteditable>
