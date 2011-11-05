@@ -93,6 +93,21 @@ exports.init = (model, dom, view) ->
     events.trigger pathMap.id(path), [from, to], 'move', local
 
   insert = (path, index, values, local) ->
+    # Update indicies in pathMap before inserting
+    if map = pathMap.arrays[path]
+      howMany = values.length
+      len = map.length
+      for i in [index...len]
+        continue unless ids = map[i]
+        # Increment indicies of later items
+        for id, remainder of ids
+          itemPath = pathMap.paths[id]
+          delete pathMap.ids[itemPath]
+          itemPath = path + '.' + (i + howMany) + remainder
+          pathMap.paths[id] = itemPath
+          pathMap.ids[itemPath] = +id
+      map.splice index, 0, {}  while howMany--
+
     id = pathMap.id path
     for value, i in values
       events.trigger id, [index + i, value], 'insert', local
