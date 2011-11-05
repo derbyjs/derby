@@ -42,13 +42,7 @@ exports.createApp = (appModule) ->
     view._paths = paths
     view._partialIds = partialIds
     view._aliases = aliases
-
-    pathMap = model.__pathMap
-    pathMap.count = pathMapCount
-    pathMap.ids = pathMapIds
-    pathMapPaths = pathMap.paths
-    pathMapPaths[id] = path  for path, id of pathMapIds
-
+    model.__pathMap.init pathMapCount, pathMapIds
     racer.init modelBundle
     model.__events.set modelEvents
     dom.init domEvents

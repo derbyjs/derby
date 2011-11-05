@@ -12,6 +12,10 @@ PathMap:: =
   id: (path) ->
     # Return the path for an id, or create a new id and double index it
     this.ids[path] || (this.paths[id = this.count++] = path; this.ids[path] = id)
+  
+  init: (@count, @ids) ->
+    paths = @paths
+    paths[id] = path  for path, id of @ids
 
 
 exports.init = (model, dom, view) ->
