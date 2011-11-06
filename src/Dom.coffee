@@ -1,5 +1,5 @@
 EventDispatcher = require './EventDispatcher'
-{htmlEscape} = require './View'
+{htmlEscape} = require './html'
 
 elements =
   $win: win = typeof window is 'object' && window

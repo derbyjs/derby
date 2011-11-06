@@ -1,3 +1,4 @@
+{hasKeys} = require('racer').util
 {parse: parseHtml, unescapeEntities, htmlEscape, attrEscape} = require './html'
 {modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent} = require './parser'
 
@@ -8,7 +9,6 @@ View = module.exports = ->
   @_paths = {}
   @_onBinds = {}
   @_aliases = {}
-  @_partialIds = {}
   @_templates = {}
   @_inline = ''
   
@@ -22,7 +22,7 @@ View:: =
 
   _find: (name) -> @_views[name] || do -> throw "Can't find view: #{name}"
 
-  get: (viewName, ctx, parentCtx, path, triggerPath) ->
+  get: (viewName, ctx, parentCtx, path, triggerPath, triggerId) ->
     type = viewName.charAt(0)
     unless view = @_views[viewName]
       # Check to see if view is a block partial that hasn't been created yet,
@@ -33,16 +33,25 @@ View:: =
         parentView = viewName.substr start, i - start
         # Make sure the parent view exists to avoid an infinite loop
         @_find parentView
-        @get parentView, $triggerPath: triggerPath
-        return @get viewName, ctx, parentCtx, null, triggerPath
+        @get parentView, parentCtx = {$triggerPath: triggerPath, $triggerId: triggerId}
+        return @get viewName, ctx, parentCtx, null, triggerPath, triggerId
       # Return an empty string when a view can't be found
       return ''
 
+    # TODO: Make this more readable
+    # unless paths = @_paths[viewName]
     paths = parentCtx && parentCtx.$paths
     if path
       paths = @_paths[viewName] = if paths then [path].concat paths else [path]
     else
       @_paths[viewName] = paths ||= @_paths[viewName]
+    
+    # console.log viewName, paths, triggerPath
+
+    # Get the proper context if this was triggered by an event
+    # if `ctx == null` && triggerPath
+    # console.log viewName, paths, triggerPath
+      # ctx = @model.get triggerPath
 
     if Array.isArray ctx
       if ctx.length
@@ -64,6 +73,7 @@ View:: =
       return ''  if (type is '^' && ctx) || (type is '#' && !ctx)
     
     ctx = extend parentCtx, ctx
+    ctx.$triggerId = triggerId
     if (ctx.$paths = paths) && (triggerPath ||= ctx.$triggerPath)
       path = paths[0]
       if path.charAt(path.length - 1) != '#' && /\.\d+$/.test triggerPath
@@ -124,12 +134,6 @@ extend = (parent, obj) ->
 
 addId = (attrs, uniqueId) ->
   unless attrs.id? then attrs.id = -> attrs._id = uniqueId()
-addIdPartial = (attrs, uniqueId, partialIds, partial) ->
-  return if attrs.id?
-  fn = ->
-    fn = -> partialIds[partial] = attrs._id = uniqueId()
-    attrs._id = partialIds[partial] || attrs.id()
-  attrs.id = -> fn()
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines
@@ -286,7 +290,7 @@ parse = (view, viewName, template, data, ctx, onBind) ->
   partialCount = 0
   partialName = -> viewName + '$p' + partialCount++
 
-  if ctx.$aliases
+  if hasKeys ctx.$aliases
     view._aliases[viewName] = [
       data.$aliases = ctx.$aliases
       depth = ctx.$depth || 0
@@ -294,7 +298,7 @@ parse = (view, viewName, template, data, ctx, onBind) ->
   else if aliases = view._aliases[viewName]
     [data.$aliases, depth] = aliases
   else
-    data.$aliases = {}
+    data.$aliases = ctx.$aliases || {}
     depth = ctx.$depth || 0
 
   if data.$isString
@@ -325,9 +329,10 @@ parse = (view, viewName, template, data, ctx, onBind) ->
           if (pre && !invert) || post || partial
             # Attributes must be a single string, so create a string partial
             partial = partialName()
-            addIdPartial attrs, uniqueId, view._partialIds, partial
+            addId attrs, uniqueId
             render = parseString view, partial, value, data, depth, partialName,
               (events, name) -> events.push (data, modelEvents) ->
+                attrs._id = id  if id = data.$triggerId
                 return  unless path = modelPath data, name
                 modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
             view._views[partial] = (ctx) -> render extend data, ctx
@@ -426,7 +431,7 @@ parse = (view, viewName, template, data, ctx, onBind) ->
 
   for queue in popped
     do (queue) ->
-      render = renderer(view, reduceStack(queue.stack), queue.events)
+      render = renderer view, reduceStack(queue.stack), queue.events
       view._views[queue.viewName] = (ctx) -> render extend data, ctx
 
   return renderer view, reduceStack(stack), events
@@ -464,7 +469,7 @@ parseString = (view, viewName, template, data, depth, partialName, onBind) ->
 
   for queue in popped
     do (queue) ->
-      render = renderer(view, queue.stack, queue.events)
+      render = renderer view, queue.stack, queue.events
       view._views[queue.viewName] = (ctx) -> render extend data, ctx
 
   renderer view, stack, events

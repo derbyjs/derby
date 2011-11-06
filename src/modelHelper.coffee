@@ -63,7 +63,7 @@ exports.init = (model, dom, view) ->
             [value, property] = value
         else if method is 'attr'
           value = null
-        value = view.get partial, value, null, null, path  unless noRender
+        value = view.get partial, value, null, null, path, id  unless noRender
 
       # Remove this listener if the DOM update fails. Happens when an id cannot be found
       return dom.update id, method, value, property, index
