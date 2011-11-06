@@ -1,4 +1,4 @@
-{parse: parseHtml, unescapeEntities} = require './html'
+{parse: parseHtml, unescapeEntities, htmlEscape, attrEscape} = require './html'
 {modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent} = require './parser'
 
 empty = ->
@@ -108,6 +108,9 @@ View:: =
     @dom.events.clear()
     document.body.innerHTML = @get('header', ctx) + @get('body', ctx)
     document.title = @get 'title$s', ctx
+  
+  htmlEscape: htmlEscape
+  attrEscape: attrEscape
 
 
 extend = (parent, obj) ->
@@ -127,16 +130,6 @@ addIdPartial = (attrs, uniqueId, partialIds, partial) ->
     fn = -> partialIds[partial] = attrs._id = uniqueId()
     attrs._id = partialIds[partial] || attrs.id()
   attrs.id = -> fn()
-
-View.htmlEscape = htmlEscape = (s) ->
-  unless s? then '' else s.toString().replace /&(?!\s)|</g, (s) ->
-    if s is '&' then '&amp;' else '&lt;'
-
-View.attrEscape = attrEscape = (s) ->
-  return '""' if `s == null` || s is ''
-  s = s.toString().replace /&(?!\s)|"/g, (s) ->
-    if s is '&' then '&amp;' else '&quot;'
-  if /[ =<>']/.test s then '"' + s + '"' else s
 
 # Remove leading whitespace and newlines from a string. Note that trailing
 # whitespace is not removed in case whitespace is desired between lines

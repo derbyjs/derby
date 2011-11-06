@@ -1,6 +1,7 @@
 {Model} = require 'racer'
 uglify = require 'uglify-js'
 module.exports = View = require './View'
+{htmlEscape} = require './html'
 Dom = require './Dom'
 modelHelper = require './modelHelper'
 loader = require './loader'
@@ -68,7 +69,7 @@ View::_render = (res, model, ctx, isStatic, dom, css) ->
   # If there is a small amount of header HTML that will display well by itself,
   # it is a good idea to add this to the Header view so that it renders ASAP.
   doctype = @get('doctype', ctx) || '<!DOCTYPE html><meta charset=utf-8>'
-  title = View.htmlEscape(@get 'title$s', ctx) || 'Derby app'
+  title = htmlEscape(@get 'title$s', ctx) || 'Derby app'
   head = @get 'head', ctx
   header = @get 'header', ctx
   css = "<style>#{css}</style>"  if css
@@ -82,7 +83,7 @@ View::_render = (res, model, ctx, isStatic, dom, css) ->
   scripts = "<script>function $(i){return document.getElementById(i)}" +
     escapeInlineScript(@_inline)
   scripts += "function #{clientName}(){#{clientName}=1}"  unless isStatic
-  scripts += "</script>" + @get('script', ctx)
+  scripts += "</script>" + @get('scripts', ctx)
   scripts += "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"  unless isStatic
   res.write scripts
 

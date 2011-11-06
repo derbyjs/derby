@@ -23,7 +23,7 @@
 <Body:>
   <div id=page>
     <!-- Partials use Mustache syntax -->
-    ((> info))
+    {{> info}}
     <!-- An object can be passed into the partial to set its context -->
     <div id=messages><ul id=messageList>((_room.messages > message))</ul></div>
     <div id=foot>

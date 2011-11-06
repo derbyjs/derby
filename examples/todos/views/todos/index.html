@@ -1,0 +1,43 @@
+<Title:>
+  Todos
+
+<Body:>
+  <div id=overlay></div>
+  ((> info))
+  <form id=head x-bind=submit:add>
+    <h1>Todos</h1>
+    <div id=add>
+      <div id=add-input><input id=new-todo></div>
+      <input id=add-button type=submit value=Add>
+    </div>
+  </form>
+  <div id=dragbox></div>
+  <div id=content><ul id=todos>((_todoList > todo))</ul></div>
+
+<todo:>
+  <li class=((#.completed))completed((/))>
+    <table width=100%><tr>
+      <td class=handle width=0>
+      <td width=100%>
+        <div class=todo>
+          <label><input type=checkbox checked=((.completed))><i></i></label>
+          <div contenteditable=true>(((.text)))</div>
+        </div>
+      <td width=0><button class=delete x-bind=click:del>Delete</button>
+    </table>
+
+<info:>
+  <div id=info>
+    ((^connected))
+      ((#canConnect))
+        Offline 
+        ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
+      ((^))
+        Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
+      ((/))
+    ((/))
+  </div>
+
+<Scripts:>
+  <script src=https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js></script>
+  <script src=https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js></script>
