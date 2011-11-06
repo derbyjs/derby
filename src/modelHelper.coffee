@@ -89,10 +89,18 @@ exports.init = (model, dom, view) ->
       events.trigger id, value, 'append', local
     return
 
+  refIndex = (obj) ->
+    # Get index if event was from arrayRef id object
+    if typeof obj is 'object' then obj.index else obj
+
   model.on 'move', ([path, from, to], local) ->
+    from = refIndex from
+    to = refIndex to
     events.trigger pathMap.id(path), [from, to], 'move', local
 
   insert = (path, index, values, local) ->
+    index = refIndex index
+
     # Update indicies in pathMap before inserting
     if map = pathMap.arrays[path]
       howMany = values.length
@@ -114,6 +122,8 @@ exports.init = (model, dom, view) ->
     return
 
   remove = (path, start, howMany, local) ->
+    start = refIndex start
+
     end = start + howMany
 
     # Update indicies in pathMap before removing
