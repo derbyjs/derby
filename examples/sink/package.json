@@ -5,8 +5,11 @@
   "main": "./server.js",
   "dependencies": {
     "derby": "*",
-    "express": ">=2",
-    "connect-gzip": ">=0.1.4"
+    "express": ">=2 <3",
+    "connect-gzip": ">=0.1.5"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "coffee-script": ">=1.1.2"
+  }
 }
