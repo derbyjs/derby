@@ -3,11 +3,11 @@
 
 <Body:>
   <div id=overlay></div>
-  ((> info))
+  {{> info}}
   <form id=head x-bind=submit:add>
     <h1>Todos</h1>
     <div id=add>
-      <div id=add-input><input id=new-todo></div>
+      <div id=add-input><input id=new-todo value=((_newTodo))></div>
       <input id=add-button type=submit value=Add>
     </div>
   </form>
@@ -15,15 +15,15 @@
   <div id=content><ul id=todos>((_todoList > todo))</ul></div>
 
 <todo:>
-  <li class=((#.completed))completed((/))>
+  <li data-id={{id}} class=((#.completed))completed((/))>
     <table width=100%><tr>
       <td class=handle width=0>
       <td width=100%>
         <div class=todo>
           <label><input type=checkbox checked=((.completed))><i></i></label>
-          <div contenteditable=true>(((.text)))</div>
+          <div x-bind=keydown:shortcuts contenteditable=true>(((.text)))</div>
         </div>
-      <td width=0><button class=delete x-bind=click:del>Delete</button>
+      <td width=0><button data-id={{id}} class=delete x-bind=click:del>Delete</button>
     </table>
 
 <info:>

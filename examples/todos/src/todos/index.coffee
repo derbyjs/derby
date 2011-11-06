@@ -25,7 +25,17 @@ get '/:group', (page, model, {group}) ->
 ## CONTROLLER FUNCTIONS ##
 
 ready (model) ->
-  newTodo = $ '#new-todo'
+  todoList = $('#todos')
+  todoList.sortable
+    handle: '.handle'
+    axis: 'y'
+    containment: '#dragbox'
+    update: (e, ui) ->
+      item = ui.item[0]
+      id = item.getAttribute 'data-id'
+      to = todoList.children().index(item)
+      # Silent prevents the event from being emitted locally
+      model.silent.move listPath, {id}, to
 
   model.on 'set', '_todoList.*.completed', (i, value) ->
     # Move the item to the bottom if it was checked off
@@ -33,8 +43,8 @@ ready (model) ->
 
   exports.add = ->
     # Don't add a blank todo
-    return unless text = view.htmlEscape newTodo.val()
-    newTodo.val ''
+    return unless text = view.htmlEscape model.get '_newTodo'
+    model.set '_newTodo', ''
     # Insert the new todo before the first completed item in the list
     for todo, i in list = model.get listPath
       break if todo.completed
@@ -48,8 +58,8 @@ ready (model) ->
     else
       model.insertBefore listPath, i, todo
 
-  exports.del = (id) ->
-      model.remove listPath, id: id
+  exports.del = (e) ->
+    model.remove listPath, id: e.target.getAttribute 'data-id'
 
   model.set '_showReconnect', true
   exports.connect = ->
@@ -58,3 +68,24 @@ ready (model) ->
     model.socket.socket.connect()
 
   exports.reload = -> window.location.reload()
+
+  # Shortcuts
+  # Bold: Ctrl/Cmd + B
+  # Italic: Ctrl/Cmd + I
+  # Clear formatting: Ctrl/Cmd + Space -or- Ctrl/Cmd + \
+  exports.shortcuts = (e) ->
+    return unless e.metaKey || e.ctrlKey
+    code = e.which
+    return unless command = `
+      code === 66 ? 'bold' :
+      code === 73 ? 'italic' :
+      code === 32 ? 'removeFormat' :
+      code === 220 ? 'removeFormat' : null`
+    document.execCommand command, false, null
+    e.preventDefault() if e.preventDefault
+    return false
+
+  # Tell Firefox to use elements for styles instead of CSS
+  # See: https://developer.mozilla.org/en/Rich-Text_Editing_in_Mozilla
+  document.execCommand 'useCSS', false, true
+  document.execCommand 'styleWithCSS', false, false
