@@ -39,7 +39,7 @@ exports.init = (model, dom, view) ->
   pathMap = model.__pathMap = new PathMap
 
   if dom then events = model.__events = new EventDispatcher
-    onTrigger: (name, listener, value, type, local) ->
+    onTrigger: (name, listener, value, type, local, options) ->
       [id, method, property, partial] = listener
       path = pathMap.paths[name]
 
@@ -66,7 +66,7 @@ exports.init = (model, dom, view) ->
         value = view.get partial, value, null, null, path, id  unless noRender
 
       # Remove this listener if the DOM update fails. Happens when an id cannot be found
-      return dom.update id, method, value, property, index
+      return dom.update id, method, options && options.ignore, value, property, index
   
   else events = model.__events = new EventDispatcher
 
@@ -76,6 +76,8 @@ exports.init = (model, dom, view) ->
 
   return model unless dom
 
+  # TODO: Add ignore option support to all event handlers
+  # It's only supported with move right now
 
   model.on 'set', ([path, value], local) ->
     events.trigger pathMap.id(path), value, 'html', local
@@ -93,10 +95,36 @@ exports.init = (model, dom, view) ->
     # Get index if event was from arrayRef id object
     if typeof obj is 'object' then obj.index else obj
 
-  model.on 'move', ([path, from, to], local) ->
+  # TODO: Update insert and remove to use this fn as well
+  incrementMapItems = (path, map, start, end, byNum) ->
+    for i in [start..end]
+      continue unless ids = map[i]
+      for id, remainder of ids
+        itemPath = pathMap.paths[id]
+        delete pathMap.ids[itemPath]
+        itemPath = path + '.' + (i + byNum) + remainder
+        pathMap.paths[id] = itemPath
+        pathMap.ids[itemPath] = +id
+
+  model.on 'move', ([path, from, to, options], local) ->
     from = refIndex from
     to = refIndex to
-    events.trigger pathMap.id(path), [from, to], 'move', local
+    return if from == to
+
+    # Update indicies in pathMap before moving
+    if map = pathMap.arrays[path]
+      # Adjust paths for the moved item
+      incrementMapItems path, map, from, from, to - from
+      # Adjust paths for items between from and to
+      if from > to
+        incrementMapItems path, map, to, from - 1, 1
+      else
+        incrementMapItems path, map, from + 1, to, -1
+      # Fix the array index
+      [item] = map.splice from, 1
+      map.splice to, 0, item
+
+    events.trigger pathMap.id(path), [from, to], 'move', local, options
 
   insert = (path, index, values, local) ->
     index = refIndex index

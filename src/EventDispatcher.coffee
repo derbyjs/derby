@@ -27,7 +27,7 @@ EventDispatcher:: =
     delete obj[JSON.stringify listener]
     delete names[name]  unless hasKeys obj
   
-  trigger: (name, value, arg0, arg1) ->
+  trigger: (name, value, arg0, arg1, arg2) ->
     names = @_names
     listeners = names[name]
     onTrigger = @_onTrigger
@@ -35,7 +35,7 @@ EventDispatcher:: =
     for key of listeners
       count++
       listener = JSON.parse key
-      continue unless onTrigger(name, listener, value, arg0, arg1) == false
+      continue unless onTrigger(name, listener, value, arg0, arg1, arg2) == false
       delete listeners[key]
       count--
     delete names[name]  if count == 0

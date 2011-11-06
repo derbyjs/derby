@@ -34,10 +34,13 @@ ready (model) ->
     containment: '#dragbox'
     update: (e, ui) ->
       item = ui.item[0]
+      domId = item.id
       id = item.getAttribute 'data-id'
       to = todoList.children().index(item)
-      # Silent prevents the event from being emitted locally
-      model.silent.move listPath, {id}, to
+      # Use the Derby ignore option to suppress the normal move event
+      # binding, since jQuery UI will move the element in the DOM
+      model.with(ignore: domId).move listPath, {id}, to
+
 
   model.on 'set', '_todoList.*.completed', (i, value) ->
     # Move the item to the bottom if it was checked off

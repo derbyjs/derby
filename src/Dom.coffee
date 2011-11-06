@@ -29,45 +29,50 @@ getMethods =
   move: getNaN
 
 setMethods = 
-  attr: (el, value, attr) ->
+  attr: (el, ignore, value, attr) ->
     el.setAttribute attr, value
 
-  prop: (el, value, prop) ->
+  prop: (el, ignore, value, prop) ->
     el[prop] = value
 
-  propPolite: (el, value, prop) ->
+  propPolite: (el, ignore, value, prop) ->
     el[prop] = value  if el != doc.activeElement
 
-  visible: (el, value) ->
+  visible: (el, ignore, value) ->
     el.style.visibility = if value then '' else 'hidden'
 
-  displayed: (el, value) ->
+  displayed: (el, ignore, value) ->
     el.style.display = if value then '' else 'none'
 
-  html: html = (el, value, escape) ->
+  html: html = (el, ignore, value, escape) ->
     el.innerHTML = if escape then htmlEscape value else value
 
-  append: (el, value, escape) ->
+  append: (el, ignore, value, escape) ->
     html emptyEl, value, escape
     while child = emptyEl.firstChild
       el.appendChild child
     return
 
-  insert: (el, value, escape, index) ->
+  insert: (el, ignore, value, escape, index) ->
     ref = el.childNodes[index]
     html emptyEl, value, escape
     while child = emptyEl.firstChild
       el.insertBefore child, ref
     return
 
-  remove: (el, index) ->
+  remove: (el, ignore, index) ->
     child = el.childNodes[index]
     el.removeChild child
   
-  move: (el, from, to) ->
-    to++ if to > from
+  move: (el, ignore, from, to) ->
+    # Don't move if the item at the destination is passed as the ignore option,
+    # since this indicates the intended item was already moved
+    toEl = el.childNodes[to]
+    return if toEl.id == ignore
+    # Also don't move if the child to move matches the ignore option
     child = el.childNodes[from]
-    ref = el.childNodes[to]
+    return if child.id == ignore
+    ref = el.childNodes[if to > from then to + 1 else to]
     el.insertBefore child, ref
 
 
@@ -157,14 +162,14 @@ Dom:: =
     addListener win, 'popstate', (e) ->
       history._onPop e
 
-  update: (id, method, value, property, index) ->
+  update: (id, method, ignore, value, property, index) ->
     # Fail and remove the listener if the element can't be found
     return false  unless el = element id
 
     # Don't do anything if the element is already up to date
     return  if value == getMethods[method] el, property
 
-    setMethods[method] el, value, property, index
+    setMethods[method] el, ignore, value, property, index
     return
 
 Dom.getMethods = getMethods
