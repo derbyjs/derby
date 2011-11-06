@@ -48,14 +48,14 @@ setMethods =
     el.innerHTML = if escape then htmlEscape value else value
 
   append: (el, ignore, value, escape) ->
-    html emptyEl, value, escape
+    html emptyEl, ignore, value, escape
     while child = emptyEl.firstChild
       el.appendChild child
     return
 
   insert: (el, ignore, value, escape, index) ->
     ref = el.childNodes[index]
-    html emptyEl, value, escape
+    html emptyEl,ignore, value, escape
     while child = emptyEl.firstChild
       el.insertBefore child, ref
     return
@@ -67,8 +67,8 @@ setMethods =
   move: (el, ignore, from, to) ->
     # Don't move if the item at the destination is passed as the ignore option,
     # since this indicates the intended item was already moved
-    toEl = el.childNodes[to]
-    return if toEl.id == ignore
+    if toEl = el.childNodes[to]
+      return if toEl.id == ignore
     # Also don't move if the child to move matches the ignore option
     child = el.childNodes[from]
     return if child.id == ignore
