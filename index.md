@@ -1340,7 +1340,11 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 
 ### Events
 
-Any time you mutate data via `model` (e.g., `model.set`, `model.set`, etc.), Racer emits events, providing an entry point for an app to react to specific data changes. Specifically, you can define an event callback for mutation events, where the callback is a function of the mutator argument(s). For example,
+Whenever Racer mutates data via, e.g., `model.set`, `model.push`, etc., Racer emits events. These events provide an entry point for an app to react to a specific data mutation or pattern of data mutations. 
+
+#### Non-patterned Event Handling
+
+An app can define event handlers for specific mutation events, where the event handler is a function of the arguments passed to the event-generating mutator. For example,
 
 {% highlight javascript %}
 model.on('push', 'messages', function (message) {
@@ -1353,7 +1357,17 @@ model.on 'push', 'messages', (message) ->
   jQuery('#messages').append "<li>#{message}</li>"
 {% endhighlight %}
 
-Racer also allows you to set up event handlers for event patterns. For example,
+> ### `model.on ( mutator, path, callback )`
+>
+> **mutator** Name of the mutator method - e.g., "set", "push"
+>
+> **path** Model path to the data being mutated
+>
+> **callback** The event handler with function signature `callback( mutatorArgs... )`
+
+#### Patterned Event Handling
+
+Racer also allows you to set up event handlers for mutations against path patterns. For instance,
 
 {% highlight javascript %}
 model.on('set', 'todos.*.completed', function (todoId, isComplete) {
@@ -1366,29 +1380,30 @@ model.on 'set', 'todos.*.completed', (todoId, isComplete) ->
   jQuery("##{todoId}").toggleClass 'completed', isComplete
 {% endhighlight %}
 
-Notice that the callback here is a function of not only the mutator arguments(s) (`isComplete`) but also the pattern value (`todoId`).
-
-More formally, the Racer model event handling API is:
-
-#### Non-patterned Event Handling
-
-> ### `model.on ( mutator, path, callback )`
->
-> **mutator** Name of the mutator method - e.g., "set", "push"
->
-> **path** Model path to the data being mutated
->
-> **callback** The event handler with function signature `callback( mutatorArgs... )`
-
-#### Patterned Event Handling
+Notice that the `callback` here is a function of not only the mutator arguments (`isComplete`) but also the pattern value (`todoId`).
 
 > ### `model.on ( mutator, pathPattern, callback)`
 >
 > **mutator** Name of the mutator method - e.g., "set", "push"
 >
-> **pathPattern** Pattern to match against model paths being mutated
+> **pathPattern** Pattern to match against model paths being mutated. When there is a match against this pattern, both the portion of the pattern that is matched and the mutation arguments are passed to the `callback`
 >
 > **callback** The event handler with function signature `callback( match, mutatorArgs... )` where `match` is the part of the `pathPattern` that is matched.
+
+In another example, patterned event handling provides a solution to log all `set` mutations.
+
+{% highlight javascript %}
+model.on('set', '*', function (path, val) {
+  console.log("Set path '" + path + "' to " + val);
+});
+{% endhighlight %}
+
+{% highlight coffeescript %}
+model.on 'set', '*' (path, val) ->
+  console.log "Set path '#{path}' to #{val}"
+{% endhighlight %}
+
+Overall, event handlers enables developers using Racer to define business logic that runs in response to data mutations.
 
 ### References
 
