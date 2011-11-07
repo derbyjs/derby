@@ -66,8 +66,34 @@ headers:
     type: h1
   - text: Routes
     type: h2
+  - text: User events
+    type: h2
+  - text: Model events
+    type: h2
+  - text: Application logic
+    type: h2
   - text: Models
     type: h1
+  - text: Introduction to Racer
+    type: h2
+  - text: STM and OT
+    type: h3
+  - text: Creating stores
+    type: h2
+  - text: Configuration options
+    type: h3
+  - text: Creating models
+    type: h2
+  - text: Model features
+    type: h2
+  - text: Paths
+    type: h3
+  - text: Methods
+    type: h3
+  - text: Events
+    type: h3
+  - text: References
+    type: h3
 ---
 
 # Derby
