@@ -10,6 +10,8 @@ headers:
     type: h2
   - text: Flexibility without the glue code
     type: h2
+  - text: Demos
+    type: h2
   - text: Getting started
     type: h1
   - text: Create an app
@@ -206,6 +208,20 @@ Derby eliminates the tedium of wiring together a server, server templating engin
 At the same time, it plays well with others. Derby is built on top of popular components, including [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [Socket.IO](http://socket.io/), [Browserify](https://github.com/substack/node-browserify), [Stylus](http://learnboost.github.com/stylus/docs/iteration.html), [UglifyJS](https://github.com/mishoo/UglifyJS), [MongoDB](http://www.mongodb.org/), and soon other popular databases and datastores. These components can also be used directly. The data synchronization layer, [Racer](http://racerjs.com/), can be used separately. Other libraries, such as jQuery, work just as well along with Derby.
 
 When following the default file structure, templates, styles, and scripts are automatically packaged and included in the appropriate pages. In addition, Derby can be used via a dynamic API, as seen in the simple example above.
+
+## Demos
+
+### Chat
+
+http://chat.derbyjs.com/lobby
+
+A simple chat demo. Note that as you edit your name, it updates in realtime. Name changes also show up in the page title and other rooms. Check out the source in the examples directory to see how these bindings are created automatically.
+
+### Sink
+
+http://sink.derbyjs.com/
+
+A kitchen-sink style example with a bunch of random features. Largely used for testing.
 
 ## Disclaimer
 
