@@ -66,6 +66,8 @@ headers:
     type: h1
   - text: Routes
     type: h2
+  - text: Models
+    type: h1
 ---
 
 # Derby
@@ -1228,7 +1230,7 @@ The `model.setNull()` and `model.incr()` methods provide a more convenient way t
 
 #### Array methods
 
-Array methods can only be used on a paths set to arrays, null, or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
+Array methods can only be used on paths set to arrays, null, or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
 
 > ### `length = `model.push` ( path, items..., [callback] )`
 >
@@ -1337,6 +1339,56 @@ Array methods can only be used on a paths set to arrays, null, or undefined. If 
 > **deleted:** Returns the string that was deleted
 
 ### Events
+
+Any time you mutate data via `model` (e.g., `model.set`, `model.set`, etc.), Racer emits events, providing an entry point for an app to react to specific data changes. Specifically, you can define an event callback for mutation events, where the callback is a function of the mutator argument(s). For example,
+
+{% highlight javascript %}
+model.on('push', 'messages', function (message) {
+  jQuery('#messages').append('<li>' + message + '</li>');
+});
+{% endhighlight %}
+
+{% highlight coffeescript %}
+model.on 'push', 'messages', (message) ->
+  jQuery('#messages').append "<li>#{message}</li>"
+{% endhighlight %}
+
+Racer also allows you to set up event handlers for event patterns. For example,
+
+{% highlight javascript %}
+model.on('set', 'todos.*.completed', function (todoId, isComplete) {
+  jQuery('#' + todoId).toggleClass('completed', isComplete);
+});
+{% endhighlight %}
+
+{% highlight coffeescript %}
+model.on 'set', 'todos.*.completed', (todoId, isComplete) ->
+  jQuery("##{todoId}").toggleClass 'completed', isComplete
+{% endhighlight %}
+
+Notice that the callback here is a function of not only the mutator arguments(s) (`isComplete`) but also the pattern value (`todoId`).
+
+More formally, the Racer model event handling API is:
+
+#### Non-patterned Event Handling
+
+> ### `model.on ( mutator, path, callback )`
+>
+> **mutator** Name of the mutator method - e.g., "set", "push"
+>
+> **path** Model path to the data being mutated
+>
+> **callback** The event handler with function signature `callback( mutatorArgs... )`
+
+#### Patterned Event Handling
+
+> ### `model.on ( mutator, pathPattern, callback)`
+>
+> **mutator** Name of the mutator method - e.g., "set", "push"
+>
+> **pathPattern** Pattern to match against model paths being mutated
+>
+> **callback** The event handler with function signature `callback( match, mutatorArgs... )` where `match` is the part of the `pathPattern` that is matched.
 
 ### References
 
