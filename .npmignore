@@ -2,4 +2,6 @@ node_modules
 gen
 examples/chat/public/gen
 examples/sink/public/gen
+examples/todos/public/gen
+examples/hello/public/gen
 *.gz

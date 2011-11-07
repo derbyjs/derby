@@ -1,6 +1,6 @@
 {
   "name": "derby",
-  "description": "Reactive MVC framework with automatically synced models and views. Supports server and client rendering of multi-user, realtime applications.",
+  "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
   "version": "0.0.10",
   "main": "./lib/derby.js",
   "browserify": {
@@ -10,8 +10,8 @@
     "derby": "./lib/bin/derby.js"
   },
   "dependencies": {
-    "racer": "0.0.14",
-    "express": ">=2.4.3",
+    "racer": "0.1.0",
+    "express": ">=2.4.3 < 3.0.0",
     "qs": ">= 0.3.1",
     "uglify-js": ">=1.0.6",
     "stylus": ">=0.15",
@@ -25,6 +25,6 @@
     "coffee-script": ">=1.1.1"
   },
   "engines": {
-    "node": ">=0.4.0"
+    "node": ">=0.3.0 < 0.5.0"
   }
 }
