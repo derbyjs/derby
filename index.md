@@ -213,13 +213,13 @@ When following the default file structure, templates, styles, and scripts are au
 
 ### Chat
 
-http://chat.derbyjs.com/lobby
+[http://chat.derbyjs.com/lobby](http://chat.derbyjs.com/lobby)
 
 A simple chat demo. Note that as you edit your name, it updates in realtime. Name changes also show up in the page title and other rooms. Check out the source in the examples directory to see how these bindings are created automatically.
 
 ### Sink
 
-http://sink.derbyjs.com/
+[http://sink.derbyjs.com/](http://sink.derbyjs.com/)
 
 A kitchen-sink style example with a bunch of random features. Largely used for testing.
 
