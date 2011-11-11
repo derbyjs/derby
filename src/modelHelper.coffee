@@ -133,15 +133,7 @@ exports.init = (model, dom, view) ->
     if map = pathMap.arrays[path]
       howMany = values.length
       len = map.length
-      for i in [index...len]
-        continue unless ids = map[i]
-        # Increment indicies of later items
-        for id, remainder of ids
-          itemPath = pathMap.paths[id]
-          delete pathMap.ids[itemPath]
-          itemPath = path + '.' + (i + howMany) + remainder
-          pathMap.paths[id] = itemPath
-          pathMap.ids[itemPath] = +id
+      incrementMapItems path, map, index, map.length - 1, howMany
       map.splice index, 0, {}  while howMany--
 
     id = pathMap.id path
@@ -151,28 +143,19 @@ exports.init = (model, dom, view) ->
 
   remove = (path, start, howMany, local) ->
     start = refIndex start
-
     end = start + howMany
 
     # Update indicies in pathMap before removing
     if map = pathMap.arrays[path]
-      len = map.length
-      for i in [start...len]
+      # Delete indicies for removed items
+      for i in [start...end]
         continue unless ids = map[i]
-        if i < end
-          # Delete indicies for removed items
-          for id of ids
-            itemPath = pathMap.paths[id]
-            delete pathMap.ids[itemPath]
-            delete pathMap.paths[id]
-        else
-          # Decrement indicies of later items
-          for id, remainder of ids
-            itemPath = pathMap.paths[id]
-            delete pathMap.ids[itemPath]
-            itemPath = path + '.' + (i - howMany) + remainder
-            pathMap.paths[id] = itemPath
-            pathMap.ids[itemPath] = +id
+        for id of ids
+          itemPath = pathMap.paths[id]
+          delete pathMap.ids[itemPath]
+          delete pathMap.paths[id]
+      # Decrement indicies of later items
+      incrementMapItems path, map, end, map.length - 1, -howMany
       map.splice start, howMany
 
     id = pathMap.id path
