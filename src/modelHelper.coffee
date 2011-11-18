@@ -95,7 +95,6 @@ exports.init = (model, dom, view) ->
     # Get index if event was from arrayRef id object
     if typeof obj is 'object' then obj.index else obj
 
-  # TODO: Update insert and remove to use this fn as well
   incrementMapItems = (path, map, start, end, byNum) ->
     for i in [start..end]
       continue unless ids = map[i]
@@ -107,8 +106,11 @@ exports.init = (model, dom, view) ->
         pathMap.ids[itemPath] = +id
 
   model.on 'move', ([path, from, to, options], local) ->
+    len = model.get(path).length
     from = refIndex from
     to = refIndex to
+    from += len if from < 0
+    to += len if to < 0
     return if from == to
 
     # Update indicies in pathMap before moving
@@ -132,7 +134,6 @@ exports.init = (model, dom, view) ->
     # Update indicies in pathMap before inserting
     if map = pathMap.arrays[path]
       howMany = values.length
-      len = map.length
       incrementMapItems path, map, index, map.length - 1, howMany
       map.splice index, 0, {}  while howMany--
 

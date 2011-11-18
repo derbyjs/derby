@@ -15,13 +15,14 @@
   <div id=content><ul id=todos>((_todoList > todo))</ul></div>
 
 <todo:>
-  <li data-id={{id}} class=((#.completed))completed((/))>
+  <!--class=((#.completed))completed((/))-->
+  <li data-id={{id}}>
     <table width=100%><tr>
       <td class=handle width=0>
       <td width=100%>
         <div class=todo>
           <label><input type=checkbox checked=((.completed))><i></i></label>
-          <div x-bind=keydown:shortcuts contenteditable=true>(((.text)))</div>
+          <div x-bind=keydown:shortcuts contenteditable>(((.text)))</div>
         </div>
       <td width=0><button data-id={{id}} class=delete x-bind=click:del>Delete</button>
     </table>

@@ -1,5 +1,6 @@
 {get, view, ready} = require('derby').createApp module
 
+
 ## ROUTES ##
 
 listPath = '_todoList'
@@ -42,9 +43,9 @@ ready (model) ->
       model.with(ignore: domId).move listPath, {id}, to
 
 
-  model.on 'set', '_todoList.*.completed', (i, value) ->
+  model.on 'set', '_todoList.*.completed', (i, value, isLocal) ->
     # Move the item to the bottom if it was checked off
-    model.move listPath, i, -1  if value
+    # model.move listPath, i, -1  if value && isLocal
 
   exports.add = ->
     # Don't add a blank todo
