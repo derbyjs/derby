@@ -45,7 +45,7 @@ ready (model) ->
 
   model.on 'set', '_todoList.*.completed', (i, value, isLocal) ->
     # Move the item to the bottom if it was checked off
-    # model.move listPath, i, -1  if value && isLocal
+    model.move listPath, i, -1  if value && isLocal
 
   exports.add = ->
     # Don't add a blank todo

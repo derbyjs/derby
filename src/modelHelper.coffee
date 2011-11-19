@@ -93,14 +93,12 @@ exports.init = (model, dom, view) ->
 
   refIndex = (obj) ->
     # Get index if event was from arrayRef id object
-    if typeof obj is 'object' then obj.index else obj
+    if typeof obj is 'object' then obj.index else +obj
 
   incrementMapItems = (path, map, start, end, byNum) ->
     for i in [start..end]
       continue unless ids = map[i]
       for id, remainder of ids
-        itemPath = pathMap.paths[id]
-        delete pathMap.ids[itemPath]
         itemPath = path + '.' + (i + byNum) + remainder
         pathMap.paths[id] = itemPath
         pathMap.ids[itemPath] = +id
