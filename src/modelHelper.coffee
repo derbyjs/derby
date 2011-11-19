@@ -102,6 +102,14 @@ exports.init = (model, dom, view) ->
         itemPath = path + '.' + (i + byNum) + remainder
         pathMap.paths[id] = itemPath
         pathMap.ids[itemPath] = +id
+  
+  deleteMapItems = (map, start, end) ->
+    for i in [start...end]
+      continue unless ids = map[i]
+      for id of ids
+        itemPath = pathMap.paths[id]
+        delete pathMap.ids[itemPath]
+        delete pathMap.paths[id]
 
   model.on 'move', ([path, from, to, options], local) ->
     len = model.get(path).length
@@ -126,18 +134,22 @@ exports.init = (model, dom, view) ->
 
     events.trigger pathMap.id(path), [from, to], 'move', local, options
 
-  insert = (path, index, values, local) ->
-    index = refIndex index
+  insert = (path, start, values, local) ->
+    start = refIndex start
 
     # Update indicies in pathMap before inserting
     if map = pathMap.arrays[path]
       howMany = values.length
-      incrementMapItems path, map, index, map.length - 1, howMany
-      map.splice index, 0, {}  while howMany--
+      end = start + howMany
+      # Delete indicies for items in inserted positions
+      deleteMapItems map, start, end
+      # Increment indicies of later items
+      incrementMapItems path, map, start, map.length - 1, howMany
+      map.splice start, 0, {}  while howMany--
 
     id = pathMap.id path
     for value, i in values
-      events.trigger id, [index + i, value], 'insert', local
+      events.trigger id, [start + i, value], 'insert', local
     return
 
   remove = (path, start, howMany, local) ->
@@ -147,12 +159,7 @@ exports.init = (model, dom, view) ->
     # Update indicies in pathMap before removing
     if map = pathMap.arrays[path]
       # Delete indicies for removed items
-      for i in [start...end]
-        continue unless ids = map[i]
-        for id of ids
-          itemPath = pathMap.paths[id]
-          delete pathMap.ids[itemPath]
-          delete pathMap.paths[id]
+      deleteMapItems map, start, end
       # Decrement indicies of later items
       incrementMapItems path, map, end, map.length - 1, -howMany
       map.splice start, howMany

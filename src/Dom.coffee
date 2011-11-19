@@ -28,6 +28,8 @@ getMethods =
   remove: getNaN
   move: getNaN
 
+# TODO: Implement ignore for every method
+
 setMethods = 
   attr: (el, ignore, value, attr) ->
     el.setAttribute attr, value
