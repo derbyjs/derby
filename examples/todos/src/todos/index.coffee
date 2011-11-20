@@ -76,18 +76,14 @@ ready (model) ->
 
   exports.reload = -> window.location.reload()
 
-  # Shortcuts
-  # Bold: Ctrl/Cmd + B
-  # Italic: Ctrl/Cmd + I
-  # Clear formatting: Ctrl/Cmd + Space -or- Ctrl/Cmd + \
   exports.shortcuts = (e) ->
     return unless e.metaKey || e.ctrlKey
     code = e.which
     return unless command = (switch code
-      when 66 then 'bold'
-      when 73 then 'italic'
-      when 32 then 'removeFormat'
-      when 220 then 'removeFormat'
+      when 66 then 'bold'           # Bold: Ctrl/Cmd + B
+      when 73 then 'italic'         # Italic: Ctrl/Cmd + I
+      when 32 then 'removeFormat'   # Clear formatting: Ctrl/Cmd + Space
+      when 220 then 'removeFormat'  # Clear formatting: Ctrl/Cmd + \
       else null
     )
     document.execCommand command, false, null
