@@ -38,20 +38,14 @@ View:: =
       # Return an empty string when a view can't be found
       return ''
 
-    # TODO: Make this more readable
-    # unless paths = @_paths[viewName]
-    paths = parentCtx && parentCtx.$paths
-    if path
-      paths = @_paths[viewName] = if paths then [path].concat paths else [path]
-    else
-      @_paths[viewName] = paths ||= @_paths[viewName]
-    
-    # console.log viewName, paths, triggerPath
-
+    unless paths = @_paths[viewName]
+      paths = parentCtx && parentCtx.$paths
+      if path
+        paths = @_paths[viewName] = if paths then [path].concat paths else [path]
+  
     # Get the proper context if this was triggered by an event
-    # if `ctx == null` && triggerPath
-    # console.log viewName, paths, triggerPath
-      # ctx = @model.get triggerPath
+    if `ctx == null` && triggerPath
+      ctx = @model.get triggerPath
 
     if Array.isArray ctx
       if ctx.length
@@ -74,7 +68,11 @@ View:: =
     
     ctx = extend parentCtx, ctx
     ctx.$triggerId = triggerId
-    if (ctx.$paths = paths) && (triggerPath ||= ctx.$triggerPath)
+    if triggerPath
+      ctx.$triggerPath = triggerPath
+    else
+      triggerPath = ctx.$triggerPath
+    if (ctx.$paths = paths) && triggerPath
       path = paths[0]
       if path.charAt(path.length - 1) != '#' && /\.\d+$/.test triggerPath
         # If path points to an array and an event was triggered on an item
@@ -269,11 +267,13 @@ parsePlaceholderContent = (view, data, depth, partialName, queues, popped, stack
     partialText = (data, model) ->
       view._onBinds[partial] = onBind
       data.$depth = depth + queues.length
-      view.get partial, dataValue(data, name || '.', model), data, modelPath(data, name, true)
+      view.get partial, dataValue(data, name || '.', model), data,
+        modelPath(data, name, true), data.$triggerPath
 
   if (datum = data[name])?
     if datum.model && !startBlock
-      callbacks.onBind name, partial, endBlock, lastAutoClosed, lastPartial  unless literal
+      unless literal
+        callbacks.onBind name, partial, endBlock, lastAutoClosed, lastPartial
       callbacks.onModelText partialText, name, endBlock
     else callbacks.onText partialText, datum, endBlock
   else callbacks.onText partialText, '', endBlock
