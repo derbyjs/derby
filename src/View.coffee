@@ -33,7 +33,7 @@ View:: =
         parentView = viewName.substr start, i - start
         # Make sure the parent view exists to avoid an infinite loop
         @_find parentView
-        @get parentView, parentCtx = {$triggerPath: triggerPath, $triggerId: triggerId}
+        @get parentView, parentCtx = {}
         return @get viewName, ctx, parentCtx, null, triggerPath, triggerId
       # Return an empty string when a view can't be found
       return ''
@@ -42,7 +42,7 @@ View:: =
       paths = parentCtx && parentCtx.$paths
       if path
         paths = @_paths[viewName] = if paths then [path].concat paths else [path]
-  
+
     # Get the proper context if this was triggered by an event
     if `ctx == null` && triggerPath
       ctx = @model.get triggerPath
@@ -83,7 +83,7 @@ View:: =
         path.replace /\.|\$#/g, (match) ->
           if match is '.' then '\\.' else '(\\d+)'
       )
-      ctx.$i = re.exec(triggerPath)?.slice(1).reverse()
+      ctx.$i = re.exec(triggerPath)?.slice(1).reverse()  unless '$i' of ctx
     return view ctx
 
   make: (name, template, data = {}) ->
@@ -179,19 +179,14 @@ unaliasName = (data, depth, name) ->
   # Convert depth difference to a relative model path
   return Array(offset + 1).join('.') + remainder
 
-addNameToData = (data, depth, name) ->
-  name = unaliasName data, depth, name
-  data[name] = {model: name}
-  return name
-
 dataValue = (data, name, model) ->
   # Get the value from the model if the name is a model path
   if path = modelPath data, name
-      # First try to get the path from the model data. Otherwise, assume it
-      # is a built-in property of model
-      if (value = model.get path)? then value else model[path]
-    # If not a model path, check if the value is defined in the context data
-    else data[name]
+    # First try to get the path from the model data. Otherwise, assume it
+    # is a built-in property of model
+    if (value = model.get path)? then value else model[path]
+  # If not a model path, use value in the context data
+  else data[name]
 
 modelText = (view, name, escape) ->
   (data, model) ->
@@ -249,7 +244,7 @@ parsePlaceholderContent = (view, data, depth, partialName, queues, popped, stack
   # Store depth when an alias is defined
   data.$aliases[alias] = depth + queues.length  if alias
 
-  name = addNameToData data, depth + queues.length, name
+  name = unaliasName data, depth + queues.length, name
   
   if block && ((endBlock = type is '/') ||
       (autoClosed = type is '^' && (!name || name == block.name) && block.type is '#'))
@@ -270,13 +265,12 @@ parsePlaceholderContent = (view, data, depth, partialName, queues, popped, stack
       view.get partial, dataValue(data, name || '.', model), data,
         modelPath(data, name, true), data.$triggerPath
 
-  if (datum = data[name])?
-    if datum.model && !startBlock
-      unless literal
-        callbacks.onBind name, partial, endBlock, lastAutoClosed, lastPartial
-      callbacks.onModelText partialText, name, endBlock
-    else callbacks.onText partialText, datum, endBlock
-  else callbacks.onText partialText, '', endBlock
+  if name of data || startBlock
+    callbacks.onText partialText, data[name], endBlock
+  else
+    unless literal
+      callbacks.onBind name, partial, endBlock, lastAutoClosed, lastPartial
+    callbacks.onModelText partialText, name, endBlock
 
   if startBlock
     queues.push
@@ -323,7 +317,7 @@ parse = (view, viewName, template, data, ctx, onBind) ->
       forAttr = (attr, value) ->
         if match = extractPlaceholder value
           {pre, post, name, partial, literal} = match
-          name = addNameToData data, depth + queues.length, name
+          name = unaliasName data, depth + queues.length, name
           
           invert = /^\s*!\s*$/.test pre
           if (pre && !invert) || post || partial
@@ -350,7 +344,7 @@ parse = (view, viewName, template, data, ctx, onBind) ->
           bool = elOut.bool || anyOut.bool
           del = elOut.del || anyOut.del
 
-          if data[name]?.model && !literal
+          if !(name of data) && !literal
             addId attrs, uniqueId
             events.push (data, modelEvents) ->
               return  unless path = modelPath data, name

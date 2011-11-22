@@ -19,12 +19,12 @@ splitBind = (value) ->
 
 module.exports =
   modelPath: modelPath = (data, name, noReplace) ->
-    if (paths = data.$paths) && name.charAt(0) == '.'
+    return null  if name of data
+    if name.charAt(0) == '.' && paths = data.$paths
       return replaceIndex(data, paths[0], noReplace)  if name is '.'
       i = /^\.+/.exec(name)[0].length - 1
       return replaceIndex(data, paths[i], noReplace) + name.substr(i)
-    return null  unless (datum = data[name]) && path = datum.model
-    path.replace /\[([^\]]+)\]/g, (match, name) -> data[name]
+    name.replace /\[([^\]]+)\]/g, (match, name) -> data[name]
 
   addDomEvent: addDomEvent = (events, attrs, name, _eventNames, getMethod, property, invert) ->
     args = [null, null, getMethod, property]
