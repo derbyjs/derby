@@ -48,6 +48,7 @@ exports.init = (model, dom, view) ->
       if partial is '$inv'
         value = !value
       else if partial
+        triggerId = id
         if method is 'html' && type
           # Handle array updates
           method = type
@@ -56,6 +57,7 @@ exports.init = (model, dom, view) ->
           else if type is 'insert'
             [index, value] = value
             path += '.' + index
+            triggerId = null
           else if type is 'remove'
             noRender = true
           else if type is 'move'
@@ -63,7 +65,7 @@ exports.init = (model, dom, view) ->
             [value, property] = value
         else if method is 'attr'
           value = null
-        value = view.get partial, value, null, null, path, id  unless noRender
+        value = view.get partial, value, null, null, path, triggerId  unless noRender
 
       # Remove this listener if the DOM update fails. Happens when an id cannot be found
       return dom.update id, method, options && options.ignore, value, property, index
