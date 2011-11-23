@@ -53,7 +53,7 @@ View:: =
         out = ''
         if parentCtx
           parentCtx = Object.create parentCtx
-          parentCtx.$paths = paths.slice()
+          parentCtx.$paths = (paths && paths.slice()) || []
           parentCtx.$paths[0] += '.$#'
           indicies = parentCtx.$i || []
         for item, i in ctx
@@ -111,11 +111,14 @@ View:: =
 
   inline: empty
 
-  render: (@model, ctx) ->
+  render: (@model, ctx, silent) ->
     @model.__events.clear()
     @dom.events.clear()
-    document.body.innerHTML = @get('header', ctx) + @get('body', ctx)
-    document.title = @get 'title$s', ctx
+    title = @get 'title$s', ctx
+    body = @get('header', ctx) + @get('body', ctx)
+    return if silent
+    document.body.innerHTML = body
+    document.title = title
   
   htmlEscape: htmlEscape
   attrEscape: attrEscape
@@ -331,6 +334,11 @@ parse = (view, viewName, template, data, ctx, onBind) ->
                 modelEvents.bind path, [attrs._id || attrs.id, 'attr', attr, partial]
             view._views[partial] = (ctx) -> render extend data, ctx
             attrs[attr] = (data, model) -> attrEscape render(data, model)
+
+            # TODO: Come up with something cleaner here. Just trying to get the paths set
+            _data = Object.create data
+            _data.$depth = depth + queues.length
+            view.get partial, null, _data, modelPath(_data, name, true)
             return
 
           if parser = parsePlaceholder[attr]

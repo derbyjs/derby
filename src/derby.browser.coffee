@@ -37,14 +37,10 @@ exports.createApp = (appModule) ->
   # "$$templates$$" is replaced with an array of templates by loader
   view.make name, template  for name, template of "$$templates$$"
 
-  appModule.exports = (idCount, paths, aliases, pathMapCount, pathMapIds, modelBundle, modelEvents, domEvents) ->
-    view._idCount = idCount
-    view._paths = paths
-    view._aliases = aliases
-    model.__pathMap.init pathMapCount, pathMapIds
-    model.__events.set modelEvents
-    dom.init domEvents
+  appModule.exports = (modelBundle, ctx) ->
     racer.init modelBundle
+    view.render model, ctx, true
+    dom.init()
     return appExports
 
   return appExports

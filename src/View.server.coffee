@@ -92,13 +92,10 @@ View::_render = (res, model, ctx, isStatic, dom, css) ->
   return res.end tail  if isStatic
   
   initStart = "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{@_require}')(#{@_idCount}," +
-    JSON.stringify(@_paths) + ',' + JSON.stringify(@_aliases) + ',' +
-    model.__pathMap.count + ',' + JSON.stringify(model.__pathMap.ids) + ','
-  initEnd = ',' + JSON.stringify(model.__events.get()) + ',' +
-    JSON.stringify(dom.events.get()) +
+    "#{clientName}=require('./#{@_require}')("
+  initEnd = (if ctx then ',' + escapeInlineScript(JSON.stringify ctx) else '') +
     ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
-  
+
   # Wait for transactions to finish and package up the racer model data
   model.bundle (bundle) ->
     res.end initStart + escapeInlineScript(bundle) + initEnd

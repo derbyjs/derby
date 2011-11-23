@@ -54,6 +54,7 @@ exports.init = (model, dom, view) ->
           method = type
           if type is 'append'
             path += '.' + (model.get(path).length - 1)
+            triggerId = null
           else if type is 'insert'
             [index, value] = value
             path += '.' + index

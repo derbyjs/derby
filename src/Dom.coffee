@@ -130,7 +130,7 @@ Dom = module.exports = (model, appExports, @history) ->
   return
 
 Dom:: =
-  init: (domEvents) ->
+  init: ->
     events = @events
     history = @history
 
@@ -148,7 +148,6 @@ Dom:: =
           event.target || event.target = event.srcElement
           cb event
 
-    events.set domEvents
     addListener doc, name for name of events._names
 
     addListener doc, 'click', (e) ->
