@@ -38,8 +38,9 @@ exports.createApp = (appModule) ->
   view.make name, template  for name, template of "$$templates$$"
 
   appModule.exports = (modelBundle, ctx) ->
+    model.on 'initialized', ->
+      view.render model, ctx, true
     racer.init modelBundle
-    view.render model, ctx, true
     dom.init()
     return appExports
 
