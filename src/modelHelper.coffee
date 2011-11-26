@@ -106,12 +106,13 @@ exports.init = (model, dom, view) ->
         pathMap.paths[id] = itemPath
         pathMap.ids[itemPath] = +id
   
-  deleteMapItems = (map, start, end) ->
-    for i in [start...end]
+  deleteMapItems = (map, start, end, last) ->
+    for i in [start..last]
       continue unless ids = map[i]
       for id of ids
         itemPath = pathMap.paths[id]
         delete pathMap.ids[itemPath]
+        continue if i >= end
         delete pathMap.paths[id]
 
   model.on 'move', ([path, from, to, options], local) ->
@@ -144,10 +145,11 @@ exports.init = (model, dom, view) ->
     if map = pathMap.arrays[path]
       howMany = values.length
       end = start + howMany
+      last = map.length - 1
       # Delete indicies for items in inserted positions
-      deleteMapItems map, start, end
+      deleteMapItems map, start, end, last
       # Increment indicies of later items
-      incrementMapItems path, map, start, map.length - 1, howMany
+      incrementMapItems path, map, start, last, howMany
       map.splice start, 0, {}  while howMany--
 
     id = pathMap.id path
@@ -161,10 +163,11 @@ exports.init = (model, dom, view) ->
 
     # Update indicies in pathMap before removing
     if map = pathMap.arrays[path]
+      last = map.length - 1
       # Delete indicies for removed items
-      deleteMapItems map, start, end
+      deleteMapItems map, start, end, last
       # Decrement indicies of later items
-      incrementMapItems path, map, end, map.length - 1, -howMany
+      incrementMapItems path, map, end, last, -howMany
       map.splice start, howMany
 
     id = pathMap.id path

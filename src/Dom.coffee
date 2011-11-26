@@ -32,32 +32,38 @@ getMethods =
 
 setMethods = 
   attr: (el, ignore, value, attr) ->
+    return if ignore && el.id == ignore
     el.setAttribute attr, value
 
   prop: (el, ignore, value, prop) ->
+    return if ignore && el.id == ignore
     el[prop] = value
 
   propPolite: (el, ignore, value, prop) ->
+    return if ignore && el.id == ignore
     el[prop] = value  if el != doc.activeElement
 
   visible: (el, ignore, value) ->
+    return if ignore && el.id == ignore
     el.style.visibility = if value then '' else 'hidden'
 
   displayed: (el, ignore, value) ->
+    return if ignore && el.id == ignore
     el.style.display = if value then '' else 'none'
 
   html: html = (el, ignore, value, escape) ->
+    return if ignore && el.id == ignore
     el.innerHTML = if escape then htmlEscape value else value
 
   append: (el, ignore, value, escape) ->
-    html emptyEl, ignore, value, escape
+    html emptyEl, null, value, escape
     while child = emptyEl.firstChild
       el.appendChild child
     return
 
   insert: (el, ignore, value, escape, index) ->
     ref = el.childNodes[index]
-    html emptyEl,ignore, value, escape
+    html emptyEl, null, value, escape
     while child = emptyEl.firstChild
       el.insertBefore child, ref
     return
@@ -70,10 +76,10 @@ setMethods =
     # Don't move if the item at the destination is passed as the ignore option,
     # since this indicates the intended item was already moved
     if toEl = el.childNodes[to]
-      return if toEl.id == ignore
+      return if ignore && toEl.id == ignore
     # Also don't move if the child to move matches the ignore option
     child = el.childNodes[from]
-    return if child.id == ignore
+    return if ignore && child.id == ignore
     ref = el.childNodes[if to > from then to + 1 else to]
     el.insertBefore child, ref
 
