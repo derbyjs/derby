@@ -34,11 +34,6 @@ View::_load = (isStatic, callback) ->
     self._require = obj.require
     callback()
 
-View::_init = (model) ->
-  # Initialize view for rendering
-  @dom = new Dom(@model = modelHelper.init model)
-  @_idCount = 0
-
 View::render = (res = emptyRes, args...) ->
   for arg in args
     if arg instanceof Model
@@ -52,18 +47,20 @@ View::render = (res = emptyRes, args...) ->
   model = emptyModel  unless model?
 
   self = this
-  @_init model
-  dom = @dom
   @_load isStatic, -> loader.css self._root, self._clientName, (css) ->
-    self._render res, model, ctx, isStatic, dom, css
+    self._render res, model, ctx, isStatic, css
 
-View::_render = (res, model, ctx, isStatic, dom, css) ->
+View::_render = (res, model, ctx, isStatic, css) ->
+  # Initialize view for rendering
+  @dom = new Dom(@model = modelHelper.init model)
+  @_idCount = 0
+
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
-  
+
   # The view.get function renders and sets event listeners. It must be
   # called for all views before the event listeners are retrieved
-  
+
   # The first chunk includes everything through header. Head should contain
   # any meta tags and script tags, since it is included before CSS.
   # If there is a small amount of header HTML that will display well by itself,
