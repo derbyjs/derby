@@ -39,7 +39,7 @@ refIndex = (obj) ->
   # Get index if event was from arrayRef id object
   if typeof obj is 'object' then obj.index else +obj
 
-incrementMapItems = (path, map, start, end, byNum) ->
+incrementMapItems = (pathMap, path, map, start, end, byNum) ->
   for i in [start..end]
     continue unless ids = map[i]
     for id, remainder of ids
@@ -47,7 +47,7 @@ incrementMapItems = (path, map, start, end, byNum) ->
       pathMap.paths[id] = itemPath
       pathMap.ids[itemPath] = +id
 
-deleteMapItems = (map, start, end, last) ->
+deleteMapItems = (pathMap, map, start, end, last) ->
   for i in [start..last]
     continue unless ids = map[i]
     for id of ids
@@ -56,7 +56,7 @@ deleteMapItems = (map, start, end, last) ->
       continue if i >= end
       delete pathMap.paths[id]
 
-insert = (path, start, values, local, options) ->
+insert = (events, pathMap, path, start, values, local, options) ->
   start = refIndex start
 
   # Update indicies in pathMap before inserting
@@ -65,9 +65,9 @@ insert = (path, start, values, local, options) ->
     end = start + howMany
     last = map.length - 1
     # Delete indicies for items in inserted positions
-    deleteMapItems map, start, end, last
+    deleteMapItems pathMap, map, start, end, last
     # Increment indicies of later items
-    incrementMapItems path, map, start, last, howMany
+    incrementMapItems pathMap, path, map, start, last, howMany
     map.splice start, 0, {}  while howMany--
 
   id = pathMap.id path
@@ -75,7 +75,7 @@ insert = (path, start, values, local, options) ->
     events.trigger id, [start + i, value], 'insert', local, options
   return
 
-remove = (path, start, howMany, local, options) ->
+remove = (events, pathMap, path, start, howMany, local, options) ->
   start = refIndex start
   end = start + howMany
 
@@ -83,9 +83,9 @@ remove = (path, start, howMany, local, options) ->
   if map = pathMap.arrays[path]
     last = map.length - 1
     # Delete indicies for removed items
-    deleteMapItems map, start, end, last
+    deleteMapItems pathMap, map, start, end, last
     # Decrement indicies of later items
-    incrementMapItems path, map, end, last, -howMany
+    incrementMapItems pathMap, path, map, end, last, -howMany
     map.splice start, howMany
 
   id = pathMap.id path
@@ -145,7 +145,6 @@ exports.init = (model, dom, view) ->
     events.trigger pathMap.id(path), undefined, 'html', local, options
 
   model.on 'push', ([path, values...], options, local) ->
-    console.log arguments
     id = pathMap.id path
     for value in values
       events.trigger id, value, 'append', local, options
@@ -162,12 +161,12 @@ exports.init = (model, dom, view) ->
     # Update indicies in pathMap before moving
     if map = pathMap.arrays[path]
       # Adjust paths for the moved item
-      incrementMapItems path, map, from, from, to - from
+      incrementMapItems pathMap, path, map, from, from, to - from
       # Adjust paths for items between from and to
       if from > to
-        incrementMapItems path, map, to, from - 1, 1
+        incrementMapItems pathMap, path, map, to, from - 1, 1
       else
-        incrementMapItems path, map, from + 1, to, -1
+        incrementMapItems pathMap, path, map, from + 1, to, -1
       # Fix the array index
       [item] = map.splice from, 1
       map.splice to, 0, item
@@ -175,26 +174,26 @@ exports.init = (model, dom, view) ->
     events.trigger pathMap.id(path), [from, to], 'move', local, options
 
   model.on 'unshift', ([path, values...], options, local) ->
-    insert path, 0, values, local, options
+    insert events, pathMap, path, 0, values, local, options
 
   model.on 'insertBefore', ([path, index, value], options, local) ->
-    insert path, index, [value], local, options
+    insert events, pathMap, path, index, [value], local, options
 
   model.on 'insertAfter', ([path, index, value], options, local) ->
-    insert path, index + 1, [value], local, options
+    insert events, pathMap, path, index + 1, [value], local, options
 
   model.on 'remove', ([path, start, howMany], options, local) ->
-    remove path, start, howMany, local, options
+    remove events, pathMap, path, start, howMany, local, options
 
   model.on 'pop', ([path], options, local) ->
-    remove path, model.get(path).length, 1, local, options
+    remove events, pathMap, path, model.get(path).length, 1, local, options
 
   model.on 'shift', ([path], options, local) ->
-    remove path, 0, 1, local, options
+    remove events, pathMap, path, 0, 1, local, options
 
   model.on 'splice', ([path, start, howMany, values...], options, local) ->
-    remove path, start, howMany, local, options
-    insert path, index, values, local, options
+    remove events, pathMap, path, start, howMany, local, options
+    insert events, pathMap, path, index, values, local, options
 
   for event in ['connected', 'canConnect']
     do (event) -> model.on event, (value) ->
