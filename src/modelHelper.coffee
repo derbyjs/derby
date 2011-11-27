@@ -138,19 +138,19 @@ exports.init = (model, dom, view) ->
 
   return model unless dom
 
-  model.on 'set', ([path, value], options, local) ->
+  model.on 'set', ([path, value], local, options) ->
     events.trigger pathMap.id(path), value, 'html', local, options
 
-  model.on 'del', ([path], options, local) ->
+  model.on 'del', ([path], local, options) ->
     events.trigger pathMap.id(path), undefined, 'html', local, options
 
-  model.on 'push', ([path, values...], options, local) ->
+  model.on 'push', ([path, values...], local, options) ->
     id = pathMap.id path
     for value in values
       events.trigger id, value, 'append', local, options
     return
 
-  model.on 'move', ([path, from, to], options, local) ->
+  model.on 'move', ([path, from, to], local, options) ->
     len = model.get(path).length
     from = refIndex from
     to = refIndex to
@@ -173,25 +173,25 @@ exports.init = (model, dom, view) ->
 
     events.trigger pathMap.id(path), [from, to], 'move', local, options
 
-  model.on 'unshift', ([path, values...], options, local) ->
+  model.on 'unshift', ([path, values...], local, options) ->
     insert events, pathMap, path, 0, values, local, options
 
-  model.on 'insertBefore', ([path, index, value], options, local) ->
+  model.on 'insertBefore', ([path, index, value], local, options) ->
     insert events, pathMap, path, index, [value], local, options
 
-  model.on 'insertAfter', ([path, index, value], options, local) ->
+  model.on 'insertAfter', ([path, index, value], local, options) ->
     insert events, pathMap, path, index + 1, [value], local, options
 
-  model.on 'remove', ([path, start, howMany], options, local) ->
+  model.on 'remove', ([path, start, howMany], local, options) ->
     remove events, pathMap, path, start, howMany, local, options
 
-  model.on 'pop', ([path], options, local) ->
+  model.on 'pop', ([path], local, options) ->
     remove events, pathMap, path, model.get(path).length, 1, local, options
 
-  model.on 'shift', ([path], options, local) ->
+  model.on 'shift', ([path], local, options) ->
     remove events, pathMap, path, 0, 1, local, options
 
-  model.on 'splice', ([path, start, howMany, values...], options, local) ->
+  model.on 'splice', ([path, start, howMany, values...], local, options) ->
     remove events, pathMap, path, start, howMany, local, options
     insert events, pathMap, path, index, values, local, options
 
