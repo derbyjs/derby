@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.1.0
+version: 0.1.2
 headers:
   - text: Introduction
     type: h1
@@ -211,17 +211,25 @@ When following the default file structure, templates, styles, and scripts are au
 
 ## Demos
 
+[Source for the demos](https://github.com/codeparty/derby/tree/master/examples) is included with Derby.
+
 ### Chat
 
 [http://chat.derbyjs.com/lobby](http://chat.derbyjs.com/lobby)
 
 A simple chat demo. Note that as you edit your name, it updates in realtime. Name changes also show up in the page title and other rooms. Check out the source in the examples directory to see how these bindings are created automatically.
 
+### Todos
+
+[http://todos.derbyjs.com/derby](http://todos.derbyjs.com/derby)
+
+The requisite MVC demo, but collaborative and realtime! Todo items are contenteditable fields with support for bold and italics.
+
 ### Sink
 
 [http://sink.derbyjs.com/](http://sink.derbyjs.com/)
 
-A kitchen-sink style example with a bunch of random features. Largely used for testing.
+A kitchen-sink style example with random features. Largely used for testing.
 
 ## Disclaimer
 
@@ -231,7 +239,7 @@ If you have feedback, ideas, or suggestions, feel free to leave them on the [wik
 
 # Getting started
 
-As with all Node.js modules, first install [Node](https://github.com/joyent/node/wiki/Installation) and [npm](http://npmjs.org/).
+As with all Node.js modules, first install [Node](http://nodejs.org/#download). The Node installer will also install [npm](http://npmjs.org/).
 
 Instal Derby with:
 
