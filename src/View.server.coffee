@@ -50,10 +50,13 @@ View::render = (res = emptyRes, args...) ->
   @_load isStatic, -> loader.css self._root, self._clientName, (css) ->
     self._render res, model, ctx, isStatic, css
 
-View::_render = (res, model, ctx, isStatic, css) ->
+View::_init = (model) ->
   # Initialize view for rendering
   @dom = new Dom(@model = modelHelper.init model)
   @_idCount = 0
+
+View::_render = (res, model, ctx, isStatic, css) ->
+  @_init model
 
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'

@@ -1,6 +1,6 @@
 {wrapTest} = require './util'
 should = require 'should'
-EventDispatcher = require 'EventDispatcher'
+EventDispatcher = require '../src/EventDispatcher'
 
 # Names must be a valid object key
 name1 = 'test event'
@@ -133,13 +133,3 @@ module.exports =
     dispatcher.trigger name1, value1, options1
     dispatcher.trigger name1, value1, options1
   , 3
-
-  'test EventDispatcher bind callback can cancel': wrapTest (done) ->
-    dispatcher = new EventDispatcher
-      onTrigger: done
-      onBind: ->
-        done()
-        return false
-    dispatcher.bind name1
-    dispatcher.trigger name1
-  , 1

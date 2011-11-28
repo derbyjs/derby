@@ -1,7 +1,7 @@
 {wrapTest} = require './util'
 Model = require '../node_modules/racer/src/Model.server'
 should = require 'should'
-View = require 'View.server'
+View = require '../src/View.server'
 
 ResMock = ->
   @html = ''
@@ -21,7 +21,9 @@ module.exports =
     view = new View
     res = new ResMock
     view.render res
-    res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
+    setTimeout ->
+      res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
+    , 100
         
   'test rendering a string literal view': ->
     view = new View
@@ -51,7 +53,6 @@ module.exports =
       """
     ctx =
       connected: false
-      height: {model: 'newHeight'}
       weight: '165 lbs'
       nada: null
         
@@ -60,7 +61,7 @@ module.exports =
         
     model.set 'name', 'John'
     model.set 'age', 22
-    model.set 'newHeight', '6 ft 2 in'
+    model.set 'height', '6 ft 2 in'
     model.set 'weight', '175 lbs'
         
     expected = 'falsetrue ' +
@@ -82,7 +83,6 @@ module.exports =
       """
     ctx =
       connected: false
-      height: {model: 'newHeight'}
       weight: '165 lbs'
       nada: null
         
@@ -91,7 +91,7 @@ module.exports =
         
     model.set 'name', 'John'
     model.set 'age', 22
-    model.set 'newHeight', '6 ft 2 in'
+    model.set 'height', '6 ft 2 in'
     model.set 'weight', '175 lbs'
         
     expected = 'false<ins id=$0>true</ins> ' +
