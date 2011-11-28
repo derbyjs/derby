@@ -12,7 +12,7 @@ See **http://derbyjs.com/**
 
 Derby and Racer are alpha software. While Derby should work well enough for prototyping and weekend projects, it is still undergoing major development. APIs are subject to change.
 
-If you have feedback, ideas, or suggestions, feel free to leave them on the [wiki](https://github.com/codeparty/derby/wiki). If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps).
+If you have feedback, ideas, or suggestions, please message the [Google Group](http://groups.google.com/group/derbyjs) or create an Issue. If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps).
 
 ## Demos
 
