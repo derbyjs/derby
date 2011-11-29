@@ -55,7 +55,8 @@ View:: =
           parentCtx = Object.create parentCtx
           parentCtx.$paths = (paths && paths.slice()) || []
           parentCtx.$paths[0] += '.$#'
-          indicies = parentCtx.$i || []
+          indicies = parentCtx.$i
+        indicies ||= []
         for item, i in ctx
           obj = extend parentCtx, item
           obj.$i = [i].concat indicies

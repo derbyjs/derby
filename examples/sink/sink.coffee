@@ -72,7 +72,7 @@ view.make 'Head', '''
     body{margin:10px}
     body,select{font:13px/normal arial,sans-serif}
     ins{text-decoration:none}
-    .css{margin-left:10px}
+    .css{list-style:none;padding-left:1em;margin:0}
   </style>
   '''
 
@@ -117,11 +117,11 @@ view.make 'liveCss', '''
   <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
   <p>{
-    <div>
-      ((#liveCss.styles :style))
-        <p class=css x-displayed=((:style.active))>((> cssProperty))</p>
-      ((/))
-    </div>
+  <ul class=css>
+    ((#liveCss.styles :style))
+      <li x-displayed=((:style.active))>((> cssProperty))
+    ((/))
+  </ul>
   <p>}
   <h3>Output:</h3>
   <p style="((liveCss.styles :style > cssProperty))" contenteditable>
