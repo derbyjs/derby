@@ -181,13 +181,22 @@ view.make 'submit', '''
 ready (model) ->
   exports.addStyle = ->
     model.push 'liveCss.styles', {}
-  
-  exports.deleteStyle = (e) ->
-    item = e.target.parentNode
+
+  targetIndex = (e, levels = 1) ->
+    item = e.target
+    item = item.parentNode while levels--
     for child, i in item.parentNode.childNodes
-      return model.remove 'liveCss.styles', i  if child == item
+      return i if child == item
+
+  exports.deleteStyle = (e) ->
+    model.remove 'liveCss.styles', targetIndex(e)
 
   exports.deleteRow = (e) ->
-    item = e.target.parentNode.parentNode
-    for child, i in item.parentNode.childNodes
-      return model.remove 'rows', i  if child == item
+    model.remove 'rows', targetIndex(e, 2)
+
+  exports.deleteCol = (e) ->
+    i = targetIndex e
+    row = model.get('rows').length
+    while row--
+      model.remove "rows.#{row}.cells", i
+    return model.remove 'cols', i
