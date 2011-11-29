@@ -5,6 +5,7 @@
 pages = [
   {name: 'home', text: 'Home', url: '/'}
   {name: 'liveCss', text: 'Live CSS', url: '/live-css'}
+  {name: 'tableEditor', text: 'Table editor', url: '/table'}
   {name: 'submit', text: 'Submit form', url: '/submit'}
   {name: 'back', text: 'Back redirect', url: '/back'}
   {name: 'error', text: 'Error test', url: '/error'}
@@ -33,6 +34,22 @@ get '/live-css', (page, model) ->
     ]
     model.setNull 'liveCss.outputText', 'Edit this text...'
     page.render ctxFor 'liveCss'
+
+get '/table', (page, model) ->
+  model.subscribe 'rows', 'cols', ->
+    unless model.get 'rows'
+      model.set 'rows', [
+        {cells: [{header: 'A'}, {}, {}, {}, {controls: true}]}
+        {cells: [{header: 'B'}, {}, {}, {}, {controls: true}]}
+      ]
+      model.set 'cols', [
+        {}
+        {name: 1}
+        {name: 2}
+        {name: 3}
+        {}
+      ]
+    page.render ctxFor 'tableEditor'
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
   sink[method] '/submit', (page, model, {body, query}) ->
@@ -71,6 +88,7 @@ view.make 'Body', '''
   <hr>
   {{#homeVisible}}{{> home}}{{/}}
   {{#liveCssVisible}}{{> liveCss}}{{/}}
+  {{#tableEditorVisible}}{{> tableEditor}}{{/}}
   {{#submitVisible}}{{> submit}}{{/}}
   '''
 
@@ -113,6 +131,39 @@ view.make 'liveCss', '''
 
 view.make 'cssProperty', '''((#:style.active))((:style.prop)): ((:style.value));((/))'''
 
+view.make 'tableEditor', '''
+  <table>
+    <thead>
+      <tr>
+        ((#cols))
+          <th>((.name))
+        ((/))
+    <tbody>
+      ((#rows))
+        <tr>
+          ((#.cells :cell))
+              {{#:cell.header}}
+                <th>((.))
+              {{^}}
+                {{#:cell.controls}}
+                  <td><button x-bind=click:deleteRow>Delete</button>
+                {{^}}
+                  <th><input value=((:cell.text))>
+                {{/}}
+              {{/}}
+          ((/))
+      ((/))
+    <tfoot>
+      <tr>
+        ((#cols))
+          <th>
+            ((#.name))
+              <button x-bind=click:deleteCol>Delete</button>
+            ((/))
+        ((/))
+  </table>
+'''
+
 view.make 'submit', '''
   <form action=submit method=post>
     <input type=hidden name=_method value=put>
@@ -135,3 +186,8 @@ ready (model) ->
     item = e.target.parentNode
     for child, i in item.parentNode.childNodes
       return model.remove 'liveCss.styles', i  if child == item
+
+  exports.deleteRow = (e) ->
+    item = e.target.parentNode.parentNode
+    for child, i in item.parentNode.childNodes
+      return model.remove 'rows', i  if child == item
