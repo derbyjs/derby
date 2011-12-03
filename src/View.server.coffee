@@ -68,8 +68,8 @@ View::_render = (res, model, ctx, isStatic, css) ->
   # any meta tags and script tags, since it is included before CSS.
   # If there is a small amount of header HTML that will display well by itself,
   # it is a good idea to add this to the Header view so that it renders ASAP.
-  doctype = @get('doctype', ctx) || '<!DOCTYPE html><meta charset=utf-8>'
-  title = htmlEscape(@get 'title$s', ctx) || 'Derby app'
+  doctype = @get 'doctype', ctx
+  title = htmlEscape @get 'title$s', ctx
   head = @get 'head', ctx
   header = @get 'header', ctx
   css = "<style>#{css}</style>"  if css

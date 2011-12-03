@@ -82,6 +82,7 @@ module.exports =
 
   views: views = (view, root, clientName, callback) ->
     loadTemplates root, clientName, 'all', null, {}, (templates) ->
+      view._templates ||= {}
       for name, text of templates
         view.make name, text
         view._templates[name] = text

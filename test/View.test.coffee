@@ -46,18 +46,15 @@ module.exports =
     model = new Model
     view._init model
           
-    template = """
+    view.make 'test', '''
       {{connected}}{{canConnect}} {{nada}}
       <p>{{name}}
       <p>{{age}} - {{height}} - {{weight}}
-      """
+      '''
     ctx =
       connected: false
       weight: '165 lbs'
       nada: null
-        
-    view.make 'test0', template, ctx
-    view.make 'test1', template
         
     model.set 'name', 'John'
     model.set 'age', 22
@@ -68,41 +65,29 @@ module.exports =
       '<p>John' +
       '<p>22 - 6 ft 2 in - 165 lbs'
         
-    view.get('test0').should.eql expected
-    view.get('test1', ctx).should.eql expected
+    view.get('test', ctx).should.eql expected
         
   'test binding variables in text': ->
     view = new View
     model = new Model
     view._init model
         
-    template = """
+    view.make 'test', '''
       ((connected))((canConnect)) ((nada))
       <p>((name))
       <p>((age)) - ((height)) - ((weight))
-      """
+      '''
     ctx =
       connected: false
       weight: '165 lbs'
       nada: null
         
-    view.make 'test0', template, ctx
-    view.make 'test1', template
-        
     model.set 'name', 'John'
     model.set 'age', 22
     model.set 'height', '6 ft 2 in'
     model.set 'weight', '175 lbs'
-        
-    expected = 'false<ins id=$0>true</ins> ' +
-      '<p id=$1>John' +
-      '<p><ins id=$2>22</ins> - <ins id=$3>6 ft 2 in</ins> - 165 lbs'
-        
-    view.get('test0').should.eql 'false<ins id=$0>true</ins> ' +
-      '<p id=$1>John' +
-      '<p><ins id=$2>22</ins> - <ins id=$3>6 ft 2 in</ins> - 165 lbs'
-    view._idCount = 0
-    view.get('test1', ctx).should.eql '<ins id=$0>false</ins><ins id=$1>true</ins> <ins id=$2></ins>' +
+  
+    view.get('test', ctx).should.eql '<ins id=$0>false</ins><ins id=$1>true</ins> <ins id=$2></ins>' +
       '<p id=$3>John' +
       '<p><ins id=$4>22</ins> - <ins id=$5>6 ft 2 in</ins> - <ins id=$6>165 lbs</ins>'
         
@@ -116,94 +101,88 @@ module.exports =
     # required, because it is sometimes needed depending on the following item
     template = '''<input value=(((html)))> ((html))x(((html)))'''
     value = '<b id="hey">&Hi! & x& </b>&'
-              
-    view.make 'test0', template, html: value
-    view.get('test0').should.eql '<input value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
-      '&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;x' +
-      '<b id="hey">&Hi! & x& </b>&'
-              
-    view.make 'test1', template
-    model.set 'html', value
-    view.get('test1').should.eql '<input id=$0 value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
+    expected =
+      '<input id=$0 value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
       '<ins id=$1>&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;</ins>x' +
       '<ins id=$2><b id="hey">&Hi! & x& </b>&</ins>'
               
-    view.make 'test2', '<p a={{a}} b={{b}} c={{c}} d={{d}} e={{e}} f={{f}} g={{g}} h={{h}} i>',
+    view.make 'test1', template
+    view.get('test1', html: value).should.eql expected
+
+    view._idCount = 0
+    model.set 'html', value
+    view.get('test1').should.eql expected
+              
+    view.make 'test2',
+      '<p a={{a}} b={{b}} c={{c}} d={{d}} e={{e}} f={{f}} g={{g}} h={{h}} i>'
+    view.get('test2',
       {a: '"', b: "'", c: '<', d: '>', e: '=', f: ' ', g: '', h: null}
-    view.get('test2').should.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
+    ).should.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
               
   'test conditional blocks in text': ->
     view = new View
     model = new Model
     view._init model
         
-    template = '''((#show))Yep((^))Nope((/))((#show)) Yes!((/)) ((^show))No((/))'''
+    view.make 'literal',
+      '{{#show}}Yep{{^}}Nope{{/}}{{#show}} Yes!{{/}} {{^show}}No{{/}}'
+    view.make 'bound',
+      '((#show))Yep((^))Nope((/))((#show)) Yes!((/)) ((^show))No((/))'
         
     literalTruthy = 'Yep Yes! '
     literalFalsey = 'Nope No'
     modelTruthy = '<ins id=$0>Yep</ins><ins id=$1> Yes!</ins> <ins id=$2></ins>'
     modelFalsey = '<ins id=$0>Nope</ins><ins id=$1></ins> <ins id=$2>No</ins>'
         
-    view.make 'test', template, show: true
-    view.get('test').should.eql literalTruthy
-    view.make 'test', template, show: 1
-    view.get('test').should.eql literalTruthy
-    view.make 'test', template, show: 'x'
-    view.get('test').should.eql literalTruthy
-    view.make 'test', template, show: {}
-    view.get('test').should.eql literalTruthy
-        
-    view.make 'test', template, show: false
-    view.get('test').should.eql literalFalsey
-    view.make 'test', template, show: undefined
-    view.get('test').should.eql literalFalsey
-    view.make 'test', template, show: null
-    view.get('test').should.eql literalFalsey
-    view.make 'test', template, show: 0
-    view.get('test').should.eql literalFalsey
-    view.make 'test', template, show: ''
-    view.get('test').should.eql literalFalsey
-    view.make 'test', template, show: []
-    view.get('test').should.eql literalFalsey
-        
-    view.make 'test', template
+    view.get('literal', show: true).should.eql literalTruthy
+    view.get('literal', show: 1).should.eql literalTruthy
+    view.get('literal', show: 'x').should.eql literalTruthy
+    view.get('literal', show: {}).should.eql literalTruthy
+    view.get('literal', show: [1]).should.eql literalTruthy
+
+    view.get('literal', show: false).should.eql literalFalsey
+    view.get('literal', show: undefined).should.eql literalFalsey
+    view.get('literal', show: null).should.eql literalFalsey
+    view.get('literal', show: 0).should.eql literalFalsey
+    view.get('literal', show: '').should.eql literalFalsey
+    view.get('literal', show: []).should.eql literalFalsey
+    view.get('literal').should.eql literalFalsey
         
     # No parameter assumes it is a model path that is undefined
     view._idCount = 0
-    view.get('test').should.eql modelFalsey
-        
+    view.get('bound').should.eql modelFalsey
+
     view._idCount = 0
     model.set 'show', true
-    view.get('test').should.eql modelTruthy
+    view.get('bound').should.eql modelTruthy
     view._idCount = 0
     model.set 'show', 1
-    view.get('test').should.eql modelTruthy
+    view.get('bound').should.eql modelTruthy
     view._idCount = 0
     model.set 'show', 'x'
-    view.get('test').should.eql modelTruthy
+    view.get('bound').should.eql modelTruthy
     view._idCount = 0
     model.set 'show', {}
-    view.get('test').should.eql modelTruthy
-        
+    view.get('bound').should.eql modelTruthy
+
     view._idCount = 0
     model.set 'show', false
-    view.get('test').should.eql modelFalsey
+    view.get('bound').should.eql modelFalsey
     view._idCount = 0
     model.set 'show', undefined
-    view.get('test').should.eql modelFalsey
-    # TODO: Fix bug in Racer
-    # view._idCount = 0
-    # model.set 'show', null
-    # view.get('test').should.eql modelFalsey
+    view.get('bound').should.eql modelFalsey
+    view._idCount = 0
+    model.set 'show', null
+    view.get('bound').should.eql modelFalsey
     view._idCount = 0
     model.set 'show', 0
-    view.get('test').should.eql modelFalsey
+    view.get('bound').should.eql modelFalsey
     view._idCount = 0
     model.set 'show', ''
-    view.get('test').should.eql modelFalsey
+    view.get('bound').should.eql modelFalsey
     view._idCount = 0
     model.set 'show', []
-    view.get('test').should.eql modelFalsey
+    view.get('bound').should.eql modelFalsey
 
   'test lists in text': ->
     view = new View
@@ -220,23 +199,21 @@ module.exports =
     </ul>
     """
 
-    view.make 'test', template, arr: []
-    view.get('test').should.eql '<ul><li>Nothing to see</ul>'
+    view.make 'test', template
+    view.get('test', arr: [])
+      .should.eql '<ul><li>Nothing to see</ul>'
 
-    view.make 'test', template, arr: [{name: 'stuff'}, {name: 'more'}]
-    view.get('test').should.eql '<ul><li>stuff<li>more</ul>'
+    view.make 'test', template
+    view.get('test', arr: [{name: 'stuff'}, {name: 'more'}])
+      .should.eql '<ul><li>stuff<li>more</ul>'
 
   'test boolean attributes': ->
     view = new View
     model = new Model
     view._init model
 
-    template = '<input type=checkbox checked=((maybe))>'
+    view.make 'test', '<input type=checkbox checked=((maybe))>'
 
-    view.make 'test', template
     view.get('test').should.eql '<input id=$0 type=checkbox>'
-    view.make 'test', template, maybe: false
-    view.get('test').should.eql '<input type=checkbox>'
-    view.make 'test', template, maybe: true
-    view.get('test').should.eql '<input type=checkbox checked>'
-
+    view.get('test', maybe: false).should.eql '<input id=$1 type=checkbox>'
+    view.get('test', maybe: true).should.eql '<input id=$2 type=checkbox checked>'

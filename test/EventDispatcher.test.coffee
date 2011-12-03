@@ -83,41 +83,6 @@ module.exports =
     dispatcher.trigger name1
   , 1
 
-  'test EventDispatcher unbind': wrapTest (done) ->
-    dispatcher = new EventDispatcher onTrigger: done
-    dispatcher.bind name1, listener1
-    dispatcher.trigger name1
-    dispatcher.trigger name1
-    dispatcher.unbind name1, 'some stuff' # Shouldn't do anything
-    dispatcher.get().should.have.property name1
-    dispatcher.unbind name1, listener1
-    dispatcher.get().should.not.have.property name1
-    dispatcher.trigger name1
-    dispatcher.unbind 'does not exist', null # Shouldn't do anything
-  , 2
-
-  'test EventDispatcher get and set': wrapTest (done) ->
-    onTrigger = (name, listener, value, options) ->
-      listener.should.eql listener1
-      value.should.equal value1
-      options.should.equal options1
-      done()
-    dispatcher1 = new EventDispatcher {onTrigger}
-    dispatcher2 = new EventDispatcher {onTrigger}
-    
-    dispatcher1.bind name1, listener1
-    data1 = dispatcher1.get()
-    
-    # Make sure the object returned by get() can be turned into JSON and then
-    # back into an equivalent object
-    data2 = JSON.parse JSON.stringify data1
-    data1.should.eql data2
-    data1.should.not.equal data2
-    
-    dispatcher2.set data2
-    dispatcher2.trigger name1, value1, options1
-  , 1
-
   'test EventDispatcher bind callback': wrapTest (done) ->
     dispatcher = new EventDispatcher
       onTrigger: (name, listener, value, options) ->

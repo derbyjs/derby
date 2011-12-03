@@ -99,7 +99,8 @@ exports.init = (model, dom, view) ->
 
   if dom then events = model.__events = new EventDispatcher
     onTrigger: (name, listener, value, type, local, options) ->
-      [id, method, property, partial] = listener
+      [id, method, property] = listener
+      partial = listener.fn
       path = pathMap.paths[name]
 
       method = 'prop'  if method is 'propPolite' && local
@@ -107,17 +108,16 @@ exports.init = (model, dom, view) ->
       if partial is '$inv'
         value = !value
       else if partial
-        triggerId = id
         if method is 'html' && type
           # Handle array updates
           method = type
           if type is 'append'
-            path += '.' + (model.get(path).length - 1)
-            triggerId = null
+            path += '.' + (index = model.get(path).length - 1)
+            isArray = true
           else if type is 'insert'
             [index, value] = value
             path += '.' + index
-            triggerId = null
+            isArray = true
           else if type is 'remove'
             noRender = true
           else if type is 'move'
@@ -125,9 +125,12 @@ exports.init = (model, dom, view) ->
             [value, property] = value
         else if method is 'attr'
           value = null
-        value = view.get partial, value, null, null, path, triggerId  unless noRender
+        unless noRender
+          value = partial listener.ctx, model, value, path, isArray, index
+          value = ''  unless value?
 
-      # Remove this listener if the DOM update fails. Happens when an id cannot be found
+      # Remove this listener if the DOM update fails
+      # Happens when an id cannot be found
       return dom.update id, method, options && options.ignore, value, property, index
   
   else events = model.__events = new EventDispatcher

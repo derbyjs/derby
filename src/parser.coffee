@@ -1,7 +1,7 @@
-replaceIndex = (data, path, noReplace) ->
-  return path  if noReplace || !(indicies = data.$i) || !path
-  i = indicies.length
-  path.replace /\$#/g, -> indicies[--i]
+replaceIndex = (ctx, path, noReplace) ->
+  return path  if noReplace || !(indicies = ctx.$i) || !path
+  i = 0
+  path.replace /\$#/g, -> indicies[i++]
 
 addConditionalStyle = (attrs, name, invert, styleText) ->
   type = if invert then '#' else '^'
@@ -17,37 +17,52 @@ splitBind = (value) ->
     out[name] = {value, delay}
   return out
 
+unaliasName = (ctx, name) ->
+  return name  unless name.charAt(0) is ':'
+  i = name.indexOf '.'
+  aliasName = name.substring 1, i
+  remainder = name.substr i + 1
+  # Calculate depth difference between alias's definition and usage
+  offset = ctx.$depth - ctx.$aliases[aliasName]
+  if offset != offset  # If NaN
+    throw new Error "Can't find alias for #{name}"
+  # Convert depth difference to a relative model path
+  return Array(offset + 1).join('.') + remainder
+
 module.exports =
-  modelPath: modelPath = (data, name, noReplace) ->
-    return null  if name of data
-    if name.charAt(0) == '.' && paths = data.$paths
-      return replaceIndex(data, paths[0], noReplace)  if name is '.'
+  modelPath: modelPath = (ctx, name, noReplace) ->
+    return null  if name of ctx
+    name = unaliasName ctx, name
+    if name.charAt(0) == '.' && paths = ctx.$paths
+      return replaceIndex(ctx, paths[0], noReplace)  if name is '.'
       i = /^\.+/.exec(name)[0].length - 1
-      return replaceIndex(data, paths[i], noReplace) + name.substr(i)
-    name.replace /\[([^\]]+)\]/g, (match, name) -> data[name]
+      return replaceIndex(ctx, paths[i], noReplace) + name.substr(i)
+    name.replace /\[([^\]]+)\]/g, (match, name) -> ctx[name]
 
   addDomEvent: addDomEvent = (events, attrs, name, _eventNames, getMethod, property, invert) ->
-    args = [null, null, getMethod, property]
     if isArray = Array.isArray _eventNames
       eventNames = []
       for eventName, i in _eventNames
         eventNames[i] = eventName.split '/'
     else
       [eventName, delay] = _eventNames.split '/'
-      args.push delay  if delay?
     prefix = if invert then '!' else ''
-    events.push (data, modelEvents, domEvents) ->
-      args[0] = prefix + modelPath data, name
-      args[1] = attrs._id || attrs.id
+    events.push (ctx, modelEvents, domEvents) ->
+      args = [
+        prefix + modelPath(ctx, name)
+        attrs._id || attrs.id
+        getMethod
+        property
+        delay
+      ]
       return domEvents.bind eventName, args  unless isArray
       for [eventName, delay] in eventNames
         domEvents.bind eventName, if delay? then args.concat delay else args
+      return
 
   distribute: distribute = (events, attrs, eventName) ->
-    args = ['$dist', null]
-    events.push (data, modelEvents, domEvents) ->
-      args[1] = attrs._id || attrs.id
-      domEvents.bind eventName, args
+    events.push (ctx, modelEvents, domEvents) ->
+      domEvents.bind eventName, ['$dist', attrs._id || attrs.id]
 
   parsePlaceholder:
     'value':
@@ -99,11 +114,8 @@ module.exports =
         for name, obj of splitBind value
           do (name) ->
             {value, delay} = obj
-            args = [value, null]
-            args.push delay  if delay?
-            events.push (data, modelEvents, domEvents) ->
-              args[1] = attrs._id || attrs.id
-              domEvents.bind name, args
+            events.push (ctx, modelEvents, domEvents) ->
+              domEvents.bind name, [value, attrs._id || attrs.id, delay]
         return addId: true
       a: (events, attrs, value) ->
         obj = splitBind value
