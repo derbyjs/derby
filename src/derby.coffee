@@ -2,6 +2,7 @@ racer = require 'racer'
 View = require './View.server'
 loader = require './loader'
 Router = require 'express/lib/router'
+fs = require 'fs'
 
 # The router middleware checks whether 'case sensitive routes' and 'strict routing'
 # are enabled. For now, always use the default value of false
@@ -26,11 +27,8 @@ Static:: =
       view._clientName = name
     view.render res, model, ctx, status, true
 
-module.exports =
+derby = module.exports =
   options: {}
-
-  version: '0.1alpha'
-
   configure: (@options) ->
 
   createApp: (appModule) ->
@@ -83,3 +81,6 @@ module.exports =
     return store
   
   session: racer.session
+
+Object.defineProperty derby, 'version',
+  get: -> JSON.parse(fs.readFileSync '../package.json', 'utf8').version
