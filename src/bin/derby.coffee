@@ -1,5 +1,3 @@
-`#!/usr/bin/env node
-`
 derby = require '../derby'
 {exec} = require 'child_process'
 program = require 'commander'
