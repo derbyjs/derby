@@ -87,7 +87,8 @@ remove = (events, pathMap, path, start, howMany, local, options) ->
     # Delete indicies for removed items
     deleteMapItems pathMap, map, start, end, last
     # Decrement indicies of later items
-    incrementMapItems pathMap, path, map, end, last, -howMany
+    unless end > last
+      incrementMapItems pathMap, path, map, end, last, -howMany
     map.splice start, howMany
 
   id = pathMap.id path
