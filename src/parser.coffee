@@ -1,7 +1,7 @@
 replaceIndex = (ctx, path, noReplace) ->
-  return path  if noReplace || !(indicies = ctx.$i) || !path
+  return path  if noReplace || !(indices = ctx.$i) || !path
   i = 0
-  path.replace /\$#/g, -> indicies[i++]
+  path.replace /\$#/g, -> indices[i++]
 
 addConditionalStyle = (attrs, name, invert, styleText) ->
   type = if invert then '#' else '^'
@@ -46,18 +46,16 @@ module.exports =
         eventNames[i] = eventName.split '/'
     else
       [eventName, delay] = _eventNames.split '/'
-    prefix = if invert then '!' else ''
     events.push (ctx, modelEvents, domEvents) ->
-      args = [
-        prefix + modelPath(ctx, name)
-        attrs._id || attrs.id
-        getMethod
-        property
-        delay
-      ]
-      return domEvents.bind eventName, args  unless isArray
-      for [eventName, delay] in eventNames
-        domEvents.bind eventName, if delay? then args.concat delay else args
+      path = modelPath ctx, name
+      id = attrs._id || attrs.id
+      if isArray
+        for [eventName, delay] in eventNames
+          domEvents.bind eventName,
+            [path, id, getMethod, property, delay, invert]
+      else
+        domEvents.bind eventName,
+          [path, id, getMethod, property, delay, invert]
       return
 
   distribute: distribute = (events, attrs, eventName) ->

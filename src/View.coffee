@@ -52,22 +52,23 @@ View:: =
 
   before: (name, before) ->
     render = @_find name
-    @_views[name] = (ctx) ->
+    @_views[name] = (ctx, model, triggerPath) ->
       before ctx
-      render ctx
+      render ctx, model, triggerPath
 
   after: (name, after) ->
     render = @_find name
-    @_views[name] = (ctx) ->
+    @_views[name] = (ctx, model, triggerPath) ->
       setTimeout after, 0, ctx
-      render ctx
+      render ctx, model, triggerPath
 
   inline: empty
 
   render: (@model, ctx, silent) ->
     @_idCount = 0
+    @model.__pathMap.clear()
     @model.__events.clear()
-    @dom.events.clear()
+    @dom.clear()
     title = @get('title$s', ctx)
     body = @get('header', ctx) + @get('body', ctx)
     return if silent
@@ -86,13 +87,17 @@ extend = (parent, obj) ->
   return out
 
 bindEvents = (events, name, fn, params) ->
-  events.push (ctx, modelEvents) ->
+  events.push (ctx, modelEvents, domEvents, triggerId) ->
     return  unless path = modelPath ctx, name
-    modelEvents.bind path, listener = if params.call then params() else params
+    modelEvents.bind path, listener = if params.call then params triggerId else params
     listener.fn = fn
     listener.ctx = ctx.$stringCtx || ctx
 bindEventsById = (events, name, fn, attrs, method, prop) ->
-  bindEvents events, name, fn, -> [attrs._id || attrs.id, method, prop]
+  bindEvents events, name, fn, ->
+    [attrs._id || attrs.id, method, prop]
+bindEventsByIdString = (events, name, fn, attrs, method, prop) ->
+  bindEvents events, name, fn, (triggerId) ->
+    [triggerId || attrs._id || attrs.id, method, prop]
 
 addId = (view, attrs) ->
   unless attrs.id?
@@ -176,16 +181,30 @@ reduceStack = (stack) ->
 
 
 renderer = (view, items, events) ->
-  (ctx) ->
-    model = view.model
+  (ctx, model, triggerPath, triggerId) ->
+    if triggerPath && path = ctx.$paths[0]
+      _path = path.split '.'
+      _triggerPath = triggerPath.split '.'
+      indices = ctx.$i.slice()
+      index = 0
+      for segment, i in _path
+        triggerSegment = _triggerPath[i]
+        # `(n = +triggerSegment) == n` will be false if segment is NaN
+        if segment is '$#' && (n = +triggerSegment) == n
+          indices[index++] = n
+        else if segment != triggerSegment
+          break
+      ctx.$i = indices
+
+    model = view.model  # Needed, since model parameter is optional
     modelEvents = model.__events
     domEvents = view.dom.events
     html = ''
     for item in items
-      html += if item.call then item(ctx, model) || '' else item
+      html += if item.call then item(ctx, model, triggerPath) || '' else item
     i = 0
     while event = events[i++]
-      event ctx, modelEvents, domEvents
+      event ctx, modelEvents, domEvents, triggerId
     return html
 
 parseMatch = (view, match, queues, {onStart, onEnd, onVar}) ->
@@ -224,39 +243,43 @@ parseMatch = (view, match, queues, {onStart, onEnd, onVar}) ->
 pushChars = (stack, text) ->
   stack.push ['chars', text]  if text
 
-extendCtx = (ctx, value, name, alias, isArray, index) ->
+extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx = extend ctx, value
   if path = modelPath ctx, name, true
     ctx.$paths = [path].concat ctx.$paths
-  ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
-  ctx.$i = ctx.$i.concat index  if index?
   if alias
     aliases = ctx.$aliases = Object.create ctx.$aliases
     aliases[alias] = ctx.$depth
   ctx.$depth++  if name
+  if index?
+    console.log ctx.$i = ctx.$i.concat index
+    isArray = true
+  ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
   return ctx
 
 partialFn = (name, type, alias, render) ->
-  (ctx, model, value, triggerPath, isArray, index) ->
-    unless triggerPath
+  (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+    unless useValue
       value = if name then dataValue ctx, model, name else true
     
     if Array.isArray value
       if type is '#'
-        ctx = extendCtx ctx, null, name, alias, true
+        ctx = extendCtx ctx, null, name, alias, null, true
         out = ''
-        indicies = ctx.$i
+        indices = ctx.$i
         for item, i in value
           _ctx = extend ctx, item
-          _ctx.$i = indicies.concat i
-          out += render _ctx
+          _ctx.$i = indices.concat i
+          out += render _ctx, model, triggerPath
         return out
       else
         unless value.length
-          return render extendCtx ctx, value, name, alias, isArray, index
+          ctx = extendCtx ctx, value, name, alias, index
+          return render ctx, model, triggerPath
     else
       if (if type is '#' then value else !value)
-        return render extendCtx ctx, value, name, alias, isArray, index
+        ctx = extendCtx ctx, value, name, alias, index
+        return render ctx, model, triggerPath
 
 textFn = (name, escape) ->
   (ctx, model) ->
@@ -318,7 +341,7 @@ forAttr = (view, stack, events, tagName, attrs, attr, value) ->
       # Attributes must be a single string, so create a string partial
       addId view, attrs
       render = parse view, value, true, (events, name) ->
-        bindEventsById events, name, render, attrs, 'attr', attr
+        bindEventsByIdString events, name, render, attrs, 'attr', attr
       attrs[attr] = (ctx, model) -> attrEscape render(ctx, model)
       return
 

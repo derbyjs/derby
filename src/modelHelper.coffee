@@ -2,13 +2,15 @@ EventDispatcher = require './EventDispatcher'
 
 # Keeps track of each unique path via an ID
 PathMap = ->
-  @count = 0
-  @ids = {}
-  @paths = {}
-  @arrays = {}
+  @clear()
   return
 
 PathMap:: =
+  clear: ->
+    @count = 0
+    @ids = {}
+    @paths = {}
+    @arrays = {}
 
   id: (path) ->
     # Return the path for an id, or create a new id and index it
@@ -98,6 +100,7 @@ exports.init = (model, dom, view) ->
   pathMap = model.__pathMap = new PathMap
 
   if dom then events = model.__events = new EventDispatcher
+    onBind: (name, listener) -> pathMap.id name
     onTrigger: (name, listener, value, type, local, options) ->
       [id, method, property] = listener
       partial = listener.fn
@@ -108,25 +111,24 @@ exports.init = (model, dom, view) ->
       if partial is '$inv'
         value = !value
       else if partial
+        triggerId = id
         if method is 'html' && type
           # Handle array updates
           method = type
           if type is 'append'
             path += '.' + (index = model.get(path).length - 1)
-            isArray = true
+            triggerId = null
           else if type is 'insert'
             [index, value] = value
             path += '.' + index
-            isArray = true
+            triggerId = null
           else if type is 'remove'
             noRender = true
           else if type is 'move'
             noRender = true
             [value, property] = value
-        else if method is 'attr'
-          value = null
         unless noRender
-          value = partial listener.ctx, model, value, path, isArray, index
+          value = partial listener.ctx, model, path, triggerId, value, index, true
           value = ''  unless value?
 
       # Remove this listener if the DOM update fails
@@ -134,10 +136,6 @@ exports.init = (model, dom, view) ->
       return dom.update id, method, options && options.ignore, value, property, index
   
   else events = model.__events = new EventDispatcher
-
-  events.__bind = events.bind
-  events.bind = (name, listener) ->
-    events.__bind pathMap.id(name), listener
 
   return model unless dom
 

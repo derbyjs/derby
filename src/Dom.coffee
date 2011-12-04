@@ -1,13 +1,16 @@
 EventDispatcher = require './EventDispatcher'
 {htmlEscape} = require './html'
 
-elements =
-  $win: win = typeof window is 'object' && window
-  $doc: doc = win.document
-
+win = typeof window is 'object' && window
+doc = win.document
 emptyEl = doc && doc.createElement 'div'
 
+elements = null
 element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
+clearElements = ->
+  elements =
+    $win: win
+    $doc: doc
 
 getNaN = -> NaN
 getMethods = 
@@ -105,20 +108,21 @@ Dom = module.exports = (model, appExports, @history) ->
       if listener.length > 3
         listener[0] = model.__pathMap.id listener[0]
       addListener doc, name  unless name of events._names
+      return name
     onTrigger: (name, listener, targetId, e) ->
+      id = listener[1]
+      return  unless id is targetId
+      # Remove this listener if the element doesn't exist
+      return false  unless el = element id
+
       if listener.length <= 3
         [fn, id, delay] = listener
         callback = if fn is '$dist' then distribute else appExports[fn]
         return  unless callback
       else
-        [pathId, id, method, property, delay] = listener
+        [pathId, id, method, property, delay, invert] = listener
         # Remove this listener if its path id is no longer registered
         return false  unless path = model.__pathMap.paths[pathId]
-        path = path.substr 1  if invert = path.charAt(0) is '!'
-
-      return  unless id is targetId
-      # Remove this listener if the element doesn't exist
-      return false  unless el = element id
 
       # Update the model when the element's value changes
       finish = ->
@@ -136,9 +140,14 @@ Dom = module.exports = (model, appExports, @history) ->
   return
 
 Dom:: =
+  clear: ->
+    @events.clear()
+    clearElements()
+
   init: ->
     events = @events
     history = @history
+    clearElements()
 
     domHandler = (e) ->
       target = e.target
