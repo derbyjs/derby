@@ -83,4 +83,4 @@ derby = module.exports =
   session: racer.session
 
 Object.defineProperty derby, 'version',
-  get: -> JSON.parse(fs.readFileSync '../package.json', 'utf8').version
+  get: -> JSON.parse(fs.readFileSync __dirname + '/../package.json', 'utf8').version
