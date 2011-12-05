@@ -86,10 +86,10 @@ view.make 'Body', '''
     {{/}}
   {{/}}
   <hr>
-  {{#homeVisible}}{{> home}}{{/}}
-  {{#liveCssVisible}}{{> liveCss}}{{/}}
-  {{#tableEditorVisible}}{{> tableEditor}}{{/}}
-  {{#submitVisible}}{{> submit}}{{/}}
+  {{homeVisible > home}}
+  {{liveCssVisible > liveCss}}
+  {{tableEditorVisible > tableEditor}}
+  {{submitVisible > submit}}
   '''
 
 view.make 'home', '''
