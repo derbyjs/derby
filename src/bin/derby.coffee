@@ -345,9 +345,6 @@ RESET_STYL = '''
 body,h1,h2,h3,h4,th {
   font: 13px/normal Arial,sans-serif;
 }
-ins {
-  text-decoration: none;
-}
 body {
   background: #fff;
   color: #000;

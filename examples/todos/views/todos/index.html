@@ -29,9 +29,8 @@
 <info:>
   <div id=info>
     ((^connected))
-      ((#canConnect))
-        Offline 
-        ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
+      <p>((#canConnect))
+        Offline ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
       ((^))
         Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
       ((/))

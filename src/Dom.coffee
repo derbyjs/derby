@@ -1,16 +1,77 @@
 EventDispatcher = require './EventDispatcher'
 {htmlEscape} = require './html'
 
-win = typeof window is 'object' && window
-doc = win.document
-emptyEl = doc && doc.createElement 'div'
+elements = markers = null
+if win = typeof window isnt 'undefined' && window
+  doc = win.document
+  body = doc.body
 
-elements = null
-element = (id) -> elements[id] || (elements[id] = doc.getElementById id)
+  # Add support for insertAdjacentHTML for Firefox < 8
+  # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com
+  # TODO: This likely breaks when inserting elements with placement constraints,
+  # such as <td>. Probably need to use an appropriate container in these cases
+  # TODO: Likely faster to use a document fragment in the loop
+  unless body.insertAdjacentHTML
+    container = doc.createElement 'div'
+    HTMLElement::insertAdjacentHTML = (position, html) ->
+      ref = this
+      parent = ref.parentNode
+      container.innerHTML = html
+      switch position.toLowerCase()
+        when 'beforebegin'
+          while node = container.firstChild
+            parent.insertBefore node, ref
+          return
+        when 'afterbegin'
+          firstChild = ref.firstChild
+          while node = container.lastChild
+            firstChild = ref.insertBefore node, firstChild
+          return
+        when 'beforeend'
+          while node = container.firstChild
+            ref.appendChild node
+          return
+        when 'afterend'
+          nextSibling = ref.nextSibling
+          while node = container.lastChild
+            nextSibling = parent.insertBefore node, nextSibling
+          return
+
+# TODO: Also implement with body.compare for IE
+inPage = (node) -> body.compareDocumentPosition(node) & 16
+
+getRange = (name) ->
+  start = markers[name]
+  end = markers['$' + name]
+  unless start && end
+    # NodeFilter.SHOW_COMMENT == 128
+    commentIterator = doc.createNodeIterator body, 128, null, false
+    while comment = commentIterator.nextNode()
+      markers[comment.data] = comment
+    start = markers[name]
+    end = markers['$' + name]
+    return unless start && end
+
+  # Comment nodes may continue to exist even if they have been removed from
+  # the page. Thus, make sure they are still somewhere in the page body.
+  unless inPage start
+    delete markers[name]
+    delete markers['$' + name]
+    return
+  range = doc.createRange()
+  range.setStartAfter start
+  range.setEndBefore end
+  return range
+
+element = (id) ->
+  elements[id] || (elements[id] = doc.getElementById(id)) || getRange(id)
+
 clearElements = ->
   elements =
     $win: win
     $doc: doc
+  window.markers = markers = {}
+  ranges = {}
 
 getNaN = -> NaN
 getMethods = 
@@ -54,35 +115,47 @@ setMethods =
     return if ignore && el.id == ignore
     el.style.display = if value then '' else 'none'
 
-  html: html = (el, ignore, value, escape) ->
-    return if ignore && el.id == ignore
-    el.innerHTML = if escape then htmlEscape value else value
+  html: (obj, ignore, value, escape) ->
+    value = htmlEscape value  if escape
+    if obj.nodeType == 1  # Node.ELEMENT_NODE
+      # Replace element contents
+      return if ignore && obj.id == ignore
+      obj.innerHTML = value
+    else
+      # Replace range contents
+      obj.deleteContents()
+      obj.insertNode obj.createContextualFragment value
 
-  append: (el, ignore, value, escape) ->
-    html emptyEl, null, value, escape
-    while child = emptyEl.firstChild
-      el.appendChild child
-    return
+  append: (obj, ignore, value, escape) ->
+    value = htmlEscape value  if escape
+    if obj.nodeType == 1  # Node.ELEMENT_NODE
+      # Append to end of element
+      obj.insertAdjacentHTML 'beforeend', value
+    else
+      # Insert before end of range
+      el = obj.endContainer
+      ref = el.childNodes[obj.endOffset]
+      el.insertBefore obj.createContextualFragment(value), ref
+
+  # TODO: Add range support to insert, remove, and move
 
   insert: (el, ignore, value, escape, index) ->
-    ref = el.childNodes[index]
-    html emptyEl, null, value, escape
-    while child = emptyEl.firstChild
-      el.insertBefore child, ref
-    return
+    value = htmlEscape value  if escape
+    if ref = el.childNodes[index]
+      ref.insertAdjacentHTML 'beforebegin', value
+    else
+      el.insertAdjacentHTML 'beforeend', value
 
   remove: (el, ignore, index) ->
-    child = el.childNodes[index]
-    el.removeChild child
+    el.removeChild el.childNodes[index]
   
   move: (el, ignore, from, to) ->
-    # Don't move if the item at the destination is passed as the ignore option,
-    # since this indicates the intended item was already moved
-    if toEl = el.childNodes[to]
-      return if ignore && toEl.id == ignore
-    # Also don't move if the child to move matches the ignore option
     child = el.childNodes[from]
-    return if ignore && child.id == ignore
+    # Don't move if the item at the destination is passed as the ignore
+    # option, since this indicates the intended item was already moved
+    # Also don't move if the child to move matches the ignore option
+    return if ignore &&
+      (toEl = el.childNodes[to]) && toEl.id == ignore || child.id == ignore
     ref = el.childNodes[if to > from then to + 1 else to]
     el.insertBefore child, ref
 
@@ -90,7 +163,7 @@ setMethods =
 addListener = domHandler = ->
 
 dist = (e) -> for child in e.target.childNodes
-  return  unless child.nodeType == 1
+  return  unless child.nodeType == 1  # Node.ELEMENT_NODE
   childEvent = Object.create e
   childEvent.target = child
   domHandler childEvent
@@ -151,7 +224,7 @@ Dom:: =
 
     domHandler = (e) ->
       target = e.target
-      target = target.parentNode  if target.nodeType == 3
+      target = target.parentNode  if target.nodeType == 3  # Node.TEXT_NODE
       events.trigger e.type, target.id, e
 
     if doc.addEventListener

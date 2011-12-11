@@ -71,7 +71,6 @@ view.make 'Head', '''
     p{margin:0;padding:0}
     body{margin:10px}
     body,select{font:13px/normal arial,sans-serif}
-    ins{text-decoration:none}
     .css{list-style:none;padding-left:1em;margin:0}
   </style>
   '''

@@ -177,6 +177,10 @@ reduceStack = (stack) ->
         pushValue item[1]
       when 'end'
         html[i] += '</' + item[1] + '>'
+      when 'marker'
+        html[i] += '<!--' + item[1]
+        pushValue item[2].id
+        html[i] += '-->'
   return html
 
 
@@ -252,7 +256,7 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
     aliases[alias] = ctx.$depth
   ctx.$depth++  if name
   if index?
-    console.log ctx.$i = ctx.$i.concat index
+    ctx.$i = ctx.$i.concat index
     isArray = true
   ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
   return ctx
@@ -308,7 +312,7 @@ pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
   if bound
     last = stack[stack.length - 1]
     if wrap = pre || !last || (last[0] != 'start') || wrapPost(post)
-      stack.push last = ['start', 'ins', {}]
+      stack.push last = ['marker', '', {}]
     addId view, attrs = last[2]
 
     if 'contenteditable' of attrs
@@ -320,7 +324,7 @@ pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
     addEvent 'append', fn2  if fn2
 
   pushVarFns view, stack, fn, fn2, name, escaped
-  stack.push ['end', 'ins']  if wrap
+  stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
 pushVarString = (view, stack, events, pre, post, match, fn, fn2) ->
   {name, bound, alias, partial} = match
