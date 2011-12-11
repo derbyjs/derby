@@ -39,15 +39,13 @@ get '/table', (page, model) ->
   model.subscribe 'rows', 'cols', ->
     unless model.get 'rows'
       model.set 'rows', [
-        {cells: [{header: 'A'}, {}, {}, {}, {controls: true}]}
-        {cells: [{header: 'B'}, {}, {}, {}, {controls: true}]}
+        {name: 'A', cells: [{}, {}, {}]}
+        {name: 'B', cells: [{}, {}, {}]}
       ]
       model.set 'cols', [
-        {}
         {name: 1}
         {name: 2}
         {name: 3}
-        {}
       ]
     page.render ctxFor 'tableEditor'
 
@@ -134,32 +132,22 @@ view.make 'tableEditor', '''
   <table>
     <thead>
       <tr>
-        ((#cols))
-          <th>((.name))
-        ((/))
+        <th></th>
+        ((#cols))<th>((.name))</th>((/))
+        <th></th>
     <tbody>
       ((#rows))
         <tr>
-          ((#.cells :cell))
-              {{#:cell.header}}
-                <th>((.))
-              {{^}}
-                {{#:cell.controls}}
-                  <td><button x-bind=click:deleteRow>Delete</button>
-                {{^}}
-                  <th><input value=((:cell.text))>
-                {{/}}
-              {{/}}
-          ((/))
+          <th>((.name))</th>
+          ((#.cells))<td><input value=((.text))></td>((/))
+          <td><button x-bind=click:deleteRow>Delete</button></td>
+        </tr>
       ((/))
     <tfoot>
       <tr>
-        ((#cols))
-          <th>
-            ((#.name))
-              <button x-bind=click:deleteCol>Delete</button>
-            ((/))
-        ((/))
+        <th></th>
+        ((#cols))<th><button x-bind=click:deleteCol>Delete</button></th>((/))
+        <th></th>
   </table>
 '''
 
@@ -194,7 +182,10 @@ ready (model) ->
     model.remove 'rows', targetIndex(e, 2)
 
   exports.deleteCol = (e) ->
-    i = targetIndex e
+    # Have to subtract 2, because the first node is the <th> in the first
+    # column, and the second node is the comment wrapper for the binding
+    i = targetIndex(e) - 2
+
     row = model.get('rows').length
     while row--
       model.remove "rows.#{row}.cells", i
