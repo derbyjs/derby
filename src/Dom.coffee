@@ -115,39 +115,56 @@ setMethods =
 
   html: (obj, ignore, value, escape) ->
     value = htmlEscape value  if escape
-    if obj.nodeType == 1  # Node.ELEMENT_NODE
-      # Replace element contents
+    if obj.nodeType
+      # Element
       return if ignore && obj.id == ignore
       obj.innerHTML = value
     else
-      # Replace range contents
+      # Range
       obj.deleteContents()
       obj.insertNode obj.createContextualFragment value
 
   append: (obj, ignore, value, escape) ->
     value = htmlEscape value  if escape
-    if obj.nodeType == 1  # Node.ELEMENT_NODE
-      # Append to end of element
+    if obj.nodeType
+      # Element
       obj.insertAdjacentHTML 'beforeend', value
     else
-      # Insert before end of range
+      # Range
       el = obj.endContainer
       ref = el.childNodes[obj.endOffset]
       el.insertBefore obj.createContextualFragment(value), ref
 
-  # TODO: Add range support to insert, remove, and move
-
-  insert: (el, ignore, value, escape, index) ->
+  insert: (obj, ignore, value, escape, index) ->
     value = htmlEscape value  if escape
-    if ref = el.childNodes[index]
-      ref.insertAdjacentHTML 'beforebegin', value
+    if obj.nodeType
+      # Element
+      if ref = obj.childNodes[index]
+        ref.insertAdjacentHTML 'beforebegin', value
+      else
+        obj.insertAdjacentHTML 'beforeend', value
     else
-      el.insertAdjacentHTML 'beforeend', value
+      # Range
+      el = obj.startContainer
+      ref = el.childNodes[obj.startOffset + index]
+      el.insertBefore obj.createContextualFragment(value), ref
 
   remove: (el, ignore, index) ->
+    if !el.nodeType
+      # Range
+      index += el.startOffset
+      el = el.startContainer
+
     el.removeChild el.childNodes[index]
   
   move: (el, ignore, from, to) ->
+    if !el.nodeType
+      # Range
+      offset = el.startOffset
+      from += offset
+      to += offset
+      el = el.startContainer
+
     child = el.childNodes[from]
     # Don't move if the item at the destination is passed as the ignore
     # option, since this indicates the intended item was already moved
