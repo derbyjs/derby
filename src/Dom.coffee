@@ -8,14 +8,12 @@ if win = typeof window isnt 'undefined' && window
 
   # Add support for insertAdjacentHTML for Firefox < 8
   # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com
-  # TODO: This likely breaks when inserting elements with placement constraints,
-  # such as <td>. Probably need to use an appropriate container in these cases
   # TODO: Likely faster to use a document fragment in the loop
   unless body.insertAdjacentHTML
-    container = doc.createElement 'div'
     HTMLElement::insertAdjacentHTML = (position, html) ->
       ref = this
       parent = ref.parentNode
+      container = doc.createElement parent.tagName
       container.innerHTML = html
       switch position.toLowerCase()
         when 'beforebegin'
