@@ -8,7 +8,6 @@ if win = typeof window isnt 'undefined' && window
 
   # Add support for insertAdjacentHTML for Firefox < 8
   # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com
-  # TODO: Likely faster to use a document fragment in the loop
   unless body.insertAdjacentHTML
     HTMLElement::insertAdjacentHTML = (position, html) ->
       ref = this

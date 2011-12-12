@@ -1,7 +1,6 @@
-empty = ->
 EventDispatcher = module.exports = (options = {}) ->
-  @_onTrigger = options.onTrigger || empty
-  @_onBind = options.onBind || empty
+  @_onTrigger = options.onTrigger || ->
+  @_onBind = options.onBind || (name) -> name
   @clear()
   return
 

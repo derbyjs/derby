@@ -87,9 +87,9 @@ module.exports =
     model.set 'height', '6 ft 2 in'
     model.set 'weight', '175 lbs'
   
-    view.get('test', ctx).should.eql '<ins id=$0>false</ins><ins id=$1>true</ins> <ins id=$2></ins>' +
+    view.get('test', ctx).should.eql '<!--$0-->false<!--$$0--><!--$1-->true<!--$$1--> <!--$2--><!--$$2-->' +
       '<p id=$3>John' +
-      '<p><ins id=$4>22</ins> - <ins id=$5>6 ft 2 in</ins> - <ins id=$6>165 lbs</ins>'
+      '<p><!--$4-->22<!--$$4--> - <!--$5-->6 ft 2 in<!--$$5--> - <!--$6-->165 lbs<!--$$6-->'
         
   'test HTML escaping': ->
     view = new View
@@ -103,9 +103,9 @@ module.exports =
     value = '<b id="hey">&Hi! & x& </b>&'
     expected =
       '<input id=$0 value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
-      '<ins id=$1>&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;</ins>x' +
-      '<ins id=$2><b id="hey">&Hi! & x& </b>&</ins>'
-              
+      '<!--$1-->&lt;b id="hey">&amp;Hi! & x& &lt;/b>&amp;<!--$$1-->x' +
+      '<!--$2--><b id="hey">&Hi! & x& </b>&<!--$$2-->'
+
     view.make 'test1', template
     view.get('test1', html: value).should.eql expected
 
@@ -131,8 +131,8 @@ module.exports =
         
     literalTruthy = 'Yep Yes! '
     literalFalsey = 'Nope No'
-    modelTruthy = '<ins id=$0>Yep</ins><ins id=$1> Yes!</ins> <ins id=$2></ins>'
-    modelFalsey = '<ins id=$0>Nope</ins><ins id=$1></ins> <ins id=$2>No</ins>'
+    modelTruthy = '<!--$0-->Yep<!--$$0--><!--$1--> Yes!<!--$$1--> <!--$2--><!--$$2-->'
+    modelFalsey = '<!--$0-->Nope<!--$$0--><!--$1--><!--$$1--> <!--$2-->No<!--$$2-->'
         
     view.get('literal', show: true).should.eql literalTruthy
     view.get('literal', show: 1).should.eql literalTruthy
