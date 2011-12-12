@@ -16,23 +16,23 @@ if win = typeof window isnt 'undefined' && window
       container = doc.createElement parent.tagName
       container.innerHTML = html
       switch position.toLowerCase()
-        when 'beforebegin'
-          while node = container.firstChild
-            parent.insertBefore node, ref
-          return
-        when 'afterbegin'
-          firstChild = ref.firstChild
-          while node = container.lastChild
-            firstChild = ref.insertBefore node, firstChild
-          return
         when 'beforeend'
           while node = container.firstChild
             ref.appendChild node
+          return
+        when 'beforebegin'
+          while node = container.firstChild
+            parent.insertBefore node, ref
           return
         when 'afterend'
           nextSibling = ref.nextSibling
           while node = container.lastChild
             nextSibling = parent.insertBefore node, nextSibling
+          return
+        when 'afterbegin'
+          firstChild = ref.firstChild
+          while node = container.lastChild
+            firstChild = ref.insertBefore node, firstChild
           return
 
 # TODO: Also implement with body.compare for IE
