@@ -45,8 +45,6 @@ getRoom = (page, model, room, userId) ->
 view.after 'message', -> $('messages').scrollTop = $('messageList').offsetHeight
 
 ready (model) ->
-  # Times are all set client-side for now, since the locale is not known
-  # when performing server-side rendering
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   displayTime = (time) ->
     time = new Date time
@@ -58,6 +56,8 @@ ready (model) ->
     hours + ':' + minutes + period + months[time.getMonth()] +
       ' ' + time.getDate() + ', ' + time.getFullYear()
 
+  # Display times are only set client-side, since the timezone is not known
+  # when performing server-side rendering
   for message, i in model.get '_room.messages'
     messagePath = "_room.messages.#{i}"
     if time = model.get messagePath + '.time'
@@ -78,8 +78,6 @@ ready (model) ->
 
   model.on 'push', '_room.messages', (message) ->
     len = model.incr '_numMessages'
-    # TODO: There is a bug with pushing and setting private paths
-    # under the same array. The following should work:
     model.set '_room.messages.' + (len - 1) + '._displayTime',
       displayTime message.time
 
