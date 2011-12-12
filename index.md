@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.1.2
+version: 0.1.3
 headers:
   - text: Introduction
     type: h1
@@ -660,7 +660,7 @@ I like <a href="http://derbyjs.com/">turtles</a>.
 
 Partials are used to include one template inside of another. The scope of the parent context is inherited inside of the partial. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use partials for each significant unit.
 
-As in Mustache, partials are included by name with the syntax `{{"{{"}}> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{"{{"}}users > profile}}` syntax. This is similar to `{{"{{"}}#users}}{{"{{"}}> profile}}{{"{{"}}/}}`, except that it only sets the scope and will always render whether or not `users` is defined. If the partial should always be rendered, the shorter syntax is preferred; it is more readable and more efficient to render.
+As in Mustache, partials are included by name with the syntax `{{"{{"}}> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{"{{"}}users > profile}}` syntax. This is equivalent to `{{"{{"}}#users}}{{"{{"}}> profile}}{{"{{"}}/}}`.
 
 #### Template
 
@@ -741,9 +741,9 @@ Note that the value in the model at render time is inserted into the HTML, as wi
 
 Rather than re-rendering the entire template when a value changes, only the individual elements are updated. In the case of the input, its `value` property is set; in the case of the h1, its `innerHTML` is set. Since neither of these elements have an `id` attribute specified in the template, Derby automatically creates ids for them. All DOM ids created by Derby begin with a dollar sign ($). If an element already has an id, Derby will use that instead.
 
-Derby associates all DOM event listeners with an `id`, because getting objects by id is a fast DOM operation, it makes dealing with DOM events more efficient, event listeners continue working even if other scripts modify the DOM unexpectedly, and event listeners can be established at render time on the server and passed to the client via a JSON literal. Derby internally tracks events via literal objects instead of function callbacks, allowing it to render pages on the server and then re-establish the same event listeners on the client efficiently.
+Derby associates all DOM event listeners with an `id`, because getting objects by id is a fast DOM operation, it makes dealing with DOM events more efficient, and event listeners continue working even if other scripts modify the DOM unexpectedly. Derby internally tracks events via ids, allowing it to render pages on the server and then re-establish the same event listeners on the client efficiently.
 
-If a bound template tag is not fully contained by an HTML tag, Derby will wrap the template in an `<ins>` element. Most browsers will display `<ins>` elements with an underline by default. For Derby apps, this should be removed by adding `ins{text-decoration:none}` to the page's stylesheet.
+If a bound template tag or section is not fully contained by an HTML element, Derby will wrap the template by placing comment markers before and after the location of the template. Comments are used, because they are valid in any location. A number of HTML elements have restrictions that make it impossible to wrap a template in an additional element. For example, `<tr>` elements may only contain `<td>` and `<th>` elements.
 
 #### Template
 
@@ -766,10 +766,8 @@ page.render()
 #### Output
 
 {% highlight html %}
-Welcome to our <ins id="$0">funny</ins> city!
+Welcome to our <!--$0-->funny<!--$$0--> city!
 {% endhighlight %}
-
-Semantically, it would be more correct to use a `<div>` or `<span>`, depending on context. However, this is difficult to do automatcially. For example, `<div>` elements cannot be contained within a `<p>`, and `<span>` elements may not be wrapped around a `<div>`. Attemting to detect each of these situations and choose the proper wrapper element would significantly complicate the Derby renderer and make it more brittle to changes in HTML. In contrast, `<ins>` and `<del>` elements have a [transparent content model](http://www.w3.org/TR/html5/content-models.html#transparent-content-models), enabling them to be included inside or around most other HTML elements. Note that there are still some restrictions on where these elements may be used. For example, an `<option>` element may only contain text and no other elements. MDN has [good documentation](https://developer.mozilla.org/Special:Tags?tag=HTML:Element+Reference) of the usage context for various HTML elements. When in doubt, use an [HTML5 validator](http://html5.validator.nu/).
 
 ### Relative model paths and aliases
 
@@ -810,9 +808,9 @@ page.render()
 
 {% highlight html %}
 <ul id="$0">
-  <li><a href="/p/0" id="$1">Cool can</a>: $<ins id="$2">5.99</ins>
-  <li><a href="/p/1" id="$3">Fun fin</a>: $<ins id="$4">10.99</ins>
-  <li><a href="/p/2" id="$5">Bam bot</a>: $<ins id="$6">24.95</ins>
+  <li><a href="/p/0" id="$1">Cool can</a>: $<!--$2-->5.99<!--$$2-->
+  <li><a href="/p/1" id="$3">Fun fin</a>: $<!--$4-->10.99<!--$$4-->
+  <li><a href="/p/2" id="$5">Bam bot</a>: $<!--$6-->24.95<!--$$6-->
 </ul>
 {% endhighlight %}
 
@@ -834,7 +832,7 @@ Aliases to a specific scope may be defined, enabling relative model path referen
   ((toys :toy > toyStatus))
 
 <toyStatus:>
-  <p>{{"{{"}}name}} on the ((:toy.location))
+  <p>{{"{{"}}name}} on the ((:toy.location))</p>
 {% endhighlight %}
 
 #### Context
@@ -860,17 +858,17 @@ page.render()
 
 {% highlight html %}
 <h2>Toys in use:</h2>
-<ins id="$0">
-  <ins id="$1"><p>Ball on the <ins id="$2">floor</ins></ins>
-  <ins id="$3"></ins>
-  <ins id="$4"></ins>
-</ins>
+<!--$0-->
+  <!--$1--><p>Ball on the <!--$2-->floor<!--$$2--></p><!--$$1-->
+  <!--$3--><!--$$3-->
+  <!--$4--><!--$$4-->
+<!--$$0-->
 <h2>All toys:</h2>
-<ins id="$5">
-  <p>Ball on the <ins id="$6">floor</ins></ins>
-  <p>Blocks on the <ins id="$7">shelf</ins></ins>
-  <p>Truck on the <ins id="$8">shelf</ins></ins>
-</ins>
+<!--$5-->
+  <p>Ball on the <!--$6-->floor<!--$$6--></p>
+  <p>Blocks on the <!--$7-->shelf<!--$$7--></p>
+  <p>Truck on the <!--$8-->shelf<!--$$8--></p>
+<!--$$5-->
 {% endhighlight %}
 
 ## HTML extensions
