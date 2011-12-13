@@ -2,13 +2,13 @@ path = require 'path'
 express = require 'express'
 derby = require 'derby'
 gzip = require 'connect-gzip'
-sink = require './sink'
+app = require '../app'
 
 
 ## SERVER CONFIGURATION ##
 
 MAX_AGE_ONE_YEAR = maxAge: 1000 * 60 * 60 * 24 * 365
-root = __dirname
+root = path.dirname path.dirname __dirname
 publicPath = path.join root, 'public'
 staticPages = derby.createStatic root
 
@@ -17,15 +17,21 @@ staticPages = derby.createStatic root
   .use(gzip.staticGzip publicPath, MAX_AGE_ONE_YEAR)
   .use(express.favicon())
 
-  # Form data parsing support
+  # Uncomment to add form data parsing support
   .use(express.bodyParser())
   .use(express.methodOverride())
+
+  # Uncomment and supply secret to add Derby session handling
+  # Derby session middleware creates req.model and subscribes to _session
+  # .use(express.cookieParser())
+  # .use(express.session(secret: '', cookie: MAX_AGE_ONE_YEAR))
+  # .use(app.session())
 
   # Remove to disable dynamic gzipping
   .use(gzip.gzip())
 
   # The router method creates an express middleware from the app's routes
-  .use(sink.router())
+  .use(app.router())
   .use(server.router)
 
 
@@ -41,7 +47,8 @@ server.error (err, req, res) ->
   ## Customize error handling here ##
   message = err.message || err.toString()
   status = parseInt message
-  res.send if 400 <= status < 600 then status else 500
+  if status is 404 then staticPages.render '404', res, {url: req.url}, 404
+  else res.send if 400 <= status < 600 then status else 500
 
 
 ## SERVER ONLY ROUTES ##
@@ -52,12 +59,12 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-store = sink.createStore redis: {db: 1}, listen: server
+store = app.createStore listen: server
 
 ## TODO: Remove when using a database ##
 # Clear all data every time the node server is started
 store.flush()
 
-server.listen 3001
+server.listen 3000
 console.log 'Express server started in %s mode', server.settings.env
 console.log 'Go to: http://localhost:%d/', server.address().port
