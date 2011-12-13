@@ -59,12 +59,12 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-store = app.createStore listen: server
+store = app.createStore redis: {db: 1}, listen: server
 
 ## TODO: Remove when using a database ##
 # Clear all data every time the node server is started
 store.flush()
 
-server.listen 3000
+server.listen 3001
 console.log 'Express server started in %s mode', server.settings.env
 console.log 'Go to: http://localhost:%d/', server.address().port
