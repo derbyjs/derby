@@ -1,4 +1,4 @@
-{get, view, ready} = sink = require('derby').createApp module
+{get, view, ready} = app = require('derby').createApp module
 
 ## Routing ##
 
@@ -36,21 +36,24 @@ get '/live-css', (page, model) ->
     page.render ctxFor 'liveCss'
 
 get '/table', (page, model) ->
-  model.subscribe 'rows', 'cols', ->
-    unless model.get 'rows'
-      model.set 'rows', [
-        {name: 'A', cells: [{}, {}, {}]}
-        {name: 'B', cells: [{}, {}, {}]}
-      ]
-      model.set 'cols', [
-        {name: 1}
-        {name: 2}
-        {name: 3}
-      ]
+  model.subscribe 'table', ->
+    unless model.get 'table'
+      model.set 'table', 
+        rows: [
+          {name: 1, cells: [{}, {}, {}]}
+          {name: 2, cells: [{}, {}, {}]}
+        ]
+        lastRow: 1
+        cols: [
+          {name: 'A'}
+          {name: 'B'}
+          {name: 'C'}
+        ]
+        lastCol: 2
     page.render ctxFor 'tableEditor'
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
-  sink[method] '/submit', (page, model, {body, query}) ->
+  app[method] '/submit', (page, model, {body, query}) ->
     args = JSON.stringify {method, body, query}, null, '  '
     page.render ctxFor 'submit', {args}
 
@@ -77,14 +80,37 @@ ready (model) ->
     model.remove 'liveCss.styles', targetIndex(e)
 
   exports.deleteRow = (e) ->
-    model.remove 'rows', targetIndex(e, 2)
+    model.remove 'table.rows', targetIndex(e, 2)
 
   exports.deleteCol = (e) ->
     # Have to subtract 2, because the first node is the <th> in the first
     # column, and the second node is the comment wrapper for the binding
     i = targetIndex(e) - 2
 
-    row = model.get('rows').length
+    row = model.get('table.rows').length
     while row--
-      model.remove "rows.#{row}.cells", i
-    return model.remove 'cols', i
+      model.remove "table.rows.#{row}.cells", i
+    model.remove 'table.cols', i
+  
+  exports.addRow = ->
+    name = model.incr('table.lastRow') + 1
+    cells = []
+    col = model.get('table.cols').length
+    while col--
+      cells.push {}
+    model.push 'table.rows', {name, cells}
+  
+  alpha = (num, out = '') ->
+    mod = num % 26
+    out = String.fromCharCode(65 + mod) + out
+    if num = Math.floor num / 26
+      return alpha num - 1, out
+    else
+      return out
+  
+  exports.addCol = ->
+    row = model.get('table.rows').length
+    while row--
+      model.push "table.rows.#{row}.cells", {}
+    name = alpha model.incr 'table.lastCol'
+    model.push 'table.cols', {name}

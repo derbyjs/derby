@@ -52,14 +52,17 @@
   ((#:style.active))((:style.prop)): ((:style.value));((/))
 
 <tableEditor:>
+  <button x-bind=click:addRow>Add row</button> 
+  <button x-bind=click:addCol>Add column</button>
+  <hr>
   <table>
     <thead>
       <tr>
         <th></th>
-        ((#cols))<th>((.name))</th>((/))
+        ((#table.cols))<th>((.name))</th>((/))
         <th></th>
     <tbody>
-      ((#rows))
+      ((#table.rows))
         <tr>
           <th>((.name))</th>
           ((#.cells))<td><input value=((.text))></td>((/))
@@ -69,7 +72,7 @@
     <tfoot>
       <tr>
         <th></th>
-        ((#cols))<th><button x-bind=click:deleteCol>Delete</button></th>((/))
+        ((#table.cols))<th><button x-bind=click:deleteCol>Delete</button></th>((/))
         <th></th>
   </table>
 
