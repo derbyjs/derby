@@ -550,3 +550,27 @@ module.exports =
       'tables.1.rows.0.cols': [{7: ''}]
       'tables.1.rows.1.cols': [{8: '.text'}]
     }
+
+    pathMap.onRemove 'tables', 1, 1
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0.text': 2
+    }
+    pathMap.paths.should.eql {
+      2: 'tables.0.rows.0.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{2: '.text'}]
+    }
+
+    pathMap.onRemove 'tables', 0, 1
+    pathMap.ids.should.eql {}
+    pathMap.paths.should.eql {}
+    pathMap.arrays.should.eql {
+      'tables': []
+    }

@@ -37,25 +37,24 @@ PathMap:: =
       nested = true
     return
 
-  _incrItems: (path, map, start, end, byNum, oldArrays = {}) ->
+  _incrItems: (path, map, start, end, byNum, oldArrays = {}, oldPath) ->
     for i in [start...end]
       continue unless ids = map[i]
       for id, remainder of ids
         if id is 'arrays'
           for remainder of ids[id]
-            arrayPath = path + '.' + i + remainder
+            arrayPath = (oldPath || path) + '.' + i + remainder
             if arrayMap = @arrays[arrayPath] || oldArrays[arrayPath]
               arrayPathTo = path + '.' + (i + byNum) + remainder
               @arrays[arrayPathTo] = arrayMap
-              @_incrItems arrayPathTo, arrayMap, 0, arrayMap.length, 0, oldArrays
+              @_incrItems arrayPathTo, arrayMap, 0, arrayMap.length, 0, oldArrays, arrayPath
           continue
         itemPath = path + '.' + (i + byNum) + remainder
         @paths[id] = itemPath
         @ids[itemPath] = +id
     return
 
-  _delItems: (path, map, start, end) ->
-    oldArrays = {}
+  _delItems: (path, map, start, end, oldArrays = {}) ->
     for i in [start...map.length]
       continue unless ids = map[i]
       for id of ids
@@ -63,7 +62,7 @@ PathMap:: =
           for remainder of ids[id]
             arrayPath = path + '.' + i + remainder
             if arrayMap = @arrays[arrayPath]
-              @_delItems arrayPath, arrayMap, 0, arrayMap.length
+              @_delItems arrayPath, arrayMap, 0, arrayMap.length, oldArrays
               oldArrays[arrayPath] = arrayMap
               delete @arrays[arrayPath]
           continue
