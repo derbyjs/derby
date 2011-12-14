@@ -1,9 +1,6 @@
 # TODO: Test two levels of nesting arrays
 # TODO: Test moving arrays
 
-# TODO: Can this code be refactored? Feels repetative
-
-
 # Keeps track of each unique path via an id
 module.exports = PathMap = ->
   @clear()
@@ -40,73 +37,71 @@ PathMap:: =
       nested = true
     return
 
-  _incrementItems: (path, map, start, end, byNum) ->
+  _incrItems: (path, map, start, end, byNum, oldArrays = {}) ->
     for i in [start...end]
       continue unless ids = map[i]
       for id, remainder of ids
         if id is 'arrays'
           for remainder of ids[id]
             arrayPath = path + '.' + i + remainder
-            arrayPathTo = path + '.' + (i + byNum) + remainder
-            arrayMap = @arrays[arrayPath]
-            @arrays[arrayPathTo] = arrayMap
-            delete @arrays[arrayPath]
-            @_incrementItems arrayPathTo, arrayMap, 0, arrayMap.length, 0
+            if arrayMap = @arrays[arrayPath] || oldArrays[arrayPath]
+              arrayPathTo = path + '.' + (i + byNum) + remainder
+              @arrays[arrayPathTo] = arrayMap
+              @_incrItems arrayPathTo, arrayMap, 0, arrayMap.length, 0, oldArrays
           continue
         itemPath = path + '.' + (i + byNum) + remainder
         @paths[id] = itemPath
         @ids[itemPath] = +id
     return
 
-  _deleteItems: (path, map, start, end) ->
+  _delItems: (path, map, start, end) ->
+    oldArrays = {}
     for i in [start...map.length]
       continue unless ids = map[i]
       for id of ids
         if id is 'arrays'
           for remainder of ids[id]
             arrayPath = path + '.' + i + remainder
-            arrayMap = @arrays[arrayPath]
-            @_deleteItems arrayPath, arrayMap, 0, arrayMap.length
-            continue if i > end
-            delete @arrays[arrayPath]
+            if arrayMap = @arrays[arrayPath]
+              @_delItems arrayPath, arrayMap, 0, arrayMap.length
+              oldArrays[arrayPath] = arrayMap
+              delete @arrays[arrayPath]
           continue
         itemPath = @paths[id]
         delete @ids[itemPath]
         continue if i > end
         delete @paths[id]
-    return
+    return oldArrays
   
   onRemove: (path, start, howMany) ->
     return unless map = @arrays[path]
     end = start + howMany
     # Delete indicies for removed items
-    @_deleteItems path, map, start, end + 1
-    if end < len = map.length
-      # Decrement indicies of later items
-      @_incrementItems path, map, end, len, -howMany
+    oldArrays = @_delItems path, map, start, end + 1
+    # Decrement indicies of later items
+    @_incrItems path, map, end, map.length, -howMany, oldArrays
     map.splice start, howMany
     return
   
   onInsert: (path, start, howMany) ->
     return unless map = @arrays[path]
     end = start + howMany
-    if start < len = map.length
-      # Delete indicies for items in inserted positions
-      @_deleteItems path, map, start, end + 1
-      # Increment indicies of later items
-      @_incrementItems path, map, start, len, howMany
+    # Delete indicies for items in inserted positions
+    oldArrays = @_delItems path, map, start, end + 1
+    # Increment indicies of later items
+    @_incrItems path, map, start, map.length, howMany, oldArrays
     map.splice start, 0, {}  while howMany--
     return
 
   onMove: (path, from, to) ->
     return unless map = @arrays[path]
     # Adjust paths for the moved item
-    @_incrementItems path, map, from, from + 1, to - from
+    @_incrItems path, map, from, from + 1, to - from
     # Adjust paths for items between from and to
     if from > to
-      @_incrementItems path, map, to, from, 1
+      @_incrItems path, map, to, from, 1
     else
-      @_incrementItems path, map, from + 1, to + 1, -1
+      @_incrItems path, map, from + 1, to + 1, -1
     # Fix the array index
     [item] = map.splice from, 1
     map.splice to, 0, item

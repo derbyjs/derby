@@ -314,3 +314,239 @@ module.exports =
         {5: '', 6: '.hex'}
       ]
     }
+
+  'should index nested arrays': ->
+    pathMap = new PathMap
+    pathMap.arrays.should.eql {}
+
+    pathMap.id('tables.0.rows.0').should.eql 1
+    pathMap.id('tables.0.rows.1.name').should.eql 2
+    pathMap.id('tables.1.rows.0').should.eql 3
+    pathMap.id('tables.1.rows.1.name').should.eql 4
+    # Nested arrays are tracked under an arrays property
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {1: ''}
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+        {4: '.name'}
+      ]
+    }
+
+    pathMap.id('tables.0.rows.0.cols.0').should.eql 5
+    pathMap.id('tables.0.rows.0.cols.1.text').should.eql 6
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {1: '', arrays: {'.cols': true}}
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+        {4: '.name'}
+      ]
+      'tables.0.rows.0.cols': [
+        {5: ''}
+        {6: '.text'}
+      ]
+    }
+  
+  'onRemove should update single nested array indicies': ->
+    pathMap = new PathMap
+    pathMap.id('tables.0.rows.0').should.eql 1
+    pathMap.id('tables.0.rows.1.name').should.eql 2
+    pathMap.id('tables.1.rows.0').should.eql 3
+    pathMap.id('tables.1.rows.1.name').should.eql 4
+    pathMap.id('tables.2.rows.0').should.eql 5
+    pathMap.id('tables.2.rows.1.name').should.eql 6
+    pathMap.id('tables.3.rows.0').should.eql 7
+    pathMap.id('tables.3.rows.1.name').should.eql 8
+
+    pathMap.onRemove 'tables.0.rows', 0, 1
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.name': 2
+      'tables.1.rows.0': 3
+      'tables.1.rows.1.name': 4
+      'tables.2.rows.0': 5
+      'tables.2.rows.1.name': 6
+      'tables.3.rows.0': 7
+      'tables.3.rows.1.name': 8
+    }
+    pathMap.paths.should.eql {
+      2: 'tables.0.rows.0.name'
+      3: 'tables.1.rows.0'
+      4: 'tables.1.rows.1.name'
+      5: 'tables.2.rows.0'
+      6: 'tables.2.rows.1.name'
+      7: 'tables.3.rows.0'
+      8: 'tables.3.rows.1.name'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+        {4: '.name'}
+      ]
+      'tables.2.rows': [
+        {5: ''}
+        {6: '.name'}
+      ]
+      'tables.3.rows': [
+        {7: ''}
+        {8: '.name'}
+      ]
+    }
+
+    pathMap.onRemove 'tables', 1, 2
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.name': 2
+      'tables.1.rows.0': 7
+      'tables.1.rows.1.name': 8
+    }
+    pathMap.paths.should.eql {
+      2: 'tables.0.rows.0.name'
+      7: 'tables.1.rows.0'
+      8: 'tables.1.rows.1.name'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {7: ''}
+        {8: '.name'}
+      ]
+    }
+
+    pathMap.onRemove 'tables', 1, 1
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.name': 2
+    }
+    pathMap.paths.should.eql {
+      2: 'tables.0.rows.0.name'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {2: '.name'}
+      ]
+    }
+
+    pathMap.onRemove 'tables', 0, 1
+    pathMap.ids.should.eql {}
+    pathMap.paths.should.eql {}
+    pathMap.arrays.should.eql {
+      'tables': []
+    }
+
+  'onRemove should update double nested array indicies': ->
+    pathMap = new PathMap
+    pathMap.id('tables.0.rows.0.cols.0').should.eql 1
+    pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2
+    pathMap.id('tables.1.rows.0.cols.0').should.eql 3
+    pathMap.id('tables.1.rows.1.cols.0.text').should.eql 4
+    pathMap.id('tables.2.rows.0.cols.0').should.eql 5
+    pathMap.id('tables.2.rows.1.cols.0.text').should.eql 6
+    pathMap.id('tables.3.rows.0.cols.0').should.eql 7
+    pathMap.id('tables.3.rows.1.cols.0.text').should.eql 8
+
+    pathMap.onRemove 'tables.0.rows', 0, 1
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0.text': 2
+      'tables.1.rows.0.cols.0': 3
+      'tables.1.rows.1.cols.0.text': 4
+      'tables.2.rows.0.cols.0': 5
+      'tables.2.rows.1.cols.0.text': 6
+      'tables.3.rows.0.cols.0': 7
+      'tables.3.rows.1.cols.0.text': 8
+    }
+    pathMap.paths.should.eql {
+      2: 'tables.0.rows.0.cols.0.text'
+      3: 'tables.1.rows.0.cols.0'
+      4: 'tables.1.rows.1.cols.0.text'
+      5: 'tables.2.rows.0.cols.0'
+      6: 'tables.2.rows.1.cols.0.text'
+      7: 'tables.3.rows.0.cols.0'
+      8: 'tables.3.rows.1.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{2: '.text'}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{3: ''}]
+      'tables.1.rows.1.cols': [{4: '.text'}]
+      'tables.2.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.2.rows.0.cols': [{5: ''}]
+      'tables.2.rows.1.cols': [{6: '.text'}]
+      'tables.3.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.3.rows.0.cols': [{7: ''}]
+      'tables.3.rows.1.cols': [{8: '.text'}]
+    }
+
+    pathMap.onRemove 'tables', 1, 2
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0.text': 2
+      'tables.1.rows.0.cols.0': 7
+      'tables.1.rows.1.cols.0.text': 8
+    }
+    pathMap.paths.should.eql {
+      2: 'tables.0.rows.0.cols.0.text'
+      7: 'tables.1.rows.0.cols.0'
+      8: 'tables.1.rows.1.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{2: '.text'}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{7: ''}]
+      'tables.1.rows.1.cols': [{8: '.text'}]
+    }
