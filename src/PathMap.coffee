@@ -84,7 +84,7 @@ PathMap:: =
     # Delete indicies for removed items
     @_deleteItems path, map, start, end, last
     # Decrement indicies of later items
-    unless end > last
+    if end <= last
       @_incrementItems path, map, end, last, -howMany
     map.splice start, howMany
     return
@@ -93,10 +93,11 @@ PathMap:: =
     return unless map = @arrays[path]
     end = start + howMany
     last = map.length - 1
-    # Delete indicies for items in inserted positions
-    @_deleteItems path, map, start, end, last
-    # Increment indicies of later items
-    @_incrementItems path, map, start, last, howMany
+    if start <= last
+      # Delete indicies for items in inserted positions
+      @_deleteItems path, map, start, end, last
+      # Increment indicies of later items
+      @_incrementItems path, map, start, last, howMany
     map.splice start, 0, {}  while howMany--
     return
 
