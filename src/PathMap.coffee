@@ -44,7 +44,7 @@ PathMap:: =
         if id is 'arrays'
           for remainder of ids[id]
             arrayPath = (oldPath || path) + '.' + i + remainder
-            if arrayMap = @arrays[arrayPath] || oldArrays[arrayPath]
+            if arrayMap = oldArrays[arrayPath] || @arrays[arrayPath]
               arrayPathTo = path + '.' + (i + byNum) + remainder
               @arrays[arrayPathTo] = arrayMap
               @_incrItems arrayPathTo, arrayMap, 0, arrayMap.length, 0, oldArrays, arrayPath
