@@ -110,8 +110,8 @@ module.exports =
       '*': (events, attrs, value) ->
         delete attrs['x-bind']
         for name, obj of splitBind value
-          do (name) ->
-            {value, delay} = obj
+          {value, delay} = obj
+          do (name, value, delay) ->
             events.push (ctx, modelEvents, domEvents) ->
               domEvents.bind name, [value, attrs._id || attrs.id, delay]
         return addId: true

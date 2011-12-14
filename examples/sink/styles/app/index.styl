@@ -1,3 +1,5 @@
+@import "nib/vendor";
+
 p {
   margin: 0;
   padding: 0;
@@ -9,8 +11,23 @@ body,
 select {
   font: 13px/normal arial,sans-serif;
 }
-.css{
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.css {
   list-style: none;
   padding-left: 1em;
   margin: 0
+}
+
+#drag-row,
+#drag-col {
+  display: none;
+  position: absolute;
+}
+
+#table-editor {  
+  user-select: none;
 }

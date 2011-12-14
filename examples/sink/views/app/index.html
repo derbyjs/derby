@@ -55,16 +55,18 @@
   <button x-bind=click:addRow>Add row</button> 
   <button x-bind=click:addCol>Add column</button>
   <hr>
-  <table>
+  <table id=table-editor>
     <thead>
       <tr>
         <th></th>
-        ((#table.cols))<th>((.name))</th>((/))
+        ((#table.cols))
+          <th x-bind=mousedown:colDown>((.name))</th>
+        ((/))
         <th></th>
     <tbody>
       ((#table.rows))
         <tr>
-          <th>((.name))</th>
+          <th x-bind=mousedown:rowDown>((.name))</th>
           ((#.cells))<td><input value=((.text))></td>((/))
           <td><button x-bind=click:deleteRow>Delete</button></td>
         </tr>
@@ -75,6 +77,8 @@
         ((#table.cols))<th><button x-bind=click:deleteCol>Delete</button></th>((/))
         <th></th>
   </table>
+  <table id=drag-row><tbody></table>
+  <table id=drag-col><tbody></table>
 
 <submit:>
   <form action=submit method=post>

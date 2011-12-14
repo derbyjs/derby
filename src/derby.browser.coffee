@@ -40,8 +40,8 @@ exports.createApp = (appModule) ->
   appModule.exports = (modelBundle, ctx) ->
     model.on 'initialized', ->
       view.render model, ctx, true
-    racer.init modelBundle
     dom.init()
+    racer.init modelBundle
     return appExports
 
   return appExports

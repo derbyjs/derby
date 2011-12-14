@@ -67,8 +67,7 @@ get '/back', (page) ->
 ## Controller functions ##
 
 ready (model) ->
-  exports.addStyle = ->
-    model.push 'liveCss.styles', {}
+  {addListener} = view.dom
 
   targetIndex = (e, levels = 1) ->
     item = e.target
@@ -76,17 +75,26 @@ ready (model) ->
     for child, i in item.parentNode.childNodes
       return i if child == item
 
+  exports.addStyle = ->
+    model.push 'liveCss.styles', {}
+
   exports.deleteStyle = (e) ->
-    model.remove 'liveCss.styles', targetIndex(e)
+    model.remove 'liveCss.styles', targetIndex e
 
-  exports.deleteRow = (e) ->
-    model.remove 'table.rows', targetIndex(e, 2)
 
-  exports.deleteCol = (e) ->
+  rowIndex = (e) ->
+    targetIndex e, 2
+  
+  colIndex = (e) ->
     # Have to subtract 2, because the first node is the <th> in the first
     # column, and the second node is the comment wrapper for the binding
-    i = targetIndex(e) - 2
+    targetIndex(e) - 2
 
+  exports.deleteRow = (e) ->
+    model.remove 'table.rows', rowIndex e
+
+  exports.deleteCol = (e) ->
+    i = colIndex e
     row = model.get('table.rows').length
     while row--
       model.remove "table.rows.#{row}.cells", i
@@ -114,3 +122,48 @@ ready (model) ->
       model.push "table.rows.#{row}.cells", {}
     name = alpha model.incr 'table.lastCol'
     model.push 'table.cols', {name}
+
+
+  dragging = null
+  dragRow = $ 'drag-row'
+  dragCol = $ 'drag-col'
+  body = document.body
+
+  dragStart = (e, type, i, el, parent, container) ->
+    e.preventDefault?()
+    rect = el.getBoundingClientRect()
+    dragging =
+      type: type
+      i: i
+      el: el
+      parent: parent
+      container: container
+      offsetLeft: rect.left - e.clientX
+      offsetTop: rect.top - e.clientY
+      clone: clone = el.cloneNode()
+    clone.style.height = rect.height + 'px'
+    clone.style.width = rect.width + 'px'
+    el.parentNode.insertBefore clone, el
+    container.firstChild.appendChild el
+    onMove e
+    dragRow.style.display = 'table'
+
+  exports.rowDown = (e) ->
+    row = e.target.parentNode
+    tbody = row.parentNode
+    dragStart e, rowIndex(e), 'row', row, tbody, dragRow
+
+  exports.colDown = (e) ->
+
+  addListener document, 'mousemove', onMove = (e) ->
+    return unless dragging
+    containerStyle = dragging.container.style
+    containerStyle.left = (e.clientX + dragging.offsetLeft) + 'px'
+    containerStyle.top = (e.clientY + dragging.offsetTop) + 'px'
+
+  addListener document, 'mouseup', (e) ->
+    return unless dragging
+    dragging.clone.parentNode.removeChild dragging.clone
+    dragging.parent.appendChild dragging.el
+    dragging.container.display = 'none'
+    dragging = null
