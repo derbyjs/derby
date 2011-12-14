@@ -55,7 +55,52 @@ module.exports =
       ]
     }
   
-  'onRemove should update path indicies': ->
+  'should index nested arrays': ->
+    pathMap = new PathMap
+    pathMap.arrays.should.eql {}
+
+    pathMap.id('tables.0.rows.0').should.eql 1
+    pathMap.id('tables.0.rows.1.name').should.eql 2
+    pathMap.id('tables.1.rows.0').should.eql 3
+    pathMap.id('tables.1.rows.1.name').should.eql 4
+    # Nested arrays are tracked under an arrays property
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {1: ''}
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+        {4: '.name'}
+      ]
+    }
+
+    pathMap.id('tables.0.rows.0.cols.0').should.eql 5
+    pathMap.id('tables.0.rows.0.cols.1.text').should.eql 6
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {1: '', arrays: {'.cols': true}}
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+        {4: '.name'}
+      ]
+      'tables.0.rows.0.cols': [
+        {5: ''}
+        {6: '.text'}
+      ]
+    }
+  
+  'onRemove should update array indicies': ->
     pathMap = new PathMap
     pathMap.id('colors.0').should.eql 1
     pathMap.id('colors.0.hex').should.eql 2
@@ -112,254 +157,7 @@ module.exports =
     pathMap.arrays.should.eql {
       colors: []
     }
-  
-  'onInsert should update path indicies': ->
-    pathMap = new PathMap
-    pathMap.id('colors.0').should.eql 1
-    pathMap.id('colors.0.hex').should.eql 2
-    pathMap.id('colors.1').should.eql 3
-    pathMap.id('colors.1.hex').should.eql 4
-    pathMap.id('colors.2').should.eql 5
-    pathMap.id('colors.2.hex').should.eql 6
 
-    pathMap.onInsert 'colors', 1, 2
-    pathMap.ids.should.eql {
-      'colors.0': 1
-      'colors.0.hex': 2
-      'colors.3': 3
-      'colors.3.hex': 4
-      'colors.4': 5
-      'colors.4.hex': 6
-    }
-    pathMap.paths.should.eql {
-      1: 'colors.0'
-      2: 'colors.0.hex'
-      3: 'colors.3'
-      4: 'colors.3.hex'
-      5: 'colors.4'
-      6: 'colors.4.hex'
-    }
-    pathMap.arrays.should.eql {
-      colors: [
-        {1: '', 2: '.hex'}
-        {}
-        {}
-        {3: '', 4: '.hex'}
-        {5: '', 6: '.hex'}
-      ]
-    }
-
-    pathMap.onInsert 'colors', 0, 1
-    pathMap.ids.should.eql {
-      'colors.1': 1
-      'colors.1.hex': 2
-      'colors.4': 3
-      'colors.4.hex': 4
-      'colors.5': 5
-      'colors.5.hex': 6
-    }
-    pathMap.paths.should.eql {
-      1: 'colors.1'
-      2: 'colors.1.hex'
-      3: 'colors.4'
-      4: 'colors.4.hex'
-      5: 'colors.5'
-      6: 'colors.5.hex'
-    }
-    pathMap.arrays.should.eql {
-      colors: [
-        {}
-        {1: '', 2: '.hex'}
-        {}
-        {}
-        {3: '', 4: '.hex'}
-        {5: '', 6: '.hex'}
-      ]
-    }
-
-    pathMap.onInsert 'colors', 6, 1
-    pathMap.ids.should.eql {
-      'colors.1': 1
-      'colors.1.hex': 2
-      'colors.4': 3
-      'colors.4.hex': 4
-      'colors.5': 5
-      'colors.5.hex': 6
-    }
-    pathMap.paths.should.eql {
-      1: 'colors.1'
-      2: 'colors.1.hex'
-      3: 'colors.4'
-      4: 'colors.4.hex'
-      5: 'colors.5'
-      6: 'colors.5.hex'
-    }
-    pathMap.arrays.should.eql {
-      colors: [
-        {}
-        {1: '', 2: '.hex'}
-        {}
-        {}
-        {3: '', 4: '.hex'}
-        {5: '', 6: '.hex'}
-        {}
-      ]
-    }
-
-  'onMove should update path indicies': ->
-    pathMap = new PathMap
-    pathMap.id('colors.0').should.eql 1
-    pathMap.id('colors.0.hex').should.eql 2
-    pathMap.id('colors.1').should.eql 3
-    pathMap.id('colors.1.hex').should.eql 4
-    pathMap.id('colors.2').should.eql 5
-    pathMap.id('colors.2.hex').should.eql 6
-
-    pathMap.onMove 'colors', 0, 1
-    pathMap.ids.should.eql {
-      'colors.0': 3
-      'colors.0.hex': 4
-      'colors.1': 1
-      'colors.1.hex': 2
-      'colors.2': 5
-      'colors.2.hex': 6
-    }
-    pathMap.paths.should.eql {
-      3: 'colors.0'
-      4: 'colors.0.hex'
-      1: 'colors.1'
-      2: 'colors.1.hex'
-      5: 'colors.2'
-      6: 'colors.2.hex'
-    }
-    pathMap.arrays.should.eql {
-      colors: [
-        {3: '', 4: '.hex'}
-        {1: '', 2: '.hex'}
-        {5: '', 6: '.hex'}
-      ]
-    }
-
-    pathMap.onMove 'colors', 1, 0
-    pathMap.ids.should.eql {
-      'colors.0': 1
-      'colors.0.hex': 2
-      'colors.1': 3
-      'colors.1.hex': 4
-      'colors.2': 5
-      'colors.2.hex': 6
-    }
-    pathMap.paths.should.eql {
-      1: 'colors.0'
-      2: 'colors.0.hex'
-      3: 'colors.1'
-      4: 'colors.1.hex'
-      5: 'colors.2'
-      6: 'colors.2.hex'
-    }
-    pathMap.arrays.should.eql {
-      colors: [
-        {1: '', 2: '.hex'}
-        {3: '', 4: '.hex'}
-        {5: '', 6: '.hex'}
-      ]
-    }
-
-    pathMap.onMove 'colors', 2, 0
-    pathMap.ids.should.eql {
-      'colors.0': 5
-      'colors.0.hex': 6
-      'colors.1': 1
-      'colors.1.hex': 2
-      'colors.2': 3
-      'colors.2.hex': 4
-    }
-    pathMap.paths.should.eql {
-      5: 'colors.0'
-      6: 'colors.0.hex'
-      1: 'colors.1'
-      2: 'colors.1.hex'
-      3: 'colors.2'
-      4: 'colors.2.hex'
-    }
-    pathMap.arrays.should.eql {
-      colors: [
-        {5: '', 6: '.hex'}
-        {1: '', 2: '.hex'}
-        {3: '', 4: '.hex'}
-      ]
-    }
-
-    pathMap.onMove 'colors', 0, 2
-    pathMap.ids.should.eql {
-      'colors.0': 1
-      'colors.0.hex': 2
-      'colors.1': 3
-      'colors.1.hex': 4
-      'colors.2': 5
-      'colors.2.hex': 6
-    }
-    pathMap.paths.should.eql {
-      1: 'colors.0'
-      2: 'colors.0.hex'
-      3: 'colors.1'
-      4: 'colors.1.hex'
-      5: 'colors.2'
-      6: 'colors.2.hex'
-    }
-    pathMap.arrays.should.eql {
-      colors: [
-        {1: '', 2: '.hex'}
-        {3: '', 4: '.hex'}
-        {5: '', 6: '.hex'}
-      ]
-    }
-
-  'should index nested arrays': ->
-    pathMap = new PathMap
-    pathMap.arrays.should.eql {}
-
-    pathMap.id('tables.0.rows.0').should.eql 1
-    pathMap.id('tables.0.rows.1.name').should.eql 2
-    pathMap.id('tables.1.rows.0').should.eql 3
-    pathMap.id('tables.1.rows.1.name').should.eql 4
-    # Nested arrays are tracked under an arrays property
-    pathMap.arrays.should.eql {
-      'tables': [
-        {arrays: {'.rows': true}}
-        {arrays: {'.rows': true}}
-      ]
-      'tables.0.rows': [
-        {1: ''}
-        {2: '.name'}
-      ]
-      'tables.1.rows': [
-        {3: ''}
-        {4: '.name'}
-      ]
-    }
-
-    pathMap.id('tables.0.rows.0.cols.0').should.eql 5
-    pathMap.id('tables.0.rows.0.cols.1.text').should.eql 6
-    pathMap.arrays.should.eql {
-      'tables': [
-        {arrays: {'.rows': true}}
-        {arrays: {'.rows': true}}
-      ]
-      'tables.0.rows': [
-        {1: '', arrays: {'.cols': true}}
-        {2: '.name'}
-      ]
-      'tables.1.rows': [
-        {3: ''}
-        {4: '.name'}
-      ]
-      'tables.0.rows.0.cols': [
-        {5: ''}
-        {6: '.text'}
-      ]
-    }
-  
   'onRemove should update single nested array indicies': ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0').should.eql 1
@@ -573,4 +371,206 @@ module.exports =
     pathMap.paths.should.eql {}
     pathMap.arrays.should.eql {
       'tables': []
+    }
+
+  'onInsert should update array indicies': ->
+    pathMap = new PathMap
+    pathMap.id('colors.0').should.eql 1
+    pathMap.id('colors.0.hex').should.eql 2
+    pathMap.id('colors.1').should.eql 3
+    pathMap.id('colors.1.hex').should.eql 4
+    pathMap.id('colors.2').should.eql 5
+    pathMap.id('colors.2.hex').should.eql 6
+
+    pathMap.onInsert 'colors', 1, 2
+    pathMap.ids.should.eql {
+      'colors.0': 1
+      'colors.0.hex': 2
+      'colors.3': 3
+      'colors.3.hex': 4
+      'colors.4': 5
+      'colors.4.hex': 6
+    }
+    pathMap.paths.should.eql {
+      1: 'colors.0'
+      2: 'colors.0.hex'
+      3: 'colors.3'
+      4: 'colors.3.hex'
+      5: 'colors.4'
+      6: 'colors.4.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {1: '', 2: '.hex'}
+        {}
+        {}
+        {3: '', 4: '.hex'}
+        {5: '', 6: '.hex'}
+      ]
+    }
+
+    pathMap.onInsert 'colors', 0, 1
+    pathMap.ids.should.eql {
+      'colors.1': 1
+      'colors.1.hex': 2
+      'colors.4': 3
+      'colors.4.hex': 4
+      'colors.5': 5
+      'colors.5.hex': 6
+    }
+    pathMap.paths.should.eql {
+      1: 'colors.1'
+      2: 'colors.1.hex'
+      3: 'colors.4'
+      4: 'colors.4.hex'
+      5: 'colors.5'
+      6: 'colors.5.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {}
+        {1: '', 2: '.hex'}
+        {}
+        {}
+        {3: '', 4: '.hex'}
+        {5: '', 6: '.hex'}
+      ]
+    }
+
+    pathMap.onInsert 'colors', 6, 1
+    pathMap.ids.should.eql {
+      'colors.1': 1
+      'colors.1.hex': 2
+      'colors.4': 3
+      'colors.4.hex': 4
+      'colors.5': 5
+      'colors.5.hex': 6
+    }
+    pathMap.paths.should.eql {
+      1: 'colors.1'
+      2: 'colors.1.hex'
+      3: 'colors.4'
+      4: 'colors.4.hex'
+      5: 'colors.5'
+      6: 'colors.5.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {}
+        {1: '', 2: '.hex'}
+        {}
+        {}
+        {3: '', 4: '.hex'}
+        {5: '', 6: '.hex'}
+        {}
+      ]
+    }
+
+  'onMove should update array indicies': ->
+    pathMap = new PathMap
+    pathMap.id('colors.0').should.eql 1
+    pathMap.id('colors.0.hex').should.eql 2
+    pathMap.id('colors.1').should.eql 3
+    pathMap.id('colors.1.hex').should.eql 4
+    pathMap.id('colors.2').should.eql 5
+    pathMap.id('colors.2.hex').should.eql 6
+
+    pathMap.onMove 'colors', 0, 1
+    pathMap.ids.should.eql {
+      'colors.0': 3
+      'colors.0.hex': 4
+      'colors.1': 1
+      'colors.1.hex': 2
+      'colors.2': 5
+      'colors.2.hex': 6
+    }
+    pathMap.paths.should.eql {
+      3: 'colors.0'
+      4: 'colors.0.hex'
+      1: 'colors.1'
+      2: 'colors.1.hex'
+      5: 'colors.2'
+      6: 'colors.2.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {3: '', 4: '.hex'}
+        {1: '', 2: '.hex'}
+        {5: '', 6: '.hex'}
+      ]
+    }
+
+    pathMap.onMove 'colors', 1, 0
+    pathMap.ids.should.eql {
+      'colors.0': 1
+      'colors.0.hex': 2
+      'colors.1': 3
+      'colors.1.hex': 4
+      'colors.2': 5
+      'colors.2.hex': 6
+    }
+    pathMap.paths.should.eql {
+      1: 'colors.0'
+      2: 'colors.0.hex'
+      3: 'colors.1'
+      4: 'colors.1.hex'
+      5: 'colors.2'
+      6: 'colors.2.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {1: '', 2: '.hex'}
+        {3: '', 4: '.hex'}
+        {5: '', 6: '.hex'}
+      ]
+    }
+
+    pathMap.onMove 'colors', 2, 0
+    pathMap.ids.should.eql {
+      'colors.0': 5
+      'colors.0.hex': 6
+      'colors.1': 1
+      'colors.1.hex': 2
+      'colors.2': 3
+      'colors.2.hex': 4
+    }
+    pathMap.paths.should.eql {
+      5: 'colors.0'
+      6: 'colors.0.hex'
+      1: 'colors.1'
+      2: 'colors.1.hex'
+      3: 'colors.2'
+      4: 'colors.2.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {5: '', 6: '.hex'}
+        {1: '', 2: '.hex'}
+        {3: '', 4: '.hex'}
+      ]
+    }
+
+    pathMap.onMove 'colors', 0, 2
+    pathMap.ids.should.eql {
+      'colors.0': 1
+      'colors.0.hex': 2
+      'colors.1': 3
+      'colors.1.hex': 4
+      'colors.2': 5
+      'colors.2.hex': 6
+    }
+    pathMap.paths.should.eql {
+      1: 'colors.0'
+      2: 'colors.0.hex'
+      3: 'colors.1'
+      4: 'colors.1.hex'
+      5: 'colors.2'
+      6: 'colors.2.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {1: '', 2: '.hex'}
+        {3: '', 4: '.hex'}
+        {5: '', 6: '.hex'}
+      ]
     }
