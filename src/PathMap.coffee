@@ -4,7 +4,7 @@
 # TODO: Can this code be refactored? Feels repetative
 
 
-# Keeps track of each unique path via an ID
+# Keeps track of each unique path via an id
 module.exports = PathMap = ->
   @clear()
   return
@@ -15,21 +15,22 @@ PathMap:: =
     @ids = {}
     @paths = {}
     @arrays = {}
+    return
 
   id: (path) ->
     # Return the path for an id, or create a new id and index it
     this.ids[path] || (
       this.paths[id = ++@count] = path
-      @indexArray path, id
+      @_indexArray path, id
       this.ids[path] = id
     )
 
-  indexArray: (name, id) ->
-    while match = /^(.+)\.(\d+)(\..+|$)/.exec name
-      name = match[1]
+  _indexArray: (path, id) ->
+    while match = /^(.+)\.(\d+)(\..+|$)/.exec path
+      path = match[1]
       index = +match[2]
       remainder = match[3]
-      arr = @arrays[name] || @arrays[name] = []
+      arr = @arrays[path] || @arrays[path] = []
       set = arr[index] || arr[index] = {}
       if nested
         setArrays = set.arrays || set.arrays = {}
@@ -37,6 +38,7 @@ PathMap:: =
       else
         set[id] = remainder
       nested = true
+    return
 
   _incrementItems: (path, map, start, end, byNum) ->
     for i in [start..end]
@@ -54,6 +56,7 @@ PathMap:: =
         itemPath = path + '.' + (i + byNum) + remainder
         @paths[id] = itemPath
         @ids[itemPath] = +id
+    return
 
   _deleteItems: (path, map, start, end, last) ->
     for i in [start..last]
@@ -72,6 +75,7 @@ PathMap:: =
         delete @ids[itemPath]
         continue if i >= end
         delete @paths[id]
+    return
   
   onRemove: (path, start, howMany) ->
     return unless map = @arrays[path]
@@ -83,6 +87,7 @@ PathMap:: =
     unless end > last
       @_incrementItems path, map, end, last, -howMany
     map.splice start, howMany
+    return
   
   onInsert: (path, start, howMany) ->
     return unless map = @arrays[path]
