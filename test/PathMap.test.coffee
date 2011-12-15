@@ -1030,4 +1030,312 @@ module.exports =
       ]
     }
 
+    pathMap.onMove 'tables', 1, 0
+    pathMap.ids.should.eql {
+      'tables.0.rows.0': 1
+      'tables.0.rows.1.name': 2
+      'tables.1.rows.0': 3
+      'tables.2.rows.0.name': 4
+    }
+    pathMap.paths.should.eql {
+      1: 'tables.0.rows.0'
+      2: 'tables.0.rows.1.name'
+      3: 'tables.1.rows.0'
+      4: 'tables.2.rows.0.name'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {1: ''}
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+      ]
+      'tables.2.rows': [
+        {4: '.name'}
+      ]
+    }
+
+    pathMap.onMove 'tables', 2, 0
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.name': 4
+      'tables.1.rows.0': 1
+      'tables.1.rows.1.name': 2
+      'tables.2.rows.0': 3
+    }
+    pathMap.paths.should.eql {
+      4: 'tables.0.rows.0.name'
+      1: 'tables.1.rows.0'
+      2: 'tables.1.rows.1.name'
+      3: 'tables.2.rows.0'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {4: '.name'}
+      ]
+      'tables.1.rows': [
+        {1: ''}
+        {2: '.name'}
+      ]
+      'tables.2.rows': [
+        {3: ''}
+      ]
+    }
+
+    pathMap.onMove 'tables', 0, 2
+    pathMap.ids.should.eql {
+      'tables.0.rows.0': 1
+      'tables.0.rows.1.name': 2
+      'tables.1.rows.0': 3
+      'tables.2.rows.0.name': 4
+    }
+    pathMap.paths.should.eql {
+      1: 'tables.0.rows.0'
+      2: 'tables.0.rows.1.name'
+      3: 'tables.1.rows.0'
+      4: 'tables.2.rows.0.name'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {1: ''}
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+      ]
+      'tables.2.rows': [
+        {4: '.name'}
+      ]
+    }
+
   'onMove should update double nested array indicies': ->
+    pathMap = new PathMap
+    pathMap.id('tables.0.rows.0.cols.0').should.eql 1
+    pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2
+    pathMap.id('tables.1.rows.0.cols.0').should.eql 3
+    pathMap.id('tables.2.rows.0.cols.0.text').should.eql 4
+
+    pathMap.onMove 'tables.0.rows', 0, 1
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0.text': 2
+      'tables.0.rows.1.cols.0': 1
+      'tables.1.rows.0.cols.0': 3
+      'tables.2.rows.0.cols.0.text': 4
+    }
+    pathMap.paths.should.eql {
+      2: 'tables.0.rows.0.cols.0.text'
+      1: 'tables.0.rows.1.cols.0'
+      3: 'tables.1.rows.0.cols.0'
+      4: 'tables.2.rows.0.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{2: '.text'}]
+      'tables.0.rows.1.cols': [{1: ''}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{3: ''}]
+      'tables.2.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.2.rows.0.cols': [{4: '.text'}]
+    }
+
+    pathMap.onMove 'tables.0.rows', 1, 0
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0': 1
+      'tables.0.rows.1.cols.0.text': 2
+      'tables.1.rows.0.cols.0': 3
+      'tables.2.rows.0.cols.0.text': 4
+    }
+    pathMap.paths.should.eql {
+      1: 'tables.0.rows.0.cols.0'
+      2: 'tables.0.rows.1.cols.0.text'
+      3: 'tables.1.rows.0.cols.0'
+      4: 'tables.2.rows.0.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{1: ''}]
+      'tables.0.rows.1.cols': [{2: '.text'}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{3: ''}]
+      'tables.2.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.2.rows.0.cols': [{4: '.text'}]
+    }
+
+    pathMap.onMove 'tables', 0, 1
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0': 3
+      'tables.1.rows.0.cols.0': 1
+      'tables.1.rows.1.cols.0.text': 2
+      'tables.2.rows.0.cols.0.text': 4
+    }
+    pathMap.paths.should.eql {
+      3: 'tables.0.rows.0.cols.0'
+      1: 'tables.1.rows.0.cols.0'
+      2: 'tables.1.rows.1.cols.0.text'
+      4: 'tables.2.rows.0.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{3: ''}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{1: ''}]
+      'tables.1.rows.1.cols': [{2: '.text'}]
+      'tables.2.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.2.rows.0.cols': [{4: '.text'}]
+    }
+
+    pathMap.onMove 'tables', 1, 0
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0': 1
+      'tables.0.rows.1.cols.0.text': 2
+      'tables.1.rows.0.cols.0': 3
+      'tables.2.rows.0.cols.0.text': 4
+    }
+    pathMap.paths.should.eql {
+      1: 'tables.0.rows.0.cols.0'
+      2: 'tables.0.rows.1.cols.0.text'
+      3: 'tables.1.rows.0.cols.0'
+      4: 'tables.2.rows.0.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{1: ''}]
+      'tables.0.rows.1.cols': [{2: '.text'}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{3: ''}]
+      'tables.2.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.2.rows.0.cols': [{4: '.text'}]
+    }
+
+    pathMap.onMove 'tables', 2, 0
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0.text': 4
+      'tables.1.rows.0.cols.0': 1
+      'tables.1.rows.1.cols.0.text': 2
+      'tables.2.rows.0.cols.0': 3
+    }
+    pathMap.paths.should.eql {
+      4: 'tables.0.rows.0.cols.0.text'
+      1: 'tables.1.rows.0.cols.0'
+      2: 'tables.1.rows.1.cols.0.text'
+      3: 'tables.2.rows.0.cols.0'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{4: '.text'}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{1: ''}]
+      'tables.1.rows.1.cols': [{2: '.text'}]
+      'tables.2.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.2.rows.0.cols': [{3: ''}]
+    }
+
+    pathMap.onMove 'tables', 0, 2
+    pathMap.ids.should.eql {
+      'tables.0.rows.0.cols.0': 1
+      'tables.0.rows.1.cols.0.text': 2
+      'tables.1.rows.0.cols.0': 3
+      'tables.2.rows.0.cols.0.text': 4
+    }
+    pathMap.paths.should.eql {
+      1: 'tables.0.rows.0.cols.0'
+      2: 'tables.0.rows.1.cols.0.text'
+      3: 'tables.1.rows.0.cols.0'
+      4: 'tables.2.rows.0.cols.0.text'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {arrays: {'.cols': true}}
+        {arrays: {'.cols': true}}
+      ]
+      'tables.0.rows.0.cols': [{1: ''}]
+      'tables.0.rows.1.cols': [{2: '.text'}]
+      'tables.1.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.1.rows.0.cols': [{3: ''}]
+      'tables.2.rows': [
+        {arrays: {'.cols': true}}
+      ]
+      'tables.2.rows.0.cols': [{4: '.text'}]
+    }
