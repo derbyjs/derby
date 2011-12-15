@@ -127,43 +127,65 @@ ready (model) ->
   dragging = null
   dragRow = $ 'drag-row'
   dragCol = $ 'drag-col'
-  body = document.body
 
-  dragStart = (e, type, i, el, parent, container) ->
+  setLeft = (e, dragging) ->
+    dragging.container.style.left = (e.clientX + dragging.offsetLeft) + 'px'
+  setTop = (e, dragging) ->
+    dragging.container.style.top = (e.clientY + dragging.offsetTop) + 'px'
+
+  dragStart = (e, type, el, container) ->
     e.preventDefault?()
+    parent = el.parentNode
     rect = el.getBoundingClientRect()
+    breaks = []
+    breaks.get = (i, last) -> if i < last then breaks[i] else breaks[i + 1]
+    for child, i in parent.children
+      index = i if el is child
+      childRect = child.getBoundingClientRect()
+      breaks.push childRect.height / 2 + childRect.top
     dragging =
       type: type
-      i: i
+      index: index
+      last: index
       el: el
       parent: parent
       container: container
+      breaks: breaks
       offsetLeft: rect.left - e.clientX
       offsetTop: rect.top - e.clientY
       clone: clone = el.cloneNode()
+
     clone.style.height = rect.height + 'px'
     clone.style.width = rect.width + 'px'
-    el.parentNode.insertBefore clone, el
+    parent.insertBefore clone, el
     container.firstChild.appendChild el
+    setLeft i, dragging
     onMove e
     dragRow.style.display = 'table'
 
   exports.rowDown = (e) ->
     row = e.target.parentNode
-    tbody = row.parentNode
-    dragStart e, rowIndex(e), 'row', row, tbody, dragRow
+    dragStart e, 'row', row, dragRow
 
   exports.colDown = (e) ->
 
   addListener document, 'mousemove', onMove = (e) ->
     return unless dragging
-    containerStyle = dragging.container.style
-    containerStyle.left = (e.clientX + dragging.offsetLeft) + 'px'
-    containerStyle.top = (e.clientY + dragging.offsetTop) + 'px'
+    y = e.clientY
+    setTop e, dragging
+    
+    {breaks, parent, last} = dragging
+    i = 0
+    i++ while y > breaks.get i, last
+    unless i == last
+      ref = parent.children[if i < last then i else i + 1]
+      parent.insertBefore dragging.clone, ref
+    dragging.last = i
 
   addListener document, 'mouseup', (e) ->
     return unless dragging
-    dragging.clone.parentNode.removeChild dragging.clone
-    dragging.parent.appendChild dragging.el
+    {parent, clone} = dragging
+    parent.insertBefore dragging.el, clone
+    parent.removeChild clone
     dragging.container.display = 'none'
     dragging = null

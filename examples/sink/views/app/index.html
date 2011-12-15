@@ -58,11 +58,11 @@
   <table id=table-editor>
     <thead>
       <tr>
-        <th></th>
+        <td></td>
         ((#table.cols))
           <th x-bind=mousedown:colDown>((.name))</th>
         ((/))
-        <th></th>
+        <td></td>
     <tbody>
       ((#table.rows))
         <tr>
@@ -73,9 +73,9 @@
       ((/))
     <tfoot>
       <tr>
-        <th></th>
-        ((#table.cols))<th><button x-bind=click:deleteCol>Delete</button></th>((/))
-        <th></th>
+        <td></td>
+        ((#table.cols))<td><button x-bind=click:deleteCol>Delete</button></td>((/))
+        <td></td>
   </table>
   <table id=drag-row><tbody></table>
   <table id=drag-col><tbody></table>
