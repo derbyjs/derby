@@ -929,7 +929,6 @@ module.exports =
       ]
     }
 
-
   'onMove should update single nested array indicies': ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0').should.eql 1
