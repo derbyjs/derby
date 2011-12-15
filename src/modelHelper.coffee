@@ -1,47 +1,7 @@
 EventDispatcher = require './EventDispatcher'
 PathMap = require './PathMap'
 
-refIndex = (obj) ->
-  # Get index if event was from arrayRef id object
-  if typeof obj is 'object' then obj.index else +obj
-
-insert = (events, pathMap, path, start, values, local, options) ->
-  start = refIndex start
-
-  # Update indicies in pathMap
-  pathMap.onInsert path, start, values.length
-
-  id = pathMap.id path
-  for value, i in values
-    events.trigger id, [start + i, value], 'insert', local, options
-  return
-
-remove = (events, pathMap, path, start, howMany, local, options) ->
-  start = refIndex start
-  end = start + howMany
-
-  # Update indicies in pathMap
-  pathMap.onRemove path, start, howMany
-
-  id = pathMap.id path
-  for index in [start...end]
-    events.trigger id, index, 'remove', local, options
-  return
-
-move = (events, pathMap, path, from, to, local, options) ->
-  len = model.get(path).length
-  from = refIndex from
-  to = refIndex to
-  from += len if from < 0
-  to += len if to < 0
-  return if from == to
-
-  # Update indicies in pathMap before moving
-  pathMap.onMove path, from, to
-
-  events.trigger pathMap.id(path), [from, to], 'move', local, options
-
-exports.init = (model, dom, view) ->
+exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap
 
   if dom then eventOptions = 
@@ -82,9 +42,6 @@ exports.init = (model, dom, view) ->
 
   events = model.__events = new EventDispatcher eventOptions
   return model unless dom
-
-  # TODO: Remove
-  window.pathMap = pathMap
 
   model.on 'set', ([path, value], local, options) ->
     events.trigger pathMap.id(path), value, 'html', local, options
@@ -128,3 +85,44 @@ exports.init = (model, dom, view) ->
       events.trigger pathMap.id(event), value
 
   return model
+
+
+refIndex = (obj) ->
+  # Get index if event was from arrayRef id object
+  if typeof obj is 'object' then obj.index else +obj
+
+insert = (events, pathMap, path, start, values, local, options) ->
+  start = refIndex start
+
+  # Update indicies in pathMap
+  pathMap.onInsert path, start, values.length
+
+  id = pathMap.id path
+  for value, i in values
+    events.trigger id, [start + i, value], 'insert', local, options
+  return
+
+remove = (events, pathMap, path, start, howMany, local, options) ->
+  start = refIndex start
+  end = start + howMany
+
+  # Update indicies in pathMap
+  pathMap.onRemove path, start, howMany
+
+  id = pathMap.id path
+  for index in [start...end]
+    events.trigger id, index, 'remove', local, options
+  return
+
+move = (events, pathMap, path, from, to, local, options) ->
+  len = model.get(path).length
+  from = refIndex from
+  to = refIndex to
+  from += len if from < 0
+  to += len if to < 0
+  return if from == to
+
+  # Update indicies in pathMap
+  pathMap.onMove path, from, to
+
+  events.trigger pathMap.id(path), [from, to], 'move', local, options

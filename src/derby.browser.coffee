@@ -29,7 +29,7 @@ exports.createApp = (appModule) ->
 
   model = view.model = racer.model
   dom = view.dom = new Dom model, appExports, history
-  modelHelper.init model, dom, view
+  modelHelper.init model, dom
   appExports.ready = (fn) -> racer.onready = -> fn model
   page.view = view
   page.model = model
