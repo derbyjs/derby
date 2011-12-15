@@ -935,26 +935,20 @@ module.exports =
     pathMap.id('tables.0.rows.0').should.eql 1
     pathMap.id('tables.0.rows.1.name').should.eql 2
     pathMap.id('tables.1.rows.0').should.eql 3
-    pathMap.id('tables.1.rows.1.name').should.eql 4
-    pathMap.id('tables.2.rows.0').should.eql 5
-    pathMap.id('tables.2.rows.1.name').should.eql 6
+    pathMap.id('tables.2.rows.0.name').should.eql 4
 
     pathMap.onMove 'tables.0.rows', 0, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.name': 2
       'tables.0.rows.1': 1
       'tables.1.rows.0': 3
-      'tables.1.rows.1.name': 4
-      'tables.2.rows.0': 5
-      'tables.2.rows.1.name': 6
+      'tables.2.rows.0.name': 4
     }
     pathMap.paths.should.eql {
       2: 'tables.0.rows.0.name'
       1: 'tables.0.rows.1'
       3: 'tables.1.rows.0'
-      4: 'tables.1.rows.1.name'
-      5: 'tables.2.rows.0'
-      6: 'tables.2.rows.1.name'
+      4: 'tables.2.rows.0.name'
     }
     pathMap.arrays.should.eql {
       'tables': [
@@ -968,11 +962,71 @@ module.exports =
       ]
       'tables.1.rows': [
         {3: ''}
-        {4: '.name'}
       ]
       'tables.2.rows': [
-        {5: ''}
-        {6: '.name'}
+        {4: '.name'}
+      ]
+    }
+
+    pathMap.onMove 'tables.0.rows', 1, 0
+    pathMap.ids.should.eql {
+      'tables.0.rows.0': 1
+      'tables.0.rows.1.name': 2
+      'tables.1.rows.0': 3
+      'tables.2.rows.0.name': 4
+    }
+    pathMap.paths.should.eql {
+      1: 'tables.0.rows.0'
+      2: 'tables.0.rows.1.name'
+      3: 'tables.1.rows.0'
+      4: 'tables.2.rows.0.name'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {1: ''}
+        {2: '.name'}
+      ]
+      'tables.1.rows': [
+        {3: ''}
+      ]
+      'tables.2.rows': [
+        {4: '.name'}
+      ]
+    }
+
+    pathMap.onMove 'tables', 0, 1
+    pathMap.ids.should.eql {
+      'tables.0.rows.0': 3
+      'tables.1.rows.0': 1
+      'tables.1.rows.1.name': 2
+      'tables.2.rows.0.name': 4
+    }
+    pathMap.paths.should.eql {
+      3: 'tables.0.rows.0'
+      1: 'tables.1.rows.0'
+      2: 'tables.1.rows.1.name'
+      4: 'tables.2.rows.0.name'
+    }
+    pathMap.arrays.should.eql {
+      'tables': [
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+        {arrays: {'.rows': true}}
+      ]
+      'tables.0.rows': [
+        {3: ''}
+      ]
+      'tables.1.rows': [
+        {1: ''}
+        {2: '.name'}
+      ]
+      'tables.2.rows': [
+        {4: '.name'}
       ]
     }
 

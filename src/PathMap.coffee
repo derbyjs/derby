@@ -107,7 +107,7 @@ PathMap:: =
       oldArrays = @_delItems path, map, from, afterTo, afterTo
       @_incrItems path, map, afterFrom, afterTo, -1, oldArrays
     # Adjust paths for the moved item
-    @_incrItems path, map, from, afterFrom, to - from
+    @_incrItems path, map, from, afterFrom, to - from, oldArrays
     # Fix the array index
     [item] = map.splice from, 1
     map.splice to, 0, item
