@@ -54,15 +54,16 @@ PathMap:: =
         @ids[itemPath] = +id
     return
 
-  _delItems: (path, map, start, end, oldArrays = {}) ->
-    for i in [start...map.length]
+  _delItems: (path, map, start, end, len, oldArrays = {}) ->
+    for i in [start...len]
       continue unless ids = map[i]
       for id of ids
         if id is 'arrays'
           for remainder of ids[id]
             arrayPath = path + '.' + i + remainder
             if arrayMap = @arrays[arrayPath]
-              @_delItems arrayPath, arrayMap, 0, arrayMap.length, oldArrays
+              arrayLen = arrayMap.length
+              @_delItems arrayPath, arrayMap, 0, arrayLen, arrayLen, oldArrays
               oldArrays[arrayPath] = arrayMap
               delete @arrays[arrayPath]
           continue
@@ -75,32 +76,38 @@ PathMap:: =
   onRemove: (path, start, howMany) ->
     return unless map = @arrays[path]
     end = start + howMany
+    len = map.length
     # Delete indicies for removed items
-    oldArrays = @_delItems path, map, start, end + 1
+    oldArrays = @_delItems path, map, start, end + 1, len
     # Decrement indicies of later items
-    @_incrItems path, map, end, map.length, -howMany, oldArrays
+    @_incrItems path, map, end, len, -howMany, oldArrays
     map.splice start, howMany
     return
   
   onInsert: (path, start, howMany) ->
     return unless map = @arrays[path]
     end = start + howMany
+    len = map.length
     # Delete indicies for items in inserted positions
-    oldArrays = @_delItems path, map, start, end + 1
+    oldArrays = @_delItems path, map, start, end + 1, len
     # Increment indicies of later items
-    @_incrItems path, map, start, map.length, howMany, oldArrays
+    @_incrItems path, map, start, len, howMany, oldArrays
     map.splice start, 0, {}  while howMany--
     return
 
   onMove: (path, from, to) ->
     return unless map = @arrays[path]
-    # Adjust paths for the moved item
-    @_incrItems path, map, from, from + 1, to - from
+    afterFrom = from + 1
+    afterTo = to + 1
     # Adjust paths for items between from and to
     if from > to
-      @_incrItems path, map, to, from, 1
+      oldArrays = @_delItems path, map, to, afterFrom, afterFrom
+      @_incrItems path, map, to, from, 1, oldArrays
     else
-      @_incrItems path, map, from + 1, to + 1, -1
+      oldArrays = @_delItems path, map, from, afterTo, afterTo
+      @_incrItems path, map, afterFrom, afterTo, -1, oldArrays
+    # Adjust paths for the moved item
+    @_incrItems path, map, from, afterFrom, to - from
     # Fix the array index
     [item] = map.splice from, 1
     map.splice to, 0, item
