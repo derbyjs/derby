@@ -70,9 +70,12 @@ View:: =
     @model.__events.clear()
     @dom.clear()
     title = @get('title$s', ctx)
-    body = @get('header', ctx) + @get('body', ctx)
+    bodyHtml = @get('header', ctx) + @get('body', ctx)
     return if silent
-    document.body.innerHTML = body
+    container = document.createElement 'html'
+    container.innerHTML = bodyHtml
+    body = container.getElementsByTagName('body')[0]
+    document.body.parentNode.replaceChild body, document.body
     document.title = title
   
   htmlEscape: htmlEscape

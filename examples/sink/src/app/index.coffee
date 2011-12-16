@@ -12,6 +12,7 @@ pages = [
 ]
 ctxFor = (name, ctx = {}) ->
   ctx[name + 'Visible'] = true
+  ctx.currentPage = name
   last = pages.length - 1
   ctx.pages = for page, i in pages
     page = Object.create page
@@ -119,12 +120,12 @@ ready (model) ->
     model.push 'table.cols', {name}
 
 
-  dragging = null
-  container = $('drag-container')
-  containerTbody = container.firstChild
+  dragging = container = null
 
   dragStart = (e, el, index, cloneFn, setFn, breakFn, selector, finish) ->
     e.preventDefault?()
+    container = document.createElement 'table'
+    container.style.position = 'absolute'
     parent = el.parentNode
     rect = el.getBoundingClientRect()
     clone = cloneFn el, rect, parent, index
@@ -133,7 +134,7 @@ ready (model) ->
     dragging = {el, parent, clone, index, last: index, setFn, breakFn, selector, offsetLeft, offsetTop, finish}
     setLeft.call dragging, e
     setTop.call dragging, e
-    container.style.display = 'table'
+    document.body.appendChild container
 
   setLeft = (e) ->
     loc = e.clientX
@@ -157,26 +158,26 @@ ready (model) ->
     spacerHtml = '<tr>'
     for child in el.children
       spacerHtml += "<td style=width:#{child.offsetWidth}px;height:0;padding:0>"
-    clone = el.cloneNode()
+    clone = el.cloneNode(false)
     clone.removeAttribute 'id'
     clone.style.height = rect.height + 'px'
-    containerTbody.innerHTML = clone.innerHTML = spacerHtml
+    container.innerHTML = clone.innerHTML = spacerHtml
     parent.insertBefore clone, el
-    containerTbody.appendChild el
+    container.firstChild.appendChild el
     return clone
   cloneCol = (el, rect, parent, index) ->
     rows = parent.parentNode.children
     spacerHtml = ''
     for row in rows
       spacerHtml += "<tr class=#{row.className} style=height:#{row.offsetHeight}px;width:0;padding:0>"
-    containerTbody.innerHTML = spacerHtml
-    clone = el.cloneNode()
+    container.innerHTML = spacerHtml
+    clone = el.cloneNode(false)
     clone.removeAttribute 'id'
     clone.setAttribute 'rowspan', rows.length
     clone.style.padding = 0
     clone.style.width = rect.width + 'px'
     parent.insertBefore clone, parent.childNodes[index + 3]
-    cloneRows = containerTbody.children
+    cloneRows = container.firstChild.children
     for row, i in rows
       cloneRows[i].appendChild row.childNodes[index + 2]
     return clone
@@ -193,7 +194,7 @@ ready (model) ->
     # Put things back where they started
     parent.removeChild clone
     rows = parent.parentNode.children
-    cloneRows = containerTbody.children
+    cloneRows = container.firstChild.children
     for row, i in rows
       row.insertBefore cloneRows[i].firstChild, row.childNodes[index + 2]
     # Actually do the move
@@ -230,5 +231,5 @@ ready (model) ->
   addListener document, 'mouseup', (e) ->
     return unless dragging
     dragging.finish()
-    container.style.display = 'none'
-    dragging = null
+    document.body.removeChild container
+    dragging = container = null

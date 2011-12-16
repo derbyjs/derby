@@ -2,6 +2,7 @@
   Derby demo: {{title}}
 
 <Body:>
+  <body class={{currentPage}}>
   <p>
   {{#pages}}
     {{#current}}
@@ -55,7 +56,7 @@
   <button x-bind=click:addRow>Add row</button> 
   <button x-bind=click:addCol>Add column</button>
   <hr>
-  <table id=table-editor><tbody>
+  <table>
     <tr>
       <td></td>
       ((#table.cols))
@@ -70,13 +71,12 @@
         <td><button x-bind=click:deleteRow>Delete</button></td>
       </tr>
     ((/))
-    <tr class=editor-foot>
+    <tr class=foot>
       <td></td>
       ((#table.cols))<td><button x-bind=click:deleteCol>Delete</button></td>((/))
       <td></td>
     </tr>
-  </tbody></table>
-  <table id=drag-container><tbody></table>
+  </table>
 
 <submit:>
   <form action=submit method=post>
