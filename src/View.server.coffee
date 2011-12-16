@@ -1,10 +1,9 @@
 {Model} = require 'racer'
 uglify = require 'uglify-js'
-module.exports = View = require './View'
 {htmlEscape} = require './html'
-Dom = require './Dom'
-modelHelper = require './modelHelper'
+EventDispatcher = require './EventDispatcher'
 loader = require './loader'
+module.exports = View = require './View'
 
 empty = ->
 emptyRes =
@@ -15,6 +14,8 @@ emptyRes =
 emptyModel =
   get: empty
   bundle: empty
+emptyDom =
+  events: new EventDispatcher
 
 escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
 
@@ -52,7 +53,9 @@ View::render = (res = emptyRes, args...) ->
 
 View::_init = (model) ->
   # Initialize view for rendering
-  @dom = new Dom(@model = modelHelper.init model)
+  @dom = emptyDom
+  model.__events = new EventDispatcher
+  @model = model
   @_idCount = 0
 
 View::_render = (res, model, ctx, isStatic, css) ->

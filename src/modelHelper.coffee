@@ -3,8 +3,7 @@ PathMap = require './PathMap'
 
 exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap
-
-  if dom then eventOptions = 
+  events = model.__events = new EventDispatcher
     onBind: (name, listener) -> pathMap.id name
     onTrigger: (name, listener, value, type, local, options) ->
       [id, method, property] = listener
@@ -39,9 +38,6 @@ exports.init = (model, dom) ->
       # Remove this listener if the DOM update fails
       # Happens when an id cannot be found
       return dom.update id, method, options && options.ignore, value, property, index
-
-  events = model.__events = new EventDispatcher eventOptions
-  return model unless dom
 
   model.on 'set', ([path, value], local, options) ->
     events.trigger pathMap.id(path), value, 'html', local, options

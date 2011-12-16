@@ -3,28 +3,55 @@ qs = require 'qs'
 win = window
 winHistory = win.history
 winLocation = win.location
+doc = win.document
 
 if winHistory.replaceState
   # Replace the initial state with the current URL immediately,
   # so that it will be rendered if the state is later popped
   winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
 
-History = module.exports = (@_routes, page) ->
-  unless winHistory.pushState
+History = module.exports = (@_routes, @_page, dom) ->
+  self = this
+  {addListener} = dom
+
+  if winHistory.pushState
+    addListener doc, 'click', (e) ->
+      # Detect clicks on links
+      # Ignore command click, control click, and middle click
+      if e.target.href && !e.metaKey && e.which == 1
+        url = e.target.href
+        # Ignore hash links to the same page
+        return if ~(i = url.indexOf '#') && 
+          url.substr(0, i) == winLocation.href.replace(/#.*/, '')
+        self.push path, true, e  if path = routePath url
+
+    addListener doc, 'submit', (e) ->
+      if e.target.tagName.toLowerCase() is 'form'
+        form = e.target
+        return if !(path = routePath form.action) || form._forceSubmit ||
+          form.enctype == 'multipart/form-data'
+        self.push path, true, e
+
+    addListener win, 'popstate', (e) ->
+      # Pop states without a state object were generated externally,
+      # such as by a jump link, so they shouldn't be handled 
+      return unless (state = e.state) && state.render
+      # Note that the post body is only sent on the initial reqest
+      # and null is sent if the state is later popped
+      renderRoute winLocation.pathname, null, self._page, self._routes[state.method], 0, null, e
+
+  else
     @push = @replace = ->
-  page.history = this
-  @_page = page
+
   return
 
 # TODO: Add support for get & post form submissions
 
 History:: =
 
-  push: (url, render, e) ->
-    @_update 'pushState', url, render, e
+  push: (url, render, e) -> @_update 'pushState', url, render, e
 
-  replace: (url, render, e) ->
-    @_update 'replaceState', url, render, e
+  replace: (url, render, e) -> @_update 'replaceState', url, render, e
 
   back: -> winHistory.back()
 
@@ -33,7 +60,7 @@ History:: =
   go: (i) -> winHistory.go i
 
   _update: (historyMethod, url, render, e) ->
-    # If this is a form submisssion, extract the form data and
+    # If this is a form submission, extract the form data and
     # append it to the url for a get or params.body for a post
     if e && e.type is 'submit'
       form = e.target
@@ -57,27 +84,6 @@ History:: =
 
     winHistory[historyMethod] {render, method}, null, url
     renderRoute url, body, @_page, @_routes[method], 0, form, e  if render
-
-  _onClickLink: (e) ->
-    url = e.target.href
-    # Ignore hash links to the same page
-    return if ~(i = url.indexOf '#') && 
-      url.substr(0, i) == winLocation.href.replace(/#.*/, '')
-    @push path, true, e  if path = routePath url
-
-  _onSubmitForm: (e) ->
-    form = e.target
-    return if !(path = routePath form.action) || form._forceSubmit ||
-      form.enctype == 'multipart/form-data'
-    @push path, true, e
-
-  _onPop: (e) ->
-    # Pop states without a state object were generated externally,
-    # such as by a jump link, so they shouldn't be handled 
-    return unless (state = e.state) && state.render
-    # Note that the post body is only sent on the initial reqest
-    # and null is sent if the state is later popped
-    renderRoute winLocation.pathname, null, @_page, @_routes[state.method], 0, null, e
 
 cancelRender = (url, form, e) ->
   # Don't do anything if this is the result of an event, since the
