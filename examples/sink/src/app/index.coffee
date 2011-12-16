@@ -74,17 +74,17 @@ ready (model) ->
     model.push 'liveCss.styles', {}
 
   app.deleteStyle = (e) ->
-    model.remove 'liveCss.styles', targetIndex(e, 1)
+    model.remove 'liveCss.styles', targetIndex(e.target, 1)
 
   app.deleteRow = (e) ->
     # Have to subtract 2 from index, because the first node is the <tr>
     # in the first row, and the second node is the comment binding wrapper
-    model.remove 'table.rows', targetIndex(e, 2) - 2
+    model.remove 'table.rows', targetIndex(e.target, 2) - 2
 
   app.deleteCol = (e) ->
     # Have to subtract 2 from index, because the first node is the <td>
     # in the first col, and the second node is the comment binding wrapper
-    i = targetIndex(e, 1) - 2
+    i = targetIndex(e.target, 1) - 2
     row = model.get('table.rows').length
     while row--
       model.remove "table.rows.#{row}.cells", i

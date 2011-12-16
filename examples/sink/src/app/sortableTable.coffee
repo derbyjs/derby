@@ -1,16 +1,12 @@
-# TODO: There are some magic numbers in this file having to do
-# with node offsets that should be passed in as options
-
 dragging = null
 onRowMove = onColMove = ->
 
 module.exports =
 
-  targetIndex: targetIndex = (e, levels) ->
-    item = e.target
-    item = item.parentNode while levels--
-    for child, i in item.parentNode.childNodes
-      return i if child == item
+  targetIndex: targetIndex = (el, levels) ->
+    el = el.parentNode while levels--
+    for child, i in el.parentNode.childNodes
+      return i if child == el
 
   init: (app, options) ->
     addListener = app.view.dom.addListener
@@ -19,13 +15,9 @@ module.exports =
     {onRowMove, onColMove} = options
 
     app.rowDown = (e) ->
-      el = e.target.parentNode
-      index = targetIndex(e, 1) - 2
-      dragStart e, el, index, cloneRow, setTop, breakTop, '.row', finishRow
+      dragStart e, cloneRow, setTop, breakTop, '.row', finishRow, e.target.parentNode
     app.colDown = (e) ->
-      el = e.target
-      index = targetIndex(e) - 2
-      dragStart e, el, index, cloneCol, setLeft, breakLeft, '.col', finishCol
+      dragStart e, cloneCol, setLeft, breakLeft, '.col', finishCol, e.target
 
 onMove = (e) ->
   return unless dragging
@@ -49,17 +41,19 @@ onUp = (e) ->
   document.body.removeChild dragging.container
   dragging = null
 
-dragStart = (e, el, index, cloneFn, setFn, breakFn, selector, finish) ->
+dragStart = (e, cloneFn, setFn, breakFn, selector, finish, el) ->
   return if e.button != 0
   e.preventDefault?()
   container = document.createElement 'table'
   container.style.position = 'absolute'
   parent = el.parentNode
   rect = el.getBoundingClientRect()
-  clone = cloneFn container, el, rect, parent, index
+  nodeOffset = targetIndex(parent.querySelector selector)
+  index = targetIndex(el) - nodeOffset
+  clone = cloneFn container, el, rect, parent, nodeOffset, index
   offsetLeft = rect.left - e.clientX
   offsetTop = rect.top - e.clientY
-  dragging = {el, parent, clone, index, last: index, setFn, breakFn, selector, offsetLeft, offsetTop, finish, container}
+  dragging = {el, parent, clone, nodeOffset, index, last: index, setFn, breakFn, selector, offsetLeft, offsetTop, finish, container}
   setLeft.call dragging, e
   setTop.call dragging, e
   document.body.appendChild container
@@ -93,7 +87,7 @@ cloneRow = (container, el, rect, parent) ->
   parent.insertBefore clone, el
   container.firstChild.appendChild el
   return clone
-cloneCol = (container, el, rect, parent, index) ->
+cloneCol = (container, el, rect, parent, nodeOffset, index) ->
   rows = parent.parentNode.children
   spacerHtml = ''
   for row in rows
@@ -104,16 +98,17 @@ cloneCol = (container, el, rect, parent, index) ->
   clone.setAttribute 'rowspan', rows.length
   clone.style.padding = 0
   clone.style.width = rect.width + 'px'
-  parent.insertBefore clone, parent.childNodes[index + 3]
+  nodeIndex = index + nodeOffset
+  parent.insertBefore clone, parent.childNodes[nodeIndex + 1]
   cloneRows = container.firstChild.children
   for row, i in rows
-    cloneRows[i].appendChild row.childNodes[index + 2]
+    cloneRows[i].appendChild row.childNodes[nodeIndex]
   return clone
 
 finishRow = ->
   # Put things back where they started
   @parent.removeChild @clone
-  @parent.insertBefore dragging.el, @parent.childNodes[@index + 2]
+  @parent.insertBefore dragging.el, @parent.childNodes[@index + @nodeOffset]
   # Actually do the move
   onRowMove @index, @last
 
@@ -122,8 +117,8 @@ finishCol = ->
   @parent.removeChild @clone
   rows = @parent.parentNode.children
   cloneRows = @container.firstChild.children
-  index = @index
+  nodeIndex = @index + @nodeOffset
   for row, i in rows
-    row.insertBefore cloneRows[i].firstChild, row.childNodes[index + 2]
+    row.insertBefore cloneRows[i].firstChild, row.childNodes[nodeIndex]
   # Actually do the move
-  onColMove index, @last
+  onColMove @index, @last
