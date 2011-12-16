@@ -11,7 +11,8 @@ module.exports =
   init: (app, options) ->
     addListener = app.view.dom.addListener
     addListener document, 'mousemove', onMove
-    addListener document, 'mouseup', onUp
+    addListener document, 'mouseup', -> endDragging()
+    addListener window, 'blur', -> endDragging(true)
     {onRowMove, onColMove} = options
 
     app.rowDown = (e) ->
@@ -35,9 +36,9 @@ onMove = (e) ->
     parent.insertBefore dragging.clone, ref
   dragging.last = i
 
-onUp = (e) ->
+endDragging = (cancel) ->
   return unless dragging
-  dragging.finish()
+  dragging.finish cancel
   document.body.removeChild dragging.container
   dragging = null
 
@@ -62,6 +63,7 @@ setLeft = (e) ->
   loc = e.clientX
   @container.style.left = (loc + window.pageXOffset + @offsetLeft) + 'px'
   return loc
+
 setTop = (e) ->
   loc = e.clientY
   @container.style.top = (loc + window.pageYOffset + @offsetTop) + 'px'
@@ -71,6 +73,7 @@ breakLeft = (el) -> el && (
     rect = el.getBoundingClientRect()
     rect.width / 2 + rect.left
   )
+
 breakTop = (el) -> el && (
     rect = el.getBoundingClientRect()
     rect.height / 2 + rect.top
@@ -87,6 +90,7 @@ cloneRow = (container, el, rect, parent) ->
   parent.insertBefore clone, el
   container.firstChild.appendChild el
   return clone
+
 cloneCol = (container, el, rect, parent, nodeOffset, index) ->
   rows = parent.parentNode.children
   spacerHtml = ''
@@ -105,14 +109,14 @@ cloneCol = (container, el, rect, parent, nodeOffset, index) ->
     cloneRows[i].appendChild row.childNodes[nodeIndex]
   return clone
 
-finishRow = ->
+finishRow = (cancel) ->
   # Put things back where they started
   @parent.removeChild @clone
   @parent.insertBefore dragging.el, @parent.childNodes[@index + @nodeOffset]
   # Actually do the move
-  onRowMove @index, @last
+  onRowMove @index, @last  unless cancel
 
-finishCol = ->
+finishCol = (cancel) ->
   # Put things back where they started
   @parent.removeChild @clone
   rows = @parent.parentNode.children
@@ -121,4 +125,4 @@ finishCol = ->
   for row, i in rows
     row.insertBefore cloneRows[i].firstChild, row.childNodes[nodeIndex]
   # Actually do the move
-  onColMove @index, @last
+  onColMove @index, @last  unless cancel

@@ -4,11 +4,10 @@ EventDispatcher = require './EventDispatcher'
 elements = markers = null
 if win = typeof window isnt 'undefined' && window
   doc = win.document
-  body = doc.body
 
   # Add support for insertAdjacentHTML for Firefox < 8
   # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com
-  unless body.insertAdjacentHTML
+  unless doc.body.insertAdjacentHTML
     HTMLElement::insertAdjacentHTML = (position, html) ->
       ref = this
       parent = ref.parentNode
@@ -35,14 +34,14 @@ if win = typeof window isnt 'undefined' && window
           return
 
 # TODO: Also implement with body.compare for IE
-inPage = (node) -> body.compareDocumentPosition(node) & 16
+inPage = (node) -> doc.body.compareDocumentPosition(node) & 16
 
 getRange = (name) ->
   start = markers[name]
   end = markers['$' + name]
   unless start && end
     # NodeFilter.SHOW_COMMENT == 128
-    commentIterator = doc.createNodeIterator body, 128, null, false
+    commentIterator = doc.createNodeIterator doc.body, 128, null, false
     while comment = commentIterator.nextNode()
       markers[comment.data] = comment
     start = markers[name]
@@ -67,8 +66,7 @@ clearElements = ->
   elements =
     $win: win
     $doc: doc
-  window.markers = markers = {}
-  ranges = {}
+  markers = {}
 
 getNaN = -> NaN
 getMethods = 
