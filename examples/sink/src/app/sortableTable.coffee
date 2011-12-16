@@ -50,6 +50,7 @@ onUp = (e) ->
   dragging = null
 
 dragStart = (e, el, index, cloneFn, setFn, breakFn, selector, finish) ->
+  return if e.button != 0
   e.preventDefault?()
   container = document.createElement 'table'
   container.style.position = 'absolute'
