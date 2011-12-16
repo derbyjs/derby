@@ -56,7 +56,14 @@ exports.init = (model, dom) ->
     return
 
   model.on 'move', ([path, from, to], local, options) ->
-    move events, pathMap, path, from, to, local, options
+    len = model.get(path).length
+    from = refIndex from
+    to = refIndex to
+    from += len if from < 0
+    to += len if to < 0
+    return if from == to
+    pathMap.onMove path, from, to  # Update indicies in pathMap
+    events.trigger pathMap.id(path), [from, to], 'move', local, options
 
   model.on 'unshift', ([path, values...], local, options) ->
     insert events, pathMap, path, 0, values, local, options
@@ -93,10 +100,7 @@ refIndex = (obj) ->
 
 insert = (events, pathMap, path, start, values, local, options) ->
   start = refIndex start
-
-  # Update indicies in pathMap
-  pathMap.onInsert path, start, values.length
-
+  pathMap.onInsert path, start, values.length  # Update indicies in pathMap
   id = pathMap.id path
   for value, i in values
     events.trigger id, [start + i, value], 'insert', local, options
@@ -105,24 +109,8 @@ insert = (events, pathMap, path, start, values, local, options) ->
 remove = (events, pathMap, path, start, howMany, local, options) ->
   start = refIndex start
   end = start + howMany
-
-  # Update indicies in pathMap
-  pathMap.onRemove path, start, howMany
-
+  pathMap.onRemove path, start, howMany  # Update indicies in pathMap
   id = pathMap.id path
   for index in [start...end]
     events.trigger id, index, 'remove', local, options
   return
-
-move = (events, pathMap, path, from, to, local, options) ->
-  len = model.get(path).length
-  from = refIndex from
-  to = refIndex to
-  from += len if from < 0
-  to += len if to < 0
-  return if from == to
-
-  # Update indicies in pathMap
-  pathMap.onMove path, from, to
-
-  events.trigger pathMap.id(path), [from, to], 'move', local, options

@@ -69,7 +69,7 @@ get '/back', (page) ->
 ready (model) ->
   {addListener} = view.dom
 
-  targetIndex = (e, levels = 1) ->
+  targetIndex = (e, levels) ->
     item = e.target
     item = item.parentNode while levels--
     for child, i in item.parentNode.childNodes
@@ -79,22 +79,17 @@ ready (model) ->
     model.push 'liveCss.styles', {}
 
   exports.deleteStyle = (e) ->
-    model.remove 'liveCss.styles', targetIndex e
-
-
-  rowIndex = (e) ->
-    targetIndex e, 2
-  
-  colIndex = (e) ->
-    # Have to subtract 2, because the first node is the <th> in the first
-    # column, and the second node is the comment wrapper for the binding
-    targetIndex(e) - 2
+    model.remove 'liveCss.styles', targetIndex(e, 1)
 
   exports.deleteRow = (e) ->
-    model.remove 'table.rows', rowIndex e
+    # Have to subtract 2 from index, because the first node is the <tr>
+    # in the first row, and the second node is the comment binding wrapper
+    model.remove 'table.rows', targetIndex(e, 2) - 2
 
   exports.deleteCol = (e) ->
-    i = colIndex e
+    # Have to subtract 2 from index, because the first node is the <td>
+    # in the first col, and the second node is the comment binding wrapper
+    i = targetIndex(e, 1) - 2
     row = model.get('table.rows').length
     while row--
       model.remove "table.rows.#{row}.cells", i
@@ -125,67 +120,115 @@ ready (model) ->
 
 
   dragging = null
-  dragRow = $ 'drag-row'
-  dragCol = $ 'drag-col'
+  container = $('drag-container')
+  containerTbody = container.firstChild
 
-  setLeft = (e, dragging) ->
-    dragging.container.style.left = (e.clientX + dragging.offsetLeft) + 'px'
-  setTop = (e, dragging) ->
-    dragging.container.style.top = (e.clientY + dragging.offsetTop) + 'px'
-
-  dragStart = (e, type, el, container) ->
+  dragStart = (e, el, index, cloneFn, setFn, breakFn, selector, finish) ->
     e.preventDefault?()
     parent = el.parentNode
     rect = el.getBoundingClientRect()
-    breaks = []
-    breaks.get = (i, last) -> if i < last then breaks[i] else breaks[i + 1]
-    for child, i in parent.children
-      index = i if el is child
-      childRect = child.getBoundingClientRect()
-      breaks.push childRect.height / 2 + childRect.top
-    dragging =
-      type: type
-      index: index
-      last: index
-      el: el
-      parent: parent
-      container: container
-      breaks: breaks
-      offsetLeft: rect.left - e.clientX
-      offsetTop: rect.top - e.clientY
-      clone: clone = el.cloneNode()
+    clone = cloneFn el, rect, parent, index
+    offsetLeft = rect.left - e.clientX
+    offsetTop = rect.top - e.clientY
+    dragging = {el, parent, clone, index, last: index, setFn, breakFn, selector, offsetLeft, offsetTop, finish}
+    setLeft.call dragging, e
+    setTop.call dragging, e
+    container.style.display = 'table'
 
+  setLeft = (e) ->
+    loc = e.clientX
+    container.style.left = (loc + window.pageXOffset + @offsetLeft) + 'px'
+    return loc
+  setTop = (e) ->
+    loc = e.clientY
+    container.style.top = (loc + window.pageYOffset + @offsetTop) + 'px'
+    return loc
+
+  breakLeft = (el) -> el && (
+      rect = el.getBoundingClientRect()
+      rect.width / 2 + rect.left
+    )
+  breakTop = (el) -> el && (
+      rect = el.getBoundingClientRect()
+      rect.height / 2 + rect.top
+    )
+
+  cloneRow = (el, rect, parent) ->
+    spacerHtml = '<tr>'
+    for child in el.children
+      spacerHtml += "<td style=width:#{child.offsetWidth}px;height:0;padding:0>"
+    clone = el.cloneNode()
+    clone.removeAttribute 'id'
     clone.style.height = rect.height + 'px'
-    clone.style.width = rect.width + 'px'
+    containerTbody.innerHTML = clone.innerHTML = spacerHtml
     parent.insertBefore clone, el
-    container.firstChild.appendChild el
-    setLeft i, dragging
-    onMove e
-    dragRow.style.display = 'table'
+    containerTbody.appendChild el
+    return clone
+  cloneCol = (el, rect, parent, index) ->
+    rows = parent.parentNode.children
+    spacerHtml = ''
+    for row in rows
+      spacerHtml += "<tr class=#{row.className} style=height:#{row.offsetHeight}px;width:0;padding:0>"
+    containerTbody.innerHTML = spacerHtml
+    clone = el.cloneNode()
+    clone.removeAttribute 'id'
+    clone.setAttribute 'rowspan', rows.length
+    clone.style.padding = 0
+    clone.style.width = rect.width + 'px'
+    parent.insertBefore clone, parent.childNodes[index + 3]
+    cloneRows = containerTbody.children
+    for row, i in rows
+      cloneRows[i].appendChild row.childNodes[index + 2]
+    return clone
+  
+  finishRow = ->
+    {parent, clone, index, last} = this
+    # Put things back where they started
+    parent.removeChild clone
+    parent.insertBefore dragging.el, parent.childNodes[index + 2]
+    # Actually do the move
+    model.move 'table.rows', index, last
+  finishCol = ->
+    {parent, clone, index, last} = this
+    # Put things back where they started
+    parent.removeChild clone
+    rows = parent.parentNode.children
+    cloneRows = containerTbody.children
+    for row, i in rows
+      row.insertBefore cloneRows[i].firstChild, row.childNodes[index + 2]
+    # Actually do the move
+    # TODO: Make these move operations atomic when Racer has atomic support
+    model.move 'table.cols', index, last
+    for i in [0...model.get('table.rows').length]
+      model.move "table.rows.#{i}.cells", index, last
 
   exports.rowDown = (e) ->
-    row = e.target.parentNode
-    dragStart e, 'row', row, dragRow
-
+    el = e.target.parentNode
+    index = targetIndex(e, 1) - 2
+    dragStart e, el, index, cloneRow, setTop, breakTop, '.row', finishRow
   exports.colDown = (e) ->
+    el = e.target
+    index = targetIndex(e) - 2
+    dragStart e, el, index, cloneCol, setLeft, breakLeft, '.col', finishCol
 
   addListener document, 'mousemove', onMove = (e) ->
     return unless dragging
-    y = e.clientY
-    setTop e, dragging
-    
-    {breaks, parent, last} = dragging
+    {parent, last, breakFn} = dragging
+    loc = dragging.setFn e
+
     i = 0
-    i++ while y > breaks.get i, last
+    children = parent.querySelectorAll dragging.selector
+    i++ while loc > breakFn(
+      if i < last then children[i] else children[i + 1]
+    )
     unless i == last
-      ref = parent.children[if i < last then i else i + 1]
+      unless ref = children[if i < last then i else i + 1]
+        ref = children[children.length - 1].nextSibling
       parent.insertBefore dragging.clone, ref
     dragging.last = i
 
   addListener document, 'mouseup', (e) ->
     return unless dragging
-    {parent, clone} = dragging
-    parent.insertBefore dragging.el, clone
-    parent.removeChild clone
-    dragging.container.display = 'none'
+    dragging.finish()
+    container.style.display = 'none'
     dragging = null

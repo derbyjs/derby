@@ -22,18 +22,18 @@ table {
   margin: 0
 }
 
-#drag-row,
-#drag-col {
-  display: none;
-  position: absolute;
-}
-
-#table-editor {  
+#table-editor {
   user-select: none;
 }
+.editor-foot {
+  text-align: center;
+}
 #table-editor th,
-#drag-row th,
-#drag-col th {
+#drag-container th {
   cursor: move;
   padding: 0 4px;
+}
+#drag-container {
+  display: none;
+  position: absolute;
 }
