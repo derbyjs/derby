@@ -100,7 +100,7 @@ setMethods =
 
   propPolite: (el, ignore, value, prop) ->
     return if ignore && el.id == ignore
-    el[prop] = value  if el != doc.activeElement
+    el[prop] = value  if !document.hasFocus() || el != doc.activeElement
 
   visible: (el, ignore, value) ->
     return if ignore && el.id == ignore
