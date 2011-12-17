@@ -62,10 +62,17 @@ module.exports =
         else
           # By default, update as the user types
           eventNames = 'input,blur'
+        if 'x-ignore-focus' of attrs
+          # Update value regardless of focus
+          delete attrs['x-ignore-focus']
+          method = 'prop'
+        else
+          # Update value unless window and element are focused
+          method = 'propPolite'
         
         addDomEvent events, attrs, name, eventNames, 'prop', 'value'
         # Update the element's property unless it has focus
-        return method: 'propPolite'
+        return {method}
     
     'checked':
       '*': (events, attrs, name, invert) ->
