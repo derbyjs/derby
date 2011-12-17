@@ -39,23 +39,13 @@ module.exports =
       return replaceIndex(ctx, paths[i], noReplace) + name.substr(i)
     name.replace /\[([^\]]+)\]/g, (match, name) -> ctx[name]
 
-  addDomEvent: addDomEvent = (events, attrs, name, _eventNames, getMethod, property, invert) ->
-    if isArray = Array.isArray _eventNames
-      eventNames = []
-      for eventName, i in _eventNames
-        eventNames[i] = eventName.split '/'
-    else
-      [eventName, delay] = _eventNames.split '/'
+  addDomEvent: addDomEvent = (events, attrs, name, eventNames, getMethod, property, invert) ->
+    eventNames = splitBind eventNames
     events.push (ctx, modelEvents, domEvents) ->
       path = modelPath ctx, name
       id = attrs._id || attrs.id
-      if isArray
-        for [eventName, delay] in eventNames
-          domEvents.bind eventName,
-            [path, id, getMethod, property, delay, invert]
-      else
-        domEvents.bind eventName,
-          [path, id, getMethod, property, delay, invert]
+      for eventName, {delay} of eventNames
+        domEvents.bind eventName, [path, id, getMethod, property, delay, invert]
       return
 
   distribute: distribute = (events, attrs, eventName) ->
@@ -68,10 +58,10 @@ module.exports =
         if 'x-blur' of attrs
           # Only update after the element loses focus
           delete attrs['x-blur']
-          eventNames = 'change'
+          eventNames = 'change,blur'
         else
           # By default, update as the user types
-          eventNames = 'input'
+          eventNames = 'input,blur'
         
         addDomEvent events, attrs, name, eventNames, 'prop', 'value'
         # Update the element's property unless it has focus

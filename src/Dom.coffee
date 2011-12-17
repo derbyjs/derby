@@ -8,7 +8,10 @@ Dom = module.exports = (model, appExports) ->
     onBind: (name, listener) ->
       if listener.length > 3
         listener[0] = model.__pathMap.id listener[0]
-      addListener doc, name  unless name of events._names
+      unless name of events._names
+        # Note that capturing is used so that blur and focus can be delegated
+        # http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+        addListener doc, name, domHandler, true
       return name
     onTrigger: (name, listener, targetId, e) ->
       id = listener[1]
@@ -81,25 +84,28 @@ Dom:: =
     attr: (el, ignore, value, attr) ->
       return if ignore && el.id == ignore
       el.setAttribute attr, value
+      return
 
     prop: (el, ignore, value, prop) ->
       return if ignore && el.id == ignore
       el[prop] = value
+      return
 
     propPolite: (el, ignore, value, prop) ->
       return if ignore && el.id == ignore
-      if doc.hasFocus() && el == doc.activeElement
-        el
-      else
+      if el != doc.activeElement || !doc.hasFocus()
         el[prop] = value
+      return
 
     visible: (el, ignore, value) ->
       return if ignore && el.id == ignore
       el.style.visibility = if value then '' else 'hidden'
+      return
 
     displayed: (el, ignore, value) ->
       return if ignore && el.id == ignore
       el.style.display = if value then '' else 'none'
+      return
 
     html: (obj, ignore, value, escape) ->
       value = htmlEscape value  if escape
@@ -111,6 +117,7 @@ Dom:: =
         # Range
         obj.deleteContents()
         obj.insertNode obj.createContextualFragment value
+      return
 
     append: (obj, ignore, value, escape) ->
       value = htmlEscape value  if escape
@@ -122,6 +129,7 @@ Dom:: =
         el = obj.endContainer
         ref = el.childNodes[obj.endOffset]
         el.insertBefore obj.createContextualFragment(value), ref
+      return
 
     insert: (obj, ignore, value, escape, index) ->
       value = htmlEscape value  if escape
@@ -136,6 +144,7 @@ Dom:: =
         el = obj.startContainer
         ref = el.childNodes[obj.startOffset + index]
         el.insertBefore obj.createContextualFragment(value), ref
+      return
 
     remove: (el, ignore, index) ->
       if !el.nodeType
@@ -144,6 +153,7 @@ Dom:: =
         el = el.startContainer
 
       el.removeChild el.childNodes[index]
+      return
     
     move: (el, ignore, from, to) ->
       if !el.nodeType
@@ -161,6 +171,7 @@ Dom:: =
         (toEl = el.childNodes[to]) && toEl.id == ignore || child.id == ignore
       ref = el.childNodes[if to > from then to + 1 else to]
       el.insertBefore child, ref
+      return
 
 
 win = window
@@ -217,18 +228,18 @@ distribute = (e) ->
 
 
 if doc.addEventListener
-  addListener = (el, name, cb = domHandler, captures = false) ->
+  addListener = (el, name, cb, captures = false) ->
     el.addEventListener name, cb, captures
-  removeListener = (el, name, cb = domHandler, captures = false) ->
+  removeListener = (el, name, cb, captures = false) ->
     el.removeEventListener name, cb, captures
 
 else if doc.attachEvent
-  addListener = (el, name, cb = domHandler) ->
+  addListener = (el, name, cb) ->
     el.attachEvent 'on' + name, ->
       event.target || event.target = event.srcElement
       cb event
   removeListener = ->
-    # TODO: Implement
+    throw new Error 'Not implemented'
 
 # Add support for insertAdjacentHTML for Firefox < 8
 # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com
