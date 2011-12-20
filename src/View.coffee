@@ -1,6 +1,5 @@
-{hasKeys} = require('racer').util
-{parse: parseHtml, unescapeEntities, htmlEscape, attrEscape} = require './html'
-{modelPath, parsePlaceholder, parseElement, parseAttr, addDomEvent} = require './parser'
+{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr} = require './html'
+{modelPath} = markup = require './markup'
 
 empty = -> ''
 notFound = (name) -> throw new Error "Can't find view: #{name}"
@@ -78,8 +77,8 @@ View:: =
     document.body.parentNode.replaceChild body, document.body
     document.title = title
   
-  htmlEscape: htmlEscape
-  attrEscape: attrEscape
+  escapeHtml: escapeHtml
+  escapeAttr: escapeAttr
 
 
 extend = (parent, obj) ->
@@ -157,7 +156,7 @@ reduceStack = (stack) ->
       if value && value.call
         i = html.push(value, '') - 1
       else
-        html[i] += if isAttr then attrEscape value else value
+        html[i] += if isAttr then escapeAttr value else value
 
     switch item[0]
       when 'start'
@@ -247,9 +246,6 @@ parseMatch = (view, match, queues, {onStart, onEnd, onVar}) ->
       onVar match
   return
 
-pushChars = (stack, text) ->
-  stack.push ['chars', text]  if text
-
 extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx = extend ctx, value
   if path = modelPath ctx, name, true
@@ -301,12 +297,25 @@ blockFn = (view, queue) ->
   render = renderer view, reduceStack(stack), events
   return partialFn name, type, alias, render
 
+parseMarkup = (type, attr, tagName, events, attrs, name, invert) ->
+  return  unless parser = markup[type][attr]
+  if anyParser = parser['*']
+    anyOut = anyParser events, attrs, name, invert
+  if elParser = parser[tagName]
+    elOut = elParser events, attrs, name, invert
+  out = if anyOut then extend anyOut, elOut else elOut
+  delete attrs[attr]  if out?.del
+  return out
+
+pushChars = (stack, text) ->
+  stack.push ['chars', text]  if text
+
 pushVarFns = (view, stack, fn, fn2, name, escaped) ->
   if fn
     pushChars stack, fn
     pushChars stack, fn2
   else
-    pushChars stack, textFn name, escaped && htmlEscape
+    pushChars stack, textFn name, escaped && escapeHtml
 
 pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
   {name, escaped, bound, alias, partial} = match
@@ -315,16 +324,15 @@ pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
   if bound
     last = stack[stack.length - 1]
     if wrap = pre || !last || (last[0] != 'start') || wrapPost(post)
-      stack.push last = ['marker', '', {}]
-    addId view, attrs = last[2]
+      stack.push ['marker', '', attrs = {}]
+    else
+      tagName = last[1]
+      for attr of attrs = last[2]
+        parseMarkup 'boundParent', attr, tagName, events, attrs, name
+    addId view, attrs
 
-    if 'contenteditable' of attrs
-      addDomEvent events, attrs, name, 'input', 'html'
-
-    addEvent = (method, fn) ->
-      bindEventsById events, name, fn, attrs, method, !fn && escaped
-    addEvent 'html', fn
-    addEvent 'append', fn2  if fn2
+    bindEventsById events, name, fn, attrs, 'html', !fn && escaped
+    bindEventsById events, name, fn2, attrs, 'append', escaped  if fn2
 
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
@@ -349,38 +357,24 @@ forAttr = (view, stack, events, tagName, attrs, attr, value) ->
       addId view, attrs
       render = parse view, value, true, (events, name) ->
         bindEventsByIdString events, name, render, attrs, 'attr', attr
-      attrs[attr] = (ctx, model) -> attrEscape render(ctx, model)
+      attrs[attr] = (ctx, model) -> escapeAttr render(ctx, model)
       return
 
-    if parser = parsePlaceholder[attr]
-      if anyParser = parser['*']
-        anyOut = anyParser events, attrs, name, invert
-      if elParser = parser[tagName]
-        elOut = elParser events, attrs, name, invert
-    anyOut ||= {}
-    elOut ||= {}
-    method = elOut.method || anyOut.method || 'attr'
-    bool = elOut.bool || anyOut.bool
-    del = elOut.del || anyOut.del
+    out = parseMarkup 'bound', attr, tagName, events, attrs, name, invert
 
     if bound
       addId view, attrs
       fn = '$inv'  if invert
-      bindEventsById events, name, fn, attrs, method, attr
+      bindEventsById events, name, fn, attrs, out?.method || 'attr', attr
 
-    if del
-      delete attrs[attr]
-    else
-      attrs[attr] = if bool then bool: (ctx, model) ->
-          if !dataValue(ctx, model, name) != !invert then ' ' + attr else ''
-        else textFn name, attrEscape
-    
-  return  unless parser = parseAttr[attr]
-  anyOut = anyParser events, attrs, value  if anyParser = parser['*']
-  elOut = elParser events, attrs, value  if elParser = parser[tagName]
-  anyOut ||= {}
-  elOut ||= {}
-  addId view, attrs  if elOut.addId || anyOut.addId
+    unless out?.del
+      attrs[attr] = if out?.bool
+          bool: (ctx, model) ->
+            if !dataValue(ctx, model, name) == invert then ' ' + attr else ''
+        else textFn name, escapeAttr
+
+  out = parseMarkup 'attr', attr, tagName, events, attrs, value
+  addId view, attrs  if out?.addId
 
 parse = (view, template, isString, onBind) ->
   queues = [{stack: stack = [], events: events = []}]
@@ -396,9 +390,9 @@ parse = (view, template, isString, onBind) ->
     push = pushVar
 
   start = (tag, tagName, attrs) ->
-    if parser = parseElement[tagName]
-      out = parser(events, attrs) || {}
-      addId view, attrs  if out.addId
+    if parser = markup.element[tagName]
+      out = parser(events, attrs)
+      addId view, attrs  if out?.addId
 
     for attr, value of attrs
       continue if attr is 'style'

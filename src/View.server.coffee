@@ -1,6 +1,6 @@
 {Model} = require 'racer'
 uglify = require 'uglify-js'
-{htmlEscape} = require './html'
+{escapeHtml} = require './html'
 EventDispatcher = require './EventDispatcher'
 loader = require './loader'
 module.exports = View = require './View'
@@ -72,7 +72,7 @@ View::_render = (res, model, ctx, isStatic, css) ->
   # If there is a small amount of header HTML that will display well by itself,
   # it is a good idea to add this to the Header view so that it renders ASAP.
   doctype = @get 'doctype', ctx
-  title = htmlEscape @get 'title$s', ctx
+  title = escapeHtml @get 'title$s', ctx
   head = @get 'head', ctx
   header = @get 'header', ctx
   css = "<style>#{css}</style>"  if css

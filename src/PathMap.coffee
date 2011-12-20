@@ -1,6 +1,3 @@
-# TODO: Test two levels of nesting arrays
-# TODO: Test moving arrays
-
 # Keeps track of each unique path via an id
 module.exports = PathMap = ->
   @clear()

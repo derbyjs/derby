@@ -1,5 +1,5 @@
 EventDispatcher = require './EventDispatcher'
-{htmlEscape} = require './html'
+{escapeHtml} = require './html'
 
 domHandler = addListener = removeListener = ->
 
@@ -108,7 +108,7 @@ Dom:: =
       return
 
     html: (obj, ignore, value, escape) ->
-      value = htmlEscape value  if escape
+      value = escapeHtml value  if escape
       if obj.nodeType
         # Element
         return if ignore && obj.id == ignore
@@ -120,7 +120,7 @@ Dom:: =
       return
 
     append: (obj, ignore, value, escape) ->
-      value = htmlEscape value  if escape
+      value = escapeHtml value  if escape
       if obj.nodeType
         # Element
         obj.insertAdjacentHTML 'beforeend', value
@@ -132,7 +132,7 @@ Dom:: =
       return
 
     insert: (obj, ignore, value, escape, index) ->
-      value = htmlEscape value  if escape
+      value = escapeHtml value  if escape
       if obj.nodeType
         # Element
         if ref = obj.childNodes[index]

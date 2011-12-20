@@ -62,11 +62,11 @@ exports.parse = (html, handler = {}) ->
 
     throw 'HTML parse error: ' + html  if html == last
 
-exports.htmlEscape = (s) ->
+exports.escapeHtml = (s) ->
   unless s? then '' else s.toString().replace /&(?!\s)|</g, (s) ->
     if s is '&' then '&amp;' else '&lt;'
 
-exports.attrEscape = (s) ->
+exports.escapeAttr = (s) ->
   return '""' if `s == null` || s is ''
   s = s.toString().replace /&(?!\s)|"/g, (s) ->
     if s is '&' then '&amp;' else '&quot;'
