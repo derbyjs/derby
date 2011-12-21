@@ -332,7 +332,7 @@ pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
     addId view, attrs
 
     bindEventsById events, name, fn, attrs, 'html', !fn && escaped
-    bindEventsById events, name, fn2, attrs, 'append', escaped  if fn2
+    bindEventsById events, name, fn2, attrs, 'append'  if fn2
 
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
