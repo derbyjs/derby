@@ -1,6 +1,7 @@
 node_modules
 lib
 gen
+test-output.tmp
 examples/hello/*.js
 examples/hello/public/gen
 examples/sink/*.js

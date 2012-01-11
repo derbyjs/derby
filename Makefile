@@ -1,41 +1,19 @@
-ASYNC_TESTS_FAST = $(shell find test/ -name '*.test.coffee')
-ASYNC_TESTS_SLOW = $(shell find test/ -name '*.test.slow.coffee')
-SERIAL_TESTS_FAST = $(shell find test/ -name '*.test.serial.coffee')
-SERIAL_TESTS_SLOW = $(shell find test/ -name '*.test.serial.slow.coffee')
-
-test-async-fast:
-	@NODE_ENV=test ./node_modules/expresso/bin/expresso \
-		$(TESTFLAGS) \
-		$(ASYNC_TESTS_FAST)
-
-test-async-slow:
-	@NODE_ENV=test ./node_modules/expresso/bin/expresso \
-		--timeout 6000 \
-		$(TESTFLAGS) \
-		$(ASYNC_TESTS_SLOW)
-
-test-serial-fast:
-	@NODE_ENV=test ./node_modules/expresso/bin/expresso \
-		--serial \
-		$(TESTFLAGS) \
-		$(SERIAL_TESTS_FAST)
-
-test-serial-slow:
-	@NODE_ENV=test ./node_modules/expresso/bin/expresso \
-		--serial \
-		--timeout 6000 \
-		$(TESTFLAGS) \
-		$(SERIAL_TESTS_SLOW)
-
-test-async: test-async-fast
-test-serial: test-serial-fast test-serial-slow
-test-fast: test-async-fast test-serial-fast
-test-slow: test-serial-slow
-
-test: test-async-fast
-
-test-cov:
-	@TESTFLAGS=--cov $(MAKE) test
-
 compile:
 	./node_modules/coffee-script/bin/coffee -bw -o ./lib -c ./src
+
+MOCHA_TESTS := $(shell find test/ -name '*.mocha.coffee')
+MOCHA := $(shell which mocha)
+OUT_FILE = "test-output.tmp"
+
+g = "."
+
+test-mocha:
+	@NODE_ENV=test $(MOCHA) \
+	  --colors \
+		--reporter spec \
+		--grep "$(g)" \
+		$(MOCHA_TESTS) | tee $(OUT_FILE)
+
+test: test-mocha
+test!:
+	@perl -n -e '/\[31m  0\) (.*?).\[0m/ && print "make test g=\"$$1\""' $(OUT_FILE) | sh
