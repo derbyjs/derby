@@ -17,9 +17,7 @@ get '/:group', (page, model, {group}) ->
         2: {id: 2, completed: false, text: 'Another example'}
       todoIds: [1, 2, 0]
       nextId: 3
-    # Currently, refs must be explicitly declared per model; otherwise the ref
-    # is not added the model's internal reference indices
-    model.set listPath, model.arrayRef '_group.todos', '_group.todoIds'
+    model.refList listPath, '_group.todos', '_group.todoIds'
     page.render()
 
 
@@ -40,32 +38,28 @@ ready (model) ->
       to = todoList.children().index(item)
       # Use the Derby ignore option to suppress the normal move event
       # binding, since jQuery UI will move the element in the DOM
-      model.with(ignore: domId).move listPath, {id}, to
+      model.pass(ignore: domId).move listPath, {id}, to
 
 
-  model.on 'set', '_todoList.*.completed', (i, value, isLocal) ->
+  model.on 'set', '_todoList.*.completed', (i, value, value, isLocal) ->
     # Move the item to the bottom if it was checked off
     model.move listPath, i, -1  if value && isLocal
 
   exports.add = ->
     # Don't add a blank todo
-    return unless text = view.htmlEscape model.get '_newTodo'
+    return unless text = view.escapeHtml model.get '_newTodo'
     model.set '_newTodo', ''
     # Insert the new todo before the first completed item in the list
+    # or append to the end if none are completed
     for todo, i in list = model.get listPath
       break if todo.completed
-    todo = 
+    model.insert listPath, i,
       id: model.incr '_group.nextId'
       completed: false
       text: text
-    if i == list.length
-      # Append to the end if there are no completed items
-      model.push listPath, todo
-    else
-      model.insertBefore listPath, i, todo
 
   exports.del = (e) ->
-    # arrayRef's accept either ids or indicies for index args
+    # refLists accept either ids or indicies for index args
     model.remove listPath, id: e.target.getAttribute 'data-id'
 
   model.set '_showReconnect', true

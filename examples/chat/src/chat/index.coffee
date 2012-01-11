@@ -31,9 +31,9 @@ getRoom = (page, model, room, userId) ->
 
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server.
-    model.set '_user', model.ref "users.#{userId}"
     model.set '_newComment', ''
     model.set '_numMessages', model.get('_room.messages').length
+    model.ref '_user', "users.#{userId}"
 
     page.render()
 

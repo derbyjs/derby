@@ -39,19 +39,19 @@ exports.init = (model, dom) ->
       # Happens when an id cannot be found
       return dom.update id, method, options && options.ignore, value, property, index
 
-  model.on 'set', ([path, value], local, options) ->
+  model.on 'set', ([path, value], out, local, options) ->
     events.trigger pathMap.id(path), value, 'html', local, options
 
-  model.on 'del', ([path], local, options) ->
+  model.on 'del', ([path], out, local, options) ->
     events.trigger pathMap.id(path), undefined, 'html', local, options
 
-  model.on 'push', ([path, values...], local, options) ->
+  model.on 'push', ([path, values...], out, local, options) ->
     id = pathMap.id path
     for value in values
       events.trigger id, value, 'append', local, options
     return
 
-  model.on 'move', ([path, from, to], local, options) ->
+  model.on 'move', ([path, from, to], out, local, options) ->
     len = model.get(path).length
     from = refIndex from
     to = refIndex to
@@ -61,27 +61,20 @@ exports.init = (model, dom) ->
     pathMap.onMove path, from, to  # Update indicies in pathMap
     events.trigger pathMap.id(path), [from, to], 'move', local, options
 
-  model.on 'unshift', ([path, values...], local, options) ->
+  model.on 'unshift', ([path, values...], out, local, options) ->
     insert events, pathMap, path, 0, values, local, options
 
-  model.on 'insertBefore', ([path, index, value], local, options) ->
-    insert events, pathMap, path, index, [value], local, options
+  model.on 'insert', ([path, index, values...], out, local, options) ->
+    insert events, pathMap, path, index, values, local, options
 
-  model.on 'insertAfter', ([path, index, value], local, options) ->
-    insert events, pathMap, path, index + 1, [value], local, options
-
-  model.on 'remove', ([path, start, howMany], local, options) ->
+  model.on 'remove', ([path, start, howMany], out, local, options) ->
     remove events, pathMap, path, start, howMany, local, options
 
-  model.on 'pop', ([path], local, options) ->
+  model.on 'pop', ([path], out, local, options) ->
     remove events, pathMap, path, model.get(path).length, 1, local, options
 
-  model.on 'shift', ([path], local, options) ->
+  model.on 'shift', ([path], out, local, options) ->
     remove events, pathMap, path, 0, 1, local, options
-
-  model.on 'splice', ([path, start, howMany, values...], local, options) ->
-    remove events, pathMap, path, start, howMany, local, options
-    insert events, pathMap, path, index, values, local, options
 
   for event in ['connected', 'canConnect']
     do (event) -> model.on event, (value) ->
