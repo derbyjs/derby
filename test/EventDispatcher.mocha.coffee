@@ -20,7 +20,6 @@ describe 'EventDispatcher', ->
   options1 = {option: 4}
 
   it 'should work without callbacks', ->
-    throw 'hi'
     dispatcher = new EventDispatcher
     dispatcher.bind name1, listener1
     dispatcher.trigger name1, value1, options1

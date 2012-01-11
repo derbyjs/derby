@@ -1,12 +1,12 @@
-{wrapTest} = require './util'
 should = require 'should'
 html = require '../src/html'
 
-module.exports =
-  'test html parse with no handlers': ->
+describe 'html', ->
+
+  it 'should parse with no handlers', ->
     html.parse '<p id=stuff>Heyo</p>'
 
-  'test html parse with basic HTML': ->
+  it 'should parse basic HTML', ->
     s =
       '<h1>Willow ' + # Tag containing chars
         '<EM ID=h1 CLASS=head>' + # Nested tag, attributes, uppercase
@@ -69,4 +69,3 @@ module.exports =
     for item, index in expected
       stack[index].should.eql item
     stack.length.should.equal expected.length
-

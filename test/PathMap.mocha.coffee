@@ -1,10 +1,9 @@
-{wrapTest} = require './util'
 should = require 'should'
 PathMap = require '../src/PathMap'
 
-module.exports =
+describe 'PathMap', ->
 
-  'should create ids and double index them': ->
+  it 'should create ids and double index them', ->
     pathMap = new PathMap
     pathMap.count.should.eql 0
     pathMap.ids.should.eql {}
@@ -15,15 +14,15 @@ module.exports =
     pathMap.ids.should.eql {'colors.green': 1}
     pathMap.paths.should.eql {1: 'colors.green'}
   
-  'should return same id for same path': ->
+  it 'should return same id for same path', ->
     pathMap = new PathMap
     pathMap.id('colors.green').should.eql pathMap.id('colors.green')
 
-  'should return different id for different path': ->
+  it 'should return different id for different path', ->
     pathMap = new PathMap
     pathMap.id('colors.green').should.not.eql pathMap.id('colors.red')
   
-  'should index array paths': ->
+  it 'should index array paths', ->
     pathMap = new PathMap
     pathMap.arrays.should.eql {}
 
@@ -55,7 +54,7 @@ module.exports =
       ]
     }
   
-  'should index nested arrays': ->
+  it 'should index nested arrays', ->
     pathMap = new PathMap
     pathMap.arrays.should.eql {}
 
@@ -100,7 +99,7 @@ module.exports =
       ]
     }
   
-  'onRemove should update array indicies': ->
+  it 'onRemove should update array indicies', ->
     pathMap = new PathMap
     pathMap.id('colors.0').should.eql 1
     pathMap.id('colors.0.hex').should.eql 2
@@ -158,7 +157,7 @@ module.exports =
       colors: []
     }
 
-  'onRemove should update single nested array indicies': ->
+  it 'onRemove should update single nested array indicies', ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0').should.eql 1
     pathMap.id('tables.0.rows.1.name').should.eql 2
@@ -260,7 +259,7 @@ module.exports =
       'tables': []
     }
 
-  'onRemove should update double nested array indicies': ->
+  it 'onRemove should update double nested array indicies', ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0.cols.0').should.eql 1
     pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2
@@ -373,7 +372,7 @@ module.exports =
       'tables': []
     }
 
-  'onInsert should update array indicies': ->
+  it 'onInsert should update array indicies', ->
     pathMap = new PathMap
     pathMap.id('colors.0').should.eql 1
     pathMap.id('colors.0.hex').should.eql 2
@@ -466,7 +465,7 @@ module.exports =
       ]
     }
 
-  'onInsert should update single nested array indicies': ->
+  it 'onInsert should update single nested array indicies', ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0').should.eql 1
     pathMap.id('tables.0.rows.1.name').should.eql 2
@@ -640,7 +639,7 @@ module.exports =
       ]
     }
 
-  'onInsert should update double nested array indicies': ->
+  it 'onInsert should update double nested array indicies', ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0.cols.0').should.eql 1
     pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2
@@ -838,7 +837,7 @@ module.exports =
       'tables.5.rows.1.cols': [{6: '.text'}]
     }
 
-  'onMove should update array indicies': ->
+  it 'onMove should update array indicies', ->
     pathMap = new PathMap
     pathMap.id('colors.0').should.eql 1
     pathMap.id('colors.1.hex').should.eql 2
@@ -929,7 +928,7 @@ module.exports =
       ]
     }
 
-  'onMove should update single nested array indicies': ->
+  it 'onMove should update single nested array indicies', ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0').should.eql 1
     pathMap.id('tables.0.rows.1.name').should.eql 2
@@ -1122,7 +1121,7 @@ module.exports =
       ]
     }
 
-  'onMove should update double nested array indicies': ->
+  it 'onMove should update double nested array indicies', ->
     pathMap = new PathMap
     pathMap.id('tables.0.rows.0.cols.0').should.eql 1
     pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2

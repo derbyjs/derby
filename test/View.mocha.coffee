@@ -1,23 +1,23 @@
-{wrapTest} = require './util'
 Model = require '../node_modules/racer/src/Model.server'
 should = require 'should'
 View = require '../src/View.server'
 
-ResMock = ->
-  @html = ''
-  return
-ResMock:: =
-  getHeader: ->
-  setHeader: ->
-  write: write = (value) -> @html += value
-  send: write
-  end: write
+describe 'View', ->
 
-Model::_commit = ->
-Model::bundle = ->
+  ResMock = ->
+    @html = ''
+    return
+  ResMock:: =
+    getHeader: ->
+    setHeader: ->
+    write: write = (value) -> @html += value
+    send: write
+    end: write
 
-module.exports =
-  'test view.render with no defined views': ->
+  Model::_commit = ->
+  Model::bundle = ->
+
+  it 'test view.render with no defined views', ->
     view = new View
     res = new ResMock
     view.render res
@@ -25,7 +25,7 @@ module.exports =
       res.html.should.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
     , 100
         
-  'test rendering a string literal view': ->
+  it 'test rendering a string literal view', ->
     view = new View
     model = new Model
     view._init model
@@ -41,7 +41,7 @@ module.exports =
     # String views should have line breaks and leading whitespace removed
     view.get('test').should.eql '<style>body {margin: 0}</style>'
         
-  'test substituting variables into text': ->
+  it 'test substituting variables into text', ->
     view = new View
     model = new Model
     view._init model
@@ -67,7 +67,7 @@ module.exports =
         
     view.get('test', ctx).should.eql expected
         
-  'test binding variables in text': ->
+  it 'test binding variables in text', ->
     view = new View
     model = new Model
     view._init model
@@ -91,7 +91,7 @@ module.exports =
       '<p id=$3>John' +
       '<p><!--$4-->22<!--$$4--> - <!--$5-->6 ft 2 in<!--$$5--> - <!--$6-->165 lbs<!--$$6-->'
         
-  'test HTML escaping': ->
+  it 'test HTML escaping', ->
     view = new View
     model = new Model
     view._init model
@@ -119,7 +119,7 @@ module.exports =
       {a: '"', b: "'", c: '<', d: '>', e: '=', f: ' ', g: '', h: null}
     ).should.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
               
-  'test conditional blocks in text': ->
+  it 'test conditional blocks in text', ->
     view = new View
     model = new Model
     view._init model
@@ -184,7 +184,7 @@ module.exports =
     model.set 'show', []
     view.get('bound').should.eql modelFalsey
 
-  'test lists in text': ->
+  it 'test lists in text', ->
     view = new View
     model = new Model
     view._init model
@@ -207,7 +207,7 @@ module.exports =
     view.get('test', arr: [{name: 'stuff'}, {name: 'more'}])
       .should.eql '<ul><li>stuff<li>more</ul>'
 
-  'test boolean attributes': ->
+  it 'test boolean attributes', ->
     view = new View
     model = new Model
     view._init model
