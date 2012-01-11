@@ -53,15 +53,15 @@ ready (model) ->
     hours = (hours % 12) || 12
     minutes = time.getMinutes()
     minutes = '0' + minutes if minutes < 10
-    hours + ':' + minutes + period + months[time.getMonth()] +
+    return hours + ':' + minutes + period + months[time.getMonth()] +
       ' ' + time.getDate() + ', ' + time.getFullYear()
 
   # Display times are only set client-side, since the timezone is not known
   # when performing server-side rendering
   for message, i in model.get '_room.messages'
-    messagePath = "_room.messages.#{i}"
-    if time = model.get messagePath + '.time'
-      model.set messagePath + '._displayTime', displayTime time
+    # _displayTime starts with an underscore so that its value is not
+    # stored or sent to other clients
+    model.set "_room.messages.#{i}._displayTime", displayTime message.time
 
 
   # Exported functions are exposed as a global in the browser with the same
@@ -78,8 +78,7 @@ ready (model) ->
 
   model.on 'push', '_room.messages', (message, len) ->
     model.set '_numMessages', len
-    model.set '_room.messages.' + (len - 1) + '._displayTime',
-      displayTime message.time
+    model.set "_room.messages.#{len - 1}._displayTime", displayTime message.time
 
   exports.postMessage = ->
     model.push '_room.messages',
