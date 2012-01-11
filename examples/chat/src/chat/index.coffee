@@ -32,7 +32,7 @@ getRoom = (page, model, room, userId) ->
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server.
     model.set '_newComment', ''
-    model.set '_numMessages', model.get('_room.messages').length
+    model.set '_numMessages', model.get '_room.messages.length'
     model.ref '_user', "users.#{userId}"
 
     page.render()
@@ -76,8 +76,8 @@ ready (model) ->
 
   exports.reload = -> window.location.reload()
 
-  model.on 'push', '_room.messages', (message) ->
-    len = model.incr '_numMessages'
+  model.on 'push', '_room.messages', (message, len) ->
+    model.set '_numMessages', len
     model.set '_room.messages.' + (len - 1) + '._displayTime',
       displayTime message.time
 
