@@ -52,7 +52,8 @@ exports.parse = (html, handler = {}) ->
           html = html.substring match[0].length
           match[0].replace startTag, parseStartTag
           chars = false
-          if literalTag.test tagName = match[1]
+          tagName = match[1]
+          if literalTag.test tagName
             index = html.search literalEnd tagName
             html = onChars html, index, true
 
