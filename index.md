@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.1.4
+version: 0.1.6
 headers:
   - text: Introduction
     type: h1
@@ -1290,7 +1290,7 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 >
 > **path:** Model path to an array
 >
-> **items:** One or more arguments specifying items to add to the *end* of the array
+> **items:** One or more items to add to the *end* of the array
 >
 > **length:** Returns the length of the array with the new items added
 
@@ -1298,7 +1298,17 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 >
 > **path:** Model path to an array
 >
-> **items:** One or more arguments specifying items to add to the *beginning* of the array
+> **items:** One items to add to the *beginning* of the array
+>
+> **length:** Returns the length of the array with the new items added
+
+> ### `length = `model.insert` ( path, index, items..., [callback] )`
+>
+> **path:** Model path to an array
+>
+> **index:** Index of the item to insert before
+>
+> **items:** One or more items to insert at the index
 >
 > **length:** Returns the length of the array with the new items added
 
@@ -1313,38 +1323,6 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 > **path:** Model path to an array
 >
 > **item:** Removes the first item in the array and returns it
-
-> ### `removed = `model.splice` ( path, index, howMany, [items...], [callback] )`
->
-> **path:** Model path to an array
->
-> **index:** Index at which to start removing or inserting items
->
-> **howMany:** The number of items to remove. No elements are removed if 0
->
-> **items:** *(optional)* Items to insert at the index
->
-> **removed:** Returns an array of removed items
-
-> ### `length = `model.insertBefore` ( path, index, item, [callback] )`
->
-> **path:** Model path to an array
->
-> **index:** Index of the item to insert before
->
-> **item:** Item to insert
->
-> **length:** Returns the length of the array with the new items added
-
-> ### `length = `model.insertAfter` ( path, index, item, [callback] )`
->
-> **path:** Model path to an array
->
-> **index:** Index of the item to insert after
->
-> **item:** Item to insert
->
-> **length:** Returns the length of the array with the new item added
 
 > ### `removed = `model.remove` ( path, index, [howMany], [callback] )`
 >
