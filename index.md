@@ -1306,7 +1306,7 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 >
 > **path:** Model path to an array
 >
-> **index:** Index of the item to insert before
+> **index:** Index at which to start inserting
 >
 > **items:** One or more items to insert at the index
 >
