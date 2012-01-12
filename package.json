@@ -1,7 +1,7 @@
 {
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "main": "./lib/derby.js",
   "browserify": {
     "main": "./lib/derby.browser.js"
