@@ -1372,69 +1372,191 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 
 ### Events
 
-Whenever Racer mutates data via, e.g., `model.set`, `model.push`, etc., Racer emits events. These events provide an entry point for an app to react to a specific data mutation or pattern of data mutations. 
+Models inherit from the standard [Node.js EventEmitter](http://nodejs.org/docs/latest/api/events.html), and they support the same methods: `on`, `once`, `removeListener`, `emit`, etc.
 
-#### Non-patterned Event Handling
+#### Model mutator events
 
-An app can define event handlers for specific mutation events, where the event handler is a function of the arguments passed to the event-generating mutator. For example,
+Racer emits events whenever it mutates data via `model.set`, `model.push`, etc. These events provide an entry point for an app to react to a specific data mutation or pattern of data mutations.
+
+`model.on` and `model.once` accept a second argument for these types of events. The second argument may be a path pattern or regular expression that will filter emitted events, calling the handler function only when a mutator matches the pattern.
+
+> ### `listener = `model.on` ( method, path, eventCallback )`
+>
+> **method:** Name of the mutator method - e.g., "set", "push"
+>
+> **path:** Pattern or regular expression matching the path being mutated
+>
+> **eventCallback:** Function to call when a matching method and path are mutated
+>
+> **listener:** Returns the listener function subscribed to the event emitter. This is the function that should be passed to `model.removeListener`
+
+The event callback receives a number of arguments based on the path pattern and method. The arguments are:
+
+> ### eventCallback` ( captures..., args..., out, isLocal, passed )`
+>
+> **captures:** The capturing groups from the path pattern or regular expression. If specifying a string pattern, a capturing group will be created for each `*` wildcard and anything in parentheses, such as `(one|two)`
+>
+> **args:** The arguments to the method. Note that optional arguments with a default value (such as the `byNum` argument of `model.incr`) will be included
+>
+> **out:** The return value of the model mutator method
+>
+> **isLocal:** `true` if the model mutation was originally called on the same model and `false` otherwise
+>
+> **passed:** `undefined`, unless a value is specified via `model.pass`. See description below
+
+In path patterns, wildcards (`*`) will only match a single segment in the middle of a path, but they will match a single or mutliple path segments at the end of the path. In other words, they are non-greedy in the middle of a pattern and greedy at the end of a pattern.
 
 {% highlight javascript %}
-model.on('push', 'messages', function (message) {
-  jQuery('#messages').append('<li>' + message + '</li>');
+// Matches only model.push('messages', message)
+model.on('push', 'messages', function (message, messagesLength) {
+  ...
 });
-{% endhighlight %}
 
-{% highlight coffeescript %}
-model.on 'push', 'messages', (message) ->
-  jQuery('#messages').append "<li>#{message}</li>"
-{% endhighlight %}
-
-> ### `model.on ( mutator, path, callback )`
->
-> **mutator** Name of the mutator method - e.g., "set", "push"
->
-> **path** Model path to the data being mutated
->
-> **callback** The event handler with function signature `callback( mutatorArgs... )`
-
-#### Patterned Event Handling
-
-Racer also allows you to set up event handlers for mutations against path patterns. For instance,
-
-{% highlight javascript %}
+// Matches model.set('todos.4.completed', true), etc.
 model.on('set', 'todos.*.completed', function (todoId, isComplete) {
-  jQuery('#' + todoId).toggleClass('completed', isComplete);
+  ...
+});
+
+// Matches all set operations
+model.on('set', '*', function (path, value) {
+  ...
 });
 {% endhighlight %}
-
 {% highlight coffeescript %}
+# Matches only model.push('messages', message)
+model.on 'push', 'messages', (message, messagesLength) ->
+  ...
+
+# Matches model.set('todos.4.completed', true), etc.
 model.on 'set', 'todos.*.completed', (todoId, isComplete) ->
-  jQuery("##{todoId}").toggleClass 'completed', isComplete
+  ...
+
+# Matches all set operations
+model.on 'set', '*', (path, value) ->
+  ...
 {% endhighlight %}
 
-Notice that the `callback` here is a function of not only the mutator arguments (`isComplete`) but also the pattern value (`todoId`).
+#### model.pass
 
-> ### `model.on ( mutator, pathPattern, callback)`
->
-> **mutator** Name of the mutator method - e.g., "set", "push"
->
-> **pathPattern** Pattern to match against model paths being mutated. When there is a match against this pattern, both the portion of the pattern that is matched and the mutation arguments are passed to the `callback`
->
-> **callback** The event handler with function signature `callback( match, mutatorArgs... )` where `match` is the part of the `pathPattern` that is matched.
-
-In another example, patterned event handling provides a solution to log all `set` mutations.
+This method can be chained before calling a mutator method to pass an argument to model event listeners. Note that this value is only passed to local listeners, and it is not sent to the server or other clients.
 
 {% highlight javascript %}
-model.on('set', '*', function (path, val) {
-  console.log("Set path '" + path + "' to " + val);
+// Logs:
+//   'red', undefined
+//   'green', 'hi'
+
+model.on('set', 'color', function (value, out, isLocal, passed) {
+  console.log(value, passed);
 });
+model.set('color', 'red');
+model.pass('hi').set('color', 'green');
 {% endhighlight %}
-
 {% highlight coffeescript %}
-model.on 'set', '*' (path, val) ->
-  console.log "Set path '#{path}' to #{val}"
-{% endhighlight %}
+# Logs:
+#   'red', undefined
+#   'green', 'hi'
 
-Overall, event handlers enables developers using Racer to define business logic that runs in response to data mutations.
+model.on 'set', 'color', (value, out, isLocal, passed) ->
+  console.log value, passed
+model.set 'color', 'red'
+model.pass('hi').set 'color', 'green'
+{% endhighlight %}
 
 ### References
+
+References make it possible to write business logic and templates that interact with the model in a general way. They redirect model operations from a reference path to the underlying data, and they set up event listeners that emit model events on both the reference and the actual object's path.
+
+References must be declared per model, since calling `model.ref` creates a number of event listeners in addition to setting a ref object in the model. When a reference is created, a `set` model event is emitted. Internally, `model.set` is used to add the reference to the model.
+
+> ### `fn = `model.ref` ( path, to, [key] )`
+>
+> **path:** The location at which to create a reference. This should be a private path (should start with an underscore), since references must be declared per model
+>
+> **to:** The location that the reference links to. This is where the data is actually stored
+>
+> **key:** *(optional)* A path whose value should be added as an additional property underneath `to` when accessing the reference
+>
+> **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
+
+{% highlight javascript %}
+model.set('colors', {
+  red: {hex: '#f00'},
+  green: {hex: '#0f0'},
+  blue: {hex: '#00f'}
+});
+
+// Getting a reference returns the referenced data
+model.ref('_green', 'colors.green');
+// Logs {hex: '#0f0'}
+console.log(model.get('_green'));
+
+// Setting a property of the reference path modifies
+// the underlying data
+model.set('_green.rgb', [0, 255, 0]);
+// Logs {hex: '#0f0', rgb: [0, 255, 0]}
+console.log(model.get('colors.green'));
+
+// Setting or deleting the reference path modifies
+// the reference and not the underlying data
+model.del('_green');
+// Logs undefined
+console.log(model.get('_green'));
+// Logs {hex: '#0f0', rgb: [0, 255, 0]}
+console.log(model.get('colors.green'));
+
+// Changing a reference key updates the reference
+model.set('selected', 'red');
+model.ref('_selectedColor', 'colors', 'selected');
+// Logs '#f00'
+console.log(model.get('_selectedColor.hex'));
+model.set('selected', 'blue');
+// Logs '#00f'
+console.log(model.get('_selectedColor.hex'));
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'colors'
+  red: {hex: '#f00'}
+  green: {hex: '#0f0'}
+  blue: {hex: '#00f'}
+
+# Getting a reference returns the referenced data
+model.ref '_green', 'colors.green'
+# Logs {hex: '#0f0'}
+console.log model.get('_green')
+
+# Setting a property of the reference path modifies
+# the underlying data
+model.set '_green.rgb', [0, 255, 0]
+# Logs {hex: '#0f0', rgb: [0, 255, 0]}
+console.log model.get('colors.green')
+
+# Setting or deleting the reference path modifies
+# the reference and not the underlying data
+model.del '_green'
+# Logs undefined
+console.log model.get('_green')
+# Logs {hex: '#0f0', rgb: [0, 255, 0]}
+console.log model.get('colors.green')
+
+# Changing a reference key updates the reference
+model.set 'selected', 'red'
+model.ref '_selectedColor', 'colors', 'selected'
+# Logs '#f00'
+console.log model.get('_selectedColor.hex')
+model.set 'selected', 'blue'
+# Logs '#00f'
+console.log model.get('_selectedColor.hex')
+{% endhighlight %}
+
+Racer also supports a special reference type created via `model.refList`. This type of reference is useful when a number of objects need to be rendered or manipulated as a list even though they are stored as properties of another object. A reference list supports the same mutator methods as an array, so it can be bound in a view template just like an array.
+
+> ### `fn = `model.refList` ( path, to, key )`
+>
+> **path:** The location at which to create a reference list. This should be a private path (should start with an underscore), since references must be declared per model
+>
+> **to:** The location of an object that has properties to be mapped onto an array. Each property must be an object with a unique `id` property of the same value
+>
+> **key:** A path whose value is an array of ids that map the `to` object's properties to a given order
+>
+> **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
+
