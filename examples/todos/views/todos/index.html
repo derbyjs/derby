@@ -5,7 +5,7 @@
   <div id=overlay></div>
   {{> info}}
   <form id=head x-bind=submit:add>
-    <h1>Todos</h1>
+    <h1>Todos <span>((_remaining)) remaining</span></h1>
     <div id=add>
       <div id=add-input><input id=new-todo value=((_newTodo))></div>
       <input id=add-button type=submit value=Add>

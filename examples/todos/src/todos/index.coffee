@@ -9,22 +9,29 @@ get '/', (page) ->
 get '/:group', (page, model, {group}) ->
   # TODO: This subscribes to all todos in all groups. Only subscribe
   # todos for this group once query subscriptions are supported
-  model.subscribe _group: "groups.#{group}", 'todos', 'nextId', ->
+  model.subscribe _group: "groups.#{group}", 'todos', ->
 
     # The refList supports array methods, but it stores the todo values
     # on an object by id. The todos are stored on the object 'todos',
-    # and their order is stored in an array of ids at '_group.todoIds'.
+    # and their order is stored in an array of ids at '_group.todoIds'
     model.refList '_todoList', 'todos', '_group.todoIds'
 
-    # Render right away if this group already has a todo list
-    return page.render()  if model.get '_group.todoIds'
+    # Add some default todos if this is a new group. Items inserted into
+    # a refList will automatically get an 'id' property if not specified
+    unless model.get '_group.todoIds'
+      model.push '_todoList',
+        {text: 'Example todo'},
+        {text: 'Another example'},
+        {text: 'This one is done already', completed: true}
 
-    # Otherwise, add some default todos
-    nextId = model.at 'nextId'
-    model.push '_todoList',
-      {id: nextId.incr(), completed: false, text: 'Example todo'},
-      {id: nextId.incr(), completed: false, text: 'Another example'},
-      {id: nextId.incr(), completed: true, text: 'This one is done already'}
+    # Create a reactive function that automatically keeps '_remaining'
+    # updated with the number of remaining todos
+    model.fn '_remaining', '_todoList', (list) ->
+      remaining = 0
+      for todo in list
+        remaining++ unless todo.completed
+      return remaining
+
     page.render()
 
 
@@ -63,10 +70,7 @@ ready (model) ->
     # or append to the end if none are completed
     for todo, i in list.get()
       break if todo.completed
-    list.insert i,
-      id: model.incr 'nextId'
-      completed: false
-      text: text
+    list.insert i, {text}
 
   exports.del = (e) ->
     # refLists accept either ids or indicies for index args
