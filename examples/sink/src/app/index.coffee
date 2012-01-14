@@ -76,27 +76,31 @@ ready (model) ->
   app.deleteStyle = (e) ->
     model.remove 'liveCss.styles', targetIndex(e.target, 1)
 
+  
+  rows = model.at 'table.rows'
+  cols = model.at 'table.cols'
+
   app.deleteRow = (e) ->
     # Have to subtract 2 from index, because the first node is the <tr>
     # in the first row, and the second node is the comment binding wrapper
-    model.remove 'table.rows', targetIndex(e.target, 2) - 2
+    rows.remove targetIndex(e.target, 2) - 2
 
   app.deleteCol = (e) ->
     # Have to subtract 2 from index, because the first node is the <td>
     # in the first col, and the second node is the comment binding wrapper
     i = targetIndex(e.target, 1) - 2
-    row = model.get('table.rows').length
+    row = rows.get 'length'
     while row--
-      model.remove "table.rows.#{row}.cells", i
-    model.remove 'table.cols', i
+      rows.remove "#{row}.cells", i
+    cols.remove i
 
   app.addRow = ->
     name = model.incr('table.lastRow') + 1
     cells = []
-    col = model.get('table.cols').length
+    col = cols.get 'length'
     while col--
       cells.push {}
-    model.push 'table.rows', {name, cells}
+    rows.push {name, cells}
 
   alpha = (num, out = '') ->
     mod = num % 26
@@ -107,17 +111,18 @@ ready (model) ->
       return out
 
   app.addCol = ->
-    row = model.get('table.rows').length
+    row = rows.get 'length'
     while row--
-      model.push "table.rows.#{row}.cells", {}
+      rows.push "#{row}.cells", {}
     name = alpha model.incr 'table.lastCol'
-    model.push 'table.cols', {name}
+    cols.push {name}
 
   sortableTable.init app,
     onRowMove: (from, to) ->
-      model.move 'table.rows', from, to
+      rows.move from, to
     onColMove: (from, to) ->
       # TODO: Make these move operations atomic when Racer has atomic support
-      model.move 'table.cols', from, to
-      for i in [0...model.get('table.rows').length]
-        model.move "table.rows.#{i}.cells", from, to
+      cols.move from, to
+      row = rows.get 'length'
+      while row--
+        rows.move "#{row}.cells", from, to
