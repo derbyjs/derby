@@ -10,7 +10,7 @@
     "derby": "./bin/derby"
   },
   "dependencies": {
-    "racer": "0.1.6",
+    "racer": "0.1.7",
     "express": ">=2.0.0 < 3.0.0",
     "qs": ">=0.4.0",
     "uglify-js": ">=1.1.1",
