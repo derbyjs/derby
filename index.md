@@ -1239,6 +1239,14 @@ Would have paths like `title`, `fruits.1`, and `fruits.0.color`. Paths consist o
 
 Paths that contain a segment starting with an underscore (e.g. '_showFooter' or 'flowers.10._hovered') have a special meaning. These paths are considered "private," and they are not synced back to the server or to other clients. Private paths are frequently used with [references](#references) and for rendering purposes.
 
+#### GUIDs
+
+Models provide a method to create globablly unique ids. These can be used as part of a path or within mutator methods.
+
+> ### `guid = `model.id` ( )`
+>
+> **guid:** Returns a globally unique identifier that can be used for model operations
+
 ### Methods
 
 The primary model methods use STM by default. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model methods are synchronous and provide an optional callback.
@@ -1643,6 +1651,48 @@ Racer also supports a special reference type created via `model.refList`. This t
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
 
+{% highlight javascript %}
+// refLists may only consist of objects with an id that matches
+// their property on their parent
+model.set('colors', {
+  red: {hex: '#f00', id: 'red'},
+  green: {hex: '#0f0', id: 'green'},
+  blue: {hex: '#00f', id: 'blue'}
+});
+model.set('_colorIds', ['blue', 'red']);
+model.ref('_myColors', 'colors', '_colorIds');
+
+model.push('_myColors', {hex: '#ff0', id: 'yellow'});
+
+// Logs: [
+//   {hex: '#00f', id: 'blue'},
+//   {hex: '#f00', id: 'red'},
+//   {hex: '#ff0', id: 'yellow'}
+// ]
+console.log(model.get('_myColors'));
+{% endhighlight %}
+{% highlight coffeescript %}
+# refLists may only consist of objects with an id that matches
+# their property on their parent
+model.set 'colors',
+  red: {hex: '#f00', id: 'red'}
+  green: {hex: '#0f0', id: 'green'}
+  blue: {hex: '#00f', id: 'blue'}
+model.set '_colorIds', ['blue', 'red']
+model.ref '_myColors', 'colors', '_colorIds'
+
+model.push '_myColors', {hex: '#ff0', id: 'yellow'}
+
+// Logs: [
+//   {hex: '#00f', id: 'blue'},
+//   {hex: '#f00', id: 'red'},
+//   {hex: '#ff0', id: 'yellow'}
+// ]
+console.log model.get('_myColors')
+{% endhighlight %}
+
+Note that if objects are added to a refList without an `id` property, a unique id from [`model.id()`](#guids) will be automatically added to the object.
+
 ### Aliases
 
 Model aliases provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
@@ -1668,3 +1718,44 @@ Model aliases provide a more convenient way to interact with commonly used paths
 > ### `segment = `model.leaf` ( )`
 >
 > **segment:** Returns the last segment for the reference path. This may be useful for getting indicies or other properties set at the end of a path
+
+{% highlight javascript %}
+room = model.at('_room');
+
+// These are equivalent:
+room.at('name').set('Fun room');
+room.set('name', 'Fun room');
+
+// Logs: {name: 'Fun room'}
+console.log(room.get());
+// Logs: 'Fun room'
+console.log(room.get('name'));
+
+// Array methods can take a subpath as a first argument
+// when the model alias points to an object
+room.push('toys', 'blocks', 'puzzles');
+// When the model alias points to an array, no subpath
+// argument should be supplied
+room.at('toys').push('cards', 'dominoes');
+{% endhighlight %}
+{% highlight coffeescript %}
+room = model.at '_room'
+
+# These are equivalent:
+room.at('name').set 'Fun room'
+room.set 'name', 'Fun room'
+
+# Logs: {name: 'Fun room'}
+console.log room.get()
+# Logs: 'Fun room'
+console.log room.get('name')
+
+# Array methods can take a subpath as a first argument
+# when the model alias points to an object
+room.push 'toys', 'blocks', 'puzzles'
+# When the model alias points to an array, no subpath
+# argument should be supplied
+room.at('toys').push 'cards', 'dominoes'
+{% endhighlight %}
+
+Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#xbind).
