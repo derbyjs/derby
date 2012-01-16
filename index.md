@@ -910,23 +910,39 @@ Internally, Derby only binds each type of event once to the `document` and perfo
   <input x-bind="paste/50:afterPaste">
 {% endhighlight %}
 
+It is often useful to relate back a DOM element, such as `e.target`, to the model path that was used to render the item. For example, one might want to remove an item from a list when an icon is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [model alias](#aliases) that is scoped to the context of the closest bound path in the template.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  <ul>
+    ((#_users))
+      <li x-bind="click:upcase">((.name))</li>
+    ((/))
+  </ul>
+{% endhighlight %}
+
 #### App
 
 {% highlight javascript %}
-exports.start = function(e) { }
-exports.cancel = function(e) { }
-exports.search = function(e) { }
-exports.down = function(e) { }
-exports.up = function(e) { }
-exports.afterPaste = function(e) { }
+exports.upcase = function(e) {
+  user = model.at(e.target);
+
+  // Logs something like "_users.3"
+  console.log(user.path());
+
+  user.set('name', user.get('name').toUpperCase());
+};
 {% endhighlight %}
 {% highlight coffeescript %}
-exports.start = (e) ->
-exports.cancel = (e) ->
-exports.search = (e) ->
-exports.down = (e) ->
-exports.up = (e) ->
-exports.afterPaste = (e) ->
+exports.upcase = (e) ->
+  user = model.at e.target
+
+  # Logs something like "_users.3"
+  console.log user.path()
+
+  user.set 'name', user.get('name').toUpperCase()
 {% endhighlight %}
 
 ### Boolean attributes
