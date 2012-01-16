@@ -1518,13 +1518,15 @@ model.set 'players', [
 ]
 model.set 'cutoff', 3
 
-# Sort the players by score and return the top X players. The function
-# will automatically update the value of '_leaders' as players are added
-# and removed, their scores change, and the cutoff changes.
+# Sort the players by score and return the top X players. The
+# function will automatically update the value of '_leaders' as
+# players are added and removed, their scores change, and the
+# cutoff value changes.
 model.fn '_leaders', 'players', 'cutoff', (players, cutoff) ->
-  # Note that the input array is copied with splice before sorting it.
-  # The function should not modify the values of its inputs.
-  players.splice().sort((a, b) -> a.score - b.score).splice(0, cutoff - 1)
+  # Note that the input array is copied with splice before sorting
+  # it. The function should not modify the values of its inputs.
+  players.splice().sort((a, b) -> a.score - b.score)
+    .splice(0, cutoff - 1)
 {% endhighlight %}
 
 ### References
