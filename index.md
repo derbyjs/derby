@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.1.6
+version: 0.1.8
 headers:
   - text: Introduction
     type: h1
@@ -1233,13 +1233,15 @@ These methods can be used on any model path to get, set, or delete an object.
 >
 > **value:** Current value of the object at the given path. Note that objects are returned by reference and should not be modified directly
 
-All model mutators have a callback with the arguments `callback(err, methodArgs...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'conflict'` if when there is a conflict with another transaction. The method arguments used to call the original function (e.g. `path, value` for the `model.set()` method) are also passed back to the callback.
+All model mutators have an optional callback with the arguments `callback(err, methodArgs...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'conflict'` if when there is a conflict with another transaction. The method arguments used to call the original function (e.g. `path, value` for the `model.set()` method) are also passed back to the callback.
 
-> ### `value = `model.set` ( path, value, [callback] )`
+> ### `previous = `model.set` ( path, value, [callback] )`
 >
 > **path:** Model path to set
 >
 > **value:** Value to assign. Also returns this value
+>
+> **previous:** Returns the value that was set at the path previously
 >
 > **callback:** *(optional)* Invoked upon completion of a successful or failed transaction
 
@@ -1306,7 +1308,7 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 >
 > **path:** Model path to an array
 >
-> **index:** Index at which to start inserting
+> **index:** Index at which to start inserting. This can also be specified by appending it to the path instead of as a separate argument
 >
 > **items:** One or more items to insert at the index
 >
@@ -1328,7 +1330,7 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 >
 > **path:** Model path to an array
 >
-> **index:** Index at which to start removing items
+> **index:** Index at which to start removing items. This can also be specified by appending it to the path instead of as a separate argument
 >
 > **howMany:** *(optional)* Number of items to remove. Defaults to 1
 >
@@ -1338,7 +1340,7 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 >
 > **path:** Model path to an array
 >
-> **from:** Starting index of the item to move
+> **from:** Starting index of the item to move. This can also be specified by appending it to the path instead of as a separate argument
 >
 > **to:** New index where the item should be moved
 >
@@ -1396,7 +1398,7 @@ The event callback receives a number of arguments based on the path pattern and 
 >
 > **captures:** The capturing groups from the path pattern or regular expression. If specifying a string pattern, a capturing group will be created for each `*` wildcard and anything in parentheses, such as `(one|two)`
 >
-> **args:** The arguments to the method. Note that optional arguments with a default value (such as the `byNum` argument of `model.incr`) will be included
+> **args:** The arguments to the method. Note that optional arguments with a default value (such as the `byNum` argument of `model.incr`) will always be included
 >
 > **out:** The return value of the model mutator method
 >
