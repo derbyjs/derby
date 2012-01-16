@@ -1,5 +1,5 @@
 {get, view, ready} = app = require('derby').createApp module
-{targetIndex} = sortableTable = require './sortableTable'
+sortableTable = require './sortableTable'
 
 ## Routing ##
 
@@ -74,21 +74,17 @@ ready (model) ->
     model.push 'liveCss.styles', {}
 
   app.deleteStyle = (e) ->
-    model.remove 'liveCss.styles', targetIndex(e.target, 1)
+    model.at(e.target).remove()
 
-  
   rows = model.at 'table.rows'
   cols = model.at 'table.cols'
 
   app.deleteRow = (e) ->
-    # Have to subtract 2 from index, because the first node is the <tr>
-    # in the first row, and the second node is the comment binding wrapper
-    rows.remove targetIndex(e.target, 2) - 2
+    model.at(e.target).parent(2).remove()
 
   app.deleteCol = (e) ->
-    # Have to subtract 2 from index, because the first node is the <td>
-    # in the first col, and the second node is the comment binding wrapper
-    i = targetIndex(e.target, 1) - 2
+    # TODO: Make these move operations atomic when Racer has atomic support
+    i = model.at(e.target).leaf()
     row = rows.get 'length'
     while row--
       rows.remove "#{row}.cells", i

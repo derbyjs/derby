@@ -2,14 +2,44 @@ EventDispatcher = require './EventDispatcher'
 PathMap = require './PathMap'
 {Model} = require 'racer'
 
+# Add support for creating a model alias from a DOM node or jQuery object
 Model::__at = Model::at
 Model::at = (node, absolute) ->
   unless node && (node.parentNode || node.jquery && (node = node[0]))
-    return if arguments.length then @__at node, absolute else @__at()
-  # Add support for creating a model alias from a DOM node or jQuery object 
+    return @__at node, absolute
+
+  # NodeFilter.SHOW_COMMENT == 128
+  commentIterator = document.createTreeWalker document.body, 128, null, false
+  while comment = commentIterator.nextNode()
+    continue if comment.$derbyChecked
+    comment.$derbyChecked = true
+    id = comment.data
+    continue unless id.charAt(0) == '$' && id.charAt(1) != '$'
+    comment.$derbyMarkerId = id
+    comment.parentNode.$derbyMarkerParent = true
+
   blockPaths = @__blockPaths
   pathMap = @__pathMap
   while node
+
+    if node.$derbyMarkerParent
+      node = last
+      while node = node.previousSibling
+        continue unless id = node.$derbyMarkerId
+        break unless pathId = blockPaths[id]
+        path = pathMap.paths[pathId]
+        if pathMap.arrays[path] && last
+          i = 0
+          while node = node.nextSibling
+            if node == last
+              path = path + '.' + i
+              break
+            i++
+        return @__at path, absolute
+      last = node.parentNode
+      node = last.parentNode
+      continue
+
     if (id = node.id) && (pathId = blockPaths[id])
       path = pathMap.paths[pathId]
       if pathMap.arrays[path] && last
@@ -20,8 +50,9 @@ Model::at = (node, absolute) ->
       return @__at path, absolute
     last = node
     node = node.parentNode
+
   # Just return the model if a path can't be found
-  return model
+  return this
 
 exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap

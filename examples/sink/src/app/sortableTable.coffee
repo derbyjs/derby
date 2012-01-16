@@ -3,11 +3,6 @@ onRowMove = onColMove = ->
 
 module.exports =
 
-  targetIndex: targetIndex = (el, levels) ->
-    el = el.parentNode while levels--
-    for child, i in el.parentNode.childNodes
-      return i if child == el
-
   init: (app, options) ->
     addListener = app.view.dom.addListener
     addListener document, 'mousemove', onMove
@@ -41,6 +36,10 @@ endDragging = (cancel) ->
   dragging.finish cancel
   document.body.removeChild dragging.container
   dragging = null
+
+targetIndex = (el) ->
+  for child, i in el.parentNode.childNodes
+    return i if child == el
 
 dragStart = (e, cloneFn, setFn, breakFn, selector, finish, el) ->
   return if e.button != 0

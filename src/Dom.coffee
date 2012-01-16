@@ -192,7 +192,7 @@ getRange = (name) ->
   end = markers['$' + name]
   unless start && end
     # NodeFilter.SHOW_COMMENT == 128
-    commentIterator = doc.createNodeIterator doc.body, 128, null, false
+    commentIterator = doc.createTreeWalker doc.body, 128, null, false
     while comment = commentIterator.nextNode()
       markers[comment.data] = comment
     start = markers[name]
