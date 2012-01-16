@@ -94,9 +94,9 @@ headers:
     type: h3
   - text: Events
     type: h3
-  - text: References
-    type: h3
   - text: Reactive functions
+    type: h3
+  - text: References
     type: h3
   - text: Aliases
     type: h3
@@ -1496,12 +1496,13 @@ model.set('players', [
 ]);
 model.set('cutoff', 3);
 
-// Sort the players by score and return the top X players. The function
-// will automatically update the value of '_leaders' as players are added
-// and removed, their scores change, and the cutoff changes.
+// Sort the players by score and return the top X players. The
+// function will automatically update the value of '_leaders' as
+// players are added and removed, their scores change, and the
+// cutoff value changes.
 model.fn('_leaders', 'players', 'cutoff', function(players, cutoff) {
-  // Note that the input array is copied with splice before sorting it.
-  // The function should not modify the values of its inputs.
+  // Note that the input array is copied with splice before sorting
+  // it. The function should not modify the values of its inputs.
   return players.splice().sort(function(a, b) {
     return a.score - b.score;
   }).splice(0, cutoff - 1);
@@ -1626,3 +1627,4 @@ Racer also supports a special reference type created via `model.refList`. This t
 
 ### Aliases
 
+Model aliases 
