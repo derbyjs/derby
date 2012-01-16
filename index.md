@@ -96,6 +96,10 @@ headers:
     type: h3
   - text: References
     type: h3
+  - text: Reactive functions
+    type: h3
+  - text: Aliases
+    type: h3
 ---
 
 # Derby
@@ -1464,6 +1468,64 @@ model.set 'color', 'red'
 model.pass('hi').set 'color', 'green'
 {% endhighlight %}
 
+### Reactive functions
+
+Reactive functions provide a simple way to update a computed value whenever one or more objects change. While model events respond to specific model methods and path patterns, reactive functions will be re-evaluated whenever any of its inputs or their properties change in any way.
+
+> ### `out = `model.fn` ( path, inputPaths..., fn )`
+>
+> **path:** The location at which to create a reactive function. This must be a [private path](#private_paths), since reactive functions must be declared per model
+>
+> **inputPaths:** One or more paths for function inputs. The function will be called whenever one of the inputs or its sub-paths are modified
+>
+> **fn:** The function to evalute. The function will be called with each of its inputs as arguments
+>
+> **out:** Returns the result of the function
+
+Note that reactive functions must be [pure functions](http://en.wikipedia.org/wiki/Pure_function). In other words, they must always return the same results given the same input arguments, and they must be side effect free. They should not rely on any state from a closure, and all inputs should be explicitly declared.
+
+Reactive functions created on the server are sent to the client as a string and reinitialized when the page loads. If the output of a function is used for rendering, it should be created on the server.
+
+{% highlight javascript %}
+model.set('players', [
+  {name: 'John', score: 4000},
+  {name: 'Bill', score: 600},
+  {name: 'Kim', score: 9000},
+  {name: 'Megan', score: 3000},
+  {name: 'Sam', score: 2000}
+]);
+model.set('cutoff', 3);
+
+// Sort the players by score and return the top X players. The function
+// will automatically update the value of '_leaders' as players are added
+// and removed, their scores change, and the cutoff changes.
+model.fn('_leaders', 'players', 'cutoff', function(players, cutoff) {
+  // Note that the input array is copied with splice before sorting it.
+  // The function should not modify the values of its inputs.
+  return players.splice().sort(function(a, b) {
+    return a.score - b.score;
+  }).splice(0, cutoff - 1);
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'players', [
+  {name: 'John', score: 4000}
+  {name: 'Bill', score: 600}
+  {name: 'Kim', score: 9000}
+  {name: 'Megan', score: 3000}
+  {name: 'Sam', score: 2000}
+]
+model.set 'cutoff', 3
+
+# Sort the players by score and return the top X players. The function
+# will automatically update the value of '_leaders' as players are added
+# and removed, their scores change, and the cutoff changes.
+model.fn '_leaders', 'players', 'cutoff', (players, cutoff) ->
+  # Note that the input array is copied with splice before sorting it.
+  # The function should not modify the values of its inputs.
+  players.splice().sort((a, b) -> a.score - b.score).splice(0, cutoff - 1)
+{% endhighlight %}
+
 ### References
 
 References make it possible to write business logic and templates that interact with the model in a general way. They redirect model operations from a reference path to the underlying data, and they set up event listeners that emit model events on both the reference and the actual object's path.
@@ -1472,7 +1534,7 @@ References must be declared per model, since calling `model.ref` creates a numbe
 
 > ### `fn = `model.ref` ( path, to, [key] )`
 >
-> **path:** The location at which to create a reference. This should be a private path (should start with an underscore), since references must be declared per model
+> **path:** The location at which to create a reference. This must be a [private path](#private_paths), since references must be declared per model
 >
 > **to:** The location that the reference links to. This is where the data is actually stored
 >
@@ -1554,11 +1616,13 @@ Racer also supports a special reference type created via `model.refList`. This t
 
 > ### `fn = `model.refList` ( path, to, key )`
 >
-> **path:** The location at which to create a reference list. This should be a private path (should start with an underscore), since references must be declared per model
+> **path:** The location at which to create a reference list. This must be a [private path](#private_paths), since references must be declared per model
 >
 > **to:** The location of an object that has properties to be mapped onto an array. Each property must be an object with a unique `id` property of the same value
 >
 > **key:** A path whose value is an array of ids that map the `to` object's properties to a given order
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
+
+### Aliases
 
