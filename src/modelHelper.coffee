@@ -1,5 +1,27 @@
 EventDispatcher = require './EventDispatcher'
 PathMap = require './PathMap'
+{Model} = require 'racer'
+
+Model::__at = Model::at
+Model::at = (node, absolute) ->
+  unless node && (node.parentNode || node.jquery && (node = node[0]))
+    return if arguments.length then @__at node, absolute else @__at()
+  # Add support for creating a model alias from a DOM node or jQuery object 
+  blockPaths = @__blockPaths
+  pathMap = @__pathMap
+  while node
+    if (id = node.id) && (pathId = blockPaths[id])
+      path = pathMap.paths[pathId]
+      if pathMap.arrays[path] && last
+        for child, i in node.childNodes
+          if child == last
+            path = path + '.' + i
+            break
+      return @__at path, absolute
+    last = node
+    node = node.parentNode
+  # Just return the model if a path can't be found
+  return model
 
 exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap

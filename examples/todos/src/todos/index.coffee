@@ -53,7 +53,9 @@ ready (model) ->
       id = item.getAttribute 'data-id'
       to = ul.children().index(item)
       # Use the Derby ignore option to suppress the normal move event
-      # binding, since jQuery UI will move the element in the DOM
+      # binding, since jQuery UI will move the element in the DOM.
+      # Also, note that refList index arguments can either be an index
+      # or the item's id property
       list.pass(ignore: domId).move {id}, to
 
 
@@ -73,8 +75,8 @@ ready (model) ->
     list.insert i, {text}
 
   exports.del = (e) ->
-    # refLists accept either ids or indicies for index args
-    list.remove id: e.target.getAttribute 'data-id'
+    # Derby extends model.at to support creation from DOM nodes
+    model.at(e.target).remove()
 
 
   showReconnect = model.at '_showReconnect'

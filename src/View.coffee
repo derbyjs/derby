@@ -67,6 +67,7 @@ View:: =
     @_idCount = 0
     @model.__pathMap.clear()
     @model.__events.clear()
+    @model.__blockPaths = {}
     @dom.clear()
     title = @get('title$s', ctx)
     bodyHtml = @get('header', ctx) + @get('body', ctx)
@@ -89,17 +90,21 @@ extend = (parent, obj) ->
   return out
 
 bindEvents = (events, name, fn, params) ->
-  events.push (ctx, modelEvents, domEvents, triggerId) ->
+  events.push (ctx, modelEvents, domEvents, pathMap, blockPaths, triggerId) ->
     return  unless path = modelPath ctx, name
-    modelEvents.bind path, listener = if params.call then params triggerId else params
+    listener = if params.call then params triggerId, pathMap, blockPaths, path else params
+    modelEvents.bind path, listener
     listener.fn = fn
     listener.ctx = ctx.$stringCtx || ctx
-bindEventsById = (events, name, fn, attrs, method, prop) ->
-  bindEvents events, name, fn, ->
-    [attrs._id || attrs.id, method, prop]
+bindEventsById = (events, name, fn, attrs, method, prop, isBlock) ->
+  bindEvents events, name, fn, (triggerId, pathMap, blockPaths, path) ->
+    id = attrs._id || attrs.id
+    blockPaths[id] = pathMap.id path  if pathMap && isBlock
+    return [id, method, prop]
 bindEventsByIdString = (events, name, fn, attrs, method, prop) ->
   bindEvents events, name, fn, (triggerId) ->
-    [triggerId || attrs._id || attrs.id, method, prop]
+    id = triggerId || attrs._id || attrs.id
+    return [id, method, prop]
 
 addId = (view, attrs) ->
   unless attrs.id?
@@ -203,14 +208,16 @@ renderer = (view, items, events) ->
       ctx.$i = indices
 
     model = view.model  # Needed, since model parameter is optional
+    pathMap = model.__pathMap
     modelEvents = model.__events
+    blockPaths = model.__blockPaths
     domEvents = view.dom.events
     html = ''
     for item in items
       html += if item.call then item(ctx, model, triggerPath) || '' else item
     i = 0
     while event = events[i++]
-      event ctx, modelEvents, domEvents, triggerId
+      event ctx, modelEvents, domEvents, pathMap, blockPaths, triggerId
     return html
 
 parseMatch = (view, match, queues, {onStart, onEnd, onVar}) ->
@@ -331,7 +338,7 @@ pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
     addId view, attrs
 
-    bindEventsById events, name, fn, attrs, 'html', !fn && escaped
+    bindEventsById events, name, fn, attrs, 'html', !fn && escaped, true
     bindEventsById events, name, fn2, attrs, 'append'  if fn2
 
   pushVarFns view, stack, fn, fn2, name, escaped
@@ -422,7 +429,7 @@ parse = (view, template, isString, onBind) ->
         push view, stack, events, pre, post, match
     
     chars post  if post
-  
+
   end = (tag, tagName) ->
     stack.push ['end', tagName]
 

@@ -55,6 +55,7 @@ View::_init = (model) ->
   # Initialize view for rendering
   @dom = emptyDom
   model.__events = new EventDispatcher
+  model.__blockPaths = {}
   @model = model
   @_idCount = 0
 
