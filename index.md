@@ -1645,4 +1645,26 @@ Racer also supports a special reference type created via `model.refList`. This t
 
 ### Aliases
 
-Model aliases 
+Model aliases provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
+
+> ### `alias = `model.at` ( path, [absolute] )`
+>
+> **path:** The reference path to set. Note that Derby also supports supplying a DOM node instead of a path string
+>
+> **inputPaths:** *(optional)* Will replace the model's reference path if true. By default, the path is appended
+>
+> **alias:** Returns a model alias
+
+> ### `alias = `model.parent` ( [levels] )`
+>
+> **levels:** *(optional)* Defaults to 1. The number of path segments to remove from the end of the model alias's reference path
+>
+> **alias:** Returns a model alias
+
+> ### `path = `model.path` ( )`
+>
+> **path:** Returns the reference path for the model that was set via `model.at` or `model.parent`
+
+> ### `segment = `model.leaf` ( )`
+>
+> **segment:** Returns the last segment for the reference path. This may be useful for getting indicies or other properties set at the end of a path
