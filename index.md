@@ -1683,11 +1683,11 @@ model.ref '_myColors', 'colors', '_colorIds'
 
 model.push '_myColors', {hex: '#ff0', id: 'yellow'}
 
-// Logs: [
-//   {hex: '#00f', id: 'blue'},
-//   {hex: '#f00', id: 'red'},
-//   {hex: '#ff0', id: 'yellow'}
-// ]
+# Logs: [
+#   {hex: '#00f', id: 'blue'},
+#   {hex: '#f00', id: 'red'},
+#   {hex: '#ff0', id: 'yellow'}
+# ]
 console.log model.get('_myColors')
 {% endhighlight %}
 
