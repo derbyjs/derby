@@ -59,7 +59,13 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-store = todos.createStore redis: {db: 3}, listen: server
+MongoAdapter = require 'racer/lib/adapters/Mongo'
+mongo = new MongoAdapter 'mongodb://localhost/database'
+mongo.connect()
+store = todos.createStore
+  redis: {db: 3}
+  listen: server
+  adapter: mongo
 
 ## TODO: Remove when using a database ##
 # Clear all data every time the node server is started
