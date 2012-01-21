@@ -154,7 +154,7 @@ Dom:: =
 
       el.removeChild el.childNodes[index]
       return
-    
+
     move: (el, ignore, from, to) ->
       if !el.nodeType
         # Range

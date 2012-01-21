@@ -67,10 +67,6 @@ store = todos.createStore
   listen: server
   adapter: mongo
 
-## TODO: Remove when using a database ##
-# Clear all data every time the node server is started
-store.flush()
-
 server.listen 3003
 console.log 'Express server started in %s mode', server.settings.env
 console.log 'Go to: http://localhost:%d/', server.address().port
