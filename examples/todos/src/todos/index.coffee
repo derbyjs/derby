@@ -7,9 +7,9 @@ get '/', (page) ->
   page.redirect '/derby'
 
 get '/:group', (page, model, {group}) ->
-  # TODO: This subscribes to all todos in all groups. Only subscribe
-  # todos for this group once query subscriptions are supported
-  model.subscribe _group: "groups.#{group}", 'todos', ->
+  groupTodosQuery = model.query('todos').where('group').equals(group)
+  model.subscribe _group: "groups.#{group}", groupTodosQuery, ->
+    model.setNull '_group.id', group
 
     # The refList supports array methods, but it stores the todo values
     # on an object by id. The todos are stored on the object 'todos',
@@ -20,9 +20,9 @@ get '/:group', (page, model, {group}) ->
     # a refList will automatically get an 'id' property if not specified
     unless model.get '_group.todoIds'
       model.push '_todoList',
-        {text: 'Example todo'},
-        {text: 'Another example'},
-        {text: 'This one is done already', completed: true}
+        {group, text: 'Example todo'},
+        {group, text: 'Another example'},
+        {group, text: 'This one is done already', completed: true}
 
     # Create a reactive function that automatically keeps '_remaining'
     # updated with the number of remaining todos
@@ -72,7 +72,7 @@ ready (model) ->
     # or append to the end if none are completed
     for todo, i in list.get()
       break if todo.completed
-    list.insert i, {text}
+    list.insert i, {text, group: model.get '_group.id'}
 
   exports.del = (e) ->
     # Derby extends model.at to support creation from DOM nodes
