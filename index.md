@@ -239,7 +239,7 @@ A kitchen-sink style example with random features. Largely used for testing.
 
 Derby and Racer are alpha software. While Derby should work well enough for prototyping and weekend projects, it is still undergoing major development. APIs are subject to change.
 
-If you have feedback, ideas, or suggestions, feel free to leave them on the [wiki](https://github.com/codeparty/derby/wiki). If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps).
+If you have feedback, ideas, or suggestions, please email the [Google Group](http://groups.google.com/group/derbyjs). If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps).
 
 # Getting started
 
@@ -249,7 +249,7 @@ Instal Derby with:
 
     $ npm install -g derby
 
-Derby requires [Redis 2.2-scripting](https://github.com/antirez/redis/tree/2.2-scripting). Derby's models are powered by [Racer](http://racerjs.com/), which uses Redis to store data transactions and manage PubSub. Racer uses Redis Lua scripting, which [will be included](http://antirez.com/post/everything-about-redis-24) in the next stable release, Redis 2.6.
+Derby requires Redis with support for [scripting](http://redis.io/commands/eval). Derby's models are powered by [Racer](http://racerjs.com/), which uses Redis to store data transactions and manage PubSub. Racer uses Redis Lua scripting, which [will be included](http://antirez.com/post/short-term-redis-plans.html) in the next stable release, Redis 2.6. For now, please use the 2.2-scripting branch.
 
 Download, extract, and compile Redis 2.2-scripting:
 
