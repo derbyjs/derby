@@ -441,7 +441,7 @@ Note that template files don't contain boilerplate HTML, such as doctype definit
 #### Third chunk
 
 7. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
-8. **`Script:`** Optional location for external scripts loaded before the client scripts. For example, this is where a script tag that includes jQuery would be placed. Note that this template is just a location within the page, and it is not wrapped in a script tag.
+8. **`Scripts:`** Optional location for external scripts loaded before the client scripts. For example, this is where a script tag that includes jQuery would be placed. Note that this template is just a location within the page, and it is not wrapped in a script tag.
 9. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
 
 #### Fourth chunk
