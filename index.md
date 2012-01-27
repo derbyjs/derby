@@ -418,7 +418,7 @@ Templates can be imported from another file for sharing among multiple pages. Fi
 
 ### Pre-defined templates
 
-By default, Derby includes templates with the names `Doctype`, `Title`, `Head`, `Header`, `Body`, `Script`, and `Tail` when it renders a page.
+By default, Derby includes templates with the names `Doctype`, `Title`, `Head`, `Header`, `Body`, `Scripts`, and `Tail` when it renders a page.
 
 Some of these templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>` by default. Browsers don't need them, and pages will validate as proper HTML5 without them.
 
