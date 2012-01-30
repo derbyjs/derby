@@ -155,7 +155,7 @@ Dom:: =
       el.removeChild el.childNodes[index]
       return
 
-    move: (el, ignore, from, to) ->
+    move: (el, ignore, from, to, howMany) ->
       if !el.nodeType
         # Range
         offset = el.startOffset
@@ -169,7 +169,18 @@ Dom:: =
       # Also don't move if the child to move matches the ignore option
       return if ignore &&
         (toEl = el.childNodes[to]) && toEl.id == ignore || child.id == ignore
-      ref = el.childNodes[if to > from then to + 1 else to]
+      ref = el.childNodes[if to > from then to + howMany else to]
+      
+      if howMany > 1
+        fragment = document.createDocumentFragment()
+        while howMany--
+          nextChild = child.nextSibling
+          fragment.appendChild child
+          child = nextChild
+        # console.log ref
+        el.insertBefore fragment, ref
+        return
+      
       el.insertBefore child, ref
       return
 

@@ -83,7 +83,7 @@ exports.init = (model, dom) ->
             noRender = true
           else if type is 'move'
             noRender = true
-            [value, property] = value
+            [value, property, index] = value
         unless noRender
           value = partial listener.ctx, model, path, triggerId, value, index, true
           value = ''  unless value?
@@ -104,15 +104,15 @@ exports.init = (model, dom) ->
       events.trigger id, value, 'append', local, options
     return
 
-  model.on 'move', ([path, from, to], out, local, options) ->
+  model.on 'move', ([path, from, to, howMany], out, local, options) ->
     len = model.get(path).length
     from = refIndex from
     to = refIndex to
     from += len if from < 0
     to += len if to < 0
     return if from == to
-    pathMap.onMove path, from, to  # Update indicies in pathMap
-    events.trigger pathMap.id(path), [from, to], 'move', local, options
+    pathMap.onMove path, from, to, howMany  # Update indicies in pathMap
+    events.trigger pathMap.id(path), [from, to, howMany], 'move', local, options
 
   model.on 'unshift', ([path, values...], out, local, options) ->
     insert events, pathMap, path, 0, values, local, options

@@ -844,7 +844,7 @@ describe 'PathMap', ->
     pathMap.id('colors.2').should.eql 3
     pathMap.id('colors.2.hex').should.eql 4
 
-    pathMap.onMove 'colors', 0, 1
+    pathMap.onMove 'colors', 0, 1, 1
     pathMap.ids.should.eql {
       'colors.0.hex': 2
       'colors.1': 1
@@ -865,7 +865,7 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'colors', 1, 0
+    pathMap.onMove 'colors', 1, 0, 1
     pathMap.ids.should.eql {
       'colors.0': 1
       'colors.1.hex': 2
@@ -886,7 +886,7 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'colors', 2, 0
+    pathMap.onMove 'colors', 2, 0, 1
     pathMap.ids.should.eql {
       'colors.0': 3
       'colors.0.hex': 4
@@ -907,7 +907,56 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'colors', 0, 2
+    pathMap.onMove 'colors', 0, 2, 1
+    pathMap.ids.should.eql {
+      'colors.0': 1
+      'colors.1.hex': 2
+      'colors.2': 3
+      'colors.2.hex': 4
+    }
+    pathMap.paths.should.eql {
+      1: 'colors.0'
+      2: 'colors.1.hex'
+      3: 'colors.2'
+      4: 'colors.2.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {1: ''}
+        {2: '.hex'}
+        {3: '', 4: '.hex'}
+      ]
+    }
+
+  it 'onMove of multiple items should update array indicies', ->
+    pathMap = new PathMap
+    pathMap.id('colors.0').should.eql 1
+    pathMap.id('colors.1.hex').should.eql 2
+    pathMap.id('colors.2').should.eql 3
+    pathMap.id('colors.2.hex').should.eql 4
+
+    pathMap.onMove 'colors', 0, 1, 2
+    pathMap.ids.should.eql {
+      'colors.0': 3
+      'colors.0.hex': 4
+      'colors.1': 1
+      'colors.2.hex': 2
+    }
+    pathMap.paths.should.eql {
+      3: 'colors.0'
+      4: 'colors.0.hex'
+      1: 'colors.1'
+      2: 'colors.2.hex'
+    }
+    pathMap.arrays.should.eql {
+      colors: [
+        {3: '', 4: '.hex'}
+        {1: ''}
+        {2: '.hex'}
+      ]
+    }
+
+    pathMap.onMove 'colors', 1, 0, 2
     pathMap.ids.should.eql {
       'colors.0': 1
       'colors.1.hex': 2
@@ -935,7 +984,7 @@ describe 'PathMap', ->
     pathMap.id('tables.1.rows.0').should.eql 3
     pathMap.id('tables.2.rows.0.name').should.eql 4
 
-    pathMap.onMove 'tables.0.rows', 0, 1
+    pathMap.onMove 'tables.0.rows', 0, 1, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.name': 2
       'tables.0.rows.1': 1
@@ -966,7 +1015,7 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'tables.0.rows', 1, 0
+    pathMap.onMove 'tables.0.rows', 1, 0, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.1.name': 2
@@ -997,7 +1046,7 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'tables', 0, 1
+    pathMap.onMove 'tables', 0, 1, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0': 3
       'tables.1.rows.0': 1
@@ -1028,7 +1077,7 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'tables', 1, 0
+    pathMap.onMove 'tables', 1, 0, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.1.name': 2
@@ -1059,7 +1108,7 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'tables', 2, 0
+    pathMap.onMove 'tables', 2, 0, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.name': 4
       'tables.1.rows.0': 1
@@ -1090,7 +1139,7 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.onMove 'tables', 0, 2
+    pathMap.onMove 'tables', 0, 2, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.1.name': 2
@@ -1128,7 +1177,7 @@ describe 'PathMap', ->
     pathMap.id('tables.1.rows.0.cols.0').should.eql 3
     pathMap.id('tables.2.rows.0.cols.0.text').should.eql 4
 
-    pathMap.onMove 'tables.0.rows', 0, 1
+    pathMap.onMove 'tables.0.rows', 0, 1, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.cols.0.text': 2
       'tables.0.rows.1.cols.0': 1
@@ -1163,7 +1212,7 @@ describe 'PathMap', ->
       'tables.2.rows.0.cols': [{4: '.text'}]
     }
 
-    pathMap.onMove 'tables.0.rows', 1, 0
+    pathMap.onMove 'tables.0.rows', 1, 0, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.1.cols.0.text': 2
@@ -1198,7 +1247,7 @@ describe 'PathMap', ->
       'tables.2.rows.0.cols': [{4: '.text'}]
     }
 
-    pathMap.onMove 'tables', 0, 1
+    pathMap.onMove 'tables', 0, 1, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.cols.0': 3
       'tables.1.rows.0.cols.0': 1
@@ -1233,7 +1282,7 @@ describe 'PathMap', ->
       'tables.2.rows.0.cols': [{4: '.text'}]
     }
 
-    pathMap.onMove 'tables', 1, 0
+    pathMap.onMove 'tables', 1, 0, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.1.cols.0.text': 2
@@ -1268,7 +1317,7 @@ describe 'PathMap', ->
       'tables.2.rows.0.cols': [{4: '.text'}]
     }
 
-    pathMap.onMove 'tables', 2, 0
+    pathMap.onMove 'tables', 2, 0, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.cols.0.text': 4
       'tables.1.rows.0.cols.0': 1
@@ -1303,7 +1352,7 @@ describe 'PathMap', ->
       'tables.2.rows.0.cols': [{3: ''}]
     }
 
-    pathMap.onMove 'tables', 0, 2
+    pathMap.onMove 'tables', 0, 2, 1
     pathMap.ids.should.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.1.cols.0.text': 2

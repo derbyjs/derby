@@ -92,20 +92,20 @@ PathMap:: =
     map.splice start, 0, {}  while howMany--
     return
 
-  onMove: (path, from, to) ->
+  onMove: (path, from, to, howMany) ->
     return unless map = @arrays[path]
-    afterFrom = from + 1
-    afterTo = to + 1
+    afterFrom = from + howMany
+    afterTo = to + howMany
     # Adjust paths for items between from and to
     if from > to
       oldArrays = @_delItems path, map, to, afterFrom, afterFrom
-      @_incrItems path, map, to, from, 1, oldArrays
+      @_incrItems path, map, to, from, howMany, oldArrays
     else
       oldArrays = @_delItems path, map, from, afterTo, afterTo
-      @_incrItems path, map, afterFrom, afterTo, -1, oldArrays
-    # Adjust paths for the moved item
+      @_incrItems path, map, afterFrom, afterTo, -howMany, oldArrays
+    # Adjust paths for the moved item(s)
     @_incrItems path, map, from, afterFrom, to - from, oldArrays
     # Fix the array index
-    [item] = map.splice from, 1
-    map.splice to, 0, item
+    items = map.splice from, howMany
+    map.splice to, 0, items...
     return
