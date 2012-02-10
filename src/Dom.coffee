@@ -151,8 +151,9 @@ Dom:: =
         # Range
         index += el.startOffset
         el = el.startContainer
-
-      el.removeChild el.childNodes[index]
+      
+      child = el.childNodes[index]
+      el.removeChild child if child
       return
 
     move: (el, ignore, from, to, howMany) ->
@@ -167,7 +168,7 @@ Dom:: =
       # Don't move if the item at the destination is passed as the ignore
       # option, since this indicates the intended item was already moved
       # Also don't move if the child to move matches the ignore option
-      return if ignore &&
+      return if !child || ignore &&
         (toEl = el.childNodes[to]) && toEl.id == ignore || child.id == ignore
       ref = el.childNodes[if to > from then to + howMany else to]
       
@@ -176,8 +177,7 @@ Dom:: =
         while howMany--
           nextChild = child.nextSibling
           fragment.appendChild child
-          child = nextChild
-        # console.log ref
+          break unless child = nextChild
         el.insertBefore fragment, ref
         return
       
