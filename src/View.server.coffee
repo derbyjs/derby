@@ -32,22 +32,25 @@ View::_load = (isStatic, callback) ->
   if isProduction then @_load = (isStatic, callback) -> callback()
 
   self = this
-  appFilename = @_appFilename
-  options = @_derbyOptions
-  {root, clientName, require} = files.parseName appFilename, options
-  @_root = root
-  @_clientName = clientName
-  @_require = require
-
   templates = js = null
 
   if isStatic
+    root = @_root
+    clientName = @_clientName
+
     count = 2
     finish = ->
       return if --count
       callback()
 
   else
+    appFilename = @_appFilename
+    options = @_derbyOptions
+    {root, clientName, require} = files.parseName appFilename, options
+    @_root = root
+    @_clientName = clientName
+    @_require = require
+
     count = 3
     finish = ->
       return if --count
@@ -92,11 +95,13 @@ View::render = (res = emptyRes, args...) ->
   self = this
   # Load templates, css, and scripts from files
   @_load isStatic, ->
+    return self._render res, model, ctx, isStatic  if isStatic
+
     # Wait for transactions to finish and package up the racer model data
     model.bundle (bundle) ->
-      self._render res, model, bundle, ctx, isStatic
+      self._render res, model, ctx, isStatic, bundle
 
-View::_render = (res, model, bundle, ctx, isStatic) ->
+View::_render = (res, model, ctx, isStatic, bundle) ->
   # Initialize view & model for rendering
   @dom = emptyDom
   model.__events = new EventDispatcher
