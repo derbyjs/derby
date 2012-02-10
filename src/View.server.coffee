@@ -2,8 +2,10 @@
 uglify = require 'uglify-js'
 {escapeHtml} = require './html'
 EventDispatcher = require './EventDispatcher'
-loader = require './loader'
+files = require './files'
 module.exports = View = require './View'
+
+isProduction = process.env.NODE_ENV is 'production'
 
 empty = ->
 emptyRes =
@@ -19,21 +21,61 @@ emptyDom =
 
 escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
 
+trim = View.trim
+
 # Don't execute before or after functions on the server
-View::before = View::after = ->
+View::before = View::after = empty
 
 View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
 
 View::_load = (isStatic, callback) ->
-  if loader.isProduction then @_load = (isStatic, callback) -> callback()
-  return loader.views this, @_root, @_clientName, callback  if isStatic
+  if isProduction then @_load = (isStatic, callback) -> callback()
+
   self = this
-  loader.js this, @_appFilename, @_derbyOptions, (obj) ->
-    self._root = obj.root
-    self._clientName = obj.clientName
-    self._jsFile = obj.jsFile
-    self._require = obj.require
-    callback()
+  appFilename = @_appFilename
+  options = @_derbyOptions
+  {root, clientName, require} = files.parseName appFilename, options
+  @_root = root
+  @_clientName = clientName
+  @_require = require
+
+  templates = js = null
+
+  if isStatic
+    count = 2
+    finish = ->
+      return if --count
+      callback()
+
+  else
+    count = 3
+    finish = ->
+      return if --count
+      js = js.replace '"$$templates$$"', JSON.stringify(templates || {})
+      files.writeJs js, options, (jsFile) ->
+        self._jsFile = jsFile
+        callback()
+
+    if @_js
+      js = @_js
+      finish()
+
+    else files.js appFilename, (value, inline) ->
+      js = value
+      @_js = value unless isProduction
+      self.inline "function(){#{inline}}"  if inline
+      finish()
+
+  files.css root, clientName, (value) ->
+    self._css = if value then "<style id=$_css>#{trim value}</style>" else ''
+    finish()
+
+  files.templates root, clientName, (value) ->
+    templates = value
+    for name, text of templates
+      templates[name] = text = trim text
+      self.make name, text
+    finish()
 
 View::render = (res = emptyRes, args...) ->
   for arg in args
@@ -48,19 +90,19 @@ View::render = (res = emptyRes, args...) ->
   model = emptyModel  unless model?
 
   self = this
-  @_load isStatic, -> loader.css self._root, self._clientName, (css) ->
-    self._render res, model, ctx, isStatic, css
+  # Load templates, css, and scripts from files
+  @_load isStatic, ->
+    # Wait for transactions to finish and package up the racer model data
+    model.bundle (bundle) ->
+      self._render res, model, bundle, ctx, isStatic
 
-View::_init = (model) ->
-  # Initialize view for rendering
+View::_render = (res, model, bundle, ctx, isStatic) ->
+  # Initialize view & model for rendering
   @dom = emptyDom
   model.__events = new EventDispatcher
   model.__blockPaths = {}
   @model = model
   @_idCount = 0
-
-View::_render = (res, model, ctx, isStatic, css) ->
-  @_init model
 
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
@@ -76,8 +118,7 @@ View::_render = (res, model, ctx, isStatic, css) ->
   title = escapeHtml @get 'title$s', ctx
   head = @get 'head', ctx
   header = @get 'header', ctx
-  css = "<style>#{css}</style>"  if css
-  res.write "#{doctype}<title>#{title}</title>#{head}#{css}#{header}"
+  res.write "#{doctype}<title>#{title}</title>#{head}#{@_css}#{header}"
 
   # Remaining HTML
   res.write @get 'body', ctx
@@ -94,12 +135,8 @@ View::_render = (res, model, ctx, isStatic, css) ->
   # Initialization script and Tail
   tail = @get 'tail', ctx
   return res.end tail  if isStatic
-  
-  initStart = "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{@_require}')("
-  initEnd = (if ctx then ',' + escapeInlineScript(JSON.stringify ctx) else '') +
-    ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
 
-  # Wait for transactions to finish and package up the racer model data
-  model.bundle (bundle) ->
-    res.end initStart + escapeInlineScript(bundle) + initEnd
+  res.end "<script>(function(){function f(){setTimeout(function(){" +
+    "#{clientName}=require('./#{@_require}')(" + escapeInlineScript(bundle) +
+    (if ctx then ',' + escapeInlineScript(JSON.stringify ctx) else '') +
+    ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"

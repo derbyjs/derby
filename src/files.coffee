@@ -4,11 +4,8 @@ crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
 racer = require 'racer'
-{trim} = require './View'
 {parse: parseHtml} = require './html'
 
-cssCache = {}
-jsCache = {}
 onlyWhitespace = /^[\s\n]*$/
 
 findPath = (root, name, dir, extension, callback) ->
@@ -56,40 +53,48 @@ loadTemplates = (root, fileName, get, alias, templates, callback) ->
           unless name && literal
             return if onlyWhitespace.test text
             throw new Error "Can't read template in #{path} near the text: #{text}"
-          templates[alias || name] = trim text
+          templates[alias || name] = text
 
       throw new Error "Can't find template '#{get}' in #{path}"  unless got
       callback templates unless --callback.count
 
+
 module.exports =
-  isProduction: isProduction = process.env.NODE_ENV is 'production'
 
   css: (root, clientName, callback) ->
-    # CSS is reloaded on every refresh in development and cached in production
-    return callback css  if isProduction && css = cssCache[clientName]
     findPath root, clientName, 'styles', '.styl', (path) ->
-      return callback cssCache[path] = ''  unless path
+      return callback ''  unless path
       fs.readFile path, 'utf8', (err, styl) ->
-        return callback cssCache[path] = ''  if err
+        return callback ''  if err
         stylus(styl)
           .use(nib())
           .set('filename', path)
           .set('compress', true)
           .render (err, css) ->
             throw err if err
-            css = trim css
-            callback cssCache[path] = css
+            callback css
 
-  views: views = (view, root, clientName, callback) ->
-    loadTemplates root, clientName, 'all', null, {}, (templates) ->
-      view._templates ||= {}
-      for name, text of templates
-        view.make name, text
-        view._templates[name] = text
-      callback()
+  templates: (root, clientName, callback) ->
+    loadTemplates root, clientName, 'all', null, {}, callback
 
-  js: (view, parentFilename, options, callback) ->
+  js: (parentFilename, callback) ->
     return callback {}  unless parentFilename
+    inlineFile = join dirname(parentFilename), 'inline.js'
+
+    js = inline = null
+    count = 2
+    finish = ->
+      return if --count
+      callback js, inline
+    racer.js {require: parentFilename}, (value) ->
+      js = value
+      finish()
+    fs.readFile inlineFile, 'utf8', (err, value) ->
+      inline = value
+      finish()
+
+  parseName: (parentFilename, options) ->
+    return {}  unless parentFilename
     root = parentDir = dirname parentFilename
     if (base = basename parentFilename, '.js') is 'index'
       base = basename parentDir
@@ -97,45 +102,36 @@ module.exports =
     else if basename(parentDir) is 'lib'
       root = dirname parentDir
 
-    clientName = options.name || base
+    return {
+      root: root
+      clientName: options.name || base
+      require: basename parentFilename
+    }
+
+  writeJs: (js, options, callback) ->
     staticRoot = options.staticRoot || join root, 'public'
     staticDir = options.staticDir || 'gen'
     staticPath = join staticRoot, staticDir
 
-    finish = (js) -> views view, root, clientName, ->
-      js = js.replace '"$$templates$$"', JSON.stringify(view._templates || {})
-      filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
-      # Base64 uses characters reserved in URLs and adds extra padding charcters.
-      # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding
-      filename = filename.replace /[\/\+=]/g, (match) ->
-        switch match
-          when '/' then '-'
-          when '+' then '_'
-          when '=' then ''
-      jsFile = join '/', staticDir, filename
-      filePath = join staticPath, filename
-      fs.writeFile filePath, js, ->
-        callback {root, clientName, jsFile, require: basename parentFilename}
+    filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
+    # Base64 uses characters reserved in URLs and adds extra padding charcters.
+    # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding
+    filename = filename.replace /[\/\+=]/g, (match) ->
+      switch match
+        when '/' then '-'
+        when '+' then '_'
+        when '=' then ''
+    jsFile = join '/', staticDir, filename
 
-    # Browserifying is very slow, so js files are only bundled up on the first
-    # page load, even in development. Templates are reloaded every refresh in
-    # development and cached in production
-    minify = if 'minify' of options then options.minify else isProduction
-    bundle = if isProduction || !(js = jsCache[parentFilename])
-        -> fs.readFile join(parentDir, 'inline.js'), 'utf8', (err, inline) ->
-          racer.js {minify, require: parentFilename}, (js) ->
-            finish jsCache[parentFilename] = js
-          return  if err
-          view.inline "function(){#{inline}}"
-      else
-        -> finish js
+    filePath = join staticPath, filename
+    finish = -> fs.writeFile filePath, js, -> callback jsFile
 
     exists staticPath, (value) ->
-      return bundle() if value
+      return finish() if value
 
       exists staticRoot, (value) ->
         if value then return fs.mkdir staticPath, 0777, (err) ->
           bundle()
         fs.mkdir staticRoot, 0777, (err) ->
           fs.mkdir staticPath, 0777, (err) ->
-            bundle()
+            finish()

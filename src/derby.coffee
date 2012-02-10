@@ -1,6 +1,5 @@
 racer = require 'racer'
 View = require './View.server'
-loader = require './loader'
 Router = require 'express/lib/router'
 fs = require 'fs'
 

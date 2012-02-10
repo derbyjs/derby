@@ -33,7 +33,7 @@ exports.createApp = (appModule) ->
 
   appExports.ready = (fn) -> racer.onready = -> fn model
 
-  # "$$templates$$" is replaced with an array of templates by loader
+  # "$$templates$$" is replaced with an array of templates by file loader
   view.make name, template  for name, template of "$$templates$$"
 
   appModule.exports = (modelBundle, ctx) ->
