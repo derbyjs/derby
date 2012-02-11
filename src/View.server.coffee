@@ -1,11 +1,11 @@
-{Model} = require 'racer'
+{Model} = racer = require 'racer'
 uglify = require 'uglify-js'
 {escapeHtml} = require './html'
 EventDispatcher = require './EventDispatcher'
 files = require './files'
 module.exports = View = require './View'
 
-isProduction = process.env.NODE_ENV is 'production'
+isProduction = racer.util.isProduction
 
 empty = ->
 emptyRes =
@@ -45,10 +45,10 @@ View::_load = (isStatic, callback) ->
 
   else
     appFilename = @_appFilename
-    options = @_derbyOptions
+    options = @_derbyOptions || {}
     {root, clientName, require} = files.parseName appFilename, options
     @_root = root
-    @_clientName = clientName
+    callback() unless @_clientName = clientName
     @_require = require
 
     count = 3
@@ -65,7 +65,7 @@ View::_load = (isStatic, callback) ->
 
     else files.js appFilename, (value, inline) ->
       js = value
-      @_js = value unless isProduction
+      self._js = value unless isProduction
       self.inline "function(){#{inline}}"  if inline
       finish()
 
@@ -101,13 +101,16 @@ View::render = (res = emptyRes, args...) ->
     model.bundle (bundle) ->
       self._render res, model, ctx, isStatic, bundle
 
-View::_render = (res, model, ctx, isStatic, bundle) ->
+View::_init = (model) ->
   # Initialize view & model for rendering
   @dom = emptyDom
   model.__events = new EventDispatcher
   model.__blockPaths = {}
   @model = model
   @_idCount = 0
+
+View::_render = (res, model, ctx, isStatic, bundle) ->
+  @_init model
 
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'

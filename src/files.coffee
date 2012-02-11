@@ -7,6 +7,7 @@ racer = require 'racer'
 {parse: parseHtml} = require './html'
 
 onlyWhitespace = /^[\s\n]*$/
+isProduction = racer.util.isProduction
 
 findPath = (root, name, dir, extension, callback) ->
   root = join root, dir, name  if name
@@ -78,7 +79,6 @@ module.exports =
     loadTemplates root, clientName, 'all', null, {}, callback
 
   js: (parentFilename, callback) ->
-    return callback {}  unless parentFilename
     inlineFile = join dirname(parentFilename), 'inline.js'
 
     js = inline = null
@@ -94,7 +94,6 @@ module.exports =
       finish()
 
   parseName: (parentFilename, options) ->
-    return {}  unless parentFilename
     root = parentDir = dirname parentFilename
     if (base = basename parentFilename, '.js') is 'index'
       base = basename parentDir
