@@ -36,7 +36,7 @@ derby = module.exports =
     appExports.view = view = new View
     appExports.render = (res, model, ctx, status) -> view.render res, model, ctx, status
     appExports.ready = ->
-    
+
     store = null
     session = null
     appExports._setStore = setStore = (_store) ->
@@ -55,7 +55,8 @@ derby = module.exports =
         router._route method, pattern, (req, res, next) ->
           model = req.model || store.createModel()
           page = new Page view, res, model
-          params = {url, body, query} = req
+          {url, body, query} = req
+          params = {url, body, query}
           params[k] = v for k, v of req.params
           callback page, model, params, next
       return router.middleware

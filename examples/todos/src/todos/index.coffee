@@ -6,7 +6,11 @@
 get '/', (page) ->
   page.redirect '/derby'
 
-get '/:group', (page, model, {group}) ->
+get '/:group', (page, model, {group, query}) ->
+  if query
+    tags = query.tags
+    tags = tags.split ','
+    console.log tags
   groupTodosQuery = model.query('todos').where('group').equals(group)
   model.subscribe _group: "groups.#{group}", groupTodosQuery, ->
     model.setNull '_group.id', group
@@ -20,9 +24,9 @@ get '/:group', (page, model, {group}) ->
     # a refList will automatically get an 'id' property if not specified
     unless model.get '_group.todoIds'
       model.push '_todoList',
-        {group, text: 'Example todo'},
-        {group, text: 'Another example'},
-        {group, text: 'This one is done already', completed: true}
+        {group, text: 'Example todo', tags: ['wknd']},
+        {group, text: 'Another example', tags: ['wknd', 'work']},
+        {group, text: 'This one is done already', completed: true, tags: ['work']}
 
     # Create a reactive function that automatically keeps '_remaining'
     # updated with the number of remaining todos
