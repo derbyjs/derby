@@ -1,7 +1,10 @@
 racer = require 'racer'
 View = require './View.server'
+files = require './files'
 Router = require 'express/lib/router'
 fs = require 'fs'
+
+isProduction = racer.util.isProduction
 
 # The router middleware checks whether 'case sensitive routes' and 'strict routing'
 # are enabled. For now, always use the default value of false
@@ -26,6 +29,33 @@ Static:: =
       view._clientName = name
     view.render res, model, ctx, status, true
 
+addWatches = (appFilename, options, sockets) ->
+  {root, clientName} = files.parseName appFilename, options
+
+  files.watch root, 'css', ->
+    files.css root, clientName, (css) ->
+      for socket in sockets
+        socket.emit 'refreshCss', css
+
+  files.watch root, 'html', ->
+    files.templates root, clientName, (templates) ->
+      for socket in sockets
+        socket.emit 'refreshHtml', templates
+
+autoRefresh = (store, options) ->
+  return if isProduction || store._derbySocketsSetup
+  store._derbySocketsSetup = true
+  listeners = {}
+  store.sockets.on 'connection', (socket) ->
+    socket.on 'derbyClient', (appFilename) ->
+      return unless appFilename
+
+      if listeners[appFilename]
+        return listeners[appFilename].push socket
+
+      sockets = listeners[appFilename] = [socket]
+      addWatches appFilename, options, sockets
+
 derby = module.exports =
   options: {}
   configure: (@options) ->
@@ -37,9 +67,13 @@ derby = module.exports =
     appExports.render = (res, model, ctx, status) -> view.render res, model, ctx, status
     appExports.ready = ->
 
+    view._derbyOptions = options = @options
+    view._appFilename = appModule.filename
+
     store = null
     session = null
     appExports._setStore = setStore = (_store) ->
+      autoRefresh _store, options
       session?._setStore _store
       return store = _store
     appExports.createStore = (options) -> setStore racer.createStore options
@@ -60,9 +94,6 @@ derby = module.exports =
           params[k] = v for k, v of req.params
           callback page, model, params, next
       return router.middleware
-
-    view._derbyOptions = @options
-    view._appFilename = appModule.filename
 
     # Call render to trigger a compile as soon as the server starts
     view.render()

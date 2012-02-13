@@ -23,14 +23,14 @@ History = module.exports = (@_routes, @_page, dom) ->
         # Ignore hash links to the same page
         return if ~(i = url.indexOf '#') && 
           url.substr(0, i) == winLocation.href.replace(/#.*/, '')
-        self.push path, true, e  if path = routePath url
+        self.push url, true, e
 
     addListener doc, 'submit', (e) ->
       if e.target.tagName.toLowerCase() is 'form'
         form = e.target
-        return if !(path = routePath form.action) || form._forceSubmit ||
+        return if !(url = form.action) || form._forceSubmit ||
           form.enctype == 'multipart/form-data'
-        self.push path, true, e
+        self.push url, true, e
 
     addListener win, 'popstate', (e) ->
       # Pop states without a state object were generated externally,
@@ -38,7 +38,7 @@ History = module.exports = (@_routes, @_page, dom) ->
       return unless (state = e.state) && state.render
       # Note that the post body is only sent on the initial reqest
       # and null is sent if the state is later popped
-      renderRoute winLocation.pathname, null, self._page, self._routes[state.method], 0, null, e
+      renderRoute winLocation.pathname, self._page, self._routes[state.method], 0, null, null, e
 
   else
     @push = @replace = ->
@@ -53,13 +53,20 @@ History:: =
 
   replace: (url, render, e) -> @_update 'replaceState', url, render, e
 
+  # Rerender the current url locally
+  refresh: ->
+    path = routePath winLocation.href
+    renderRoute path, @_page, @_routes['get'], 0
+
   back: -> winHistory.back()
 
   forward: -> winHistory.forward()
 
   go: (i) -> winHistory.go i
 
-  _update: (historyMethod, url, render, e) ->
+  _update: (historyMethod, url, render = true, e) ->
+    return unless path = routePath url
+
     # If this is a form submission, extract the form data and
     # append it to the url for a get or params.body for a post
     if e && e.type is 'submit'
@@ -78,12 +85,12 @@ History:: =
         body = qs.parse query
       else
         method = 'get'
-        url += '?' + query
+        path += '?' + query
     else
       method = 'get'
 
-    winHistory[historyMethod] {render, method}, null, url
-    renderRoute url, body, @_page, @_routes[method], 0, form, e  if render
+    winHistory[historyMethod] {render, method}, null, path
+    renderRoute path, @_page, @_routes[method], 0, body, form, e  if render
 
 cancelRender = (url, form, e) ->
   # Don't do anything if this is the result of an event, since the
@@ -96,7 +103,7 @@ cancelRender = (url, form, e) ->
   else
     win.location = url  
 
-renderRoute = (url, body, page, routes, i, form, e) ->
+renderRoute = (url, page, routes, i, body, form, e) ->
   url = url.replace /#.*/, ''
   [path, query] = url.split '?'
   while route = routes[i++]
@@ -109,7 +116,7 @@ renderRoute = (url, body, page, routes, i, form, e) ->
       params[name] = match[j + 1]
     next = (err) ->
       return cancelRender url, form  if err?
-      renderRoute url, body, page, routes, i, form
+      renderRoute url, page, routes, i, body, form
     try
       route.callbacks page, page.model, params, next
     catch err

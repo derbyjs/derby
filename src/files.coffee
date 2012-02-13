@@ -5,60 +5,7 @@ stylus = require 'stylus'
 nib = require 'nib'
 racer = require 'racer'
 {parse: parseHtml} = require './html'
-
-onlyWhitespace = /^[\s\n]*$/
-isProduction = racer.util.isProduction
-
-findPath = (root, name, dir, extension, callback) ->
-  root = join root, dir, name  if name
-  path = root + extension
-  exists path, (value) ->
-    return callback path  if value
-    path = join root, 'index' + extension
-    exists path, (value) ->
-      callback if value then path else null
-
-loadTemplates = (root, fileName, get, alias, templates, callback) ->
-  callback.count = (callback.count || 0) + 1
-  findPath root, fileName, 'views', '.html', (path) ->
-    unless path
-      # Return without doing anything if the path isn't found, and this is the
-      # initial lookup based on the clientName. Otherwise, throw an error
-      if fileName then return callback {}
-      else throw new Error "Can't find #{root}/views/#{fileName}"
-
-    got = false
-    fs.readFile path, 'utf8', (err, template) ->
-      return callback err  if err
-      name = ''
-      from = ''
-      importName = ''
-      parseHtml template,
-        start: (tag, tagName, attrs) ->
-          i = tagName.length - 1
-          name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()
-          from = attrs.from
-          importName = attrs.import && attrs.import.toLowerCase()
-          if name is 'all' && importName
-            throw new Error "Can't specify import attribute with All in #{path}"
-        chars: (text, literal) ->
-          return unless get == 'all' || get == name
-          got = true
-          if from
-            unless onlyWhitespace.test text
-              throw new Error "Template import '#{name}' in #{path} can't contain content"
-            if importName
-              _alias = name
-              name = importName
-            return loadTemplates join(dirname(path), from), null, name, _alias, templates, callback
-          unless name && literal
-            return if onlyWhitespace.test text
-            throw new Error "Can't read template in #{path} near the text: #{text}"
-          templates[alias || name] = text
-
-      throw new Error "Can't find template '#{get}' in #{path}"  unless got
-      callback templates unless --callback.count
-
+{trim} = require './View'
 
 module.exports =
 
@@ -73,7 +20,7 @@ module.exports =
           .set('compress', true)
           .render (err, css) ->
             throw err if err
-            callback css
+            callback trim css
 
   templates: (root, clientName, callback) ->
     loadTemplates root, clientName, 'all', null, {}, callback
@@ -130,7 +77,88 @@ module.exports =
 
       exists staticRoot, (value) ->
         if value then return fs.mkdir staticPath, 0777, (err) ->
-          bundle()
+          finish()
         fs.mkdir staticRoot, 0777, (err) ->
           fs.mkdir staticPath, 0777, (err) ->
             finish()
+
+  watch: (dir, type, onChange) ->
+    options = interval: 100
+    extension = extensions[type]
+    files(dir, extension).forEach (file) ->
+      fs.watchFile file, options, (curr, prev) ->
+        onChange file  if prev.mtime < curr.mtime
+
+
+onlyWhitespace = /^[\s\n]*$/
+
+findPath = (root, name, dir, extension, callback) ->
+  root = join root, dir, name  if name
+  path = root + extension
+  exists path, (value) ->
+    return callback path  if value
+    path = join root, 'index' + extension
+    exists path, (value) ->
+      callback if value then path else null
+
+loadTemplates = (root, fileName, get, alias, templates, callback) ->
+  callback.count = (callback.count || 0) + 1
+  findPath root, fileName, 'views', '.html', (path) ->
+    unless path
+      # Return without doing anything if the path isn't found, and this is the
+      # initial lookup based on the clientName. Otherwise, throw an error
+      if fileName then return callback {}
+      else throw new Error "Can't find #{root}/views/#{fileName}"
+
+    got = false
+    fs.readFile path, 'utf8', (err, template) ->
+      return callback err  if err
+      name = ''
+      from = ''
+      importName = ''
+      parseHtml template,
+        start: (tag, tagName, attrs) ->
+          i = tagName.length - 1
+          name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()
+          from = attrs.from
+          importName = attrs.import && attrs.import.toLowerCase()
+          if name is 'all' && importName
+            throw new Error "Can't specify import attribute with All in #{path}"
+        chars: (text, literal) ->
+          return unless get == 'all' || get == name
+          got = true
+          if from
+            unless onlyWhitespace.test text
+              throw new Error "Template import '#{name}' in #{path} can't contain content"
+            if importName
+              _alias = name
+              name = importName
+            return loadTemplates join(dirname(path), from), null, name, _alias, templates, callback
+          unless name && literal
+            return if onlyWhitespace.test text
+            throw new Error "Can't read template in #{path} near the text: #{text}"
+          templates[alias || name] = trim text
+
+      throw new Error "Can't find template '#{get}' in #{path}"  unless got
+      callback templates unless --callback.count
+
+
+extensions =
+  html: /\.html$/
+  css: /\.styl$|\.css$/
+  js: /\.js$|\.coffee$/
+
+ignoreDirectories = ['node_modules', '.git', 'gen']
+ignored = (path) -> ignoreDirectories.indexOf(path) == -1
+
+files = (dir, extension, out = []) ->
+  fs.readdirSync(dir)
+    .filter(ignored)
+    .forEach (p) ->
+      p = join dir, p
+      if fs.statSync(p).isDirectory()
+        files p, extension, out
+      else if extension.test p
+        out.push p
+
+  return out

@@ -33,13 +33,33 @@ exports.createApp = (appModule) ->
 
   appExports.ready = (fn) -> racer.onready = -> fn model
 
-  # "$$templates$$" is replaced with an array of templates by file loader
-  view.make name, template  for name, template of "$$templates$$"
+  # "$$templates$$" is replaced with an array of templates in View.server
+  for name, template of "$$templates$$"
+    view.make name, template
 
-  appModule.exports = (modelBundle, ctx) ->
+  appModule.exports = (modelBundle, ctx, appFilename) ->
     model.on 'initialized', ->
       view.render model, ctx, true
+      autoRefresh view, model.socket, appFilename
     racer.init modelBundle
     return appExports
 
   return appExports
+
+autoRefresh = (view, socket, appFilename) ->
+  return unless appFilename
+
+  socket.on 'connect', ->
+    socket.emit 'derbyClient', appFilename
+
+  socket.on 'refreshCss', (css) ->
+    el = document.getElementById '$_css'
+    el.innerHTML = css  if el
+
+  socket.on 'refreshHtml', (templates) ->
+    for name, template of templates
+      view.make name, template
+    view.history.refresh()
+
+  socket.on 'refreshJs', ->
+    window.location.reload true

@@ -21,15 +21,16 @@ emptyDom =
 
 escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
 
-trim = View.trim
-
 # Don't execute before or after functions on the server
 View::before = View::after = empty
 
 View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
 
 View::_load = (isStatic, callback) ->
-  if isProduction then @_load = (isStatic, callback) -> callback()
+  if isProduction
+    @_load = (isStatic, callback) -> callback()
+  else
+    @_watch = true
 
   self = this
   templates = js = null
@@ -70,13 +71,12 @@ View::_load = (isStatic, callback) ->
       finish()
 
   files.css root, clientName, (value) ->
-    self._css = if value then "<style id=$_css>#{trim value}</style>" else ''
+    self._css = if value then "<style id=$_css>#{value}</style>" else ''
     finish()
 
   files.templates root, clientName, (value) ->
     templates = value
     for name, text of templates
-      templates[name] = text = trim text
       self.make name, text
     finish()
 
@@ -145,6 +145,7 @@ View::_render = (res, model, ctx, isStatic, bundle) ->
   return res.end tail  if isStatic
 
   res.end "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{@_require}')(" + escapeInlineScript(bundle) +
-    (if ctx then ',' + escapeInlineScript(JSON.stringify ctx) else '') +
+    "#{clientName}=require('./#{@_require}')(" + escapeInlineScript(bundle) + ',' +
+    (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
+    (if @_watch then ",'#{@_appFilename}'" else '' ) +
     ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
