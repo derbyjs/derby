@@ -1,8 +1,11 @@
+fs = require 'fs'
+path = require 'path'
+http = require 'http'
 racer = require 'racer'
+up = require 'up'
 View = require './View.server'
 files = require './files'
 Router = require 'express/lib/router'
-fs = require 'fs'
 
 isProduction = racer.util.isProduction
 
@@ -42,13 +45,20 @@ addWatches = (appFilename, options, sockets) ->
       for socket in sockets
         socket.emit 'refreshHtml', templates
 
+  files.watch root, 'js', ->
+    process.send type: 'reload'
+
+appHashes = {}
 autoRefresh = (store, options) ->
   return if isProduction || store._derbySocketsSetup
   store._derbySocketsSetup = true
   listeners = {}
   store.sockets.on 'connection', (socket) ->
-    socket.on 'derbyClient', (appFilename) ->
+    socket.on 'derbyClient', (appFilename, callback) ->
       return unless appFilename
+
+      # TODO: Wait for appHash to be set if it is undefined
+      callback appHashes[appFilename]
 
       if listeners[appFilename]
         return listeners[appFilename].push socket
@@ -60,6 +70,39 @@ derby = module.exports =
   options: {}
   configure: (@options) ->
 
+  run: (file, port, options = {numWorkers: 1}) ->
+    # Resolve relative filenames
+    file = path.join process.cwd(), file  if file[0] isnt '/'
+    port ?= if isProduction then 80 else 3000
+
+    try
+      server = require file
+    catch e
+      console.error "Error requiring server module from `#{file}`"
+      throw e
+
+    unless server instanceof http.Server
+      throw new Error "`#{file}` does not export a valid `http.Server`"
+
+    unless isProduction
+      # TODO: This extends the internal API of Up. It would be better
+      # if Up supported workers being able to force a global reload
+      onMessage = up.Worker::onMessage
+      up.Worker::onMessage = (message) ->
+        return upService.reload()  if message.type is 'reload'
+        onMessage.call this, message
+
+    master = http.createServer().listen port
+    upService = up master, file, options
+    process.on 'SIGUSR2', ->
+      console.log 'SIGUSR2 signal detected - reloading'
+      upService.reload()
+
+    console.log "Starting cluster with %d workers in %s mode",
+      options.numWorkers, process.env.NODE_ENV
+    console.log "`kill -s SIGUSR2 %s` to force cluster reload", process.pid
+    console.log "Go to: http://localhost:%d/", port
+
   createApp: (appModule) ->
     appExports = appModule.exports
     # Expose methods on the application module
@@ -69,6 +112,7 @@ derby = module.exports =
 
     view._derbyOptions = options = @options
     view._appFilename = appModule.filename
+    view._appHashes = appHashes
 
     store = null
     session = null

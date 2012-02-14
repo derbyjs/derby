@@ -56,8 +56,9 @@ View::_load = (isStatic, callback) ->
     finish = ->
       return if --count
       js = js.replace '"$$templates$$"', JSON.stringify(templates || {})
-      files.writeJs js, options, (jsFile) ->
+      files.writeJs js, options, (jsFile, appHash) ->
         self._jsFile = jsFile
+        self._appHashes[appFilename] = self._appHash = appHash
         callback()
 
     if @_js
@@ -145,7 +146,8 @@ View::_render = (res, model, ctx, isStatic, bundle) ->
   return res.end tail  if isStatic
 
   res.end "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{@_require}')(" + escapeInlineScript(bundle) + ',' +
+    "#{clientName}=require('./#{@_require}')(" +
+    escapeInlineScript(bundle) + ",'#{@_appHash}'," +
     (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
     (if @_watch then ",'#{@_appFilename}'" else '' ) +
     ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"

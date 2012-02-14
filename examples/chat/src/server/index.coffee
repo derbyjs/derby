@@ -12,7 +12,7 @@ root = path.dirname path.dirname __dirname
 publicPath = path.join root, 'public'
 staticPages = derby.createStatic root
 
-(server = express.createServer())
+(module.exports = server = express.createServer())
   # The express.static middleware can be used instead of gzip.staticGzip
   .use(gzip.staticGzip publicPath, MAX_AGE_ONE_YEAR)
   .use(express.favicon())
@@ -59,7 +59,3 @@ store = chat.createStore redis: {db: 2}, listen: server
 ## TODO: Remove when using a database ##
 # Clear all data every time the node server is started
 store.flush()
-
-server.listen 3002
-console.log 'Express server started in %s mode', server.settings.env
-console.log 'Go to: http://localhost:%d/', server.address().port

@@ -37,20 +37,25 @@ exports.createApp = (appModule) ->
   for name, template of "$$templates$$"
     view.make name, template
 
-  appModule.exports = (modelBundle, ctx, appFilename) ->
+  appModule.exports = (modelBundle, appHash, ctx, appFilename) ->
     model.on 'initialized', ->
       view.render model, ctx, true
-      autoRefresh view, model.socket, appFilename
+      autoRefresh view, model, appFilename, appHash
     racer.init modelBundle
     return appExports
 
   return appExports
 
-autoRefresh = (view, socket, appFilename) ->
+autoRefresh = (view, model, appFilename, appHash) ->
   return unless appFilename
 
+  {socket} = model
+  model.on 'connectionStatus', (connected, canConnect) ->
+    window.location.reload true  unless canConnect
+
   socket.on 'connect', ->
-    socket.emit 'derbyClient', appFilename
+    socket.emit 'derbyClient', appFilename, (serverHash) ->
+      window.location.reload true  if appHash != serverHash
 
   socket.on 'refreshCss', (css) ->
     el = document.getElementById '$_css'
@@ -60,6 +65,3 @@ autoRefresh = (view, socket, appFilename) ->
     for name, template of templates
       view.make name, template
     view.history.refresh()
-
-  socket.on 'refreshJs', ->
-    window.location.reload true

@@ -54,23 +54,26 @@ module.exports =
       require: basename parentFilename
     }
 
+  hashFile: hashFile = (s) ->
+    hash = crypto.createHash('md5').update(s).digest('base64')
+    # Base64 uses characters reserved in URLs and adds extra padding charcters.
+    # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding
+    return hash.replace /[\/\+=]/g, (match) ->
+      switch match
+        when '/' then '-'
+        when '+' then '_'
+        when '=' then ''
+
   writeJs: (js, options, callback) ->
     staticRoot = options.staticRoot || join root, 'public'
     staticDir = options.staticDir || 'gen'
     staticPath = join staticRoot, staticDir
 
-    filename = crypto.createHash('md5').update(js).digest('base64') + '.js'
-    # Base64 uses characters reserved in URLs and adds extra padding charcters.
-    # Replace "/" and "+" with the unreserved "-" and "_" and remove "=" padding
-    filename = filename.replace /[\/\+=]/g, (match) ->
-      switch match
-        when '/' then '-'
-        when '+' then '_'
-        when '=' then ''
+    hash = hashFile js
+    filename = hash + '.js'
     jsFile = join '/', staticDir, filename
-
     filePath = join staticPath, filename
-    finish = -> fs.writeFile filePath, js, -> callback jsFile
+    finish = -> fs.writeFile filePath, js, -> callback jsFile, hash
 
     exists staticPath, (value) ->
       return finish() if value
@@ -146,7 +149,7 @@ loadTemplates = (root, fileName, get, alias, templates, callback) ->
 extensions =
   html: /\.html$/
   css: /\.styl$|\.css$/
-  js: /\.js$|\.coffee$/
+  js: /\.js$/
 
 ignoreDirectories = ['node_modules', '.git', 'gen']
 ignored = (path) -> ignoreDirectories.indexOf(path) == -1
