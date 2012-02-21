@@ -1,6 +1,5 @@
 {get, view, ready} = require('derby').createApp module
 
-
 ## ROUTES ##
 
 get '/', (page) ->
@@ -36,6 +35,37 @@ get '/:groupName', (page, model, {groupName}) ->
 
     page.render()
 
+# TODO Implement this commented out API
+#get '/:groupName', (page, model, {groupName, query}) ->
+#  model.subscribe "groups.#{groupName}", (group) ->
+#    model.ref '_group', group
+##    group.setNull 'id', groupName
+#    todoIds = group.at 'todoIds'
+#    model.subscribe query('todos').where('id').within(todoIds), ->
+#      # The refList supports array methods, but it stores the todo values
+#      # on an object by id. The todos are stored on the object 'todos',
+#      # and their order is stored in an array of ids at '_group.todoIds'
+#      todoList = model.refList '_todoList', 'todos', todoIds
+#      unless todoIds.get()
+#        todoList.push
+#          {text: 'Example todo', tags: ['wknd']},
+#          {text: 'Another example', tags: ['wknd', 'work']},
+#          {text: 'This one is done already', tags: ['work'], completed: true}
+#
+#      # Create a reactive function that automatically keeps '_remaining'
+#      # updated with the number of remaining todos
+#      model.fn '_remaining', '_todoList', (list) ->
+#        remaining = 0
+#        for todo in list
+#          remaining++ unless todo.completed
+#        return remaining
+#
+#      if tags = query.tags?.split ','
+#        # TODO Hide / show tag classes
+#      else
+#        # TODO Hide / show tag classes
+#
+#      page.render()
 
 ## CONTROLLER FUNCTIONS ##
 
