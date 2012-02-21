@@ -16,18 +16,19 @@ APP_COFFEE = '''
 start = +new Date()
 
 # Derby routes can be rendered on the client and the server
-get '/:room?', (page, model, {room}) ->
-  room ||= 'home'
+get '/:roomName?', (page, model, {roomName}) ->
+  roomName ||= 'home'
 
-  # Subscribes the model to any updates on this room's object. Also sets a
-  # model reference to the room. This is equivalent to:
-  #   model.set '_room', model.ref "rooms.#{room}"
-  model.subscribe _room: "rooms.#{room}", ->
+  # Subscribes the model to any updates on this room's object. Calls back
+  # with a scoped model equivalent to:
+  #   room = model.at "rooms.#{roomName}"
+  model.subscribe "rooms.#{roomName}", (room) ->
+    model.ref '_room', room
 
     # setNull will set a value if the object is currently null or undefined
-    model.setNull '_room.welcome', "Welcome to #{room}!"
+    room.setNull 'welcome', "Welcome to #{room}!"
 
-    model.incr '_room.visits'
+    room.incr 'visits'
 
     # This value is set for when the page initially renders
     model.set '_timer', '0.0'
@@ -75,18 +76,19 @@ var <<app>> = require('derby').createApp(module),
 start = +new Date();
 
 // Derby routes can be rendered on the client and the server
-get('/:room?', function(page, model, params) {
-  var room = params.room || 'home';
+get('/:roomName?', function(page, model, params) {
+  var roomName = params.roomName || 'home';
 
-  // Subscribes the model to any updates on this room's object. Also sets a
-  // model reference to the room. This is equivalent to:
-  //   model.set('_room', model.ref('rooms.' + room));
-  model.subscribe({ _room: 'rooms.' + room }, function() {
+  // Subscribes the model to any updates on this room's object. Calls back
+  // with a scoped model equivalent to:
+  //   room = model.at('rooms.' + room);
+  model.subscribe('rooms.' + room, function(room) {
+    model.ref('_room', room);
 
     // setNull will set a value if the object is currently null or undefined
-    model.setNull('_room.welcome', 'Welcome to ' + room + '!');
+    room.setNull('welcome', 'Welcome to ' + room + '!');
 
-    model.incr('_room.visits');
+    room.incr('visits');
 
     // This value is set for when the page initially renders
     model.set('_timer', '0.0');

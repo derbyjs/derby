@@ -6,23 +6,21 @@
 get '/', (page) ->
   page.redirect '/derby'
 
-get '/:group', (page, model, {group, query}) ->
-  if query
-    tags = query.tags
-    tags = tags.split ','
-    console.log tags
-  groupTodosQuery = model.query('todos').where('group').equals(group)
-  model.subscribe _group: "groups.#{group}", groupTodosQuery, ->
-    model.setNull '_group.id', group
+get '/:groupName', (page, model, {groupName}) ->
+  groupTodosQuery = model.query('todos').where('group').equals(groupName)
+  model.subscribe "groups.#{groupName}", groupTodosQuery, (group) ->
+    model.ref '_group', group
+    todoIds = group.at 'todoIds'
+    group.setNull 'id', groupName
 
     # The refList supports array methods, but it stores the todo values
     # on an object by id. The todos are stored on the object 'todos',
     # and their order is stored in an array of ids at '_group.todoIds'
-    model.refList '_todoList', 'todos', '_group.todoIds'
+    model.refList '_todoList', 'todos', todoIds
 
     # Add some default todos if this is a new group. Items inserted into
     # a refList will automatically get an 'id' property if not specified
-    unless model.get '_group.todoIds'
+    unless todoIds.get()
       model.push '_todoList',
         {group, text: 'Example todo', tags: ['wknd']},
         {group, text: 'Another example', tags: ['wknd', 'work']},

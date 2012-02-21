@@ -24,6 +24,9 @@ escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
 # Don't execute before or after functions on the server
 View::before = View::after = empty
 
+# This is overridden but is here for testing
+View::_appHashes = {}
+
 View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
 
 View::_load = (isStatic, callback) ->

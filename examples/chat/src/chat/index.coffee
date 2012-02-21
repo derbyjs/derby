@@ -23,8 +23,9 @@ get '/:room?', (page, model, {room}) ->
       picClass: 'pic' + (userId % NUM_USER_IMAGES)
     getRoom page, model, room, userId
 
-getRoom = (page, model, room, userId) ->
-  model.subscribe _room: "rooms.#{room}", 'users', ->
+getRoom = (page, model, roomName, userId) ->
+  model.subscribe "rooms.#{roomName}", 'users', (room) ->
+    model.ref '_room', room
 
     # setNull will set a value if the object is currently null or undefined
     model.setNull '_room.messages', []
