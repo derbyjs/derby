@@ -38,7 +38,7 @@ describe 'EventDispatcher', ->
   it 'calls onTrigger without listener', calls 2, (done) ->
     dispatcher = new EventDispatcher
       onTrigger: (name, listener, value, options) ->
-        expect(listener).to.be.null
+        expect(listener).to.equal undefined
         expect(value).to.equal value1
         expect(options).to.equal options1
         done()
