@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "mocha": ">=0.9.0",
-    "should": ">=0.2.1",
+    "expect.js": ">=0.1.2",
     "coffee-script": ">=1.1.2"
   },
   "engines": {

@@ -1,5 +1,5 @@
+expect = require 'expect.js'
 {calls} = require './util'
-should = require 'should'
 EventDispatcher = require '../src/EventDispatcher'
 
 describe 'EventDispatcher', ->
@@ -27,9 +27,9 @@ describe 'EventDispatcher', ->
   it 'calls onTrigger', calls 2, (done) ->
     dispatcher = new EventDispatcher
       onTrigger: (name, listener, value, options) ->
-        listener.should.eql listener1
-        value.should.equal value1
-        options.should.equal options1
+        expect(listener).to.eql listener1
+        expect(value).to.equal value1
+        expect(options).to.equal options1
         done()
     dispatcher.bind name1, listener1
     dispatcher.trigger name1, value1, options1
@@ -38,9 +38,9 @@ describe 'EventDispatcher', ->
   it 'calls onTrigger without listener', calls 2, (done) ->
     dispatcher = new EventDispatcher
       onTrigger: (name, listener, value, options) ->
-        should.equal null, listener
-        value.should.equal value1
-        options.should.equal options1
+        expect(listener).to.be.null
+        expect(value).to.equal value1
+        expect(options).to.equal options1
         done()
     dispatcher.bind name1
     dispatcher.trigger name1, value1, options1
@@ -49,16 +49,16 @@ describe 'EventDispatcher', ->
   it 'calls onTrigger for multiple listeners', calls 1, (done) ->
     counts = {all: 0}
     beforeExit = ->
-      counts[listener2].should.equal 1
-      counts[listener3].should.equal 3
-      counts[listener4].should.equal 1
+      expect(counts[listener2]).to.equal 1
+      expect(counts[listener3]).to.equal 3
+      expect(counts[listener4]).to.equal 1
       done()
 
     dispatcher = new EventDispatcher
       onTrigger: (name, listener, value, options) ->
         counts[listener] = (counts[listener] || 0) + 1
-        value.should.equal value1
-        options.should.equal options1
+        expect(value).to.equal value1
+        expect(options).to.equal options1
         beforeExit() if ++counts.all == 5
 
     dispatcher.bind name1, listener2
@@ -87,13 +87,13 @@ describe 'EventDispatcher', ->
   it 'test EventDispatcher bind callback', calls 3, (done) ->
     dispatcher = new EventDispatcher
       onTrigger: (name, listener, value, options) ->
-        listener.should.eql listener1
-        value.should.equal value1
-        options.should.equal options1
+        expect(listener).to.eql listener1
+        expect(value).to.equal value1
+        expect(options).to.equal options1
         done()
       onBind: (name, listener) ->
-        name.should.equal name1
-        listener.should.eql listener1
+        expect(name).to.equal name1
+        expect(listener).to.eql listener1
         done()
         return name
     dispatcher.bind name1, listener1

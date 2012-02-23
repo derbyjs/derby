@@ -1,5 +1,3 @@
-should = require 'should'
-
 # For Mocha
 exports.calls = (num, fn) ->
   (done) ->
