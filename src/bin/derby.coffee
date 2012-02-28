@@ -405,7 +405,6 @@ README = '''
 
 GITIGNORE_COFFEE = '''
 .DS_Store
-node_modules
 public/gen
 lib/
 
@@ -413,7 +412,6 @@ lib/
 
 GITIGNORE_JS = '''
 .DS_Store
-node_modules
 public/gen
 
 '''
@@ -432,7 +430,7 @@ packageJson = (project, useCoffee) ->
 
   if useCoffee
     package.devDependencies =
-      'coffee-script': '>=1.1.2'
+      'coffee-script': '>=1.2'
 
   return JSON.stringify package, null, '  '
 

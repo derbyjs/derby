@@ -5,6 +5,9 @@
   "main": "./server.js",
   "dependencies": {
     "derby": "*",
+    "racer-journal-redis": "*",
+    "racer-pubsub-redis": "*",
+    "racer-db-mongo": "*",
     "express": ">=2 <3",
     "connect-gzip": ">=0.1.5"
   },

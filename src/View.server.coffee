@@ -1,11 +1,10 @@
+uglify = require 'racer/node_modules/uglify-js'
 {Model} = racer = require 'racer'
-uglify = require 'uglify-js'
-{escapeHtml} = require './html'
+{isProduction} = racer.util
 EventDispatcher = require './EventDispatcher'
 files = require './files'
+{escapeHtml} = require './html'
 module.exports = View = require './View'
-
-isProduction = racer.util.isProduction
 
 empty = ->
 emptyRes =

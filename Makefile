@@ -1,8 +1,8 @@
 compile:
-	./node_modules/coffee-script/bin/coffee -bw -o ./lib -c ./src
+	./node_modules/racer/node_modules/coffee-script/bin/coffee -bw -o ./lib -c ./src
 
 MOCHA_TESTS := $(shell find test/ -name '*.mocha.coffee')
-MOCHA := $(shell which mocha)
+MOCHA := ./node_modules/racer/node_modules/mocha/bin/mocha
 OUT_FILE = "test-output.tmp"
 
 g = "."

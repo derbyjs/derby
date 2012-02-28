@@ -1,4 +1,4 @@
-expect = require 'expect.js'
+{expect, calls} = require 'racer/test/util'
 PathMap = require '../src/PathMap'
 
 describe 'PathMap', ->

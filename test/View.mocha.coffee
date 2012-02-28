@@ -1,5 +1,5 @@
-expect = require 'expect.js'
-Model = require '../node_modules/racer/src/Model.server'
+{expect, calls} = require 'racer/test/util'
+{Model} = require 'racer'
 View = require '../src/View.server'
 
 describe 'View', ->

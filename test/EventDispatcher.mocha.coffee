@@ -1,5 +1,4 @@
-expect = require 'expect.js'
-{calls} = require './util'
+{expect, calls} = require 'racer/test/util'
 EventDispatcher = require '../src/EventDispatcher'
 
 describe 'EventDispatcher', ->

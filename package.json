@@ -13,17 +13,11 @@
     "racer": "0.1.8",
     "express": ">=2.0.0 < 3.0.0",
     "qs": ">=0.4.0",
-    "uglify-js": ">=1.1.1",
     "stylus": ">=0.15.0",
     "nib": ">=0.3.0",
     "commander": ">=0.4.2",
     "mkdirp": ">=0.0.7",
     "up": ">=0.1.4"
-  },
-  "devDependencies": {
-    "mocha": ">=0.9.0",
-    "expect.js": ">=0.1.2",
-    "coffee-script": ">=1.1.2"
   },
   "engines": {
     "node": ">=0.6.0"

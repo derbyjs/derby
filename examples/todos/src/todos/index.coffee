@@ -31,7 +31,7 @@ get '/:groupName', (page, model, {groupName}) ->
     model.fn '_remaining', '_todoList', (list) ->
       remaining = 0
       for todo in list
-        remaining++ unless todo.completed
+        remaining++ unless todo?.completed
       return remaining
 
     page.render()
