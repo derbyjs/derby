@@ -57,7 +57,14 @@ View::_load = (isStatic, callback) ->
     count = 3
     finish = ->
       return if --count
-      js = js.replace '"$$templates$$"', JSON.stringify(templates || {})
+
+      json = JSON.stringify templates || {}
+      js = if ~(js.indexOf '"$$templates$$"')
+        js.replace '"$$templates$$"', json
+      else
+        # This is needed for Browserify debug mode
+        js.replace '\\"$$templates$$\\"', json.replace(/"/g, '\\"')
+
       files.writeJs js, options, (jsFile, appHash) ->
         self._jsFile = jsFile
         self._appHashes[appFilename] = self._appHash = appHash
