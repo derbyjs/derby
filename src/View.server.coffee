@@ -62,8 +62,9 @@ View::_load = (isStatic, callback) ->
       js = if ~(js.indexOf '"$$templates$$"')
         js.replace '"$$templates$$"', json
       else
+        json = json.replace /["\\]/g, (s) -> if s is '"' then '\\"' else '\\\\'
         # This is needed for Browserify debug mode
-        js.replace '\\"$$templates$$\\"', json.replace(/"/g, '\\"')
+        js.replace '\\"$$templates$$\\"', json
 
       files.writeJs js, options, (jsFile, appHash) ->
         self._jsFile = jsFile
