@@ -6,67 +6,9 @@ up = require 'up'
 View = require './View.server'
 files = require './files'
 Router = require 'express/lib/router'
+{mergeAll, isProduction} = racer.util
 
-isProduction = racer.util.isProduction
-
-# The router middleware checks whether 'case sensitive routes' and 'strict routing'
-# are enabled. For now, always use the default value of false
-serverMock =
-  enabled: -> false
-
-Page = (@view, @res, @model) -> return
-Page:: =
-  render: (ctx, status) ->
-    @view.render @res, @model, ctx, status
-  redirect: (url, status) ->
-    @res.redirect url, status
-
-Static = (@root) ->
-  @views = {}
-  return
-Static:: =
-  render: (name, res, model, ctx, status) ->
-    unless view = @views[name]
-      view = @views[name] = new View
-      view._root = @root
-      view._clientName = name
-    view.render res, model, ctx, status, true
-
-addWatches = (appFilename, options, sockets) ->
-  {root, clientName} = files.parseName appFilename, options
-
-  files.watch root, 'css', ->
-    files.css root, clientName, (css) ->
-      for socket in sockets
-        socket.emit 'refreshCss', css
-
-  files.watch root, 'html', ->
-    files.templates root, clientName, (templates) ->
-      for socket in sockets
-        socket.emit 'refreshHtml', templates
-
-  files.watch root, 'js', ->
-    process.send type: 'reload'
-
-appHashes = {}
-autoRefresh = (store, options) ->
-  return if isProduction || store._derbySocketsSetup
-  store._derbySocketsSetup = true
-  listeners = {}
-  store.sockets.on 'connection', (socket) ->
-    socket.on 'derbyClient', (appFilename, callback) ->
-      return unless appFilename
-
-      # TODO: Wait for appHash to be set if it is undefined
-      callback appHashes[appFilename]
-
-      if listeners[appFilename]
-        return listeners[appFilename].push socket
-
-      sockets = listeners[appFilename] = [socket]
-      addWatches appFilename, options, sockets
-
-derby = module.exports =
+derby = module.exports = mergeAll Object.create(racer),
   options: {}
   configure: (@options) ->
 
@@ -154,8 +96,64 @@ derby = module.exports =
     store = racer.createStore options
     app._setStore store  for app in args
     return store
-  
-  session: racer.session
 
 Object.defineProperty derby, 'version',
   get: -> JSON.parse(fs.readFileSync __dirname + '/../package.json', 'utf8').version
+
+
+# The router middleware checks whether 'case sensitive routes' and 'strict routing'
+# are enabled. For now, always use the default value of false
+serverMock =
+  enabled: -> false
+
+Page = (@view, @res, @model) -> return
+Page:: =
+  render: (ctx, status) ->
+    @view.render @res, @model, ctx, status
+  redirect: (url, status) ->
+    @res.redirect url, status
+
+Static = (@root) ->
+  @views = {}
+  return
+Static:: =
+  render: (name, res, model, ctx, status) ->
+    unless view = @views[name]
+      view = @views[name] = new View
+      view._root = @root
+      view._clientName = name
+    view.render res, model, ctx, status, true
+
+addWatches = (appFilename, options, sockets) ->
+  {root, clientName} = files.parseName appFilename, options
+
+  files.watch root, 'css', ->
+    files.css root, clientName, (css) ->
+      for socket in sockets
+        socket.emit 'refreshCss', css
+
+  files.watch root, 'html', ->
+    files.templates root, clientName, (templates) ->
+      for socket in sockets
+        socket.emit 'refreshHtml', templates
+
+  files.watch root, 'js', ->
+    process.send type: 'reload'
+
+appHashes = {}
+autoRefresh = (store, options) ->
+  return if isProduction || store._derbySocketsSetup
+  store._derbySocketsSetup = true
+  listeners = {}
+  store.sockets.on 'connection', (socket) ->
+    socket.on 'derbyClient', (appFilename, callback) ->
+      return unless appFilename
+
+      # TODO: Wait for appHash to be set if it is undefined
+      callback appHashes[appFilename]
+
+      if listeners[appFilename]
+        return listeners[appFilename].push socket
+
+      sockets = listeners[appFilename] = [socket]
+      addWatches appFilename, options, sockets

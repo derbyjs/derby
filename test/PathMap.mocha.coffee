@@ -1,44 +1,44 @@
-should = require 'should'
+{expect, calls} = require 'racer/test/util'
 PathMap = require '../src/PathMap'
 
 describe 'PathMap', ->
 
   it 'should create ids and double index them', ->
     pathMap = new PathMap
-    pathMap.count.should.eql 0
-    pathMap.ids.should.eql {}
-    pathMap.paths.should.eql {}
+    expect(pathMap.count).to.eql 0
+    expect(pathMap.ids).to.eql {}
+    expect(pathMap.paths).to.eql {}
 
-    pathMap.id('colors.green').should.eql 1
-    pathMap.count.should.eql 1
-    pathMap.ids.should.eql {'colors.green': 1}
-    pathMap.paths.should.eql {1: 'colors.green'}
-  
+    expect(pathMap.id 'colors.green').to.eql 1
+    expect(pathMap.count).to.eql 1
+    expect(pathMap.ids).to.eql {'colors.green': 1}
+    expect(pathMap.paths).to.eql {1: 'colors.green'}
+
   it 'should return same id for same path', ->
     pathMap = new PathMap
-    pathMap.id('colors.green').should.eql pathMap.id('colors.green')
+    expect(pathMap.id 'colors.green').to.eql pathMap.id('colors.green')
 
   it 'should return different id for different path', ->
     pathMap = new PathMap
-    pathMap.id('colors.green').should.not.eql pathMap.id('colors.red')
-  
+    expect(pathMap.id 'colors.green').to.not.eql pathMap.id('colors.red')
+
   it 'should index array paths', ->
     pathMap = new PathMap
-    pathMap.arrays.should.eql {}
+    expect(pathMap.arrays).to.eql {}
 
     # A path is assumed to be an array path if it contains a segment
     # of only decimal digits
-    pathMap.id('colors.0').should.eql 1
-    pathMap.id('colors.0.hex').should.eql 2
-    pathMap.id('colors.0.rgb').should.eql 3
-    pathMap.id('colors.1.hex').should.eql 4
-    pathMap.ids.should.eql {
+    expect(pathMap.id 'colors.0').to.eql 1
+    expect(pathMap.id 'colors.0.hex').to.eql 2
+    expect(pathMap.id 'colors.0.rgb').to.eql 3
+    expect(pathMap.id 'colors.1.hex').to.eql 4
+    expect(pathMap.ids).to.eql {
       'colors.0': 1
       'colors.0.hex': 2
       'colors.0.rgb': 3
       'colors.1.hex': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.0'
       2: 'colors.0.hex'
       3: 'colors.0.rgb'
@@ -47,23 +47,23 @@ describe 'PathMap', ->
     # Array index has keys of the array path. The value is an array
     # that mirrors the structure of the indexed array. Each item in
     # the array is a map from path ids to the remainder of the path
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {1: '', 2: '.hex', 3: '.rgb'}
         {4: '.hex'}
       ]
     }
-  
+
   it 'should index nested arrays', ->
     pathMap = new PathMap
-    pathMap.arrays.should.eql {}
+    expect(pathMap.arrays).to.eql {}
 
-    pathMap.id('tables.0.rows.0').should.eql 1
-    pathMap.id('tables.0.rows.1.name').should.eql 2
-    pathMap.id('tables.1.rows.0').should.eql 3
-    pathMap.id('tables.1.rows.1.name').should.eql 4
+    expect(pathMap.id 'tables.0.rows.0').to.eql 1
+    expect(pathMap.id 'tables.0.rows.1.name').to.eql 2
+    expect(pathMap.id 'tables.1.rows.0').to.eql 3
+    expect(pathMap.id 'tables.1.rows.1.name').to.eql 4
     # Nested arrays are tracked under an arrays property
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -78,9 +78,9 @@ describe 'PathMap', ->
       ]
     }
 
-    pathMap.id('tables.0.rows.0.cols.0').should.eql 5
-    pathMap.id('tables.0.rows.0.cols.1.text').should.eql 6
-    pathMap.arrays.should.eql {
+    expect(pathMap.id 'tables.0.rows.0.cols.0').to.eql 5
+    expect(pathMap.id 'tables.0.rows.0.cols.1.text').to.eql 6
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -98,20 +98,20 @@ describe 'PathMap', ->
         {6: '.text'}
       ]
     }
-  
+
   it 'onRemove should update array indicies', ->
     pathMap = new PathMap
-    pathMap.id('colors.0').should.eql 1
-    pathMap.id('colors.0.hex').should.eql 2
-    pathMap.id('colors.1').should.eql 3
-    pathMap.id('colors.1.hex').should.eql 4
-    pathMap.id('colors.2').should.eql 5
-    pathMap.id('colors.2.hex').should.eql 6
-    pathMap.id('colors.3').should.eql 7
-    pathMap.id('colors.3.hex').should.eql 8
+    expect(pathMap.id 'colors.0').to.eql 1
+    expect(pathMap.id 'colors.0.hex').to.eql 2
+    expect(pathMap.id 'colors.1').to.eql 3
+    expect(pathMap.id 'colors.1.hex').to.eql 4
+    expect(pathMap.id 'colors.2').to.eql 5
+    expect(pathMap.id 'colors.2.hex').to.eql 6
+    expect(pathMap.id 'colors.3').to.eql 7
+    expect(pathMap.id 'colors.3.hex').to.eql 8
 
     pathMap.onRemove 'colors', 3, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 1
       'colors.0.hex': 2
       'colors.1': 3
@@ -119,7 +119,7 @@ describe 'PathMap', ->
       'colors.2': 5
       'colors.2.hex': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.0'
       2: 'colors.0.hex'
       3: 'colors.1'
@@ -127,7 +127,7 @@ describe 'PathMap', ->
       5: 'colors.2'
       6: 'colors.2.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {1: '', 2: '.hex'}
         {3: '', 4: '.hex'}
@@ -136,40 +136,40 @@ describe 'PathMap', ->
     }
 
     pathMap.onRemove 'colors', 0, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 5
       'colors.0.hex': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       5: 'colors.0'
       6: 'colors.0.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {5: '', 6: '.hex'}
       ]
     }
-  
+
     pathMap.onRemove 'colors', 0, 1
-    pathMap.ids.should.eql {}
-    pathMap.paths.should.eql {}
-    pathMap.arrays.should.eql {
+    expect(pathMap.ids).to.eql {}
+    expect(pathMap.paths).to.eql {}
+    expect(pathMap.arrays).to.eql {
       colors: []
     }
 
   it 'onRemove should update single nested array indicies', ->
     pathMap = new PathMap
-    pathMap.id('tables.0.rows.0').should.eql 1
-    pathMap.id('tables.0.rows.1.name').should.eql 2
-    pathMap.id('tables.1.rows.0').should.eql 3
-    pathMap.id('tables.1.rows.1.name').should.eql 4
-    pathMap.id('tables.2.rows.0').should.eql 5
-    pathMap.id('tables.2.rows.1.name').should.eql 6
-    pathMap.id('tables.3.rows.0').should.eql 7
-    pathMap.id('tables.3.rows.1.name').should.eql 8
+    expect(pathMap.id 'tables.0.rows.0').to.eql 1
+    expect(pathMap.id 'tables.0.rows.1.name').to.eql 2
+    expect(pathMap.id 'tables.1.rows.0').to.eql 3
+    expect(pathMap.id 'tables.1.rows.1.name').to.eql 4
+    expect(pathMap.id 'tables.2.rows.0').to.eql 5
+    expect(pathMap.id 'tables.2.rows.1.name').to.eql 6
+    expect(pathMap.id 'tables.3.rows.0').to.eql 7
+    expect(pathMap.id 'tables.3.rows.1.name').to.eql 8
 
     pathMap.onRemove 'tables.0.rows', 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.name': 2
       'tables.1.rows.0': 3
       'tables.1.rows.1.name': 4
@@ -178,7 +178,7 @@ describe 'PathMap', ->
       'tables.3.rows.0': 7
       'tables.3.rows.1.name': 8
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.name'
       3: 'tables.1.rows.0'
       4: 'tables.1.rows.1.name'
@@ -187,7 +187,7 @@ describe 'PathMap', ->
       7: 'tables.3.rows.0'
       8: 'tables.3.rows.1.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -212,17 +212,17 @@ describe 'PathMap', ->
     }
 
     pathMap.onRemove 'tables', 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.name': 2
       'tables.1.rows.0': 7
       'tables.1.rows.1.name': 8
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.name'
       7: 'tables.1.rows.0'
       8: 'tables.1.rows.1.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -237,13 +237,13 @@ describe 'PathMap', ->
     }
 
     pathMap.onRemove 'tables', 1, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.name': 2
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
       ]
@@ -253,25 +253,25 @@ describe 'PathMap', ->
     }
 
     pathMap.onRemove 'tables', 0, 1
-    pathMap.ids.should.eql {}
-    pathMap.paths.should.eql {}
-    pathMap.arrays.should.eql {
+    expect(pathMap.ids).to.eql {}
+    expect(pathMap.paths).to.eql {}
+    expect(pathMap.arrays).to.eql {
       'tables': []
     }
 
   it 'onRemove should update double nested array indicies', ->
     pathMap = new PathMap
-    pathMap.id('tables.0.rows.0.cols.0').should.eql 1
-    pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2
-    pathMap.id('tables.1.rows.0.cols.0').should.eql 3
-    pathMap.id('tables.1.rows.1.cols.0.text').should.eql 4
-    pathMap.id('tables.2.rows.0.cols.0').should.eql 5
-    pathMap.id('tables.2.rows.1.cols.0.text').should.eql 6
-    pathMap.id('tables.3.rows.0.cols.0').should.eql 7
-    pathMap.id('tables.3.rows.1.cols.0.text').should.eql 8
+    expect(pathMap.id 'tables.0.rows.0.cols.0').to.eql 1
+    expect(pathMap.id 'tables.0.rows.1.cols.0.text').to.eql 2
+    expect(pathMap.id 'tables.1.rows.0.cols.0').to.eql 3
+    expect(pathMap.id 'tables.1.rows.1.cols.0.text').to.eql 4
+    expect(pathMap.id 'tables.2.rows.0.cols.0').to.eql 5
+    expect(pathMap.id 'tables.2.rows.1.cols.0.text').to.eql 6
+    expect(pathMap.id 'tables.3.rows.0.cols.0').to.eql 7
+    expect(pathMap.id 'tables.3.rows.1.cols.0.text').to.eql 8
 
     pathMap.onRemove 'tables.0.rows', 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0.text': 2
       'tables.1.rows.0.cols.0': 3
       'tables.1.rows.1.cols.0.text': 4
@@ -280,7 +280,7 @@ describe 'PathMap', ->
       'tables.3.rows.0.cols.0': 7
       'tables.3.rows.1.cols.0.text': 8
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.cols.0.text'
       3: 'tables.1.rows.0.cols.0'
       4: 'tables.1.rows.1.cols.0.text'
@@ -289,7 +289,7 @@ describe 'PathMap', ->
       7: 'tables.3.rows.0.cols.0'
       8: 'tables.3.rows.1.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -321,17 +321,17 @@ describe 'PathMap', ->
     }
 
     pathMap.onRemove 'tables', 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0.text': 2
       'tables.1.rows.0.cols.0': 7
       'tables.1.rows.1.cols.0.text': 8
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.cols.0.text'
       7: 'tables.1.rows.0.cols.0'
       8: 'tables.1.rows.1.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -349,13 +349,13 @@ describe 'PathMap', ->
     }
 
     pathMap.onRemove 'tables', 1, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0.text': 2
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
       ]
@@ -366,23 +366,23 @@ describe 'PathMap', ->
     }
 
     pathMap.onRemove 'tables', 0, 1
-    pathMap.ids.should.eql {}
-    pathMap.paths.should.eql {}
-    pathMap.arrays.should.eql {
+    expect(pathMap.ids).to.eql {}
+    expect(pathMap.paths).to.eql {}
+    expect(pathMap.arrays).to.eql {
       'tables': []
     }
 
   it 'onInsert should update array indicies', ->
     pathMap = new PathMap
-    pathMap.id('colors.0').should.eql 1
-    pathMap.id('colors.0.hex').should.eql 2
-    pathMap.id('colors.1').should.eql 3
-    pathMap.id('colors.1.hex').should.eql 4
-    pathMap.id('colors.2').should.eql 5
-    pathMap.id('colors.2.hex').should.eql 6
+    expect(pathMap.id 'colors.0').to.eql 1
+    expect(pathMap.id 'colors.0.hex').to.eql 2
+    expect(pathMap.id 'colors.1').to.eql 3
+    expect(pathMap.id 'colors.1.hex').to.eql 4
+    expect(pathMap.id 'colors.2').to.eql 5
+    expect(pathMap.id 'colors.2.hex').to.eql 6
 
     pathMap.onInsert 'colors', 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 1
       'colors.0.hex': 2
       'colors.3': 3
@@ -390,7 +390,7 @@ describe 'PathMap', ->
       'colors.4': 5
       'colors.4.hex': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.0'
       2: 'colors.0.hex'
       3: 'colors.3'
@@ -398,7 +398,7 @@ describe 'PathMap', ->
       5: 'colors.4'
       6: 'colors.4.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {1: '', 2: '.hex'}
         {}
@@ -409,7 +409,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'colors', 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.1': 1
       'colors.1.hex': 2
       'colors.4': 3
@@ -417,7 +417,7 @@ describe 'PathMap', ->
       'colors.5': 5
       'colors.5.hex': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.1'
       2: 'colors.1.hex'
       3: 'colors.4'
@@ -425,7 +425,7 @@ describe 'PathMap', ->
       5: 'colors.5'
       6: 'colors.5.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {}
         {1: '', 2: '.hex'}
@@ -437,7 +437,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'colors', 6, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.1': 1
       'colors.1.hex': 2
       'colors.4': 3
@@ -445,7 +445,7 @@ describe 'PathMap', ->
       'colors.5': 5
       'colors.5.hex': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.1'
       2: 'colors.1.hex'
       3: 'colors.4'
@@ -453,7 +453,7 @@ describe 'PathMap', ->
       5: 'colors.5'
       6: 'colors.5.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {}
         {1: '', 2: '.hex'}
@@ -467,15 +467,15 @@ describe 'PathMap', ->
 
   it 'onInsert should update single nested array indicies', ->
     pathMap = new PathMap
-    pathMap.id('tables.0.rows.0').should.eql 1
-    pathMap.id('tables.0.rows.1.name').should.eql 2
-    pathMap.id('tables.1.rows.0').should.eql 3
-    pathMap.id('tables.1.rows.1.name').should.eql 4
-    pathMap.id('tables.2.rows.0').should.eql 5
-    pathMap.id('tables.2.rows.1.name').should.eql 6
+    expect(pathMap.id 'tables.0.rows.0').to.eql 1
+    expect(pathMap.id 'tables.0.rows.1.name').to.eql 2
+    expect(pathMap.id 'tables.1.rows.0').to.eql 3
+    expect(pathMap.id 'tables.1.rows.1.name').to.eql 4
+    expect(pathMap.id 'tables.2.rows.0').to.eql 5
+    expect(pathMap.id 'tables.2.rows.1.name').to.eql 6
 
     pathMap.onInsert 'tables.0.rows', 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.3.name': 2
       'tables.1.rows.0': 3
@@ -483,7 +483,7 @@ describe 'PathMap', ->
       'tables.2.rows.0': 5
       'tables.2.rows.1.name': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0'
       2: 'tables.0.rows.3.name'
       3: 'tables.1.rows.0'
@@ -491,7 +491,7 @@ describe 'PathMap', ->
       5: 'tables.2.rows.0'
       6: 'tables.2.rows.1.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -514,7 +514,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'tables', 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.3.name': 2
       'tables.3.rows.0': 3
@@ -522,7 +522,7 @@ describe 'PathMap', ->
       'tables.4.rows.0': 5
       'tables.4.rows.1.name': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0'
       2: 'tables.0.rows.3.name'
       3: 'tables.3.rows.0'
@@ -530,7 +530,7 @@ describe 'PathMap', ->
       5: 'tables.4.rows.0'
       6: 'tables.4.rows.1.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {}
@@ -555,7 +555,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'tables', 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.1.rows.0': 1
       'tables.1.rows.3.name': 2
       'tables.4.rows.0': 3
@@ -563,7 +563,7 @@ describe 'PathMap', ->
       'tables.5.rows.0': 5
       'tables.5.rows.1.name': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.1.rows.0'
       2: 'tables.1.rows.3.name'
       3: 'tables.4.rows.0'
@@ -571,7 +571,7 @@ describe 'PathMap', ->
       5: 'tables.5.rows.0'
       6: 'tables.5.rows.1.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {}
         {arrays: {'.rows': true}}
@@ -597,7 +597,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'tables', 6, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.1.rows.0': 1
       'tables.1.rows.3.name': 2
       'tables.4.rows.0': 3
@@ -605,7 +605,7 @@ describe 'PathMap', ->
       'tables.5.rows.0': 5
       'tables.5.rows.1.name': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.1.rows.0'
       2: 'tables.1.rows.3.name'
       3: 'tables.4.rows.0'
@@ -613,7 +613,7 @@ describe 'PathMap', ->
       5: 'tables.5.rows.0'
       6: 'tables.5.rows.1.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {}
         {arrays: {'.rows': true}}
@@ -641,15 +641,15 @@ describe 'PathMap', ->
 
   it 'onInsert should update double nested array indicies', ->
     pathMap = new PathMap
-    pathMap.id('tables.0.rows.0.cols.0').should.eql 1
-    pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2
-    pathMap.id('tables.1.rows.0.cols.0').should.eql 3
-    pathMap.id('tables.1.rows.1.cols.0.text').should.eql 4
-    pathMap.id('tables.2.rows.0.cols.0').should.eql 5
-    pathMap.id('tables.2.rows.1.cols.0.text').should.eql 6
+    expect(pathMap.id 'tables.0.rows.0.cols.0').to.eql 1
+    expect(pathMap.id 'tables.0.rows.1.cols.0.text').to.eql 2
+    expect(pathMap.id 'tables.1.rows.0.cols.0').to.eql 3
+    expect(pathMap.id 'tables.1.rows.1.cols.0.text').to.eql 4
+    expect(pathMap.id 'tables.2.rows.0.cols.0').to.eql 5
+    expect(pathMap.id 'tables.2.rows.1.cols.0.text').to.eql 6
 
     pathMap.onInsert 'tables.0.rows', 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.3.cols.0.text': 2
       'tables.1.rows.0.cols.0': 3
@@ -657,7 +657,7 @@ describe 'PathMap', ->
       'tables.2.rows.0.cols.0': 5
       'tables.2.rows.1.cols.0.text': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0.cols.0'
       2: 'tables.0.rows.3.cols.0.text'
       3: 'tables.1.rows.0.cols.0'
@@ -665,7 +665,7 @@ describe 'PathMap', ->
       5: 'tables.2.rows.0.cols.0'
       6: 'tables.2.rows.1.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -694,7 +694,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'tables', 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.3.cols.0.text': 2
       'tables.3.rows.0.cols.0': 3
@@ -702,7 +702,7 @@ describe 'PathMap', ->
       'tables.4.rows.0.cols.0': 5
       'tables.4.rows.1.cols.0.text': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0.cols.0'
       2: 'tables.0.rows.3.cols.0.text'
       3: 'tables.3.rows.0.cols.0'
@@ -710,7 +710,7 @@ describe 'PathMap', ->
       5: 'tables.4.rows.0.cols.0'
       6: 'tables.4.rows.1.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {}
@@ -741,7 +741,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'tables', 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.1.rows.0.cols.0': 1
       'tables.1.rows.3.cols.0.text': 2
       'tables.4.rows.0.cols.0': 3
@@ -749,7 +749,7 @@ describe 'PathMap', ->
       'tables.5.rows.0.cols.0': 5
       'tables.5.rows.1.cols.0.text': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.1.rows.0.cols.0'
       2: 'tables.1.rows.3.cols.0.text'
       3: 'tables.4.rows.0.cols.0'
@@ -757,7 +757,7 @@ describe 'PathMap', ->
       5: 'tables.5.rows.0.cols.0'
       6: 'tables.5.rows.1.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {}
         {arrays: {'.rows': true}}
@@ -789,7 +789,7 @@ describe 'PathMap', ->
     }
 
     pathMap.onInsert 'tables', 6, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.1.rows.0.cols.0': 1
       'tables.1.rows.3.cols.0.text': 2
       'tables.4.rows.0.cols.0': 3
@@ -797,7 +797,7 @@ describe 'PathMap', ->
       'tables.5.rows.0.cols.0': 5
       'tables.5.rows.1.cols.0.text': 6
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.1.rows.0.cols.0'
       2: 'tables.1.rows.3.cols.0.text'
       3: 'tables.4.rows.0.cols.0'
@@ -805,7 +805,7 @@ describe 'PathMap', ->
       5: 'tables.5.rows.0.cols.0'
       6: 'tables.5.rows.1.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {}
         {arrays: {'.rows': true}}
@@ -839,25 +839,25 @@ describe 'PathMap', ->
 
   it 'onMove should update array indicies', ->
     pathMap = new PathMap
-    pathMap.id('colors.0').should.eql 1
-    pathMap.id('colors.1.hex').should.eql 2
-    pathMap.id('colors.2').should.eql 3
-    pathMap.id('colors.2.hex').should.eql 4
+    expect(pathMap.id 'colors.0').to.eql 1
+    expect(pathMap.id 'colors.1.hex').to.eql 2
+    expect(pathMap.id 'colors.2').to.eql 3
+    expect(pathMap.id 'colors.2.hex').to.eql 4
 
     pathMap.onMove 'colors', 0, 1, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0.hex': 2
       'colors.1': 1
       'colors.2': 3
       'colors.2.hex': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'colors.0.hex'
       1: 'colors.1'
       3: 'colors.2'
       4: 'colors.2.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {2: '.hex'}
         {1: ''}
@@ -866,19 +866,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'colors', 1, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 1
       'colors.1.hex': 2
       'colors.2': 3
       'colors.2.hex': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.0'
       2: 'colors.1.hex'
       3: 'colors.2'
       4: 'colors.2.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {1: ''}
         {2: '.hex'}
@@ -887,19 +887,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'colors', 2, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 3
       'colors.0.hex': 4
       'colors.1': 1
       'colors.2.hex': 2
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       3: 'colors.0'
       4: 'colors.0.hex'
       1: 'colors.1'
       2: 'colors.2.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {3: '', 4: '.hex'}
         {1: ''}
@@ -908,19 +908,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'colors', 0, 2, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 1
       'colors.1.hex': 2
       'colors.2': 3
       'colors.2.hex': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.0'
       2: 'colors.1.hex'
       3: 'colors.2'
       4: 'colors.2.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {1: ''}
         {2: '.hex'}
@@ -930,25 +930,25 @@ describe 'PathMap', ->
 
   it 'onMove of multiple items should update array indicies', ->
     pathMap = new PathMap
-    pathMap.id('colors.0').should.eql 1
-    pathMap.id('colors.1.hex').should.eql 2
-    pathMap.id('colors.2').should.eql 3
-    pathMap.id('colors.2.hex').should.eql 4
+    expect(pathMap.id 'colors.0').to.eql 1
+    expect(pathMap.id 'colors.1.hex').to.eql 2
+    expect(pathMap.id 'colors.2').to.eql 3
+    expect(pathMap.id 'colors.2.hex').to.eql 4
 
     pathMap.onMove 'colors', 0, 1, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 3
       'colors.0.hex': 4
       'colors.1': 1
       'colors.2.hex': 2
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       3: 'colors.0'
       4: 'colors.0.hex'
       1: 'colors.1'
       2: 'colors.2.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {3: '', 4: '.hex'}
         {1: ''}
@@ -957,19 +957,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'colors', 1, 0, 2
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'colors.0': 1
       'colors.1.hex': 2
       'colors.2': 3
       'colors.2.hex': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'colors.0'
       2: 'colors.1.hex'
       3: 'colors.2'
       4: 'colors.2.hex'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       colors: [
         {1: ''}
         {2: '.hex'}
@@ -979,25 +979,25 @@ describe 'PathMap', ->
 
   it 'onMove should update single nested array indicies', ->
     pathMap = new PathMap
-    pathMap.id('tables.0.rows.0').should.eql 1
-    pathMap.id('tables.0.rows.1.name').should.eql 2
-    pathMap.id('tables.1.rows.0').should.eql 3
-    pathMap.id('tables.2.rows.0.name').should.eql 4
+    expect(pathMap.id 'tables.0.rows.0').to.eql 1
+    expect(pathMap.id 'tables.0.rows.1.name').to.eql 2
+    expect(pathMap.id 'tables.1.rows.0').to.eql 3
+    expect(pathMap.id 'tables.2.rows.0.name').to.eql 4
 
     pathMap.onMove 'tables.0.rows', 0, 1, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.name': 2
       'tables.0.rows.1': 1
       'tables.1.rows.0': 3
       'tables.2.rows.0.name': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.name'
       1: 'tables.0.rows.1'
       3: 'tables.1.rows.0'
       4: 'tables.2.rows.0.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1016,19 +1016,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables.0.rows', 1, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.1.name': 2
       'tables.1.rows.0': 3
       'tables.2.rows.0.name': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0'
       2: 'tables.0.rows.1.name'
       3: 'tables.1.rows.0'
       4: 'tables.2.rows.0.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1047,19 +1047,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 0, 1, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0': 3
       'tables.1.rows.0': 1
       'tables.1.rows.1.name': 2
       'tables.2.rows.0.name': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       3: 'tables.0.rows.0'
       1: 'tables.1.rows.0'
       2: 'tables.1.rows.1.name'
       4: 'tables.2.rows.0.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1078,19 +1078,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 1, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.1.name': 2
       'tables.1.rows.0': 3
       'tables.2.rows.0.name': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0'
       2: 'tables.0.rows.1.name'
       3: 'tables.1.rows.0'
       4: 'tables.2.rows.0.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1109,19 +1109,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 2, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.name': 4
       'tables.1.rows.0': 1
       'tables.1.rows.1.name': 2
       'tables.2.rows.0': 3
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       4: 'tables.0.rows.0.name'
       1: 'tables.1.rows.0'
       2: 'tables.1.rows.1.name'
       3: 'tables.2.rows.0'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1140,19 +1140,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 0, 2, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0': 1
       'tables.0.rows.1.name': 2
       'tables.1.rows.0': 3
       'tables.2.rows.0.name': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0'
       2: 'tables.0.rows.1.name'
       3: 'tables.1.rows.0'
       4: 'tables.2.rows.0.name'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1172,25 +1172,25 @@ describe 'PathMap', ->
 
   it 'onMove should update double nested array indicies', ->
     pathMap = new PathMap
-    pathMap.id('tables.0.rows.0.cols.0').should.eql 1
-    pathMap.id('tables.0.rows.1.cols.0.text').should.eql 2
-    pathMap.id('tables.1.rows.0.cols.0').should.eql 3
-    pathMap.id('tables.2.rows.0.cols.0.text').should.eql 4
+    expect(pathMap.id 'tables.0.rows.0.cols.0').to.eql 1
+    expect(pathMap.id 'tables.0.rows.1.cols.0.text').to.eql 2
+    expect(pathMap.id 'tables.1.rows.0.cols.0').to.eql 3
+    expect(pathMap.id 'tables.2.rows.0.cols.0.text').to.eql 4
 
     pathMap.onMove 'tables.0.rows', 0, 1, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0.text': 2
       'tables.0.rows.1.cols.0': 1
       'tables.1.rows.0.cols.0': 3
       'tables.2.rows.0.cols.0.text': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       2: 'tables.0.rows.0.cols.0.text'
       1: 'tables.0.rows.1.cols.0'
       3: 'tables.1.rows.0.cols.0'
       4: 'tables.2.rows.0.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1213,19 +1213,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables.0.rows', 1, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.1.cols.0.text': 2
       'tables.1.rows.0.cols.0': 3
       'tables.2.rows.0.cols.0.text': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0.cols.0'
       2: 'tables.0.rows.1.cols.0.text'
       3: 'tables.1.rows.0.cols.0'
       4: 'tables.2.rows.0.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1248,19 +1248,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 0, 1, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0': 3
       'tables.1.rows.0.cols.0': 1
       'tables.1.rows.1.cols.0.text': 2
       'tables.2.rows.0.cols.0.text': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       3: 'tables.0.rows.0.cols.0'
       1: 'tables.1.rows.0.cols.0'
       2: 'tables.1.rows.1.cols.0.text'
       4: 'tables.2.rows.0.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1283,19 +1283,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 1, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.1.cols.0.text': 2
       'tables.1.rows.0.cols.0': 3
       'tables.2.rows.0.cols.0.text': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0.cols.0'
       2: 'tables.0.rows.1.cols.0.text'
       3: 'tables.1.rows.0.cols.0'
       4: 'tables.2.rows.0.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1318,19 +1318,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 2, 0, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0.text': 4
       'tables.1.rows.0.cols.0': 1
       'tables.1.rows.1.cols.0.text': 2
       'tables.2.rows.0.cols.0': 3
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       4: 'tables.0.rows.0.cols.0.text'
       1: 'tables.1.rows.0.cols.0'
       2: 'tables.1.rows.1.cols.0.text'
       3: 'tables.2.rows.0.cols.0'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}
@@ -1353,19 +1353,19 @@ describe 'PathMap', ->
     }
 
     pathMap.onMove 'tables', 0, 2, 1
-    pathMap.ids.should.eql {
+    expect(pathMap.ids).to.eql {
       'tables.0.rows.0.cols.0': 1
       'tables.0.rows.1.cols.0.text': 2
       'tables.1.rows.0.cols.0': 3
       'tables.2.rows.0.cols.0.text': 4
     }
-    pathMap.paths.should.eql {
+    expect(pathMap.paths).to.eql {
       1: 'tables.0.rows.0.cols.0'
       2: 'tables.0.rows.1.cols.0.text'
       3: 'tables.1.rows.0.cols.0'
       4: 'tables.2.rows.0.cols.0.text'
     }
-    pathMap.arrays.should.eql {
+    expect(pathMap.arrays).to.eql {
       'tables': [
         {arrays: {'.rows': true}}
         {arrays: {'.rows': true}}

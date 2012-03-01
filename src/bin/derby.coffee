@@ -194,10 +194,6 @@ server.all '*', (req) ->
 
 store = <<app>>.createStore listen: server
 
-## TODO: Remove when using a database ##
-# Clear all data every time the node server is started
-store.flush()
-
 '''
 
 SERVER_JS = '''
@@ -271,10 +267,6 @@ server.all('*', function(req) {
 // STORE SETUP //
 
 store = <<app>>.createStore({ listen: server });
-
-// TODO: Remove when using a database //
-// Clear all data every time the node server is started
-store.flush();
 
 '''
 
@@ -405,7 +397,6 @@ README = '''
 
 GITIGNORE_COFFEE = '''
 .DS_Store
-node_modules
 public/gen
 lib/
 
@@ -413,7 +404,6 @@ lib/
 
 GITIGNORE_JS = '''
 .DS_Store
-node_modules
 public/gen
 
 '''
@@ -432,7 +422,7 @@ packageJson = (project, useCoffee) ->
 
   if useCoffee
     package.devDependencies =
-      'coffee-script': '>=1.1.2'
+      'coffee-script': '>=1.2'
 
   return JSON.stringify package, null, '  '
 

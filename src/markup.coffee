@@ -2,14 +2,14 @@ module.exports =
 
   bound:
     'value':
-      input: (events, attrs, name) ->
+      'input': (events, attrs, name) ->
         if 'x-blur' of attrs
           # Only update after the element loses focus
           delete attrs['x-blur']
           eventNames = 'change,blur'
         else
           # By default, update as the user types
-          eventNames = 'input,blur'
+          eventNames = textEvents
         
         if 'x-ignore-focus' of attrs
           # Update value regardless of focus
@@ -50,13 +50,18 @@ module.exports =
   boundParent:
     'contenteditable':
       '*': (events, attrs, name) ->
-        addDomEvent events, attrs, name, 'input,blur', 'html'
+        addDomEvent events, attrs, name, textEvents, 'html'
         return
 
   element:
     'select': (events, attrs) ->
       addDistribute events, attrs, 'change'
       return addId: true
+
+    'input': (events, attrs) ->
+      if AUTOCOMPLETE_OFF[attrs.type] && !('autocomplete' of attrs)
+        attrs.autocomplete = 'off'
+      return
 
   attr:
     'x-bind':
@@ -68,18 +73,20 @@ module.exports =
               domEvents.bind name, [value, attrs._id || attrs.id, delay]
         return addId: true, del: true
       
-      a: (events, attrs, value) ->
+      'a': (events, attrs, value) ->
         obj = splitBind value
         if 'click' of obj && !('href' of attrs)
           attrs.href = '#'
           attrs.onclick = 'return false'  unless 'onclick' of attrs
         return
       
-      form: (events, attrs, value) ->
+      'form': (events, attrs, value) ->
         obj = splitBind value
         if 'submit' of obj
           attrs.onsubmit = 'return false'  unless 'onsubmit' of attrs
         return
+
+  textEvents: textEvents = 'keyup,keydown,paste/0,dragover/0,blur'
 
   modelPath: modelPath = (ctx, name, noReplace) ->
     return null  if name of ctx
@@ -113,6 +120,10 @@ module.exports =
     # Interpolate the value of names within square brackets
     return name.replace /\[([^\]]+)\]/g, (match, name) -> ctx[name]
 
+
+AUTOCOMPLETE_OFF =
+  checkbox: true
+  radio: true
 
 addConditionalStyle = (attrs, name, invert, styleText) ->
   type = if invert then '#' else '^'

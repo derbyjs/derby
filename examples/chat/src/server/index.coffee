@@ -54,8 +54,4 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-store = chat.createStore redis: {db: 2}, listen: server
-
-## TODO: Remove when using a database ##
-# Clear all data every time the node server is started
-store.flush()
+store = app.createStore listen: server

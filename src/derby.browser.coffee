@@ -1,9 +1,9 @@
+Route = require 'express/lib/router/route'
 racer = require 'racer'
-modelHelper = require './modelHelper'
+derbyModel = require './derby.Model'
 Dom = require './Dom'
 View = require './View'
 History = require './History'
-Route = require 'express/lib/router/route'
 
 Page = (@view, @model) -> return
 Page:: =
@@ -21,7 +21,7 @@ exports.createApp = (appModule) ->
   appExports.view = view = new View
   model = view.model = racer.model
   dom = view.dom = new Dom model, appExports
-  modelHelper.init model, dom
+  derbyModel.init model, dom
 
   routes = {}
   ['get', 'post', 'put', 'del'].forEach (method) ->

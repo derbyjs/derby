@@ -1,4 +1,4 @@
-should = require 'should'
+{expect, calls} = require 'racer/test/util'
 html = require '../src/html'
 
 describe 'html', ->
@@ -67,5 +67,5 @@ describe 'html', ->
       end: (tag, tagName) -> stack.push ['end', tagName]
 
     for item, index in expected
-      stack[index].should.eql item
-    stack.length.should.equal expected.length
+      expect(stack[index]).to.eql item
+    expect(stack.length).to.equal expected.length

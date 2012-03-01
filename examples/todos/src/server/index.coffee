@@ -59,10 +59,16 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-MongoAdapter = require 'racer/lib/adapters/Mongo'
-mongo = new MongoAdapter 'mongodb://localhost/database'
-mongo.connect()
+derby
+  .use(require 'racer-journal-redis')
+  .use(require 'racer-pubsub-redis')
+  .use(require 'racer-db-mongo')
+
+redisOptions = type: 'Redis', db: 3
+mongoOptions = type: 'Mongo', uri: 'mongodb://localhost/database'
+
 store = todos.createStore
-  redis: {db: 3}
   listen: server
-  adapter: mongo
+  journal: redisOptions
+  pubSub: redisOptions
+  db: mongoOptions

@@ -59,8 +59,4 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-store = app.createStore redis: {db: 1}, listen: server
-
-## TODO: Remove when using a database ##
-# Clear all data every time the node server is started
-store.flush()
+store = app.createStore listen: server

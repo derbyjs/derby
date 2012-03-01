@@ -21,16 +21,16 @@ get '/:groupName', (page, model, {groupName}) ->
     # a refList will automatically get an 'id' property if not specified
     unless todoIds.get()
       model.push '_todoList',
-        {group, text: 'Example todo', tags: ['wknd']},
-        {group, text: 'Another example', tags: ['wknd', 'work']},
-        {group, text: 'This one is done already', completed: true, tags: ['work']}
+        {group: groupName, text: 'Example todo'},
+        {group: groupName, text: 'Another example'},
+        {group: groupName, text: 'This one is done already', completed: true}
 
     # Create a reactive function that automatically keeps '_remaining'
     # updated with the number of remaining todos
     model.fn '_remaining', '_todoList', (list) ->
       remaining = 0
       for todo in list
-        remaining++ unless todo.completed
+        remaining++ unless todo?.completed
       return remaining
 
     page.render()
