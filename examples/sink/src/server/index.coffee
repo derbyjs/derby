@@ -59,13 +59,4 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-redisOptions = type: 'Redis', db: 1
-
-store = app.createStore
-  listen: server
-  journal: redisOptions
-  pubSub: redisOptions
-
-## TODO: Remove when using a database ##
-# Clear all data every time the node server is started
-store.flush()
+store = app.createStore listen: server

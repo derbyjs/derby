@@ -6,7 +6,6 @@ server = express.createServer()
   .use(hello.router())
 
 # Apps also provide a server-side store for syncing data
-store = hello.createStore listen: server
-store.flush()
+hello.createStore listen: server
 
 server.listen 3000
