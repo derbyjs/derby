@@ -194,10 +194,6 @@ server.all '*', (req) ->
 
 store = <<app>>.createStore listen: server
 
-## TODO: Remove when using a database ##
-# Clear all data every time the node server is started
-store.flush()
-
 '''
 
 SERVER_JS = '''
@@ -271,10 +267,6 @@ server.all('*', function(req) {
 // STORE SETUP //
 
 store = <<app>>.createStore({ listen: server });
-
-// TODO: Remove when using a database //
-// Clear all data every time the node server is started
-store.flush();
 
 '''
 
