@@ -2,6 +2,11 @@
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
   "version": "0.1.8",
+  "homepage": "http://derbyjs.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codeparty/derby"
+  },
   "main": "./lib/derby.js",
   "browserify": {
     "main": "./lib/derby.browser.js"
@@ -11,7 +16,7 @@
   },
   "dependencies": {
     "racer": "0.1.8",
-    "express": ">=2.0.0 < 3.0.0",
+    "express": ">=2 <3",
     "qs": ">=0.4.0",
     "stylus": ">=0.15.0",
     "nib": ">=0.3.0",
