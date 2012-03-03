@@ -28,30 +28,30 @@ get '/', (page) ->
   page.render ctxFor 'home'
 
 get '/live-css', (page, model) ->
-  model.subscribe 'liveCss', ->
-    model.setNull 'liveCss.styles', [
-      {prop: 'color', value: '#c00', active: true}
-      {prop: 'font-weight', value: 'bold', active: true}
-      {prop: 'font-size', value: '18px', active: false}
-    ]
-    model.setNull 'liveCss.outputText', 'Edit this text...'
+  model.subscribe 'liveCss', (liveCss) ->
+    liveCss.setNull
+      styles: [
+        {prop: 'color', value: '#c00', active: true}
+        {prop: 'font-weight', value: 'bold', active: true}
+        {prop: 'font-size', value: '18px', active: false}
+      ]
+      outputText: 'Edit this text...'
     page.render ctxFor 'liveCss'
 
 get '/table', (page, model) ->
-  model.subscribe 'table', ->
-    unless model.get 'table'
-      model.set 'table', 
-        rows: [
-          {name: 1, cells: [{}, {}, {}]}
-          {name: 2, cells: [{}, {}, {}]}
-        ]
-        lastRow: 1
-        cols: [
-          {name: 'A'}
-          {name: 'B'}
-          {name: 'C'}
-        ]
-        lastCol: 2
+  model.subscribe 'table', (table) ->
+    table.setNull
+      rows: [
+        {name: 1, cells: [{}, {}, {}]}
+        {name: 2, cells: [{}, {}, {}]}
+      ]
+      lastRow: 1
+      cols: [
+        {name: 'A'}
+        {name: 'B'}
+        {name: 'C'}
+      ]
+      lastCol: 2
     page.render ctxFor 'tableEditor'
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
