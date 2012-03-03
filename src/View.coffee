@@ -10,13 +10,12 @@ defaultCtx =
   $i: []
 
 View = module.exports = ->
-  self = this
   @_views = Object.create @default
   @_inline = ''
 
   # All automatically created ids start with a dollar sign
   @_idCount = 0
-  @_uniqueId = -> '$' + (self._idCount++).toString 36
+  @_uniqueId = => '$' + (@_idCount++).toString 36
 
   return
 
@@ -35,9 +34,8 @@ View:: =
     @make name + '$s', template, true  unless isString
 
     name = name.toLowerCase()
-    self = this
-    render = (ctx) ->
-      render = parse self, template, isString, onBind
+    render = (ctx) =>
+      render = parse this, template, isString, onBind
       render ctx
     @_views[name] = (ctx) -> render ctx
 

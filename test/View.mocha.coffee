@@ -10,9 +10,12 @@ describe 'View', ->
   ResMock:: =
     getHeader: ->
     setHeader: ->
-    write: write = (value) -> @html += value
+    write: write = (value) ->
+      @html += value
     send: write
-    end: write
+    end: (value) ->
+      write value
+      @onEnd? @html
 
   Model::_commit = ->
   Model::bundle = ->
@@ -20,10 +23,9 @@ describe 'View', ->
   it 'test view.render with no defined views', ->
     view = new View
     res = new ResMock
+    res.onEnd = (html) ->
+      expect(html).to.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
     view.render res
-    setTimeout ->
-      expect(res.html).to.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
-    , 100
 
   it 'test rendering a string literal view', ->
     view = new View

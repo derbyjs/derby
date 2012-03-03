@@ -11,11 +11,10 @@ if winHistory.replaceState
   winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
 
 History = module.exports = (@_routes, @_page, dom) ->
-  self = this
   {addListener} = dom
 
   if winHistory.pushState
-    addListener doc, 'click', (e) ->
+    addListener doc, 'click', (e) =>
       # Detect clicks on links
       # Ignore command click, control click, and middle click
       if e.target.href && !e.metaKey && e.which == 1
@@ -23,22 +22,22 @@ History = module.exports = (@_routes, @_page, dom) ->
         # Ignore hash links to the same page
         return if ~(i = url.indexOf '#') && 
           url.substr(0, i) == winLocation.href.replace(/#.*/, '')
-        self.push url, true, e
+        @push url, true, e
 
-    addListener doc, 'submit', (e) ->
+    addListener doc, 'submit', (e) =>
       if e.target.tagName.toLowerCase() is 'form'
         form = e.target
         return if !(url = form.action) || form._forceSubmit ||
           form.enctype == 'multipart/form-data'
-        self.push url, true, e
+        @push url, true, e
 
-    addListener win, 'popstate', (e) ->
+    addListener win, 'popstate', (e) =>
       # Pop states without a state object were generated externally,
       # such as by a jump link, so they shouldn't be handled 
       return unless (state = e.state) && state.render
       # Note that the post body is only sent on the initial reqest
       # and null is sent if the state is later popped
-      renderRoute winLocation.pathname, self._page, self._routes[state.method], 0, null, null, e
+      renderRoute winLocation.pathname, @_page, @_routes[state.method], 0, null, null, e
 
   else
     @push = @replace = ->

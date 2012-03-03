@@ -34,7 +34,6 @@ View::_load = (isStatic, callback) ->
   else
     @_watch = true
 
-  self = this
   templates = js = null
 
   if isStatic
@@ -55,7 +54,7 @@ View::_load = (isStatic, callback) ->
     @_require = require
 
     count = 3
-    finish = ->
+    finish = =>
       return if --count
 
       json = JSON.stringify templates || {}
@@ -66,29 +65,29 @@ View::_load = (isStatic, callback) ->
         # This is needed for Browserify debug mode
         js.replace '\\"$$templates$$\\"', json
 
-      files.writeJs js, options, (jsFile, appHash) ->
-        self._jsFile = jsFile
-        self._appHashes[appFilename] = self._appHash = appHash
+      files.writeJs js, options, (jsFile, appHash) =>
+        @_jsFile = jsFile
+        @_appHashes[appFilename] = @_appHash = appHash
         callback()
 
     if @_js
       js = @_js
       finish()
 
-    else files.js appFilename, (value, inline) ->
+    else files.js appFilename, (value, inline) =>
       js = value
-      self._js = value unless isProduction
-      self.inline "function(){#{inline}}"  if inline
+      @_js = value unless isProduction
+      @inline "function(){#{inline}}"  if inline
       finish()
 
-  files.css root, clientName, (value) ->
-    self._css = if value then "<style id=$_css>#{value}</style>" else ''
+  files.css root, clientName, (value) =>
+    @_css = if value then "<style id=$_css>#{value}</style>" else ''
     finish()
 
-  files.templates root, clientName, (value) ->
+  files.templates root, clientName, (value) =>
     templates = value
     for name, text of templates
-      self.make name, text
+      @make name, text
     finish()
 
 View::render = (res = emptyRes, args...) ->
@@ -103,14 +102,13 @@ View::render = (res = emptyRes, args...) ->
       isStatic = arg
   model = emptyModel  unless model?
 
-  self = this
   # Load templates, css, and scripts from files
-  @_load isStatic, ->
-    return self._render res, model, ctx, isStatic  if isStatic
+  @_load isStatic, =>
+    return @_render res, model, ctx, isStatic  if isStatic
 
     # Wait for transactions to finish and package up the racer model data
-    model.bundle (bundle) ->
-      self._render res, model, ctx, isStatic, bundle
+    model.bundle (bundle) =>
+      @_render res, model, ctx, isStatic, bundle
 
 View::_init = (model) ->
   # Initialize view & model for rendering
