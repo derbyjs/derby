@@ -28,7 +28,7 @@ get '/', (page) ->
   page.render ctxFor 'home'
 
 get '/live-css', (page, model) ->
-  model.subscribe 'liveCss', (liveCss) ->
+  model.subscribe 'liveCss', (err, liveCss) ->
     liveCss.setNull
       styles: [
         {prop: 'color', value: '#c00', active: true}
@@ -39,7 +39,7 @@ get '/live-css', (page, model) ->
     page.render ctxFor 'liveCss'
 
 get '/table', (page, model) ->
-  model.subscribe 'table', (table) ->
+  model.subscribe 'table', (err, table) ->
     table.setNull
       rows: [
         {name: 1, cells: [{}, {}, {}]}

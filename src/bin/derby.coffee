@@ -22,7 +22,7 @@ get '/:roomName?', (page, model, {roomName}) ->
   # Subscribes the model to any updates on this room's object. Calls back
   # with a scoped model equivalent to:
   #   room = model.at "rooms.#{roomName}"
-  model.subscribe "rooms.#{roomName}", (room) ->
+  model.subscribe "rooms.#{roomName}", (err, room) ->
     model.ref '_room', room
 
     # setNull will set a value if the object is currently null or undefined
@@ -82,7 +82,7 @@ get('/:roomName?', function(page, model, params) {
   // Subscribes the model to any updates on this room's object. Calls back
   // with a scoped model equivalent to:
   //   room = model.at('rooms.' + room);
-  model.subscribe('rooms.' + room, function(room) {
+  model.subscribe('rooms.' + room, function(err, room) {
     model.ref('_room', room);
 
     // setNull will set a value if the object is currently null or undefined

@@ -8,7 +8,7 @@ get '/', (page) ->
 
 get '/:groupName', (page, model, {groupName}) ->
   groupTodosQuery = model.query('todos').where('group').equals(groupName)
-  model.subscribe "groups.#{groupName}", groupTodosQuery, (group) ->
+  model.subscribe "groups.#{groupName}", groupTodosQuery, (err, group) ->
     model.ref '_group', group
     todoIds = group.at 'todoIds'
     group.setNull 'id', groupName
