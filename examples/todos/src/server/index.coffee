@@ -59,16 +59,4 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-derby
-  .use(require 'racer-journal-redis')
-  .use(require 'racer-pubsub-redis')
-  .use(require 'racer-db-mongo')
-
-redisOptions = type: 'Redis', db: 3
-mongoOptions = type: 'Mongo', uri: 'mongodb://localhost/database'
-
-store = todos.createStore
-  listen: server
-  journal: redisOptions
-  pubSub: redisOptions
-  db: mongoOptions
+app.createStore listen: server
