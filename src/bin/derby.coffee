@@ -26,7 +26,7 @@ get '/:roomName?', (page, model, {roomName}) ->
     model.ref '_room', room
 
     # setNull will set a value if the object is currently null or undefined
-    room.setNull 'welcome', "Welcome to #{room}!"
+    room.setNull 'welcome', "Welcome to #{roomName}!"
 
     room.incr 'visits'
 
@@ -37,7 +37,7 @@ get '/:roomName?', (page, model, {roomName}) ->
 
     # Render will use the model data as well as an optional context object
     page.render
-      room: room
+      roomName: roomName
       randomUrl: parseInt(Math.random() * 1e9).toString(36)
 
 
@@ -81,12 +81,12 @@ get('/:roomName?', function(page, model, params) {
 
   // Subscribes the model to any updates on this room's object. Calls back
   // with a scoped model equivalent to:
-  //   room = model.at('rooms.' + room);
-  model.subscribe('rooms.' + room, function(err, room) {
+  //   room = model.at('rooms.' + roomName);
+  model.subscribe('rooms.' + roomName, function(err, room) {
     model.ref('_room', room);
 
     // setNull will set a value if the object is currently null or undefined
-    room.setNull('welcome', 'Welcome to ' + room + '!');
+    room.setNull('welcome', 'Welcome to ' + roomName + '!');
 
     room.incr('visits');
 
@@ -97,7 +97,7 @@ get('/:roomName?', function(page, model, params) {
 
     // Render will use the model data as well as an optional context object
     page.render({
-      room: room,
+      roomName: roomName,
       randomUrl: parseInt(Math.random() * 1e9).toString(36)
     });
   });
@@ -288,7 +288,7 @@ APP_HTML = '''
 -->
 
 <Title:>
-  {{room}} - ((_room.visits)) visits
+  {{roomName}} - ((_room.visits)) visits
 
 <Body:>
   <h1>((_room.welcome))</h1>
