@@ -380,7 +380,7 @@ _404_STYL = '''
 '''
 
 SERVER = '''
-require('derby').run('lib/server');
+require('derby').run(__dirname + '/lib/server');
 
 '''
 
