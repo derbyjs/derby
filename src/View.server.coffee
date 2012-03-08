@@ -65,7 +65,7 @@ View::_load = (isStatic, callback) ->
         # This is needed for Browserify debug mode
         js.replace '\\"$$templates$$\\"', json
 
-      files.writeJs js, options, (jsFile, appHash) =>
+      files.writeJs root, js, options, (jsFile, appHash) =>
         @_jsFile = jsFile
         @_appHashes[appFilename] = @_appHash = appHash
         callback()

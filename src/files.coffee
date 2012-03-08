@@ -64,7 +64,7 @@ module.exports =
         when '+' then '_'
         when '=' then ''
 
-  writeJs: (js, options, callback) ->
+  writeJs: (root, js, options, callback) ->
     staticRoot = options.staticRoot || join root, 'public'
     staticDir = options.staticDir || 'gen'
     staticPath = join staticRoot, staticDir
