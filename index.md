@@ -1226,7 +1226,7 @@ Would have paths like `title`, `fruits.1`, and `fruits.0.color`. Paths consist o
 
 #### Private paths
 
-Paths that contain a segment starting with an underscore (e.g. '_showFooter' or 'flowers.10._hovered') have a special meaning. These paths are considered "private," and they are not synced back to the server or to other clients. Private paths are frequently used with [references](#references) and for rendering purposes.
+Paths that contain a segment starting with an underscore (e.g. `_showFooter` or `flowers.10._hovered`) have a special meaning. These paths are considered "private," and they are not synced back to the server or to other clients. Private paths are frequently used with [references](#references) and for rendering purposes.
 
 #### GUIDs
 
