@@ -901,7 +901,7 @@ Internally, Derby only binds each type of event once to the `document` and perfo
   <input x-bind="paste/50:afterPaste">
 {% endhighlight %}
 
-It is often useful to relate back a DOM element, such as `e.target`, to the model path that was used to render the item. For example, one might want to remove an item from a list when an icon is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [scoped model](#scoped-models) that is scoped to the context of the closest bound path in the template.
+It is often useful to relate back a DOM element, such as `e.target`, to the model path that was used to render the item. For example, one might want to remove an item from a list when an icon is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [scoped model](#scoped_models) that is scoped to the context of the closest bound path in the template.
 
 #### Template
 
