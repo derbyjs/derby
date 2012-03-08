@@ -203,7 +203,7 @@ Derby radically simplifies this process of adding dynamic interactions. It runs 
 
 * **Conflict resolution:** The server detects conflicts, enabling clients to respond instantly and work offline. Multiple powerful techniques for conflict resolution are included.
 
-* **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, schemas can be added to provide validation and automatic persistence of data to one or more databases.
+* **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, adding automatic persistence of data to one or more databases is simple to add.
 
 ## Flexibility without the glue code
 
