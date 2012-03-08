@@ -3,11 +3,4 @@ lib
 gen
 test-output.tmp
 examples/hello/*.js
-examples/hello/public/gen
-examples/sink/*.js
-examples/sink/public/gen
-examples/chat/lib
-examples/chat/public/gen
-examples/todos/lib
-examples/todos/public/gen
 *.gz
