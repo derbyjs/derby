@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.1.8
+version: 0.1.9
 headers:
   - text: Introduction
     type: h1
@@ -98,7 +98,7 @@ headers:
     type: h3
   - text: References
     type: h3
-  - text: Aliases
+  - text: Scoped models
     type: h3
 ---
 
@@ -133,10 +133,10 @@ var express = require('express'),
     server = express.createServer()
       .use(express.static(__dirname + '/public'))
       // Apps create an Express middleware
-      .use(hello.router()),
+      .use(hello.router())
 
-    // Apps also provide a server-side store for syncing data
-    store = hello.createStore({ listen: server });
+// Apps also provide a server-side store for syncing data
+hello.createStore({ listen: server });
 
 server.listen(3000);
 {% endhighlight %}
@@ -166,7 +166,7 @@ server = express.createServer()
   .use(hello.router())
 
 # Apps also provide a server-side store for syncing data
-store = hello.createStore listen: server
+hello.createStore listen: server
 
 server.listen 3000
 {% endhighlight %}
@@ -245,22 +245,9 @@ If you have feedback, ideas, or suggestions, please email the [Google Group](htt
 
 As with all Node.js modules, first install [Node](http://nodejs.org/#download). The Node installer will also install [npm](http://npmjs.org/).
 
-Instal Derby with:
+Install Derby with:
 
     $ npm install -g derby
-
-Derby requires Redis with support for [scripting](http://redis.io/commands/eval). Derby's models are powered by [Racer](http://racerjs.com/), which uses Redis to store data transactions and manage PubSub. Racer uses Redis Lua scripting, which [will be included](http://antirez.com/post/short-term-redis-plans.html) in the next stable release, Redis 2.6. For now, please use the 2.2-scripting branch.
-
-Download, extract, and compile Redis 2.2-scripting:
-
-    $ curl -O http://redis.googlecode.com/files/redis-2.2.111-scripting.tar.gz
-    $ tar xzf redis-2.2.111-scripting.tar.gz
-    $ cd redis-2.2.111-scripting
-    $ make
-
-Then start the Redis server:
-
-    $ src/redis-server
 
 ## Create an app
 
@@ -279,7 +266,7 @@ or, for [CoffeeScript](http://jashkenas.github.com/coffee-script/):
 
 `make` will execute the coffee compiler with the watch option, so leave it running in a separate terminal.
 
-Make sure Redis is running, and fire up Node:
+Then, simply fire up Node:
 
     $ node server.js
 
@@ -317,6 +304,10 @@ Derby uses a filename based convention similar to Node.js modules. A file named 
 Apps are associated with their respective styles and views by filename only. Derby automatically includes them when rendering. Both support importing, so shared styles and templates may be defined in separate files.
 
 Static files can be placed in the public folder. The default Express server created by the Derby project generator sets a cache time of one year for all static files. Therefore, new file versions must be given new filenames. Derby compiles scripts for the browser into the `public\gen` folder by default. Each script's filename is generated from a hash, so that it can be cached long term.
+
+## Persistence
+
+Derby's models are powered by [Racer](http://racerjs.com/). By default, Racer stores data in memory, so nothing will be persisted between server restarts. We are currently putting the final touches on the first database adapter, which will support MongoDB.
 
 # Apps and static pages
 
@@ -910,7 +901,7 @@ Internally, Derby only binds each type of event once to the `document` and perfo
   <input x-bind="paste/50:afterPaste">
 {% endhighlight %}
 
-It is often useful to relate back a DOM element, such as `e.target`, to the model path that was used to render the item. For example, one might want to remove an item from a list when an icon is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [model alias](#aliases) that is scoped to the context of the closest bound path in the template.
+It is often useful to relate back a DOM element, such as `e.target`, to the model path that was used to render the item. For example, one might want to remove an item from a list when an icon is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [scoped model](#scoped-models) that is scoped to the context of the closest bound path in the template.
 
 #### Template
 
@@ -1171,13 +1162,11 @@ When models are modified, they will immediately reflect the changes. In the back
 
 Model methods provide callbacks invoked after success or failure of a transaction. These callbacks can be used to provide application-specific conflict resolution UIs. Models also emit events when their contents are updated, which Derby uses to update the view in realtime.
 
-Racer is designed for intially prototyping applications using dynamic, in-memory models. Once features are complete, schemas can be written to associate the model with persistent storage. Racer then automatically persists all data defined in a schema. Initially, Racer supports [MongoDB](http://www.mongodb.org/), and support for other popular databases and datastores will be added soon. It will even support simulataneous use of different types of databases with a single application.
-
 ### STM and OT
 
 The store provides conflict resolution via a [Software Transactional Memory (STM)](http://en.wikipedia.org/wiki/Software_transactional_memory) or [Operational Transform (OT)](http://en.wikipedia.org/wiki/Operational_transformation). While OT is conceptually straightforward, writing OT algorithms that work reliably is difficult. Racer's OT algorithms are provided by [Share.js](http://sharejs.org/), a well tested JavaScript OT library.
 
-To perform these algorithms, Racer stores a journal of all transactions in Redis. When new transactions arrive, their paths and versions are compared to the transactions already commited to the journal. STM, which is the default, accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
+To perform these algorithms, Racer stores a journal of all transactions. When new transactions arrive, their paths and versions are compared to the transactions already commited to the journal. STM, which is the default, accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
 
 ## Creating stores
 
@@ -1267,7 +1256,7 @@ All model mutators have an optional callback with the arguments `callback(err, m
 >
 > **path:** Model path to set
 >
-> **value:** Value to assign. Also returns this value
+> **value:** Value to assign
 >
 > **previous:** Returns the value that was set at the path previously
 >
@@ -1376,13 +1365,25 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 
 #### OT methods
 
-> ### `otObj = `model.ot` ( [init] )`
->
-> **init:** *(optional)* A string to use as the initial value of the OT field. Defaults to the empty string.
->
-> **otObj:** Returns an object that can be set on a model path to declare that model path as an OT path.
+OT support is experimental, and it is not enabled by default. The OT plugin must be included in order to use OT methods. See the Racer [pad example](https://github.com/codeparty/racer/tree/master/examples/pad) for more info.
 
-> ### model.insertOT` ( path, index, text, [callback] )`
+> ### `previous = `model.ot` ( path, value, [callback] )`
+>
+> **path:** Model path to initialize as an OT field
+>
+> **value:** A string to use as the initial value of the OT field
+>
+> **previous:** Returns the value that was set at the path previously
+
+> ### `obj = `model.otNull` ( path, value, [callback] )`
+>
+> **path:** Model path to initialize as an OT field if the path is currently null or undefined
+>
+> **value:** A string to use as the initial value of the OT field
+>
+> **obj:** Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
+
+> ### model.otInsert` ( path, index, text, [callback] )`
 >
 > **path:** Model path to an OT field
 >
@@ -1390,7 +1391,7 @@ Array methods can only be used on paths set to arrays, null, or undefined. If th
 >
 > **text:** String to insert
 
-> ### `deleted = `model.delOT` ( path, index, length, [callback] )`
+> ### `deleted = `model.otDel` ( path, index, length, [callback] )`
 >
 > **path:** Model path to an OT field
 >
@@ -1693,23 +1694,23 @@ console.log model.get('_myColors')
 
 Note that if objects are added to a refList without an `id` property, a unique id from [`model.id()`](#guids) will be automatically added to the object.
 
-### Aliases
+### Scoped models
 
-Model aliases provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
+Scoped models provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
 
-> ### `alias = `model.at` ( path, [absolute] )`
+> ### `scoped = `model.at` ( path, [absolute] )`
 >
 > **path:** The reference path to set. Note that Derby also supports supplying a DOM node instead of a path string
 >
 > **inputPaths:** *(optional)* Will replace the model's reference path if true. By default, the path is appended
 >
-> **alias:** Returns a model alias
+> **scoped:** Returns a scoped model
 
-> ### `alias = `model.parent` ( [levels] )`
+> ### `scoped = `model.parent` ( [levels] )`
 >
-> **levels:** *(optional)* Defaults to 1. The number of path segments to remove from the end of the model alias's reference path
+> **levels:** *(optional)* Defaults to 1. The number of path segments to remove from the end of the reference path
 >
-> **alias:** Returns a model alias
+> **scoped:** Returns a scoped model
 
 > ### `path = `model.path` ( )`
 >
@@ -1732,9 +1733,9 @@ console.log(room.get());
 console.log(room.get('name'));
 
 // Array methods can take a subpath as a first argument
-// when the model alias points to an object
+// when the scoped model points to an object
 room.push('toys', 'blocks', 'puzzles');
-// When the model alias points to an array, no subpath
+// When the scoped model points to an array, no subpath
 // argument should be supplied
 room.at('toys').push('cards', 'dominoes');
 {% endhighlight %}
@@ -1751,9 +1752,9 @@ console.log room.get()
 console.log room.get('name')
 
 # Array methods can take a subpath as a first argument
-# when the model alias points to an object
+# when the scoped model points to an object
 room.push 'toys', 'blocks', 'puzzles'
-# When the model alias points to an array, no subpath
+# When the scoped model points to an array, no subpath
 # argument should be supplied
 room.at('toys').push 'cards', 'dominoes'
 {% endhighlight %}
