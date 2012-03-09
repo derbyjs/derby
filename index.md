@@ -1246,13 +1246,23 @@ The `model.subscribe` method populates a model with data from its associated sto
 
 Typically, subscriptions are set up in response to routes before rendering a page. However, the subscribe method may be called in any context on the server or in the browser. All subscriptions established before rendering the page on the server will be re-established once the page loads in the browser.
 
-> ### model.subscribe` ( targets..., callback )`
+> ### model.subscribe` ( targets..., [callback] )`
 >
-> **targets:** One or more path patterns or queries
+> **targets:** One or more path patterns or queries to subscribe to
 >
-> **callback:** Called after a subscription succeeds and the data is set in the model or upon an error
+> **callback:** *(optional)* Called after subscription succeeds and the data is set in the model or upon an error
 
 The subscribe callback takes the arguments `callback(err, scopedModels...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'disconnected'` if Socket.IO is not currently connected. The remaining arguments are [scoped models](#scoped_models) that correspond to each subscribe target's path respectively.
+
+If a model is already subscribed to a target, calling `model.subscribe` again for the same target will have no effect. If all targets are already subscribed, the callback will be invoked immediately.
+
+> ### model.unsubscribe` ( [targets...], [callback] )`
+>
+> **targets:** *(optional)* One or more path patterns or queries to unsubscribe from. All of the model's current subscriptions will be unsubscribed if no targets are specified
+>
+> **callback:** *(optional)* Called after unsubscription succeeds or upon an error
+
+The unsubscribe callback takes the argument `callback(err)`. Like subscribe, `err` is `null` when unsubscribe succeeds, and it is `'disconnected'` if Socket.IO is not currently connected.
 
 Path patterns are specified as strings that correspond to model paths. A path pattern subscribe to the entire object, including all of its sub-paths. For example, subscribing to `rooms.lobby` subscribes to all data set under that path, such as `rooms.lobby.name` or `rooms.lobby.items.3.location`.
 
