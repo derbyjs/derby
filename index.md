@@ -1263,9 +1263,9 @@ var roomName = 'lobby';
 model.subscribe('rooms.' + roomName, (err, room) {
   // Logs: 'rooms.lobby'
   console.log(room.path());
-  // A [reference](#references) is frequently created from a
-  // parameterized path pattern for use later. Refs may be
-  // created directly from a scoped model.
+  // A reference is frequently created from a parameterized
+  // path pattern for use later. Refs may be created directly
+  // from a scoped model
   model.ref('_room', room);
 });
 {% endhighlight %}
@@ -1274,9 +1274,9 @@ roomName = 'lobby'
 model.subscribe "rooms.#{roomName}", (err, room) ->
   # Logs: 'rooms.lobby'
   console.log room.path()
-  # A [reference](#references) is frequently created from a
-  # parameterized path pattern for use later. Refs may be
-  # created directly from a scoped model.
+  # A reference is frequently created from a parameterized
+  # path pattern for use later. Refs may be created directly
+  # from a scoped model
   model.ref '_room', room
 {% endhighlight %}
 
