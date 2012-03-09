@@ -90,15 +90,17 @@ headers:
     type: h2
   - text: Paths
     type: h3
-  - text: Methods
+  - text: Subscription
+    type: h3
+  - text: Scoped models
+    type: h3
+  - text: Mutators
     type: h3
   - text: Events
     type: h3
   - text: Reactive functions
     type: h3
   - text: References
-    type: h3
-  - text: Scoped models
     type: h3
 ---
 
@@ -1156,17 +1158,21 @@ Derby models are powered by [Racer](http://racerjs.com/), a realtime model synch
 
 On the server, Racer creates a `store`, which manages data updates. It is possible to directly manipulate data via asynchronous methods on a store, similar to interacting with a database. Stores also create `model` objects, which provide a synchronous interface more like interacting directly with objects.
 
-Models maintain their own copy of a subset of the global state. This subset is defined via subscriptions to certain paths. Models perform operations independently, and they automatically synchronize their state with the associated store over [Socket.IO](http://socket.io/).
+Models maintain their own copy of a subset of the global state. This subset is defined via [subscriptions](#subscription) to certain paths. Models perform operations independently, and they automatically synchronize their state with the associated store over [Socket.IO](http://socket.io/).
 
 When models are modified, they will immediately reflect the changes. In the background, Racer turns operations into transactions that are sent to the server and applied or rejected. If the transactions are accepted, they are sent to all other clients subscribed to the same data. This optimistic approach provides immediate interaction for the user, makes writing application logic easier, and enables Racer to work offline.
 
-Model methods provide callbacks invoked after success or failure of a transaction. These callbacks can be used to provide application-specific conflict resolution UIs. Models also emit events when their contents are updated, which Derby uses to update the view in realtime.
+Model [mutator methods](#mutators) provide callbacks invoked after success or failure of a transaction. These callbacks can be used to provide application-specific conflict resolution UIs. Models also emit events when their contents are updated, which Derby uses to update the view in realtime.
 
-### STM and OT
+### Conflict resolution
 
-The store provides conflict resolution via a [Software Transactional Memory (STM)](http://en.wikipedia.org/wiki/Software_transactional_memory) or [Operational Transform (OT)](http://en.wikipedia.org/wiki/Operational_transformation). While OT is conceptually straightforward, writing OT algorithms that work reliably is difficult. Racer's OT algorithms are provided by [Share.js](http://sharejs.org/), a well tested JavaScript OT library.
+Currently, Racer defaults to applying all transactions in the order received, i.e. last-writer-wins. For realtime-connected clients, this will typically result in expected behavior. However, offline users interacting with the same data are likely to produce conflicting updates that could lead to unexpected behavior.
 
-To perform these algorithms, Racer stores a journal of all transactions. When new transactions arrive, their paths and versions are compared to the transactions already commited to the journal. STM, which is the default, accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
+Therefore, Racer suppots conflict resolution via a combination of [Software Transactional Memory (STM)](http://en.wikipedia.org/wiki/Software_transactional_memory), [Operational Transformation (OT)](http://en.wikipedia.org/wiki/Operational_transformation), and [Diff-match-patch](http://en.wikipedia.org/wiki/Diff) techniques.
+
+These features are not fully implemented yet, but the [Racer demos](https://github.com/codeparty/racer#readme) show preliminary examples of STM and OT. Letters uses STM mode to automatically detect conflicts when different users move the same letters at the same time. Pad uses OT for a minimal collaborative text editor.
+
+To perform these algorithms, Racer stores a journal of all transactions. When new transactions arrive, their paths and versions are compared to the transactions already commited to the journal. STM accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
 
 ## Creating stores
 
@@ -1189,9 +1195,7 @@ Typically a `listen` option is specified, which is used to setup Socket.IO. This
 
 Alternatively, options may specify `sockets` and `socketUri` if the Socket.IO sockets object is already created. The `sockets` option should be the object returned from Socket.IO's `io.listen().sockets` or `io.listen().of()`.
 
-Options may also specify Redis configuration options within a `redis` object. The Redis options can include the `port`, `host`, and `parser` arguments passed to [node-redis's](https://github.com/mranney/node_redis) createClient method. It can also include the number of the Redis database to select via the `db` option.
-
-If multiple stores are used, each should have its own Redis DB for maintaining its own transaction journal. If multiple stores are used on the same port, they should use Socket.IO namespaces to avoid conflicts.
+More information about configuring Racer to run with various PubSub, database, and journal adapters is coming soon.
 
 ## Creating models
 
@@ -1236,9 +1240,132 @@ Models provide a method to create globablly unique ids. These can be used as par
 >
 > **guid:** Returns a globally unique identifier that can be used for model operations
 
-### Methods
+### Subscription
 
-The primary model methods use STM by default. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model methods are synchronous and provide an optional callback.
+The `model.subscribe` method populates a model with data from its associated store and declares that this data should be kept up to date as it changes. It is possible to define subscriptions in terms of path patterns or queries.
+
+Typically, subscriptions are set up in response to routes before rendering a page. However, the subscribe method may be called in any context on the server or in the browser. All subscriptions established before rendering the page on the server will be re-established once the page loads in the browser.
+
+> ### model.subscribe` ( targets..., callback )`
+>
+> **targets:** One or more path patterns or queries
+>
+> **callback:** Called after a subscription succeeds and the data is set in the model or upon an error
+
+The subscribe callback takes the arguments `callback(err, scopedModels...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'disconnected'` if Socket.IO is not currently connected. The remaining arguments are [scoped models](#scoped_models) that correspond to each subscribe target's path respectively.
+
+Path patterns are specified as strings that correspond to model paths. A path pattern subscribe to the entire object, including all of its sub-paths. For example, subscribing to `rooms.lobby` subscribes to all data set under that path, such as `rooms.lobby.name` or `rooms.lobby.items.3.location`.
+
+It is also possible to use an asterisk as a wildcard character in place of a path segment. For example, `rooms.*.playerCount` subscribes a model to the playerCount for all rooms but no other properties. The scoped model passed to a subscribe callback is scoped to the segments up to the first wildcard character. For this example, the model would be scoped to `rooms`. More complex subscriptions may be specified via [queries](#queries).
+
+{% highlight javascript %}
+var roomName = 'lobby';
+model.subscribe('rooms.' + roomName, 'rooms.*.playerCount', (err, room, rooms) {
+  // Logs: 'rooms.lobby'
+  console.log(room.path());
+  // Logs: 'rooms'
+  console.log(rooms.path());
+  // A [reference](#references) is frequently created from a parameterized path pattern
+  // for use later. Refs may be created directly from a scoped model.
+  model.ref('_room', room);
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+roomName = 'lobby'
+model.subscribe "rooms.#{roomName}", 'rooms.*.playerCount', (err, room, rooms) ->
+  # Logs: 'rooms.lobby'
+  console.log room.path()
+  # Logs: 'rooms'
+  console.log rooms.path()
+  # A [reference](#references) is frequently created from a parameterized path pattern
+  # for use later. Refs may be created directly from a scoped model.
+  model.ref '_room', room
+{% endhighlight %}
+
+In addition to `subscribe`, models have a `fetch` method with the same format. Like subscribe, fetch populates a model with data from a store based on path patterns and queries. However, fetch only retrieves the data once, and it does not establish any ongoing subscriptions. Fetch may be used for any data that need not be updated in realtime and avoids use of the PubSub system.
+
+ > ### model.fetch` ( targets..., callback )`
+>
+> **targets:** One or more path patterns or queries
+>
+> **callback:** Called after a fetch succeeds and the data is set in the model or upon an error
+
+The fetch callback has the same arguments as subscribe's: `callback(err, scopedModels...)`.
+
+### Queries
+
+Queries provide an expressive API for specifying subscriptions and getting data asynchronously. More info coming soon.
+
+### Scoped models
+
+Scoped models provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
+
+> ### `scoped = `model.at` ( path, [absolute] )`
+>
+> **path:** The reference path to set. Note that Derby also supports supplying a DOM node instead of a path string
+>
+> **inputPaths:** *(optional)* Will replace the model's reference path if true. By default, the path is appended
+>
+> **scoped:** Returns a scoped model
+
+> ### `scoped = `model.parent` ( [levels] )`
+>
+> **levels:** *(optional)* Defaults to 1. The number of path segments to remove from the end of the reference path
+>
+> **scoped:** Returns a scoped model
+
+> ### `path = `model.path` ( )`
+>
+> **path:** Returns the reference path for the model that was set via `model.at` or `model.parent`
+
+> ### `segment = `model.leaf` ( )`
+>
+> **segment:** Returns the last segment for the reference path. This may be useful for getting indicies or other properties set at the end of a path
+
+{% highlight javascript %}
+room = model.at('_room');
+
+// These are equivalent:
+room.at('name').set('Fun room');
+room.set('name', 'Fun room');
+
+// Logs: {name: 'Fun room'}
+console.log(room.get());
+// Logs: 'Fun room'
+console.log(room.get('name'));
+
+// Array methods can take a subpath as a first argument
+// when the scoped model points to an object
+room.push('toys', 'blocks', 'puzzles');
+// When the scoped model points to an array, no subpath
+// argument should be supplied
+room.at('toys').push('cards', 'dominoes');
+{% endhighlight %}
+{% highlight coffeescript %}
+room = model.at '_room'
+
+# These are equivalent:
+room.at('name').set 'Fun room'
+room.set 'name', 'Fun room'
+
+# Logs: {name: 'Fun room'}
+console.log room.get()
+# Logs: 'Fun room'
+console.log room.get('name')
+
+# Array methods can take a subpath as a first argument
+# when the scoped model points to an object
+room.push 'toys', 'blocks', 'puzzles'
+# When the scoped model points to an array, no subpath
+# argument should be supplied
+room.at('toys').push 'cards', 'dominoes'
+{% endhighlight %}
+
+Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#xbind).
+
+### Mutators
+
+Model mutator methods are applied optimistically. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model mutator methods are synchronous and provide an optional callback.
 
 #### Basic methods
 
@@ -1693,70 +1820,3 @@ console.log model.get('_myColors')
 {% endhighlight %}
 
 Note that if objects are added to a refList without an `id` property, a unique id from [`model.id()`](#guids) will be automatically added to the object.
-
-### Scoped models
-
-Scoped models provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
-
-> ### `scoped = `model.at` ( path, [absolute] )`
->
-> **path:** The reference path to set. Note that Derby also supports supplying a DOM node instead of a path string
->
-> **inputPaths:** *(optional)* Will replace the model's reference path if true. By default, the path is appended
->
-> **scoped:** Returns a scoped model
-
-> ### `scoped = `model.parent` ( [levels] )`
->
-> **levels:** *(optional)* Defaults to 1. The number of path segments to remove from the end of the reference path
->
-> **scoped:** Returns a scoped model
-
-> ### `path = `model.path` ( )`
->
-> **path:** Returns the reference path for the model that was set via `model.at` or `model.parent`
-
-> ### `segment = `model.leaf` ( )`
->
-> **segment:** Returns the last segment for the reference path. This may be useful for getting indicies or other properties set at the end of a path
-
-{% highlight javascript %}
-room = model.at('_room');
-
-// These are equivalent:
-room.at('name').set('Fun room');
-room.set('name', 'Fun room');
-
-// Logs: {name: 'Fun room'}
-console.log(room.get());
-// Logs: 'Fun room'
-console.log(room.get('name'));
-
-// Array methods can take a subpath as a first argument
-// when the scoped model points to an object
-room.push('toys', 'blocks', 'puzzles');
-// When the scoped model points to an array, no subpath
-// argument should be supplied
-room.at('toys').push('cards', 'dominoes');
-{% endhighlight %}
-{% highlight coffeescript %}
-room = model.at '_room'
-
-# These are equivalent:
-room.at('name').set 'Fun room'
-room.set 'name', 'Fun room'
-
-# Logs: {name: 'Fun room'}
-console.log room.get()
-# Logs: 'Fun room'
-console.log room.get('name')
-
-# Array methods can take a subpath as a first argument
-# when the scoped model points to an object
-room.push 'toys', 'blocks', 'puzzles'
-# When the scoped model points to an array, no subpath
-# argument should be supplied
-room.at('toys').push 'cards', 'dominoes'
-{% endhighlight %}
-
-Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#xbind).
