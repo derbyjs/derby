@@ -1254,7 +1254,7 @@ Typically, subscriptions are set up in response to routes before rendering a pag
 
 The subscribe callback takes the arguments `callback(err, scopedModels...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'disconnected'` if Socket.IO is not currently connected. The remaining arguments are [scoped models](#scoped_models) that correspond to each subscribe target's path respectively.
 
-If a model is already subscribed to a target, calling `model.subscribe` again for the same target will have no effect. If all targets are already subscribed, the callback will be invoked immediately.
+If a model is already subscribed to a target, calling subscribe again for the same target will have no effect. If all targets are already subscribed, the callback will be invoked immediately.
 
 > ### model.unsubscribe` ( [targets...], [callback] )`
 >
@@ -1263,6 +1263,8 @@ If a model is already subscribed to a target, calling `model.subscribe` again fo
 > **callback:** *(optional)* Called after unsubscription succeeds or upon an error
 
 The unsubscribe callback takes the argument `callback(err)`. Like subscribe, `err` is `null` when unsubscribe succeeds, and it is `'disconnected'` if Socket.IO is not currently connected.
+
+Calling unsubscribe with no specified targets removes all subscriptions for a model. Unsubscribe removes the subscriptions, but it does not remove any data from the model.
 
 Path patterns are specified as strings that correspond to model paths. A path pattern subscribe to the entire object, including all of its sub-paths. For example, subscribing to `rooms.lobby` subscribes to all data set under that path, such as `rooms.lobby.name` or `rooms.lobby.items.3.location`.
 
