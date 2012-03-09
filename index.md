@@ -1260,37 +1260,35 @@ It is also possible to use an asterisk as a wildcard character in place of a pat
 
 {% highlight javascript %}
 var roomName = 'lobby';
-model.subscribe('rooms.' + roomName, 'rooms.*.playerCount', (err, room, rooms) {
+model.subscribe('rooms.' + roomName, (err, room) {
   // Logs: 'rooms.lobby'
   console.log(room.path());
-  // Logs: 'rooms'
-  console.log(rooms.path());
-  // A [reference](#references) is frequently created from a parameterized path pattern
-  // for use later. Refs may be created directly from a scoped model.
+  // A [reference](#references) is frequently created from a
+  // parameterized path pattern for use later. Refs may be
+  // created directly from a scoped model.
   model.ref('_room', room);
 });
 {% endhighlight %}
 {% highlight coffeescript %}
 roomName = 'lobby'
-model.subscribe "rooms.#{roomName}", 'rooms.*.playerCount', (err, room, rooms) ->
+model.subscribe "rooms.#{roomName}", (err, room) ->
   # Logs: 'rooms.lobby'
   console.log room.path()
-  # Logs: 'rooms'
-  console.log rooms.path()
-  # A [reference](#references) is frequently created from a parameterized path pattern
-  # for use later. Refs may be created directly from a scoped model.
+  # A [reference](#references) is frequently created from a
+  # parameterized path pattern for use later. Refs may be
+  # created directly from a scoped model.
   model.ref '_room', room
 {% endhighlight %}
 
 In addition to `subscribe`, models have a `fetch` method with the same format. Like subscribe, fetch populates a model with data from a store based on path patterns and queries. However, fetch only retrieves the data once, and it does not establish any ongoing subscriptions. Fetch may be used for any data that need not be updated in realtime and avoids use of the PubSub system.
 
- > ### model.fetch` ( targets..., callback )`
+> ### model.fetch` ( targets..., callback )`
 >
 > **targets:** One or more path patterns or queries
 >
 > **callback:** Called after a fetch succeeds and the data is set in the model or upon an error
 
-The fetch callback has the same arguments as subscribe's: `callback(err, scopedModels...)`.
+The fetch callback has the same arguments as subscribe's: `callback(err, scopedModels...)`
 
 ### Queries
 
@@ -1691,9 +1689,9 @@ References must be declared per model, since calling `model.ref` creates a numbe
 >
 > **path:** The location at which to create a reference. This must be a [private path](#private_paths), since references must be declared per model
 >
-> **to:** The location that the reference links to. This is where the data is actually stored
+> **to:** The location that the reference links to. This is where the data is actually stored. May be a path or scoped model
 >
-> **key:** *(optional)* A path whose value should be added as an additional property underneath `to` when accessing the reference
+> **key:** *(optional)* A path whose value should be added as an additional property underneath `to` when accessing the reference. May be a path or scoped model
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
 
@@ -1773,9 +1771,9 @@ Racer also supports a special reference type created via `model.refList`. This t
 >
 > **path:** The location at which to create a reference list. This must be a [private path](#private_paths), since references must be declared per model
 >
-> **to:** The location of an object that has properties to be mapped onto an array. Each property must be an object with a unique `id` property of the same value
+> **to:** The location of an object that has properties to be mapped onto an array. Each property must be an object with a unique `id` property of the same value. May be a path or scoped model
 >
-> **key:** A path whose value is an array of ids that map the `to` object's properties to a given order
+> **key:** A path whose value is an array of ids that map the `to` object's properties to a given order. May be a path or scoped model
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
 
