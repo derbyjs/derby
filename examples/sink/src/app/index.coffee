@@ -36,6 +36,10 @@ get '/live-css', (page, model) ->
         {prop: 'font-size', value: '18px', active: false}
       ]
       outputText: 'Edit this text...'
+    model.fn '_numStyles', 'liveCss.styles', (styles) ->
+      for style in styles
+        return true if style.active
+      return false
     page.render ctxFor 'liveCss'
 
 get '/table', (page, model) ->

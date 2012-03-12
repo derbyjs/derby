@@ -40,13 +40,17 @@
   </div>
   <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
-  <p>{</p>
-  <ul class=css>
-    ((#liveCss.styles :style))
-      <li x-displayed=((:style.active))>((> cssProperty))</li>
-    ((/))
-  </ul>
-  <p>}</p>
+  ((#_numStyles))
+    <p>{</p>
+    <ul class=css>
+      ((#liveCss.styles :style))
+        <li x-displayed=((:style.active))>((> cssProperty))</li>
+      ((/))
+    </ul>
+    <p>}</p>
+  ((^))
+    (None)
+  ((/))
   <h3>Output:</h3>
   <p style="((liveCss.styles :style > cssProperty))" contenteditable>
     (((liveCss.outputText)))

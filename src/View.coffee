@@ -114,24 +114,37 @@ addId = (view, attrs) ->
 # whitespace is not removed in case whitespace is desired between lines
 View.trim = trim = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
+boundPlaceholder = ///^
+  ([\s\S]*?)  # Text before placeholder
+  (\({2,3})  # Placeholder start
+  ([\s\S]+?)  # Placeholder contents
+  (?:\){2,3})  # End placeholder
+  ([\s\S]*)  # Text after placeholder
+///
+unboundPlaceholder = ///^
+  ([\s\S]*?)  # Text before placeholder
+  (\{{2,3})  # Placeholder start
+  ([\s\S]+?)  # Placeholder contents
+  (?:\}{2,3})  # End placeholder
+  ([\s\S]*)  # Text after placeholder
+///
+placeholderContent = ///^
+  \s*([\#^/]?)  # Block type
+  \s*([^\s>]*)  # Name of context object
+  (?:\s+:([^\s>]+))?  # Alias name
+  (?:\s*>\s*([^\s]+)\s*)?  # Partial name
+///
 extractPlaceholder = (text) ->
-  match = ///^
-    ([^\{\(]*)  # Text before placeholder
-    (\{{2,3}|\({2,3})  # Placeholder start
-    ([^\}\)]+)  # Placeholder contents
-    (?:\}{2,3}|\){2,3})  # End placeholder
-    ([\s\S]*)  # Text after placeholder
-  ///.exec text
-  return  unless match
-  content = ///^
-    \s*([\#^/]?)  # Block type
-    \s*([^\s>]*)  # Name of context object
-    (?:\s+:([^\s>]+))?  # Alias name
-    (?:\s*>\s*([^\s]+)\s*)?  # Partial name
-  ///.exec match[3]
+  if match = boundPlaceholder.exec text
+    bound = true
+  else if match = unboundPlaceholder.exec text
+    bound = false
+  else
+    return
+  return unless content = placeholderContent.exec match[3]
   pre: trim match[1]
   escaped: match[2].length is 2
-  bound: match[2].charAt(0) is '('
+  bound: bound
   type: content[1]
   name: content[2]
   alias: content[3]
