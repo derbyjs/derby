@@ -16,25 +16,30 @@
 
 <todo:>
   <li data-id={{id}} class=((#.completed))completed((/))>
-    <table width=100%><tr>
-      <td class=handle width=0>
-      <td width=100%>
-        <div class=todo>
-          <label><input type=checkbox checked=((.completed))><i></i></label>
-          <div x-bind=keydown:shortcuts contenteditable>(((.text)))</div>
-        </div>
-      <td width=0><button class=delete x-bind=click:del>Delete</button>
+    <table width=100%>
+      <tr>
+        <td class=handle width=0></td>
+        <td width=100%>
+          <div class=todo>
+            <label><input type=checkbox checked=((.completed))><i></i></label>
+            <div x-bind=keydown:shortcuts contenteditable>(((.text)))</div>
+          </div>
+        </td>
+        <td width=0><button class=delete x-bind=click:del>Delete</button></td>
+      </tr>
     </table>
   </li>
 
 <info:>
   <div id=info>
     ((^connected))
-      <p>((#canConnect))
-        Offline ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
-      ((^))
-        Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
-      ((/))
+      <p>
+        ((#canConnect))
+          Offline ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
+        ((^))
+          Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
+        ((/))
+      </p>
     ((/))
   </div>
 

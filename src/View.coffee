@@ -1,5 +1,5 @@
 {lookup} = require('racer').path
-{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr} = require './html'
+{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr, isVoid} = require './html'
 {modelPath} = markup = require './markup'
 
 empty = -> ''
@@ -138,14 +138,10 @@ extractPlaceholder = (text) ->
   partial: content[4]?.toLowerCase()
   post: trim match[4]
 
-# True if post begins with text that does not start an end block
-wrapPost = (post) ->
-  return false unless post
-  return !///^
-    (?:\{{2,3}|\({2,3})  # Start placeholder
-    [/^]  # End block type
-    (?:\}{2,3}|\){2,3})  # End placeholder
-  ///.test post
+# True if remaining text does not immediately close the current tag
+wrapRemainder = (tagName, remainder) ->
+  return false unless remainder
+  return !(new RegExp '^<\/' + tagName, 'i').test(remainder)
 
 dataValue = (ctx, model, name) ->
   path = modelPath ctx, name
@@ -325,16 +321,21 @@ pushVarFns = (view, stack, fn, fn2, name, escaped) ->
   else
     pushChars stack, textFn name, escaped && escapeHtml
 
-pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
+pushVar = (view, stack, events, pre, remainder, match, fn, fn2) ->
   {name, escaped, bound, alias, partial} = match
   fn = partialFn name, '#', alias, view._find partial  if partial
 
   if bound
     last = stack[stack.length - 1]
-    if wrap = pre || !last || (last[0] != 'start') || wrapPost(post)
+    wrap = pre ||
+      !last ||
+      (last[0] != 'start') ||
+      isVoid(tagName = last[1]) ||
+      wrapRemainder(tagName, remainder)
+
+    if wrap
       stack.push ['marker', '', attrs = {}]
     else
-      tagName = last[1]
       for attr of attrs = last[2]
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
     addId view, attrs
@@ -345,7 +346,7 @@ pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
-pushVarString = (view, stack, events, pre, post, match, fn, fn2) ->
+pushVarString = (view, stack, events, pre, remainder, match, fn, fn2) ->
   {name, bound, alias, partial} = match
   fn = partialFn name, '#', alias, view._find(partial + '$s')  if partial
   bindOnce = (ctx) ->
@@ -410,8 +411,8 @@ parse = (view, template, isString, onBind) ->
 
     stack.push ['start', tagName, attrs]
 
-  chars = (text, literal) ->
-    if literal || !(match = extractPlaceholder text)
+  chars = (text, isRawText, remainder) ->
+    if isRawText || !(match = extractPlaceholder text)
       pushChars stack, trim(text)
       return
 
@@ -425,10 +426,10 @@ parse = (view, template, isString, onBind) ->
       onEnd: (queue) ->
         fn = blockFn view, queue
         fn2 = blockFn view, queue.closed
-        push view, stack, events, pre, post, queue.block, fn, fn2
+        push view, stack, events, pre, post || remainder, queue.block, fn, fn2
       onVar: (match) ->
-        push view, stack, events, pre, post, match
-    
+        push view, stack, events, pre, post || remainder, match
+
     chars post  if post
 
   end = (tag, tagName) ->
@@ -438,5 +439,5 @@ parse = (view, template, isString, onBind) ->
     chars template
   else
     parseHtml template, {start, chars, end}
-  
+
   return renderer view, reduceStack(stack), events

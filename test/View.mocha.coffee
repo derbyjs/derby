@@ -50,8 +50,12 @@ describe 'View', ->
 
     view.make 'test', '''
       {{connected}}{{canConnect}} {{nada}}
-      <p>{{name}}
-      <p>{{age}} - {{height}} - {{weight}}
+      <p>
+        {{name}}
+      </p>
+      <p>
+        {{age}} - {{height}} - {{weight}}
+      </p>
       '''
     ctx =
       connected: false
@@ -64,10 +68,10 @@ describe 'View', ->
     model.set 'weight', '175 lbs'
 
     expected = 'falsetrue ' +
-      '<p>John' +
-      '<p>22 - 6 ft 2 in - 165 lbs'
+      '<p>John</p>' +
+      '<p>22 - 6 ft 2 in - 165 lbs</p>'
 
-    expect(view.get 'test', ctx).to.eql expected
+    expect(view.get 'test', ctx).to.equal expected
 
   it 'binding variables in text', ->
     view = new View
@@ -76,8 +80,12 @@ describe 'View', ->
 
     view.make 'test', '''
       ((connected))((canConnect)) ((nada))
-      <p>((name))
-      <p>((age)) - ((height)) - ((weight))
+      <p>
+        ((name))
+      </p>
+      <p>
+        ((age)) - ((height)) - ((weight))
+      </p>
       '''
     ctx =
       connected: false
@@ -89,9 +97,9 @@ describe 'View', ->
     model.set 'height', '6 ft 2 in'
     model.set 'weight', '175 lbs'
 
-    expect(view.get 'test', ctx).to.eql '<!--$0-->false<!--$$0--><!--$1-->true<!--$$1--> <!--$2--><!--$$2-->' +
-      '<p id=$3>John' +
-      '<p><!--$4-->22<!--$$4--> - <!--$5-->6 ft 2 in<!--$$5--> - <!--$6-->165 lbs<!--$$6-->'
+    expect(view.get 'test', ctx).to.equal '<!--$0-->false<!--$$0--><!--$1-->true<!--$$1--> <!--$2--><!--$$2-->' +
+      '<p id=$3>John</p>' +
+      '<p><!--$4-->22<!--$$4--> - <!--$5-->6 ft 2 in<!--$$5--> - <!--$6-->165 lbs<!--$$6--></p>'
 
   it 'HTML escaping', ->
     view = new View
