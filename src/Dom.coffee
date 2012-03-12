@@ -1,9 +1,10 @@
+{merge} = require('racer').util
 EventDispatcher = require './EventDispatcher'
 {escapeHtml} = require './html'
 
-domHandler = addListener = removeListener = ->
-
 Dom = module.exports = (model, appExports) ->
+  dom = this
+
   @events = events = new EventDispatcher
     onBind: (name, listener) ->
       if listener.length > 3
@@ -21,7 +22,7 @@ Dom = module.exports = (model, appExports) ->
 
       if listener.length <= 3
         [fn, id, delay] = listener
-        callback = if fn is '$dist' then distribute else appExports[fn]
+        callback = fns[fn] || appExports[fn]
         return  unless callback
       else
         [pathId, id, method, property, delay, invert] = listener
@@ -36,15 +37,29 @@ Dom = module.exports = (model, appExports) ->
         model.set path, value
 
       if delay?
-        setTimeout callback || finish, delay, e
+        setTimeout callback || finish, delay, e, dom
       else
-        (callback || finish) e
+        (callback || finish) e, dom
       return
 
-  domHandler = (e) ->
+  @domHandler = domHandler = (e) ->
     target = e.target
     target = target.parentNode  if target.nodeType == 3  # Node.TEXT_NODE
     events.trigger e.type, target.id, e
+
+  if doc.addEventListener
+    addListener = (el, name, cb, captures = false) ->
+      el.addEventListener name, cb, captures
+    removeListener = (el, name, cb, captures = false) ->
+      el.removeEventListener name, cb, captures
+
+  else if doc.attachEvent
+    addListener = (el, name, cb) ->
+      el.attachEvent 'on' + name, ->
+        event.target || event.target = event.srcElement
+        cb event
+    removeListener = ->
+      throw new Error 'Not implemented'
 
   @addListener = addListener
   @removeListener = removeListener
@@ -52,6 +67,7 @@ Dom = module.exports = (model, appExports) ->
   return
 
 Dom:: =
+
   clear: ->
     @events.clear()
     clearElements()
@@ -184,7 +200,33 @@ Dom:: =
       el.insertBefore child, ref
       return
 
+  isEvent: isEvent = (obj) -> toString.call(obj) == '[object Event]'
 
+  fns: fns =
+    $forChildren: (e, dom) ->
+      # Clone the event object first, since the e.target property is read only
+      forChildren merge({}, e), dom.domHandler
+
+    $forName: (e, dom) ->
+      # Prevent infinte emission
+      return unless isEvent(e)
+
+      target = e.target
+      return unless name = target.getAttribute 'name'
+      elements = doc.getElementsByName name
+      return unless elements.length > 1
+      # Clone the event object first, since the e.target property is read only
+      clone = merge {}, e
+      domHandler = dom.domHandler
+      for el in elements
+        continue if el is target
+        elEvent = Object.create clone
+        elEvent.target = el
+        domHandler elEvent
+      return
+
+
+toString = Object::toString
 win = window
 doc = win.document
 
@@ -224,33 +266,14 @@ getRange = (name) ->
 element = (id) ->
   elements[id] || (elements[id] = doc.getElementById(id)) || getRange(id)
 
-dist = (e) -> for child in e.target.childNodes
-  return  unless child.nodeType == 1  # Node.ELEMENT_NODE
-  childEvent = Object.create e
-  childEvent.target = child
-  domHandler childEvent
-  dist childEvent
-distribute = (e) ->
-  # Clone the event object first, since the e.target property is read only
-  clone = {}
-  for key, value of e
-    clone[key] = value
-  dist clone
-
-
-if doc.addEventListener
-  addListener = (el, name, cb, captures = false) ->
-    el.addEventListener name, cb, captures
-  removeListener = (el, name, cb, captures = false) ->
-    el.removeEventListener name, cb, captures
-
-else if doc.attachEvent
-  addListener = (el, name, cb) ->
-    el.attachEvent 'on' + name, ->
-      event.target || event.target = event.srcElement
-      cb event
-  removeListener = ->
-    throw new Error 'Not implemented'
+forChildren = (e, domHandler) ->
+  for child in e.target.childNodes
+    return unless child.nodeType == 1  # Node.ELEMENT_NODE
+    childEvent = Object.create e
+    childEvent.target = child
+    domHandler childEvent
+    forChildren childEvent, domHandler
+  return
 
 # Add support for insertAdjacentHTML for Firefox < 8
 # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com
