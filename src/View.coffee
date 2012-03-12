@@ -1,3 +1,4 @@
+{lookup} = require('racer').path
 {parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr} = require './html'
 {modelPath} = markup = require './markup'
 
@@ -82,7 +83,8 @@ View:: =
 
 extend = (parent, obj) ->
   out = Object.create parent
-  return out  unless obj
+  if typeof obj isnt 'object' || Array.isArray(obj)
+    return out
   for key of obj
     out[key] = obj[key]
   return out
@@ -146,10 +148,11 @@ wrapPost = (post) ->
   ///.test post
 
 dataValue = (ctx, model, name) ->
-  if path = modelPath ctx, name
-    if (value = model.get path)? then value else model[path]
-  else
-    ctx[name]
+  path = modelPath ctx, name
+  value = lookup path, ctx
+  return value if value isnt undefined
+  value = model.get path
+  return if value isnt undefined then value else model[path]
 
 reduceStack = (stack) ->
   html = ['']

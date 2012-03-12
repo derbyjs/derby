@@ -20,14 +20,14 @@ describe 'View', ->
   Model::_commit = ->
   Model::bundle = ->
 
-  it 'test view.render with no defined views', ->
+  it 'view.render with no defined views', ->
     view = new View
     res = new ResMock
     res.onEnd = (html) ->
       expect(html).to.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
     view.render res
 
-  it 'test rendering a string literal view', ->
+  it 'rendering a string literal view', ->
     view = new View
     model = new Model
     view._init model
@@ -43,7 +43,7 @@ describe 'View', ->
     # String views should have line breaks and leading whitespace removed
     expect(view.get 'test').to.eql '<style>body {margin: 0}</style>'
 
-  it 'test substituting variables into text', ->
+  it 'substituting variables into text', ->
     view = new View
     model = new Model
     view._init model
@@ -69,7 +69,7 @@ describe 'View', ->
 
     expect(view.get 'test', ctx).to.eql expected
 
-  it 'test binding variables in text', ->
+  it 'binding variables in text', ->
     view = new View
     model = new Model
     view._init model
@@ -93,7 +93,7 @@ describe 'View', ->
       '<p id=$3>John' +
       '<p><!--$4-->22<!--$$4--> - <!--$5-->6 ft 2 in<!--$$5--> - <!--$6-->165 lbs<!--$$6-->'
 
-  it 'test HTML escaping', ->
+  it 'HTML escaping', ->
     view = new View
     model = new Model
     view._init model
@@ -121,7 +121,7 @@ describe 'View', ->
       {a: '"', b: "'", c: '<', d: '>', e: '=', f: ' ', g: '', h: null}
     ).to.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
 
-  it 'test conditional blocks in text', ->
+  it 'conditional blocks in text', ->
     view = new View
     model = new Model
     view._init model
@@ -186,7 +186,7 @@ describe 'View', ->
     model.set 'show', []
     expect(view.get 'bound').to.eql modelFalsey
 
-  it 'test lists in text', ->
+  it 'lists in text', ->
     view = new View
     model = new Model
     view._init model
@@ -209,7 +209,7 @@ describe 'View', ->
     expect(view.get 'test', arr: [{name: 'stuff'}, {name: 'more'}])
       .to.eql '<ul><li>stuff<li>more</ul>'
 
-  it 'test boolean attributes', ->
+  it 'boolean attributes', ->
     view = new View
     model = new Model
     view._init model
@@ -219,3 +219,32 @@ describe 'View', ->
     expect(view.get 'test').to.eql '<input id=$0>'
     expect(view.get 'test', maybe: false).to.eql '<input id=$1>'
     expect(view.get 'test', maybe: true).to.eql '<input id=$2 disabled>'
+
+  it 'paths containing dots should work for ctx object items', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', '<b>{{user.name}}</b>'
+    ctx = user: {name: 'John'}
+
+    expect(view.get 'test', ctx).to.eql '<b>John</b>'
+
+  it 'relative paths should work for ctx object items', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', '{{#user}}<b>{{.name}}</b>{{/}}'
+    ctx = user: {name: 'John'}
+
+    expect(view.get 'test', ctx).to.eql '<b>John</b>'
+
+  it 'Arrays containing non-objects should work from ctx', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test1', '{{#bools}}<b>{{.}}</b>{{/}}'
+    view.make 'test2', '{{#bools :value}}<b>{{:value}}</b>{{/}}'
+    ctx = bools: [true, false, true]
+
+    expect(view.get 'test1', ctx).to.eql '<b>true</b><b>false</b><b>true</b>'
+    expect(view.get 'test2', ctx).to.eql '<b>true</b><b>false</b><b>true</b>'

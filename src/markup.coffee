@@ -1,3 +1,5 @@
+{lookup} = require('racer').path
+
 module.exports =
 
   bound:
@@ -89,7 +91,6 @@ module.exports =
   textEvents: textEvents = 'keyup,keydown,paste/0,dragover/0,blur'
 
   modelPath: modelPath = (ctx, name, noReplace) ->
-    return null  if name of ctx
     firstChar = name.charAt(0)
 
     if firstChar is ':'
@@ -118,7 +119,7 @@ module.exports =
       name = name.replace /\$#/g, -> indices[i++]
 
     # Interpolate the value of names within square brackets
-    return name.replace /\[([^\]]+)\]/g, (match, name) -> ctx[name]
+    return name.replace /\[([^\]]+)\]/g, (match, name) -> lookup name, ctx
 
 
 AUTOCOMPLETE_OFF =
