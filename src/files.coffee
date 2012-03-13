@@ -104,7 +104,7 @@ findPath = (root, name, dir, extension, callback) ->
     exists path, (value) ->
       callback if value then path else null
 
-loadTemplates = (root, fileName, get, templates, callback, alias, ns) ->
+loadTemplates = (root, fileName, get, templates, callback, alias, currentNs) ->
   callback.count = (callback.count || 0) + 1
   findPath root, fileName, 'views', '.html', (path) ->
     unless path
@@ -114,37 +114,57 @@ loadTemplates = (root, fileName, get, templates, callback, alias, ns) ->
       else throw new Error "Can't find #{root}/views/#{fileName}"
 
     got = false
-    fs.readFile path, 'utf8', (err, template) ->
+    if get is 'all'
+      matchesGet = ->
+        got = true
+        return true
+    else if Array.isArray(get)
+      getCount = get.length
+      matchesGet = (name) ->
+        --getCount || got = true
+        return ~get.indexOf(name)
+    else
+      matchesGet = (name) ->
+        got = true
+        return get == name
+
+    fs.readFile path, 'utf8', (err, file) ->
       return callback err  if err
-      name = ''
-      from = ''
-      importName = ''
-      _ns = ''
-      parseHtml template,
+      name = src = ns = as = importTemplates = null
+      parseHtml file,
+
         start: (tag, tagName, attrs) ->
+          name = src = ns = as = importTemplates = null
           i = tagName.length - 1
-          name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()
-          from = attrs.from
-          importName = attrs.import && attrs.import.toLowerCase()
-          if name is 'all'
-            if importName
-              throw new Error "Can't specify import attribute with All in #{path}"
-            _ns = if 'ns' of attrs then attrs.ns.toLowerCase() else from
+          name = (if tagName.charAt(i) == ':' then tagName[0...i] else '').toLowerCase()
+          if name is 'import'
+            {src, as, template} = attrs
+            throw new Error "Template import in #{path} must have a 'src' attribute" unless src
+
+            if template
+              importTemplates = template.toLowerCase().split(' ')
+              if importTemplates.length > 1 && as?
+                throw new Error "Template import of '#{src}' in #{path} can't specify multiple 'template' values with 'as'"
+
+            if 'ns' of attrs
+              if as
+                throw new Error "Template import of '#{src}' in #{path} can't specifiy both 'ns' and 'as' attributes" 
+              ns = (attrs.ns || '').toLowerCase()
+            else
+              ns = if as then '' else (src.replace /^[.\/]*/, '').toLowerCase()
+
         chars: (text, literal) ->
-          return unless get == 'all' || get == name
-          got = true
-          if from
+          return unless matchesGet name
+          if src
             unless onlyWhitespace.test text
-              throw new Error "Template import '#{name}' in #{path} can't contain content"
-            if importName
-              _alias = name
-              name = importName
-            return loadTemplates join(dirname(path), from), null, name, templates, callback, _alias, _ns
+              throw new Error "Template import of '#{src}' in #{path} can't contain content"
+            toGet = importTemplates || 'all'
+            return loadTemplates join(dirname(path), src), null, toGet, templates, callback, as, ns
           unless name && literal
             return if onlyWhitespace.test text
             throw new Error "Can't read template in #{path} near the text: #{text}"
           templateName = alias || name
-          templateName = ns + ':' + templateName if ns
+          templateName = currentNs + ':' + templateName if currentNs
           templates[templateName] = trim text
 
       throw new Error "Can't find template '#{get}' in #{path}"  unless got
