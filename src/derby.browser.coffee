@@ -7,8 +7,8 @@ History = require './History'
 
 Page = (@view, @model) -> return
 Page:: =
-  render: (ctx) ->
-    @view.render @model, ctx
+  render: (ns, ctx) ->
+    @view.render @model, ns, ctx
   redirect: (url) ->
     return @view.history.back()  if url is 'back'
     # TODO: Add support for `basepath` option like Express
@@ -19,28 +19,35 @@ exports.createApp = (appModule) ->
   appExports = appModule.exports
   # Expose methods on the application module
   appExports.view = view = new View
-  model = view.model = racer.model
-  dom = view.dom = new Dom model, appExports
-  derbyModel.init model, dom
 
   routes = {}
   ['get', 'post', 'put', 'del'].forEach (method) ->
     queue = routes[method] = []
     appExports[method] = (pattern, callback) ->
       queue.push new Route method, pattern, callback
-  page = new Page view, model
-  history = view.history = new History routes, page, dom
 
-  appExports.ready = (fn) -> racer.onready = -> fn model
+  appExports.ready = (fn) -> racer.on 'ready', fn
 
   # "$$templates$$" is replaced with an array of templates in View.server
   for name, template of "$$templates$$"
     view.make name, template
 
-  appModule.exports = (modelBundle, appHash, ctx, appFilename) ->
-    model.on 'initialized', ->
-      view.render model, ctx, true
+  appModule.exports = (modelBundle, appHash, ns, ctx, appFilename) ->
+    # The init event is fired after the model data is initialized but
+    # before the socket object is set
+    racer.on 'init', (model) ->
+      view.model = model
+      view.dom = dom = new Dom model, appExports
+      derbyModel.init model, dom
+      page = new Page view, model
+      history = view.history = new History routes, page, dom
+      view.render model, ns, ctx, true
+
+    # The ready event is fired after the model data is initialized and
+    # the socket object is set
+    racer.on 'ready', (model) ->
       autoRefresh view, model, appFilename, appHash
+
     racer.init modelBundle
     return appExports
 

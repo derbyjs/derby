@@ -59,4 +59,4 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-store = app.createStore listen: server
+app.createStore listen: server

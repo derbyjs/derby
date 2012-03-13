@@ -54,4 +54,4 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-store = app.createStore listen: server
+chat.createStore listen: server

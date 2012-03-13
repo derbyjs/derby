@@ -36,7 +36,8 @@ Model::at = (node, absolute) ->
               break
             i++
         return @__at path, absolute
-      last = node.parentNode
+
+      last = last.parentNode
       node = last.parentNode
       continue
 

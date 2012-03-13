@@ -24,7 +24,7 @@ get '/:room?', (page, model, {room}) ->
     getRoom page, model, room, userId
 
 getRoom = (page, model, roomName, userId) ->
-  model.subscribe "rooms.#{roomName}", 'users', (room) ->
+  model.subscribe "rooms.#{roomName}", 'users', (err, room) ->
     model.ref '_room', room
 
     # setNull will set a value if the object is currently null or undefined

@@ -49,7 +49,7 @@ derby = module.exports = mergeAll Object.create(racer),
     appExports = appModule.exports
     # Expose methods on the application module
     appExports.view = view = new View
-    appExports.render = (res, model, ctx, status) -> view.render res, model, ctx, status
+    appExports.render = (res, model, ns, ctx, status) -> view.render res, model, ns, ctx, status
     appExports.ready = ->
 
     view._derbyOptions = options = @options
@@ -108,8 +108,8 @@ serverMock =
 
 Page = (@view, @res, @model) -> return
 Page:: =
-  render: (ctx, status) ->
-    @view.render @res, @model, ctx, status
+  render: (ns, ctx, status) ->
+    @view.render @res, @model, ns, ctx, status
   redirect: (url, status) ->
     @res.redirect url, status
 
@@ -117,12 +117,12 @@ Static = (@root) ->
   @views = {}
   return
 Static:: =
-  render: (name, res, model, ctx, status) ->
+  render: (name, res, model, ns, ctx, status) ->
     unless view = @views[name]
       view = @views[name] = new View
       view._root = @root
       view._clientName = name
-    view.render res, model, ctx, status, true
+    view.render res, model, ns, ctx, status, true
 
 addWatches = (appFilename, options, sockets) ->
   {root, clientName} = files.parseName appFilename, options

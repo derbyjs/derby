@@ -13,10 +13,10 @@ PathMap:: =
 
   id: (path) ->
     # Return the path for an id, or create a new id and index it
-    this.ids[path] || (
-      this.paths[id = ++@count] = path
+    @ids[path] || (
+      @paths[id = ++@count] = path
       @_indexArray path, id
-      this.ids[path] = id
+      @ids[path] = id
     )
 
   _indexArray: (path, id) ->

@@ -23,7 +23,7 @@ module.exports =
             callback trim css
 
   templates: (root, clientName, callback) ->
-    loadTemplates root, clientName, 'all', null, {}, callback
+    loadTemplates root, clientName, 'all', {}, callback
 
   js: (parentFilename, callback) ->
     inlineFile = join dirname(parentFilename), 'inline.js'
@@ -64,7 +64,7 @@ module.exports =
         when '+' then '_'
         when '=' then ''
 
-  writeJs: (js, options, callback) ->
+  writeJs: (root, js, options, callback) ->
     staticRoot = options.staticRoot || join root, 'public'
     staticDir = options.staticDir || 'gen'
     staticPath = join staticRoot, staticDir
@@ -104,7 +104,7 @@ findPath = (root, name, dir, extension, callback) ->
     exists path, (value) ->
       callback if value then path else null
 
-loadTemplates = (root, fileName, get, alias, templates, callback) ->
+loadTemplates = (root, fileName, get, templates, callback, alias, ns) ->
   callback.count = (callback.count || 0) + 1
   findPath root, fileName, 'views', '.html', (path) ->
     unless path
@@ -119,14 +119,17 @@ loadTemplates = (root, fileName, get, alias, templates, callback) ->
       name = ''
       from = ''
       importName = ''
+      _ns = ''
       parseHtml template,
         start: (tag, tagName, attrs) ->
           i = tagName.length - 1
           name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()
           from = attrs.from
           importName = attrs.import && attrs.import.toLowerCase()
-          if name is 'all' && importName
-            throw new Error "Can't specify import attribute with All in #{path}"
+          if name is 'all'
+            if importName
+              throw new Error "Can't specify import attribute with All in #{path}"
+            _ns = if 'ns' of attrs then attrs.ns.toLowerCase() else from
         chars: (text, literal) ->
           return unless get == 'all' || get == name
           got = true
@@ -136,11 +139,13 @@ loadTemplates = (root, fileName, get, alias, templates, callback) ->
             if importName
               _alias = name
               name = importName
-            return loadTemplates join(dirname(path), from), null, name, _alias, templates, callback
+            return loadTemplates join(dirname(path), from), null, name, templates, callback, _alias, _ns
           unless name && literal
             return if onlyWhitespace.test text
             throw new Error "Can't read template in #{path} near the text: #{text}"
-          templates[alias || name] = trim text
+          templateName = alias || name
+          templateName = ns + ':' + templateName if ns
+          templates[templateName] = trim text
 
       throw new Error "Can't find template '#{get}' in #{path}"  unless got
       callback templates unless --callback.count

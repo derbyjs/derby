@@ -1,13 +1,20 @@
 startTag = /^<([^\s=\/>]+)((?:\s+[^\s=\/>]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+)?)?)*)\s*(\/?)\s*>/
 endTag = /^<\/([^\s=\/>]+)[^>]*>/
 attr = /([^\s=]+)(?:\s*(=)\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+))?)?/g
-literalTag = /^(?:[^:]+:|style|script)$/i
-literalEnd = (tagName) -> switch tagName.toLowerCase()
+
+rawTextTag = /^(?:[^\s=\/>]+:|style|script)$/i
+rawTextEnd = (tagName) -> switch tagName.toLowerCase()
   when 'style' then /<\/style/i
   when 'script' then /<\/script/i
-  else /<\/?[^\s=\/>:]+:/
+  else /<\/?[^\s=\/>]+:/
+
 comment = /<!--[\s\S]*?-->/g
 exports.uncomment = uncomment = (html) -> html.replace comment, ''
+
+voidElement = {}
+for name in 'area,base,br,col,command,embed,hr,img,input,keygen,link,meta,param,source,track,wbr'.split(',')
+  voidElement[name] = true
+exports.isVoid = (name) -> !!voidElement[name]
 
 empty = ->
 exports.parse = (html, handler = {}) ->
@@ -19,20 +26,19 @@ exports.parse = (html, handler = {}) ->
     attrs = {}
     rest.replace attr, (match, name, equals, attr0, attr1, attr2) ->
       attrs[name.toLowerCase()] = attr0 || attr1 || attr2 || (if equals then '' else null)
-    startHandler tag, tagName.toLowerCase(), attrs
+    startHandler tag, tagName.toLowerCase(), attrs, html
 
   parseEndTag = (tag, tagName) ->
-    endHandler tag, tagName.toLowerCase()
+    endHandler tag, tagName.toLowerCase(), html
 
-  onChars = (html, index, literal) ->
+  parseChars = (index, isRawText) ->
     if ~index
-      text = html.substring 0, index
-      html = html.substring index
+      text = html[0...index]
+      html = html[index..]
     else
       text = html
       html = ''
-    charsHandler text, literal  if text
-    return html
+    charsHandler text, isRawText, html  if text
 
   # Remove HTML comments before parsing
   html = uncomment html
@@ -44,22 +50,24 @@ exports.parse = (html, handler = {}) ->
     if html[0] == '<'
       if html[1] == '/'
         if match = html.match endTag
-          html = html.substring match[0].length
+          pos = match[0].length
+          html = html[pos..]
           match[0].replace endTag, parseEndTag
           chars = false
       else
         if match = html.match startTag
-          html = html.substring match[0].length
+          pos = match[0].length
+          html = html[pos..]
           match[0].replace startTag, parseStartTag
           chars = false
           tagName = match[1]
-          if literalTag.test tagName
-            index = html.search literalEnd tagName
-            html = onChars html, index, true
+          if rawTextTag.test tagName
+            index = html.search rawTextEnd tagName
+            parseChars index, true
 
     if chars
       index = html.indexOf '<'
-      html = onChars html, index
+      parseChars index
 
     throw 'HTML parse error: ' + html  if html == last
 
@@ -84,9 +92,9 @@ exports.unescapeEntities = (html) ->
     String.fromCharCode(
       if entity.charAt(0) is '#'
         if entity.charAt(1) is 'x'
-          parseInt entity.substr(2), 16
+          parseInt entity[2..16]
         else
-          parseInt entity.substr(1)
+          parseInt entity[1..]
       else
         entityToCode[entity]
     )

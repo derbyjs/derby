@@ -1,4 +1,5 @@
-{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr} = require './html'
+{lookup} = require('racer').path
+{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr, isVoid} = require './html'
 {modelPath} = markup = require './markup'
 
 empty = -> ''
@@ -10,13 +11,12 @@ defaultCtx =
   $i: []
 
 View = module.exports = ->
-  self = this
   @_views = Object.create @default
   @_inline = ''
 
   # All automatically created ids start with a dollar sign
   @_idCount = 0
-  @_uniqueId = -> '$' + (self._idCount++).toString 36
+  @_uniqueId = => '$' + (@_idCount++).toString 36
 
   return
 
@@ -35,19 +35,23 @@ View:: =
     @make name + '$s', template, true  unless isString
 
     name = name.toLowerCase()
-    self = this
-    render = (ctx) ->
-      render = parse self, template, isString, onBind
+    render = (ctx) =>
+      render = parse this, name, template, isString, onBind
       render ctx
     @_views[name] = (ctx) -> render ctx
 
     if name is 'title$s' then onBind = (events, name) ->
       bindEvents events, name, render, ['$doc', 'prop', 'title']
 
-  _find: (name) -> @_views[name] || notFound name
+  _find: (name, ns) ->
+    if ns
+      ns = ns.toLowerCase()
+      return @_views["#{ns}:#{name}"] || @_views[name] || notFound "#{ns}:#{name}"
+    return @_views[name] || notFound name
 
-  get: (name, ctx) ->
-    @_find(name) if ctx then extend ctx, defaultCtx else Object.create defaultCtx
+  get: (name, ns, ctx) ->
+    ctx = if ctx then extend ctx, defaultCtx else Object.create defaultCtx
+    @_find(name, ns) ctx
 
   before: (name, before) ->
     render = @_find name
@@ -63,28 +67,35 @@ View:: =
 
   inline: empty
 
-  render: (@model, ctx, silent) ->
+  render: (@model, ns, ctx, silent) ->
+    if typeof ns is 'object'
+      ns = ''
+      ctx = ns
+      silent = ctx
+
     @_idCount = 0
     @model.__pathMap.clear()
     @model.__events.clear()
     @model.__blockPaths = {}
     @dom.clear()
-    title = @get('title$s', ctx)
-    bodyHtml = @get('header', ctx) + @get('body', ctx)
+
+    title = @get('title$s', ns, ctx)
+    bodyHtml = @get('header', ns, ctx) + @get('body', ns, ctx)
     return if silent
     container = document.createElement 'html'
     container.innerHTML = bodyHtml
     body = container.getElementsByTagName('body')[0]
     document.body.parentNode.replaceChild body, document.body
     document.title = title
-  
+
   escapeHtml: escapeHtml
   escapeAttr: escapeAttr
 
 
 extend = (parent, obj) ->
   out = Object.create parent
-  return out  unless obj
+  if typeof obj isnt 'object' || Array.isArray(obj)
+    return out
   for key of obj
     out[key] = obj[key]
   return out
@@ -114,44 +125,54 @@ addId = (view, attrs) ->
 # whitespace is not removed in case whitespace is desired between lines
 View.trim = trim = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
+boundPlaceholder = ///^
+  ([\s\S]*?)  # Text before placeholder
+  (\({2,3})  # Placeholder start
+  ([\s\S]+?)  # Placeholder contents
+  (?:\){2,3})  # End placeholder
+  ([\s\S]*)  # Text after placeholder
+///
+unboundPlaceholder = ///^
+  ([\s\S]*?)  # Text before placeholder
+  (\{{2,3})  # Placeholder start
+  ([\s\S]+?)  # Placeholder contents
+  (?:\}{2,3})  # End placeholder
+  ([\s\S]*)  # Text after placeholder
+///
+placeholderContent = ///^
+  \s*([\#^/]?)  # Block type
+  \s*([^\s>]*)  # Name of context object
+  (?:\s+:([^\s>]+))?  # Alias name
+  (?:\s*>\s*([^\s]+)\s*)?  # Partial name
+///
 extractPlaceholder = (text) ->
-  match = ///^
-    ([^\{\(]*)  # Text before placeholder
-    (\{{2,3}|\({2,3})  # Placeholder start
-    ([^\}\)]+)  # Placeholder contents
-    (?:\}{2,3}|\){2,3})  # End placeholder
-    ([\s\S]*)  # Text after placeholder
-  ///.exec text
-  return  unless match
-  content = ///^
-    \s*([\#^/]?)  # Block type
-    \s*([^\s>]*)  # Name of context object
-    (?:\s+:([^\s>]+))?  # Alias name
-    (?:\s*>\s*([^\s]+)\s*)?  # Partial name
-  ///.exec match[3]
+  if match = boundPlaceholder.exec text
+    bound = true
+  else if match = unboundPlaceholder.exec text
+    bound = false
+  else
+    return
+  return unless content = placeholderContent.exec match[3]
   pre: trim match[1]
   escaped: match[2].length is 2
-  bound: match[2].charAt(0) is '('
+  bound: bound
   type: content[1]
   name: content[2]
   alias: content[3]
   partial: content[4]?.toLowerCase()
   post: trim match[4]
 
-# True if post begins with text that does not start an end block
-wrapPost = (post) ->
-  return false unless post
-  return !///^
-    (?:\{{2,3}|\({2,3})  # Start placeholder
-    [/^]  # End block type
-    (?:\}{2,3}|\){2,3})  # End placeholder
-  ///.test post
+# True if remaining text does not immediately close the current tag
+wrapRemainder = (tagName, remainder) ->
+  return false unless remainder
+  return !(new RegExp '^<\/' + tagName, 'i').test(remainder)
 
 dataValue = (ctx, model, name) ->
-  if path = modelPath ctx, name
-    if (value = model.get path)? then value else model[path]
-  else
-    ctx[name]
+  path = modelPath ctx, name
+  value = lookup path, ctx
+  return value if value isnt undefined
+  value = model.get path
+  return if value isnt undefined then value else model[path]
 
 reduceStack = (stack) ->
   html = ['']
@@ -324,16 +345,21 @@ pushVarFns = (view, stack, fn, fn2, name, escaped) ->
   else
     pushChars stack, textFn name, escaped && escapeHtml
 
-pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
-  {name, escaped, bound, alias, partial} = match
-  fn = partialFn name, '#', alias, view._find partial  if partial
+pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
+  {name, escaped, partial} = match
+  fn = partialFn name, '#', match.alias, view._find(partial, ns)  if partial
 
-  if bound
+  if match.bound
     last = stack[stack.length - 1]
-    if wrap = pre || !last || (last[0] != 'start') || wrapPost(post)
+    wrap = match.pre ||
+      !last ||
+      (last[0] != 'start') ||
+      isVoid(tagName = last[1]) ||
+      wrapRemainder(tagName, remainder)
+
+    if wrap
       stack.push ['marker', '', attrs = {}]
     else
-      tagName = last[1]
       for attr of attrs = last[2]
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
     addId view, attrs
@@ -344,17 +370,17 @@ pushVar = (view, stack, events, pre, post, match, fn, fn2) ->
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
-pushVarString = (view, stack, events, pre, post, match, fn, fn2) ->
-  {name, bound, alias, partial} = match
-  fn = partialFn name, '#', alias, view._find(partial + '$s')  if partial
+pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
+  {name, partial} = match
+  fn = partialFn name, '#', match.alias, view._find(partial + '$s', ns)  if partial
   bindOnce = (ctx) ->
     ctx.$onBind events, name
     bindOnce = empty
-  if bound then events.push (ctx) -> bindOnce ctx
+  if match.bound then events.push (ctx) -> bindOnce ctx
   pushVarFns view, stack, fn, fn2, name
 
 parse = null
-forAttr = (view, stack, events, tagName, attrs, attr, value) ->
+forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
   if match = extractPlaceholder value
     {pre, post, name, bound, partial} = match
     
@@ -362,7 +388,7 @@ forAttr = (view, stack, events, tagName, attrs, attr, value) ->
     if (pre && !invert) || post || partial
       # Attributes must be a single string, so create a string partial
       addId view, attrs
-      render = parse view, value, true, (events, name) ->
+      render = parse view, viewName, value, true, (events, name) ->
         bindEventsByIdString events, name, render, attrs, 'attr', attr
       attrs[attr] = (ctx, model) -> escapeAttr render(ctx, model)
       return
@@ -383,7 +409,7 @@ forAttr = (view, stack, events, tagName, attrs, attr, value) ->
   out = parseMarkup 'attr', attr, tagName, events, attrs, value
   addId view, attrs  if out?.addId
 
-parse = (view, template, isString, onBind) ->
+parse = (view, viewName, template, isString, onBind) ->
   queues = [{stack: stack = [], events: events = []}]
   queues.last = -> queues[queues.length - 1]
 
@@ -396,6 +422,8 @@ parse = (view, template, isString, onBind) ->
   else
     push = pushVar
 
+  ns = if ~(index = viewName.lastIndexOf ':') then viewName[0...index] else ''
+
   start = (tag, tagName, attrs) ->
     if parser = markup.element[tagName]
       out = parser(events, attrs)
@@ -403,14 +431,14 @@ parse = (view, template, isString, onBind) ->
 
     for attr, value of attrs
       continue if attr is 'style'
-      forAttr view, stack, events, tagName, attrs, attr, value
+      forAttr view, viewName, stack, events, tagName, attrs, attr, value
     if 'style' of attrs
-      forAttr view, stack, events, tagName, attrs, 'style', attrs.style
+      forAttr view, viewName, stack, events, tagName, attrs, 'style', attrs.style
 
     stack.push ['start', tagName, attrs]
 
-  chars = (text, literal) ->
-    if literal || !(match = extractPlaceholder text)
+  chars = (text, isRawText, remainder) ->
+    if isRawText || !(match = extractPlaceholder text)
       pushChars stack, trim(text)
       return
 
@@ -424,10 +452,10 @@ parse = (view, template, isString, onBind) ->
       onEnd: (queue) ->
         fn = blockFn view, queue
         fn2 = blockFn view, queue.closed
-        push view, stack, events, pre, post, queue.block, fn, fn2
+        push view, ns, stack, events, (post || remainder), queue.block, fn, fn2
       onVar: (match) ->
-        push view, stack, events, pre, post, match
-    
+        push view, ns, stack, events, (post || remainder), match
+
     chars post  if post
 
   end = (tag, tagName) ->
@@ -437,5 +465,5 @@ parse = (view, template, isString, onBind) ->
     chars template
   else
     parseHtml template, {start, chars, end}
-  
+
   return renderer view, reduceStack(stack), events
