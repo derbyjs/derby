@@ -7,15 +7,14 @@ pages = [
   {name: 'error', text: 'Error test', url: '/error'}
 ]
 
-exports.ctxFor = (name, ctx = {}) ->
-  ctx[name + 'Visible'] = true
+exports.render = (page, name, ctx = {}) ->
   ctx.currentPage = name
-  last = pages.length - 1
-  ctx.pages = for page, i in pages
-    page = Object.create page
-    if page.name is name
-      page.current = true
-      ctx.title = page.text
-    page.last = i is last
-    page
-  return ctx
+  ctx.pages = []
+  for item, i in pages
+    item = Object.create item
+    ctx.pages[i] = item
+    if item.name is name
+      item.current = true
+      ctx.title = item.text
+  item.isLast = true
+  page.render name, ctx

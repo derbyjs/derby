@@ -2,11 +2,11 @@ startTag = /^<([^\s=\/>]+)((?:\s+[^\s=\/>]+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|
 endTag = /^<\/([^\s=\/>]+)[^>]*>/
 attr = /([^\s=]+)(?:\s*(=)\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+))?)?/g
 
-rawTextTag = /^(?:[^:]+:|style|script)$/i
+rawTextTag = /^(?:[^\s=\/>]+:|style|script)$/i
 rawTextEnd = (tagName) -> switch tagName.toLowerCase()
   when 'style' then /<\/style/i
   when 'script' then /<\/script/i
-  else /<\/?[^\s=\/>:]+:/
+  else /<\/?[^\s=\/>]+:/
 
 comment = /<!--[\s\S]*?-->/g
 exports.uncomment = uncomment = (html) -> html.replace comment, ''

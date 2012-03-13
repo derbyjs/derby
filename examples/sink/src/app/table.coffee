@@ -1,5 +1,5 @@
 {get, ready} = app = require './index'
-{ctxFor} = require './shared'
+{render} = require './shared'
 sortableTable = require './sortableTable'
 
 get '/table', (page, model) ->
@@ -16,7 +16,7 @@ get '/table', (page, model) ->
         {name: 'C'}
       ]
       lastCol: 2
-    page.render ctxFor 'tableEditor'
+    render page, 'tableEditor'
 
 
 ready (model) ->

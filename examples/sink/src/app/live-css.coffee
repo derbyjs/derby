@@ -1,5 +1,5 @@
 {get, ready} = app = require './index'
-{ctxFor} = require './shared'
+{render} = require './shared'
 
 get '/live-css', (page, model) ->
   model.subscribe 'liveCss', (err, liveCss) ->
@@ -14,7 +14,7 @@ get '/live-css', (page, model) ->
       for style in styles
         return true if style.active
       return false
-    page.render ctxFor 'liveCss'
+    render page, 'liveCss'
 
 
 ready (model) ->

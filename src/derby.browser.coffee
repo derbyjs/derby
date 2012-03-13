@@ -7,8 +7,8 @@ History = require './History'
 
 Page = (@view, @model) -> return
 Page:: =
-  render: (ctx) ->
-    @view.render @model, ctx
+  render: (ns, ctx) ->
+    @view.render @model, ns, ctx
   redirect: (url) ->
     return @view.history.back()  if url is 'back'
     # TODO: Add support for `basepath` option like Express
@@ -32,7 +32,7 @@ exports.createApp = (appModule) ->
   for name, template of "$$templates$$"
     view.make name, template
 
-  appModule.exports = (modelBundle, appHash, ctx, appFilename) ->
+  appModule.exports = (modelBundle, appHash, ns, ctx, appFilename) ->
     # The init event is fired after the model data is initialized but
     # before the socket object is set
     racer.on 'init', (model) ->
@@ -41,7 +41,7 @@ exports.createApp = (appModule) ->
       derbyModel.init model, dom
       page = new Page view, model
       history = view.history = new History routes, page, dom
-      view.render model, ctx, true
+      view.render model, ns, ctx, true
 
     # The ready event is fired after the model data is initialized and
     # the socket object is set

@@ -90,12 +90,15 @@ View::_load = (isStatic, callback) ->
       @make name, text
     finish()
 
-View::render = (res = emptyRes, args...) ->
-  for arg in args
+View::render = (res = emptyRes) ->
+  i = 1
+  while arg = arguments[i++]
     if arg instanceof Model
       model = arg
     else if typeof arg is 'object'
       ctx = arg
+    else if typeof arg is 'string'
+      ns = arg
     else if typeof arg is 'number'
       res.statusCode = arg
     else if typeof arg is 'boolean'
@@ -104,11 +107,11 @@ View::render = (res = emptyRes, args...) ->
 
   # Load templates, css, and scripts from files
   @_load isStatic, =>
-    return @_render res, model, ctx, isStatic  if isStatic
+    return @_render res, model, ns, ctx, isStatic  if isStatic
 
     # Wait for transactions to finish and package up the racer model data
     model.bundle (bundle) =>
-      @_render res, model, ctx, isStatic, bundle
+      @_render res, model, ns, ctx, isStatic, bundle
 
 View::_init = (model) ->
   # Initialize view & model for rendering
@@ -118,44 +121,43 @@ View::_init = (model) ->
   @model = model
   @_idCount = 0
 
-View::_render = (res, model, ctx, isStatic, bundle) ->
+View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   @_init model
 
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
 
-  # The view.get function renders and sets event listeners. It must be
-  # called for all views before the event listeners are retrieved
+  # The view.get function renders and sets event listeners
 
   # The first chunk includes everything through header. Head should contain
   # any meta tags and script tags, since it is included before CSS.
   # If there is a small amount of header HTML that will display well by itself,
   # it is a good idea to add this to the Header view so that it renders ASAP.
-  doctype = @get 'doctype', ctx
-  title = escapeHtml @get 'title$s', ctx
-  head = @get 'head', ctx
-  header = @get 'header', ctx
+  doctype = @get 'doctype', ns, ctx
+  title = escapeHtml @get 'title$s', ns, ctx
+  head = @get 'head', ns, ctx
+  header = @get 'header', ns, ctx
   res.write "#{doctype}<title>#{title}</title>#{head}#{@_css}#{header}"
 
   # Remaining HTML
-  res.write @get 'body', ctx
+  res.write @get 'body', ns, ctx
 
   # Inline scripts and external scripts
   clientName = @_clientName
   scripts = "<script>function $(i){return document.getElementById(i)}" +
     escapeInlineScript(@_inline)
   scripts += "function #{clientName}(){#{clientName}=1}"  unless isStatic
-  scripts += "</script>" + @get('scripts', ctx)
+  scripts += "</script>" + @get('scripts', ns, ctx)
   scripts += "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"  unless isStatic
   res.write scripts
 
   # Initialization script and Tail
-  tail = @get 'tail', ctx
+  tail = @get 'tail', ns, ctx
   return res.end tail  if isStatic
 
   res.end "<script>(function(){function f(){setTimeout(function(){" +
     "#{clientName}=require('./#{@_require}')(" +
-    escapeInlineScript(bundle) + ",'#{@_appHash}'," +
+    escapeInlineScript(bundle) + ",'#{@_appHash}','" + (ns || '') + "'," +
     (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
     (if @_watch then ",'#{@_appFilename}'" else '' ) +
     ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"

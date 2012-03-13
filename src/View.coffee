@@ -36,17 +36,22 @@ View:: =
 
     name = name.toLowerCase()
     render = (ctx) =>
-      render = parse this, template, isString, onBind
+      render = parse this, name, template, isString, onBind
       render ctx
     @_views[name] = (ctx) -> render ctx
 
     if name is 'title$s' then onBind = (events, name) ->
       bindEvents events, name, render, ['$doc', 'prop', 'title']
 
-  _find: (name) -> @_views[name] || notFound name
+  _find: (name, ns) ->
+    if ns
+      ns = ns.toLowerCase()
+      return @_views["#{ns}:#{name}"] || @_views[name] || notFound "#{ns}:#{name}"
+    return @_views[name] || notFound name
 
-  get: (name, ctx) ->
-    @_find(name) if ctx then extend ctx, defaultCtx else Object.create defaultCtx
+  get: (name, ns, ctx) ->
+    ctx = if ctx then extend ctx, defaultCtx else Object.create defaultCtx
+    @_find(name, ns) ctx
 
   before: (name, before) ->
     render = @_find name
@@ -62,21 +67,27 @@ View:: =
 
   inline: empty
 
-  render: (@model, ctx, silent) ->
+  render: (@model, ns, ctx, silent) ->
+    if typeof ns is 'object'
+      ns = ''
+      ctx = ns
+      silent = ctx
+
     @_idCount = 0
     @model.__pathMap.clear()
     @model.__events.clear()
     @model.__blockPaths = {}
     @dom.clear()
-    title = @get('title$s', ctx)
-    bodyHtml = @get('header', ctx) + @get('body', ctx)
+
+    title = @get('title$s', ns, ctx)
+    bodyHtml = @get('header', ns, ctx) + @get('body', ns, ctx)
     return if silent
     container = document.createElement 'html'
     container.innerHTML = bodyHtml
     body = container.getElementsByTagName('body')[0]
     document.body.parentNode.replaceChild body, document.body
     document.title = title
-  
+
   escapeHtml: escapeHtml
   escapeAttr: escapeAttr
 
@@ -334,9 +345,9 @@ pushVarFns = (view, stack, fn, fn2, name, escaped) ->
   else
     pushChars stack, textFn name, escaped && escapeHtml
 
-pushVar = (view, stack, events, remainder, match, fn, fn2) ->
+pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
   {name, escaped, partial} = match
-  fn = partialFn name, '#', match.alias, view._find partial  if partial
+  fn = partialFn name, '#', match.alias, view._find(partial, ns)  if partial
 
   if match.bound
     last = stack[stack.length - 1]
@@ -359,9 +370,9 @@ pushVar = (view, stack, events, remainder, match, fn, fn2) ->
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
-pushVarString = (view, stack, events, remainder, match, fn, fn2) ->
+pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
   {name, partial} = match
-  fn = partialFn name, '#', match.alias, view._find(partial + '$s')  if partial
+  fn = partialFn name, '#', match.alias, view._find(partial + '$s', ns)  if partial
   bindOnce = (ctx) ->
     ctx.$onBind events, name
     bindOnce = empty
@@ -369,7 +380,7 @@ pushVarString = (view, stack, events, remainder, match, fn, fn2) ->
   pushVarFns view, stack, fn, fn2, name
 
 parse = null
-forAttr = (view, stack, events, tagName, attrs, attr, value) ->
+forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
   if match = extractPlaceholder value
     {pre, post, name, bound, partial} = match
     
@@ -377,7 +388,7 @@ forAttr = (view, stack, events, tagName, attrs, attr, value) ->
     if (pre && !invert) || post || partial
       # Attributes must be a single string, so create a string partial
       addId view, attrs
-      render = parse view, value, true, (events, name) ->
+      render = parse view, viewName, value, true, (events, name) ->
         bindEventsByIdString events, name, render, attrs, 'attr', attr
       attrs[attr] = (ctx, model) -> escapeAttr render(ctx, model)
       return
@@ -398,7 +409,7 @@ forAttr = (view, stack, events, tagName, attrs, attr, value) ->
   out = parseMarkup 'attr', attr, tagName, events, attrs, value
   addId view, attrs  if out?.addId
 
-parse = (view, template, isString, onBind) ->
+parse = (view, viewName, template, isString, onBind) ->
   queues = [{stack: stack = [], events: events = []}]
   queues.last = -> queues[queues.length - 1]
 
@@ -411,6 +422,8 @@ parse = (view, template, isString, onBind) ->
   else
     push = pushVar
 
+  ns = if ~(index = viewName.lastIndexOf ':') then viewName[0...index] else ''
+
   start = (tag, tagName, attrs) ->
     if parser = markup.element[tagName]
       out = parser(events, attrs)
@@ -418,9 +431,9 @@ parse = (view, template, isString, onBind) ->
 
     for attr, value of attrs
       continue if attr is 'style'
-      forAttr view, stack, events, tagName, attrs, attr, value
+      forAttr view, viewName, stack, events, tagName, attrs, attr, value
     if 'style' of attrs
-      forAttr view, stack, events, tagName, attrs, 'style', attrs.style
+      forAttr view, viewName, stack, events, tagName, attrs, 'style', attrs.style
 
     stack.push ['start', tagName, attrs]
 
@@ -439,9 +452,9 @@ parse = (view, template, isString, onBind) ->
       onEnd: (queue) ->
         fn = blockFn view, queue
         fn2 = blockFn view, queue.closed
-        push view, stack, events, (post || remainder), queue.block, fn, fn2
+        push view, ns, stack, events, (post || remainder), queue.block, fn, fn2
       onVar: (match) ->
-        push view, stack, events, (post || remainder), match
+        push view, ns, stack, events, (post || remainder), match
 
     chars post  if post
 

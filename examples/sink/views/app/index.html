@@ -1,23 +1,19 @@
 <all: from=home>
-<all: from=live-css>
+<all: from=liveCss>
 <all: from=submit>
-<all: from=table>
+<all: from=tableEditor>
 
 <Title:>
   Derby demo: {{title}}
 
-<Body:>
-  <body class={{currentPage}}>
-  <p>
-  {{#pages}}
-    {{#current}}
-      <b>{{text}}</b>{{^last}} | {{/}}
-    {{^}}
-      <a href={{url}}>{{text}}</a>{{^last}} | {{/}}
+<nav:>
+  <nav>
+    {{#pages}}
+      {{#current}}
+        <b>{{text}}</b>{{^last}} | {{/}}
+      {{^}}
+        <a href={{url}}>{{text}}</a>{{^last}} | {{/}}
+      {{/}}
     {{/}}
-  {{/}}
-  <hr>
-  {{homeVisible > home}}
-  {{liveCssVisible > liveCss}}
-  {{tableEditorVisible > tableEditor}}
-  {{submitVisible > submit}}
+    <hr>
+  </nav>
