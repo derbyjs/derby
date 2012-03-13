@@ -1,3 +1,8 @@
+<all: from=home>
+<all: from=live-css>
+<all: from=submit>
+<all: from=table>
+
 <Title:>
   Derby demo: {{title}}
 
@@ -16,83 +21,3 @@
   {{liveCssVisible > liveCss}}
   {{tableEditorVisible > tableEditor}}
   {{submitVisible > submit}}
-
-<home:>
-  <h1>Welcome!</h1>
-  <p>This is a collection of random demos. Check 'em out! <a href=#jump>Test jump link</a></p>
-  <p style=margin-top:1000px><a name=jump>Jumped!</a><p>
-
-<liveCss:>
-  <select multiple>
-    <optgroup label="CSS properties">
-      ((#liveCss.styles))<option selected=((.active))>((.prop))</option>((/))
-    </optgroup>
-  </select>
-  <div>
-    ((#liveCss.styles))
-      <p>
-        <input type=checkbox checked=((.active))> 
-        <input value=((.prop)) disabled=!((.active))> 
-        <input value=((.value)) disabled=!((.active))> 
-        <button x-bind=click:deleteStyle>Delete</button>
-      </p>
-    ((/))
-  </div>
-  <button x-bind=click:addStyle>Add</button>
-  <h3>Currently applied:</h3>
-  ((#_numStyles))
-    <p>{</p>
-    <ul class=css>
-      ((#liveCss.styles :style))
-        <li x-displayed=((:style.active))>((> cssProperty))</li>
-      ((/))
-    </ul>
-    <p>}</p>
-  ((^))
-    (None)
-  ((/))
-  <h3>Output:</h3>
-  <p style="((liveCss.styles :style > cssProperty))" contenteditable>
-    (((liveCss.outputText)))
-  </p>
-
-<cssProperty:>
-  ((#:style.active))
-    ((:style.prop)): ((:style.value));
-  ((/))
-
-<tableEditor:>
-  <button x-bind=click:addRow>Add row</button> 
-  <button x-bind=click:addCol>Add column</button>
-  <hr>
-  <table>
-    <tr>
-      <td></td>
-      ((#table.cols))
-        <th x-bind=mousedown:colDown class=col>((.name))</th>
-      ((/))
-      <td></td>
-    </tr>
-    ((#table.rows))
-      <tr class=row>
-        <th x-bind=mousedown:rowDown>((.name))</th>
-        ((#.cells))<td><input value=((.text))></td>((/))
-        <td><button x-bind=click:deleteRow>Delete</button></td>
-      </tr>
-    ((/))
-    <tr class=foot>
-      <td></td>
-      ((#table.cols))<td><button x-bind=click:deleteCol>Delete</button></td>((/))
-      <td></td>
-    </tr>
-  </table>
-
-<submit:>
-  <form action=submit method=post>
-    <input type=hidden name=_method value=put>
-    <p><label>Name: <input type=text name=user[name]></label></p>
-    <p><label>Email: <input type=text name=user[email]></label></p>
-    <p><input type=submit></p>
-  </form>
-  <h3>Arguments:</h3>
-  <pre><code>{{args}}</code></pre>

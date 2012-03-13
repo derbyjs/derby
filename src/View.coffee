@@ -334,13 +334,13 @@ pushVarFns = (view, stack, fn, fn2, name, escaped) ->
   else
     pushChars stack, textFn name, escaped && escapeHtml
 
-pushVar = (view, stack, events, pre, remainder, match, fn, fn2) ->
-  {name, escaped, bound, alias, partial} = match
-  fn = partialFn name, '#', alias, view._find partial  if partial
+pushVar = (view, stack, events, remainder, match, fn, fn2) ->
+  {name, escaped, partial} = match
+  fn = partialFn name, '#', match.alias, view._find partial  if partial
 
-  if bound
+  if match.bound
     last = stack[stack.length - 1]
-    wrap = pre ||
+    wrap = match.pre ||
       !last ||
       (last[0] != 'start') ||
       isVoid(tagName = last[1]) ||
@@ -359,13 +359,13 @@ pushVar = (view, stack, events, pre, remainder, match, fn, fn2) ->
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
-pushVarString = (view, stack, events, pre, remainder, match, fn, fn2) ->
-  {name, bound, alias, partial} = match
-  fn = partialFn name, '#', alias, view._find(partial + '$s')  if partial
+pushVarString = (view, stack, events, remainder, match, fn, fn2) ->
+  {name, partial} = match
+  fn = partialFn name, '#', match.alias, view._find(partial + '$s')  if partial
   bindOnce = (ctx) ->
     ctx.$onBind events, name
     bindOnce = empty
-  if bound then events.push (ctx) -> bindOnce ctx
+  if match.bound then events.push (ctx) -> bindOnce ctx
   pushVarFns view, stack, fn, fn2, name
 
 parse = null
@@ -439,9 +439,9 @@ parse = (view, template, isString, onBind) ->
       onEnd: (queue) ->
         fn = blockFn view, queue
         fn2 = blockFn view, queue.closed
-        push view, stack, events, pre, post || remainder, queue.block, fn, fn2
+        push view, stack, events, (post || remainder), queue.block, fn, fn2
       onVar: (match) ->
-        push view, stack, events, pre, post || remainder, match
+        push view, stack, events, (post || remainder), match
 
     chars post  if post
 
