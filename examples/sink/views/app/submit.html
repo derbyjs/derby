@@ -1,5 +1,7 @@
+<import: src=shared>
+
 <Body:>
-  {{> nav}}
+  {{> shared:nav}}
   <form action=submit method=post>
     <input type=hidden name=_method value=put>
     <p><label>Name: <input type=text name=user[name]></label></p>

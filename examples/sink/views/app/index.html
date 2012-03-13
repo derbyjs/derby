@@ -5,15 +5,3 @@
 
 <Title:>
   Derby demo: {{title}}
-
-<nav:>
-  <nav>
-    {{#pages}}
-      {{#current}}
-        <b>{{text}}</b>{{^last}} | {{/}}
-      {{^}}
-        <a href={{url}}>{{text}}</a>{{^last}} | {{/}}
-      {{/}}
-    {{/}}
-    <hr>
-  </nav>

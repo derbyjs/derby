@@ -1,5 +1,7 @@
+<import: src=shared>
+
 <Body:>
-  {{> nav}}
+  {{> shared:nav}}
   <select multiple>
     <optgroup label="CSS properties">
       ((#liveCss.styles))<option selected=((.active))>((.prop))</option>((/))
