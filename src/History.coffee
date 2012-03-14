@@ -1,4 +1,5 @@
 qs = require 'qs'
+{render: renderRoute} = require './routes'
 
 win = window
 winHistory = win.history
@@ -11,9 +12,9 @@ if winHistory.replaceState
   # so that it will be rendered if the state is later popped
   winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
 
-History = module.exports = (routes, page, dom) ->
-  @_routes = routes
+History = module.exports = (page, routes, dom) ->
   @_page = page
+  @_routes = routes
   {addListener} = dom
 
   if winHistory.pushState
@@ -93,72 +94,15 @@ History:: =
     else
       method = 'get'
 
-    previous = currentPath = winLocation.pathname
+    # Update the URL
+    previous = winLocation.pathname
     winHistory[historyMethod] {render, method}, null, path
-    renderRoute @_page, @_routes, previous, path, method, e, body, form  if render
+    currentPath = winLocation.pathname
 
-cancelRender = (url, form, e) ->
-  # Don't do anything if this is the result of an event, since the
-  # appropriate action will happen by default
-  return if e
-  # Otherwise, manually perform appropriate action
-  if form
-    form._forceSubmit = true
-    form.submit()
-  else
-    win.location = url  
+    renderRoute @_page, @_routes, previous, path, method, e, body, form  if render
 
 routePath = (url) ->
   # Get the pathname if it is on the same protocol and domain
   match = /^(https?:)\/\/([^\/]+)(.*)/.exec url
   return match && match[1] == winLocation.protocol &&
     match[2] == winLocation.host && match[3]
-
-renderRoute = (page, routes, previous, url, method, e, body, form) ->
-  url = url.replace /#.*/, ''
-  [path, queryString] = url.split '?'
-  query = if queryString then qs.parse queryString else {}
-  map = routes.map[method]
-  queue = routes.queue[method]
-
-  reroute = (path) ->
-    renderQueued previous, path, url, form, null, onMatch, map, queue, 0
-
-  onMatch = (i, route, match, renderNext, noPage) ->
-    # Cancel the default browser action, such as clicking a link or submitting a form
-    e.preventDefault()  if e
-
-    params = {url, body, query}
-    for {name}, j in route.keys
-      params[name] = match[j + 1]
-
-    next = (err) ->
-      return cancelRender url, form  if err?
-      renderNext previous, path, url, form, null, onMatch, map, queue, i
-
-    try
-      if noPage
-        route.callbacks page.model, params, next
-      else
-        route.callbacks page, page.model, params, next, reroute
-    catch err
-      cancelRender url, form
-    return
-
-  renderMapped previous, path, url, form, e, onMatch, map, queue, 0
-
-renderMapped = (previous, path, url, form, e, onMatch, map, queue, i) ->
-  while item = map[i++]
-    continue unless match = item.to.match path
-    continue unless item.from.match previous
-    return onMatch i, item.to, match, renderMapped, true
-
-  renderQueued previous, path, url, form, e, onMatch, map, queue, 0
-
-renderQueued = (previous, path, url, form, e, onMatch, map, queue, i) ->
-  while route = queue[i++]
-    continue unless match = route.match path
-    return onMatch i, route, match, renderQueued
-
-  # Cancel rendering by this app if no routes match
-  cancelRender url, form, e

@@ -5,7 +5,7 @@ racer = require 'racer'
 up = require 'up'
 View = require './View.server'
 files = require './files'
-Router = require 'express/lib/router'
+{addHttpMethods} = require './routes.server'
 {mergeAll, isProduction} = racer.util
 
 derby = module.exports = mergeAll Object.create(racer),
@@ -58,6 +58,7 @@ derby = module.exports = mergeAll Object.create(racer),
 
     store = null
     session = null
+    createModel = -> store.createModel()
     appExports._setStore = setStore = (_store) ->
       autoRefresh _store, options
       session?._setStore _store
@@ -65,41 +66,7 @@ derby = module.exports = mergeAll Object.create(racer),
     appExports.createStore = (options) -> setStore racer.createStore options
     appExports.session = -> session = racer.session store
 
-    routes = []
-    ['get', 'post', 'put', 'del'].forEach (method) ->
-      appExports[method] = (pattern, callback) ->
-        routes.push [method, pattern, callback]
-        return appExports
-
-    parseReq = (req, res) ->
-      model = req.model || req.model = store.createModel()
-      page = req.derbyPage || req.derbyPage = new Page view, res, model
-      {url, body, query} = req
-      params = {url, body, query}
-      params[k] = v for k, v of req.params
-      return [page, model, params]
-
-    appExports.router = ->
-      router = new Router serverMock
-      middleware = router.middleware
-      routes.forEach ([method, pattern, callback]) ->
-        if typeof pattern is 'object'
-          {from, to} = pattern
-          callback = pattern.forward || callback.forward || callback
-          router._route method, to, (req, res, next) ->
-            [page, model, params] = parseReq req, res, true
-            render = page.render
-            page.render = (ns, ctx, status) ->
-              callback model, params, next
-              page.render = render
-              page.render ns, ctx, status
-            req.url = from
-            middleware req, res, next
-          return
-        router._route method, pattern, (req, res, next) ->
-          [page, model, params] = parseReq req, res
-          callback page, model, params, next
-      return middleware
+    addHttpMethods appExports, view, createModel
 
     # Call render to trigger a compile as soon as the server starts
     view.render()
@@ -120,18 +87,6 @@ derby = module.exports = mergeAll Object.create(racer),
 Object.defineProperty derby, 'version',
   get: -> JSON.parse(fs.readFileSync __dirname + '/../package.json', 'utf8').version
 
-
-# The router middleware checks whether 'case sensitive routes' and 'strict routing'
-# are enabled. For now, always use the default value of false
-serverMock =
-  enabled: -> false
-
-Page = (@view, @res, @model) -> return
-Page:: =
-  render: (ns, ctx, status) ->
-    @view.render @res, @model, ns, ctx, status
-  redirect: (url, status) ->
-    @res.redirect url, status
 
 Static = (@root) ->
   @views = {}
