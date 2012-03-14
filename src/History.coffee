@@ -121,6 +121,9 @@ renderRoute = (page, routes, previous, url, method, e, body, form) ->
   map = routes.map[method]
   queue = routes.queue[method]
 
+  reroute = (path) ->
+    renderQueued previous, path, url, form, null, onMatch, map, queue, 0
+
   onMatch = (i, route, match, renderNext, noPage) ->
     # Cancel the default browser action, such as clicking a link or submitting a form
     e.preventDefault()  if e
@@ -132,9 +135,6 @@ renderRoute = (page, routes, previous, url, method, e, body, form) ->
     next = (err) ->
       return cancelRender url, form  if err?
       renderNext previous, path, url, form, null, onMatch, map, queue, i
-
-    reroute = (path) ->
-      renderNext previous, path, url, form, null, onMatch, map, queue, 0
 
     try
       if noPage
@@ -149,8 +149,8 @@ renderRoute = (page, routes, previous, url, method, e, body, form) ->
 
 renderMapped = (previous, path, url, form, e, onMatch, map, queue, i) ->
   while item = map[i++]
-    continue unless item.from.match previous
     continue unless match = item.to.match path
+    continue unless item.from.match previous
     return onMatch i, item.to, match, renderMapped, true
 
   renderQueued previous, path, url, form, e, onMatch, map, queue, 0
