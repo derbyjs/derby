@@ -14,7 +14,14 @@ get '/live-css', (page, model) ->
       for style in styles
         return true if style.active
       return false
+    model.del '_poppedOut'
     render page, 'liveCss'
+
+get from: '/live-css', to: '/live-css/popout',
+  forward: (model) ->
+    model.set '_poppedOut', true
+  back: (model) ->
+    model.del '_poppedOut'
 
 
 ready (model) ->

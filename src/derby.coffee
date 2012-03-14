@@ -69,17 +69,37 @@ derby = module.exports = mergeAll Object.create(racer),
     ['get', 'post', 'put', 'del'].forEach (method) ->
       appExports[method] = (pattern, callback) ->
         routes.push [method, pattern, callback]
+        return appExports
+
+    parseReq = (req, res) ->
+      model = req.model || req.model = store.createModel()
+      page = req.derbyPage || req.derbyPage = new Page view, res, model
+      {url, body, query} = req
+      params = {url, body, query}
+      params[k] = v for k, v of req.params
+      return [page, model, params]
+
     appExports.router = ->
       router = new Router serverMock
+      middleware = router.middleware
       routes.forEach ([method, pattern, callback]) ->
+        if typeof pattern is 'object'
+          {from, to} = pattern
+          callback = pattern.forward || callback.forward || callback
+          router._route method, to, (req, res, next) ->
+            [page, model, params] = parseReq req, res, true
+            render = page.render
+            page.render = (ns, ctx, status) ->
+              callback model, params, next
+              page.render = render
+              page.render ns, ctx, status
+            req.url = from
+            middleware req, res, next
+          return
         router._route method, pattern, (req, res, next) ->
-          model = req.model || store.createModel()
-          page = new Page view, res, model
-          {url, body, query} = req
-          params = {url, body, query}
-          params[k] = v for k, v of req.params
+          [page, model, params] = parseReq req, res
           callback page, model, params, next
-      return router.middleware
+      return middleware
 
     # Call render to trigger a compile as soon as the server starts
     view.render()

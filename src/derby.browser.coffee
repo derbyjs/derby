@@ -20,11 +20,30 @@ exports.createApp = (appModule) ->
   # Expose methods on the application module
   appExports.view = view = new View
 
-  routes = {}
+  routes = queue: {}, map: {}
   ['get', 'post', 'put', 'del'].forEach (method) ->
-    queue = routes[method] = []
-    appExports[method] = (pattern, callback) ->
+    queue = routes.queue[method] = []
+    map = routes.map[method] = []
+
+    appExports[method] = (pattern, callback, callback2) ->
+      if typeof pattern is 'object'
+        {from, to} = pattern
+        forward = pattern.forward || callback.forward || callback
+        back = pattern.back || callback.back || callback2
+        fromRoute = new Route method, from, back
+        toRoute = new Route method, to, forward
+        map.push {from: fromRoute, to: toRoute}, {from: toRoute, to: fromRoute}
+        queue.push new Route method, to, (page, model, params, next, reroute) ->
+          render = page.render
+          page.render = (ns, ctx) ->
+            forward model, params, next
+            page.render = render
+            page.render ns, ctx
+          reroute from
+        return
+
       queue.push new Route method, pattern, callback
+      return appExports
 
   appExports.ready = (fn) -> racer.on 'ready', fn
 
