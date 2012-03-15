@@ -68,9 +68,6 @@ derby = module.exports = mergeAll Object.create(racer),
 
     addHttpMethods appExports, view, createModel
 
-    # Call render to trigger a compile as soon as the server starts
-    view.render()
-
     return appExports
 
   createStatic: (root) ->

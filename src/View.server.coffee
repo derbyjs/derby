@@ -1,5 +1,5 @@
 uglify = require 'racer/node_modules/uglify-js'
-{Model} = racer = require 'racer'
+{Model, Promise} = racer = require 'racer'
 {isProduction} = racer.util
 EventDispatcher = require './EventDispatcher'
 files = require './files'
@@ -34,6 +34,14 @@ View::_load = (isStatic, callback) ->
   else
     @_watch = true
 
+  # Use a promise to avoid simultaneously loading multiple times
+  if promise = @_loadPromise
+    return promise.on callback
+  promise = @_loadPromise = (new Promise).on callback
+
+  # Once loading is complete, make the files reload from disk the next time
+  promise.on => process.nextTick => delete @_loadPromise
+
   templates = js = null
 
   if isStatic
@@ -43,14 +51,14 @@ View::_load = (isStatic, callback) ->
     count = 2
     finish = ->
       return if --count
-      callback()
+      promise.resolve()
 
   else
     appFilename = @_appFilename
     options = @_derbyOptions || {}
     {root, clientName, require} = files.parseName appFilename, options
     @_root = root
-    callback() unless @_clientName = clientName
+    promise.resolve() unless @_clientName = clientName
     @_require = require
 
     count = 3
@@ -68,7 +76,7 @@ View::_load = (isStatic, callback) ->
       files.writeJs root, js, options, (jsFile, appHash) =>
         @_jsFile = jsFile
         @_appHashes[appFilename] = @_appHash = appHash
-        callback()
+        promise.resolve()
 
     if @_js
       js = @_js
