@@ -21,7 +21,7 @@ exports.addHttpMethods = (appExports) ->
             forward model, params, next
             page.render = render
             page.render ns, ctx
-          reroute from
+          reroute mapRoute from, params
         return
 
       queue.push new Route method, pattern, callback
@@ -39,6 +39,19 @@ Page:: =
     url = '\\'  if url is 'home'
     @view.history.replace url, true
 
+exports.mapRoute = mapRoute = (from, params) ->
+  {url} = params
+  queryString = if ~(i = url.indexOf '?') then url[i..] else ''
+  i = 0
+  path = from.replace ///
+    (?:
+      (?:\:([^?/:*]+))
+      |\*
+    )\??
+  ///g, (_, key) ->
+    return params[key] if key
+    return params[i++]
+  return path + queryString
 
 cancelRender = (url, form, e) ->
   # Don't do anything if this is the result of an event, since the
@@ -59,10 +72,11 @@ exports.render = (page, routes, previous, url, method, e, body, form) ->
   map = routes.map[method]
   queue = routes.queue[method]
 
-  reroute = (path) ->
+  reroute = (url) ->
+    path = if ~(i = url.indexOf '?') then url[0...i] else url
     renderQueued previous, path, url, form, null, onMatch, map, queue, 0
 
-  onMatch = (i, route, match, renderNext, noPage) ->
+  onMatch = (path, url, i, route, match, renderNext, noPage) ->
     # Cancel the default browser action, such as clicking a link or submitting a form
     e.preventDefault()  if e
 
@@ -98,14 +112,14 @@ renderMapped = (previous, path, url, form, e, onMatch, map, queue, i) ->
   while item = map[i++]
     continue unless match = item.to.match path
     continue unless item.from.match previous
-    return onMatch i, item.to, match, renderMapped, true
+    return onMatch path, url, i, item.to, match, renderMapped, true
 
   renderQueued previous, path, url, form, e, onMatch, map, queue, 0
 
 renderQueued = (previous, path, url, form, e, onMatch, map, queue, i) ->
   while route = queue[i++]
     continue unless match = route.match path
-    return onMatch i, route, match, renderQueued
+    return onMatch path, url, i, route, match, renderQueued
 
   # Cancel rendering by this app if no routes match
   cancelRender url, form, e

@@ -1,5 +1,5 @@
 Router = require 'express/lib/router'
-routes = module.exports = require './routes'
+{mapRoute} = routes = module.exports = require './routes'
 
 routes.addHttpMethods = (appExports, view, createModel) ->
   routes = []
@@ -30,7 +30,9 @@ routes.addHttpMethods = (appExports, view, createModel) ->
             callback model, params, next
             page.render = render
             page.render ns, ctx, status
-          req.url = from
+
+          # Reroute with the new URL
+          req.url = mapRoute from, params
           middleware req, res, next
         return
 

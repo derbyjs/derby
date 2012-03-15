@@ -17,6 +17,10 @@ get '/live-css', (page, model) ->
     model.del '_poppedOut'
     render page, 'liveCss'
 
+# This is a transition route, which defines how to apply an update
+# without re-rendering the entire page. Note that going directly to
+# '/live-css/popout' will first call the route above and then call
+# the forward route below before rendering
 get from: '/live-css', to: '/live-css/popout',
   forward: (model) ->
     model.set '_poppedOut', true
