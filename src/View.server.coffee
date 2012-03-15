@@ -91,8 +91,8 @@ View::_load = (isStatic, callback) ->
     finish()
 
 View::render = (res = emptyRes) ->
-  i = 1
-  while arg = arguments[i++]
+  for i in [1..5]
+    arg = arguments[i]
     if arg instanceof Model
       model = arg
     else if typeof arg is 'object'
