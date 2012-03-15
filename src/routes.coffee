@@ -54,6 +54,7 @@ cancelRender = (url, form, e) ->
 exports.render = (page, routes, previous, url, method, e, body, form) ->
   url = url.replace /#.*/, ''
   [path, queryString] = url.split '?'
+  body ||= {}
   query = if queryString then qs.parse queryString else {}
   map = routes.map[method]
   queue = routes.queue[method]
@@ -65,9 +66,18 @@ exports.render = (page, routes, previous, url, method, e, body, form) ->
     # Cancel the default browser action, such as clicking a link or submitting a form
     e.preventDefault()  if e
 
-    params = {url, body, query}
-    for {name}, j in route.keys
-      params[name] = match[j + 1]
+    params = []
+    params.url = url
+    params.body = body
+    params.query = query
+
+    # Add params from capture groups
+    keys = route.keys
+    for i in [1...match.length]
+      capture = match[i]
+      key = keys[i - 1]
+      value = if typeof capture is 'string' then decodeURIComponent capture else capture
+      if key then params[key.name] = value else params.push value
 
     next = (err) ->
       return cancelRender url, form  if err?
