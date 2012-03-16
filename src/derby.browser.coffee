@@ -1,37 +1,12 @@
-Route = require 'express/lib/router/route'
 racer = require 'racer'
 derbyModel = require './derby.Model'
 Dom = require './Dom'
 View = require './View'
 History = require './History'
-
-Page = (@view, @model) -> return
-Page:: =
-  render: (ns, ctx) ->
-    @view.render @model, ns, ctx
-  redirect: (url) ->
-    return @view.history.back()  if url is 'back'
-    # TODO: Add support for `basepath` option like Express
-    url = '\\'  if url is 'home'
-    @view.history.replace url, true
+{addHttpMethods, Page} = require './routes'
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports
-  # Expose methods on the application module
-  appExports.view = view = new View
-
-  routes = {}
-  ['get', 'post', 'put', 'del'].forEach (method) ->
-    queue = routes[method] = []
-    appExports[method] = (pattern, callback) ->
-      queue.push new Route method, pattern, callback
-
-  appExports.ready = (fn) -> racer.on 'ready', fn
-
-  # "$$templates$$" is replaced with an array of templates in View.server
-  for name, template of "$$templates$$"
-    view.make name, template
-
   appModule.exports = (modelBundle, appHash, ns, ctx, appFilename) ->
     # The init event is fired after the model data is initialized but
     # before the socket object is set
@@ -40,7 +15,7 @@ exports.createApp = (appModule) ->
       view.dom = dom = new Dom model, appExports
       derbyModel.init model, dom
       page = new Page view, model
-      history = view.history = new History routes, page, dom
+      history = view.history = new History page, routes, dom
       view.render model, ns, ctx, true
 
     # The ready event is fired after the model data is initialized and
@@ -51,6 +26,12 @@ exports.createApp = (appModule) ->
     racer.init modelBundle
     return appExports
 
+  # Expose methods on the application module. Note that view must added
+  # to both appModule.exports and appExports, since it is used before
+  # the initialization function to make templates
+  appModule.exports.view = appExports.view = view = new View
+  routes = addHttpMethods appExports
+  appExports.ready = (fn) -> racer.on 'ready', fn
   return appExports
 
 autoRefresh = (view, model, appFilename, appHash) ->

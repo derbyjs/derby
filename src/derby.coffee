@@ -5,7 +5,7 @@ racer = require 'racer'
 up = require 'up'
 View = require './View.server'
 files = require './files'
-Router = require 'express/lib/router'
+{addHttpMethods} = require './routes.server'
 {mergeAll, isProduction} = racer.util
 
 derby = module.exports = mergeAll Object.create(racer),
@@ -58,6 +58,7 @@ derby = module.exports = mergeAll Object.create(racer),
 
     store = null
     session = null
+    createModel = -> store.createModel()
     appExports._setStore = setStore = (_store) ->
       autoRefresh _store, options
       session?._setStore _store
@@ -65,24 +66,7 @@ derby = module.exports = mergeAll Object.create(racer),
     appExports.createStore = (options) -> setStore racer.createStore options
     appExports.session = -> session = racer.session store
 
-    routes = []
-    ['get', 'post', 'put', 'del'].forEach (method) ->
-      appExports[method] = (pattern, callback) ->
-        routes.push [method, pattern, callback]
-    appExports.router = ->
-      router = new Router serverMock
-      routes.forEach ([method, pattern, callback]) ->
-        router._route method, pattern, (req, res, next) ->
-          model = req.model || store.createModel()
-          page = new Page view, res, model
-          {url, body, query} = req
-          params = {url, body, query}
-          params[k] = v for k, v of req.params
-          callback page, model, params, next
-      return router.middleware
-
-    # Call render to trigger a compile as soon as the server starts
-    view.render()
+    addHttpMethods appExports, view, createModel
 
     return appExports
 
@@ -100,18 +84,6 @@ derby = module.exports = mergeAll Object.create(racer),
 Object.defineProperty derby, 'version',
   get: -> JSON.parse(fs.readFileSync __dirname + '/../package.json', 'utf8').version
 
-
-# The router middleware checks whether 'case sensitive routes' and 'strict routing'
-# are enabled. For now, always use the default value of false
-serverMock =
-  enabled: -> false
-
-Page = (@view, @res, @model) -> return
-Page:: =
-  render: (ns, ctx, status) ->
-    @view.render @res, @model, ns, ctx, status
-  redirect: (url, status) ->
-    @res.redirect url, status
 
 Static = (@root) ->
   @views = {}

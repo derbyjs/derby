@@ -1,5 +1,5 @@
 uglify = require 'racer/node_modules/uglify-js'
-{Model} = racer = require 'racer'
+{Model, Promise} = racer = require 'racer'
 {isProduction} = racer.util
 EventDispatcher = require './EventDispatcher'
 files = require './files'
@@ -28,13 +28,30 @@ View::_appHashes = {}
 
 View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
 
+loadTemplatesScript = (requirePath, templates, instances) ->
+  """
+  (function() {
+    require('#{requirePath}').view._makeAll(
+      #{JSON.stringify templates, null, 2}, #{JSON.stringify instances, null, 2}
+    );
+  })();
+  """
+
 View::_load = (isStatic, callback) ->
   if isProduction
     @_load = (isStatic, callback) -> callback()
   else
     @_watch = true
 
-  templates = js = null
+  # Use a promise to avoid simultaneously loading multiple times
+  if promise = @_loadPromise
+    return promise.on callback
+  promise = @_loadPromise = (new Promise).on callback
+
+  # Once loading is complete, make the files reload from disk the next time
+  promise.on => process.nextTick => delete @_loadPromise
+
+  templates = instances = js = null
 
   if isStatic
     root = @_root
@@ -43,32 +60,28 @@ View::_load = (isStatic, callback) ->
     count = 2
     finish = ->
       return if --count
-      callback()
+      promise.resolve()
 
   else
     appFilename = @_appFilename
     options = @_derbyOptions || {}
     {root, clientName, require} = files.parseName appFilename, options
     @_root = root
-    callback() unless @_clientName = clientName
+    promise.resolve() unless @_clientName = clientName
     @_require = require
 
     count = 3
     finish = =>
       return if --count
 
-      json = JSON.stringify templates || {}
-      js = if ~(js.indexOf '"$$templates$$"')
-        js.replace '"$$templates$$"', json
-      else
-        json = json.replace /["\\]/g, (s) -> if s is '"' then '\\"' else '\\\\'
-        # This is needed for Browserify debug mode
-        js.replace '\\"$$templates$$\\"', json
+      # Templates are appended to the js bundle here so that it does
+      # not have to be regenerated if only the template files are modified
+      js += loadTemplatesScript require, templates, instances
 
       files.writeJs root, js, options, (jsFile, appHash) =>
         @_jsFile = jsFile
         @_appHashes[appFilename] = @_appHash = appHash
-        callback()
+        promise.resolve()
 
     if @_js
       js = @_js
@@ -84,15 +97,15 @@ View::_load = (isStatic, callback) ->
     @_css = if value then "<style id=$_css>#{value}</style>" else ''
     finish()
 
-  files.templates root, clientName, (value) =>
-    templates = value
-    for name, text of templates
-      @make name, text
+  files.templates root, clientName, (_templates, _instances) =>
+    templates = _templates
+    instances = _instances
+    @_makeAll templates, instances
     finish()
 
 View::render = (res = emptyRes) ->
-  i = 1
-  while arg = arguments[i++]
+  for i in [1..5]
+    arg = arguments[i]
     if arg instanceof Model
       model = arg
     else if typeof arg is 'object'
@@ -156,7 +169,7 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   return res.end tail  if isStatic
 
   res.end "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{@_require}')(" +
+    "#{clientName}=require('#{@_require}')(" +
     escapeInlineScript(bundle) + ",'#{@_appHash}','" + (ns || '') + "'," +
     (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
     (if @_watch then ",'#{@_appFilename}'" else '' ) +

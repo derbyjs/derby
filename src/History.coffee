@@ -1,16 +1,20 @@
 qs = require 'qs'
+{render: renderRoute} = require './routes'
 
 win = window
 winHistory = win.history
 winLocation = win.location
 doc = win.document
+currentPath = winLocation.pathname
 
 if winHistory.replaceState
   # Replace the initial state with the current URL immediately,
   # so that it will be rendered if the state is later popped
   winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
 
-History = module.exports = (@_routes, @_page, dom) ->
+History = module.exports = (page, routes, dom) ->
+  @_page = page
+  @_routes = routes
   {addListener} = dom
 
   if winHistory.pushState
@@ -32,12 +36,14 @@ History = module.exports = (@_routes, @_page, dom) ->
         @push url, true, e
 
     addListener win, 'popstate', (e) =>
+      previous = currentPath
+      currentPath = winLocation.pathname
       # Pop states without a state object were generated externally,
       # such as by a jump link, so they shouldn't be handled 
       return unless (state = e.state) && state.render
       # Note that the post body is only sent on the initial reqest
       # and null is sent if the state is later popped
-      renderRoute winLocation.pathname, @_page, @_routes[state.method], 0, null, null, e
+      renderRoute page, routes, previous, winLocation.pathname, state.method, e
 
   else
     @push = @replace = ->
@@ -55,7 +61,7 @@ History:: =
   # Rerender the current url locally
   refresh: ->
     path = routePath winLocation.href
-    renderRoute path, @_page, @_routes['get'], 0
+    renderRoute @_page, @_routes, path, path, 'get'
 
   back: -> winHistory.back()
 
@@ -88,42 +94,12 @@ History:: =
     else
       method = 'get'
 
+    # Update the URL
+    previous = winLocation.pathname
     winHistory[historyMethod] {render, method}, null, path
-    renderRoute path, @_page, @_routes[method], 0, body, form, e  if render
+    currentPath = winLocation.pathname
 
-cancelRender = (url, form, e) ->
-  # Don't do anything if this is the result of an event, since the
-  # appropriate action will happen by default
-  return if e
-  # Otherwise, manually perform appropriate action
-  if form
-    form._forceSubmit = true
-    form.submit()
-  else
-    win.location = url  
-
-renderRoute = (url, page, routes, i, body, form, e) ->
-  url = url.replace /#.*/, ''
-  [path, query] = url.split '?'
-  while route = routes[i++]
-    continue unless match = route.match path
-    # Cancel the default action when a route is found to match
-    e.preventDefault()  if e
-
-    params = {url, body, query: if query then qs.parse query else {}}
-    for {name}, j in route.keys
-      params[name] = match[j + 1]
-    next = (err) ->
-      return cancelRender url, form  if err?
-      renderRoute url, page, routes, i, body, form
-    try
-      route.callbacks page, page.model, params, next
-    catch err
-      cancelRender url, form
-    return
-
-  # Cancel rendering by this app if no routes match
-  cancelRender url, form, e
+    renderRoute @_page, @_routes, previous, path, method, e, body, form  if render
 
 routePath = (url) ->
   # Get the pathname if it is on the same protocol and domain

@@ -1,16 +1,16 @@
-{dirname, basename, join, exists} = require 'path'
+{dirname, basename, join, exists, relative} = require 'path'
 fs = require 'fs'
 crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
-racer = require 'racer'
+{Promise} = racer = require 'racer'
 {parse: parseHtml} = require './html'
 {trim} = require './View'
 
 module.exports =
 
   css: (root, clientName, callback) ->
-    findPath root, clientName, 'styles', '.styl', (path) ->
+    findPath root + '/styles', clientName, '.styl', (path) ->
       return callback ''  unless path
       fs.readFile path, 'utf8', (err, styl) ->
         return callback ''  if err
@@ -23,7 +23,7 @@ module.exports =
             callback trim css
 
   templates: (root, clientName, callback) ->
-    loadTemplates root, clientName, 'all', {}, callback
+    loadTemplates root + '/views', clientName, 'import', callback
 
   js: (parentFilename, callback) ->
     inlineFile = join dirname(parentFilename), 'inline.js'
@@ -51,7 +51,7 @@ module.exports =
     return {
       root: root
       clientName: options.name || base
-      require: basename parentFilename
+      require: './' + basename parentFilename
     }
 
   hashFile: hashFile = (s) ->
@@ -95,61 +95,106 @@ module.exports =
 
 onlyWhitespace = /^[\s\n]*$/
 
-findPath = (root, name, dir, extension, callback) ->
-  root = join root, dir, name  if name
-  path = root + extension
+findPath = (root, name, extension, callback) ->
+  if name.charAt(0) isnt '/'
+    name = join root, name
+  path = name + extension
   exists path, (value) ->
     return callback path  if value
-    path = join root, 'index' + extension
+    path = join name, 'index' + extension
     exists path, (value) ->
       callback if value then path else null
 
-loadTemplates = (root, fileName, get, templates, callback, alias, ns) ->
+loadTemplates = (root, fileName, get, callback, files = {}, templates = {}, instances = {}, alias, currentNs = '') ->
   callback.count = (callback.count || 0) + 1
-  findPath root, fileName, 'views', '.html', (path) ->
+  findPath root, fileName, '.html', (path) ->
     unless path
       # Return without doing anything if the path isn't found, and this is the
       # initial lookup based on the clientName. Otherwise, throw an error
-      if fileName then return callback {}
+      if fileName then return callback {}, {}
       else throw new Error "Can't find #{root}/views/#{fileName}"
 
     got = false
-    fs.readFile path, 'utf8', (err, template) ->
-      return callback err  if err
-      name = ''
-      from = ''
-      importName = ''
-      _ns = ''
-      parseHtml template,
-        start: (tag, tagName, attrs) ->
-          i = tagName.length - 1
-          name = (if tagName[i] == ':' then tagName.substr 0, i else '').toLowerCase()
-          from = attrs.from
-          importName = attrs.import && attrs.import.toLowerCase()
-          if name is 'all'
-            if importName
-              throw new Error "Can't specify import attribute with All in #{path}"
-            _ns = if 'ns' of attrs then attrs.ns.toLowerCase() else from
-        chars: (text, literal) ->
-          return unless get == 'all' || get == name
-          got = true
-          if from
-            unless onlyWhitespace.test text
-              throw new Error "Template import '#{name}' in #{path} can't contain content"
-            if importName
-              _alias = name
-              name = importName
-            return loadTemplates join(dirname(path), from), null, name, templates, callback, _alias, _ns
-          unless name && literal
-            return if onlyWhitespace.test text
-            throw new Error "Can't read template in #{path} near the text: #{text}"
-          templateName = alias || name
-          templateName = ns + ':' + templateName if ns
-          templates[templateName] = trim text
+    if get is 'import'
+      matchesGet = ->
+        got = true
+        return true
+    else if Array.isArray(get)
+      getCount = get.length
+      matchesGet = (name) ->
+        --getCount || got = true
+        return ~get.indexOf(name)
+    else
+      matchesGet = (name) ->
+        got = true
+        return get == name
 
+    unless promise = files[path]
+      promise = files[path] = new Promise
+      fs.readFile path, 'utf8', (err, file) ->
+        promise.resolve err, file
+
+    promise.on (err, file) ->
+      throw err if err
+      parseTemplateFile root, dirname(path), path, files, templates, instances, alias, currentNs, matchesGet, file, callback
       throw new Error "Can't find template '#{get}' in #{path}"  unless got
-      callback templates unless --callback.count
+      unless --callback.count
+        callback templates, instances
 
+parseTemplateFile = (root, dir, path, files, templates, instances, alias, currentNs, matchesGet, file, callback) ->
+  name = src = ns = as = importTemplates = null
+  relativePath = relative root, path
+  parseHtml file,
+
+    start: (tag, tagName, attrs) ->
+      name = src = ns = as = importTemplates = null
+      i = tagName.length - 1
+      name = (if tagName.charAt(i) == ':' then tagName[0...i] else '').toLowerCase()
+      if name is 'import'
+        {src, ns, as, template} = attrs
+        throw new Error "Template import in #{path} must have a 'src' attribute" unless src
+
+        if template
+          importTemplates = template.toLowerCase().split(' ')
+          if importTemplates.length > 1 && as?
+            throw new Error "Template import of '#{src}' in #{path} can't specify multiple 'template' values with 'as'"
+
+        ns = if 'ns' of attrs
+          throw new Error "Template import of '#{src}' in #{path} can't specifiy both 'ns' and 'as' attributes" if as
+          # Import into the namespace specified via 'ns' underneath
+          # the current namespace
+          if ns
+            if currentNs then currentNs + ':' + ns else ns
+          else
+            currentNs
+        else if as
+          # If 'as' is specified, import into the current namespace
+          currentNs
+        else
+          # If no namespace is specified, use the src as a namespace.
+          # Remove leading '.' and '/' characters
+          srcNs = src.replace /^[.\/]*/, ''
+          if currentNs then currentNs + ':' + srcNs else srcNs
+        ns = ns.toLowerCase()
+
+    chars: (text, literal) ->
+      return unless matchesGet name
+      if src
+        unless onlyWhitespace.test text
+          throw new Error "Template import of '#{src}' in #{path} can't contain content"
+        toGet = importTemplates || 'import'
+        return loadTemplates root, join(dir, src), toGet, callback, files, templates, instances, as, ns
+
+      templateName = relativePath + ':' + name
+      instanceName = alias || name
+      instanceName = currentNs + ':' + instanceName if currentNs
+      instances[instanceName] = templateName
+
+      return if templates[templateName]
+      unless name && literal
+        return if onlyWhitespace.test text
+        throw new Error "Can't read template in #{path} near the text: #{text}"
+      templates[templateName] = trim text
 
 extensions =
   html: /\.html$/
