@@ -1,4 +1,7 @@
-{lookup} = require('racer').path
+{EventEmitter} = require 'events'
+racer = require 'racer'
+{lookup} = racer.path
+{mergeAll, isServer} = racer.util
 {parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr, isVoid} = require './html'
 {modelPath} = markup = require './markup'
 
@@ -14,11 +17,11 @@ View = module.exports = ->
   @clear()
   return
 
-View:: =
+mergeAll View::, EventEmitter::,
 
   clear: ->
     @_views = Object.create @default
-    @_viewInstances = {}
+    @_renders = {}
     @_inline = ''
     # All automatically created ids start with a dollar sign
     @_idCount = 0
@@ -38,16 +41,18 @@ View:: =
     stringTemplatePath = templatePath + '$s' if templatePath
     @make name + '$s', template, stringTemplatePath, true  unless isString
 
-    if templatePath && instance = @_viewInstances[templatePath]
-      @_views[name] = instance
+    if templatePath && render = @_renders[templatePath]
+      @_views[name] = render
       return
 
     name = name.toLowerCase()
-    render = (ctx) =>
-      render = parse this, name, template, isString, onBind
-      render ctx
-    @_views[name] = instance = (ctx) -> render ctx
-    @_viewInstances[templatePath] = instance if templatePath
+    renderer = (ctx) =>
+      renderer = parse this, name, template, isString, onBind
+      renderer ctx
+    render = (ctx) -> renderer ctx
+
+    @_views[name] = render
+    @_renders[templatePath] = render if templatePath
 
     if name is 'title$s' then onBind = (events, name) ->
       bindEvents events, name, render, ['$doc', 'prop', 'title']
@@ -59,16 +64,17 @@ View:: =
     return
 
   _find: (name, ns) ->
+    views = @_views
     if ns
       ns = ns.toLowerCase()
-      return view if view = @_views["#{ns}:#{name}"]
+      return view if view = views["#{ns}:#{name}"]
       segments = ns.split ':'
       if (from = segments.length - 2) >= 0
         for i in [from..0]
           testNs = segments[0..i].join ':'
-          return view if view = @_views["#{testNs}:#{name}"]
-      return @_views[name] || notFound "#{ns}:#{name}"
-    return @_views[name] || notFound name
+          return view if view = views["#{testNs}:#{name}"]
+      return views[name] || notFound "#{ns}:#{name}"
+    return views[name] || notFound name
 
   get: (name, ns, ctx) ->
     if typeof ns is 'object'
@@ -77,25 +83,13 @@ View:: =
     ctx = if ctx then extend ctx, defaultCtx else Object.create defaultCtx
     @_find(name, ns) ctx
 
-  before: (name, before) ->
-    render = @_find name
-    @_views[name] = (ctx, model, triggerPath) ->
-      before ctx
-      render ctx, model, triggerPath
-
-  after: (name, after) ->
-    render = @_find name
-    @_views[name] = (ctx, model, triggerPath) ->
-      setTimeout after, 0, ctx
-      render ctx, model, triggerPath
-
   inline: empty
 
   render: (@model, ns, ctx, silent) ->
     if typeof ns is 'object'
-      ns = ''
-      ctx = ns
       silent = ctx
+      ctx = ns
+      ns = null
 
     @_idCount = 0
     @model.__pathMap.clear()
@@ -252,7 +246,7 @@ renderer = (view, items, events) ->
           break
       ctx.$i = indices
 
-    model = view.model  # Needed, since model parameter is optional
+    model ||= view.model  # Needed, since model parameter is optional
     pathMap = model.__pathMap
     modelEvents = model.__events
     blockPaths = model.__blockPaths

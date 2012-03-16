@@ -98,19 +98,27 @@ exports.init = (model, dom) ->
   # If there is a listener to an event that applies a mutation, event listeners
   # later in the listeners queues could receive events in a different order
 
-  model.listeners('set').unshift ([path, value], previous, local, options) ->
+  model.listeners('set').unshift (args, out, local, options) ->
+    model.emit 'pre:set', args, out, local, options
+    [path, value] = args
     events.trigger pathMap.id(path), value, 'html', local, options
 
-  model.listeners('del').unshift ([path], out, local, options) ->
+  model.listeners('del').unshift (args, out, local, options) ->
+    model.emit 'pre:del', args, out, local, options
+    [path] = args
     events.trigger pathMap.id(path), undefined, 'html', local, options
 
-  model.listeners('push').unshift ([path, values...], out, local, options) ->
+  model.listeners('push').unshift (args, out, local, options) ->
+    model.emit 'pre:push', args, out, local, options
+    [path, values...] = args
     id = pathMap.id path
     for value in values
       events.trigger id, value, 'append', local, options
     return
 
-  model.listeners('move').unshift ([path, from, to, howMany], out, local, options) ->
+  model.listeners('move').unshift (args, out, local, options) ->
+    model.emit 'pre:move', args, out, local, options
+    [path, from, to, howMany] = args
     len = model.get(path).length
     from = refIndex from
     to = refIndex to
@@ -120,19 +128,29 @@ exports.init = (model, dom) ->
     pathMap.onMove path, from, to, howMany  # Update indicies in pathMap
     events.trigger pathMap.id(path), [from, to, howMany], 'move', local, options
 
-  model.listeners('unshift').unshift ([path, values...], out, local, options) ->
+  model.listeners('unshift').unshift (args, out, local, options) ->
+    model.emit 'pre:unshift', args, out, local, options
+    [path, values...] = args
     insert events, pathMap, path, 0, values, local, options
 
-  model.listeners('insert').unshift ([path, index, values...], out, local, options) ->
+  model.listeners('insert').unshift (args, out, local, options) ->
+    model.emit 'pre:insert', args, out, local, options
+    [path, index, values...] = args
     insert events, pathMap, path, index, values, local, options
 
-  model.listeners('remove').unshift ([path, start, howMany], out, local, options) ->
+  model.listeners('remove').unshift (args, out, local, options) ->
+    model.emit 'pre:remove', args, out, local, options
+    [path, start, howMany] = args
     remove events, pathMap, path, start, howMany, local, options
 
-  model.listeners('pop').unshift ([path], out, local, options) ->
+  model.listeners('pop').unshift (args, out, local, options) ->
+    model.emit 'pre:pop', args, out, local, options
+    [path] = args
     remove events, pathMap, path, model.get(path).length, 1, local, options
 
-  model.listeners('shift').unshift ([path], out, local, options) ->
+  model.listeners('shift').unshift (args, out, local, options) ->
+    model.emit 'pre:shift', args, out, local, options
+    [path] = args
     remove events, pathMap, path, 0, 1, local, options
 
   for event in ['connected', 'canConnect']
