@@ -12,6 +12,7 @@ defaultCtx =
 
 View = module.exports = ->
   @_views = Object.create @default
+  @_viewInstances = {}
   @_inline = ''
 
   # All automatically created ids start with a dollar sign
@@ -31,17 +32,29 @@ View:: =
     scripts: empty
     tail: empty
 
-  make: (name, template, isString) ->
-    @make name + '$s', template, true  unless isString
+  make: (name, template, templatePath, isString) ->
+    stringTemplatePath = templatePath + '$s' if templatePath
+    @make name + '$s', template, stringTemplatePath, true  unless isString
+
+    if templatePath && instance = @_viewInstances[templatePath]
+      @_views[name] = instance
+      return
 
     name = name.toLowerCase()
     render = (ctx) =>
       render = parse this, name, template, isString, onBind
       render ctx
-    @_views[name] = (ctx) -> render ctx
+    @_views[name] = instance = (ctx) -> render ctx
+    @_viewInstances[templatePath] = instance if templatePath
 
     if name is 'title$s' then onBind = (events, name) ->
       bindEvents events, name, render, ['$doc', 'prop', 'title']
+    return
+
+  _makeAll: (templates, instances) ->
+    for name, templatePath of instances
+      @make name, templates[templatePath], templatePath
+    return
 
   _find: (name, ns) ->
     if ns
@@ -50,6 +63,9 @@ View:: =
     return @_views[name] || notFound name
 
   get: (name, ns, ctx) ->
+    if typeof ns is 'object'
+      ctx = ns
+      ns = null
     ctx = if ctx then extend ctx, defaultCtx else Object.create defaultCtx
     @_find(name, ns) ctx
 

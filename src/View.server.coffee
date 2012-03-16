@@ -28,6 +28,15 @@ View::_appHashes = {}
 
 View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
 
+loadTemplatesScript = (requirePath, templates, instances) ->
+  """
+  (function() {
+    require('#{requirePath}').view._makeAll(
+      #{JSON.stringify templates, null, 2}, #{JSON.stringify instances, null, 2}
+    );
+  })();
+  """
+
 View::_load = (isStatic, callback) ->
   if isProduction
     @_load = (isStatic, callback) -> callback()
@@ -42,7 +51,7 @@ View::_load = (isStatic, callback) ->
   # Once loading is complete, make the files reload from disk the next time
   promise.on => process.nextTick => delete @_loadPromise
 
-  templates = js = null
+  templates = instances = js = null
 
   if isStatic
     root = @_root
@@ -65,13 +74,9 @@ View::_load = (isStatic, callback) ->
     finish = =>
       return if --count
 
-      json = JSON.stringify templates || {}
-      js = if ~(js.indexOf '"$$templates$$"')
-        js.replace '"$$templates$$"', json
-      else
-        json = json.replace /["\\]/g, (s) -> if s is '"' then '\\"' else '\\\\'
-        # This is needed for Browserify debug mode
-        js.replace '\\"$$templates$$\\"', json
+      # Templates are appended to the js bundle here so that it does
+      # not have to be regenerated if only the template files are modified
+      js += loadTemplatesScript require, templates, instances
 
       files.writeJs root, js, options, (jsFile, appHash) =>
         @_jsFile = jsFile
@@ -92,10 +97,10 @@ View::_load = (isStatic, callback) ->
     @_css = if value then "<style id=$_css>#{value}</style>" else ''
     finish()
 
-  files.templates root, clientName, (value) =>
-    templates = value
-    for name, text of templates
-      @make name, text
+  files.templates root, clientName, (_templates, _instances) =>
+    templates = _templates
+    instances = _instances
+    @_makeAll templates, instances
     finish()
 
 View::render = (res = emptyRes) ->
@@ -164,7 +169,7 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   return res.end tail  if isStatic
 
   res.end "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('./#{@_require}')(" +
+    "#{clientName}=require('#{@_require}')(" +
     escapeInlineScript(bundle) + ",'#{@_appHash}','" + (ns || '') + "'," +
     (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
     (if @_watch then ",'#{@_appFilename}'" else '' ) +

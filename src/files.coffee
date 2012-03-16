@@ -1,4 +1,4 @@
-{dirname, basename, join, exists} = require 'path'
+{dirname, basename, join, exists, relative} = require 'path'
 fs = require 'fs'
 crypto = require 'crypto'
 stylus = require 'stylus'
@@ -10,7 +10,7 @@ nib = require 'nib'
 module.exports =
 
   css: (root, clientName, callback) ->
-    findPath root, clientName, 'styles', '.styl', (path) ->
+    findPath root + '/styles', clientName, '.styl', (path) ->
       return callback ''  unless path
       fs.readFile path, 'utf8', (err, styl) ->
         return callback ''  if err
@@ -23,7 +23,7 @@ module.exports =
             callback trim css
 
   templates: (root, clientName, callback) ->
-    loadTemplates root, clientName, 'import', callback
+    loadTemplates root + '/views', clientName, 'import', callback
 
   js: (parentFilename, callback) ->
     inlineFile = join dirname(parentFilename), 'inline.js'
@@ -51,7 +51,7 @@ module.exports =
     return {
       root: root
       clientName: options.name || base
-      require: basename parentFilename
+      require: './' + basename parentFilename
     }
 
   hashFile: hashFile = (s) ->
@@ -95,9 +95,9 @@ module.exports =
 
 onlyWhitespace = /^[\s\n]*$/
 
-findPath = (root, name, dir, extension, callback) ->
+findPath = (root, name, extension, callback) ->
   if name.charAt(0) isnt '/'
-    name = join root, dir, name
+    name = join root, name
   path = name + extension
   exists path, (value) ->
     return callback path  if value
@@ -105,13 +105,13 @@ findPath = (root, name, dir, extension, callback) ->
     exists path, (value) ->
       callback if value then path else null
 
-loadTemplates = (root, fileName, get, callback, templates = {}, files = {}, alias, currentNs = '') ->
+loadTemplates = (root, fileName, get, callback, files = {}, templates = {}, instances = {}, alias, currentNs = '') ->
   callback.count = (callback.count || 0) + 1
-  findPath root, fileName, 'views', '.html', (path) ->
+  findPath root, fileName, '.html', (path) ->
     unless path
       # Return without doing anything if the path isn't found, and this is the
       # initial lookup based on the clientName. Otherwise, throw an error
-      if fileName then return callback {}
+      if fileName then return callback {}, {}
       else throw new Error "Can't find #{root}/views/#{fileName}"
 
     got = false
@@ -131,18 +131,19 @@ loadTemplates = (root, fileName, get, callback, templates = {}, files = {}, alia
 
     unless promise = files[path]
       promise = files[path] = new Promise
-      console.log path
       fs.readFile path, 'utf8', (err, file) ->
         promise.resolve err, file
 
     promise.on (err, file) ->
       throw err if err
-      parseTemplateFile root, dirname(path), templates, files, alias, currentNs, matchesGet, file, path, callback
+      parseTemplateFile root, dirname(path), path, files, templates, instances, alias, currentNs, matchesGet, file, callback
       throw new Error "Can't find template '#{get}' in #{path}"  unless got
-      callback templates unless --callback.count
+      unless --callback.count
+        callback templates, instances
 
-parseTemplateFile = (root, dir, templates, files, alias, currentNs, matchesGet, file, path, callback) ->
+parseTemplateFile = (root, dir, path, files, templates, instances, alias, currentNs, matchesGet, file, callback) ->
   name = src = ns = as = importTemplates = null
+  relativePath = relative root, path
   parseHtml file,
 
     start: (tag, tagName, attrs) ->
@@ -182,12 +183,17 @@ parseTemplateFile = (root, dir, templates, files, alias, currentNs, matchesGet, 
         unless onlyWhitespace.test text
           throw new Error "Template import of '#{src}' in #{path} can't contain content"
         toGet = importTemplates || 'import'
-        return loadTemplates root, join(dir, src), toGet, callback, templates, files, as, ns
+        return loadTemplates root, join(dir, src), toGet, callback, files, templates, instances, as, ns
+
+      templateName = relativePath + ':' + name
+      instanceName = alias || name
+      instanceName = currentNs + ':' + instanceName if currentNs
+      instances[instanceName] = templateName
+
+      return if templates[templateName]
       unless name && literal
         return if onlyWhitespace.test text
         throw new Error "Can't read template in #{path} near the text: #{text}"
-      templateName = alias || name
-      templateName = currentNs + ':' + templateName if currentNs
       templates[templateName] = trim text
 
 extensions =

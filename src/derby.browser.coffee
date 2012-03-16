@@ -7,17 +7,6 @@ History = require './History'
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports
-  # Expose methods on the application module
-  appExports.view = view = new View
-
-  routes = addHttpMethods appExports
-
-  appExports.ready = (fn) -> racer.on 'ready', fn
-
-  # "$$templates$$" is replaced with an array of templates in View.server
-  for name, template of "$$templates$$"
-    view.make name, template
-
   appModule.exports = (modelBundle, appHash, ns, ctx, appFilename) ->
     # The init event is fired after the model data is initialized but
     # before the socket object is set
@@ -37,6 +26,12 @@ exports.createApp = (appModule) ->
     racer.init modelBundle
     return appExports
 
+  # Expose methods on the application module. Note that view must added
+  # to both appModule.exports and appExports, since it is used before
+  # the initialization function to make templates
+  appModule.exports.view = appExports.view = view = new View
+  routes = addHttpMethods appExports
+  appExports.ready = (fn) -> racer.on 'ready', fn
   return appExports
 
 autoRefresh = (view, model, appFilename, appHash) ->
