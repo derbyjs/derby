@@ -1,7 +1,4 @@
-{EventEmitter} = require 'events'
-racer = require 'racer'
-{lookup} = racer.path
-{mergeAll, isServer} = racer.util
+{lookup} = require('racer').path
 {parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr, isVoid} = require './html'
 {modelPath} = markup = require './markup'
 
@@ -17,7 +14,7 @@ View = module.exports = ->
   @clear()
   return
 
-mergeAll View::, EventEmitter::,
+View:: =
 
   clear: ->
     @_views = Object.create @default
