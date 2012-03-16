@@ -10,7 +10,7 @@ currentPath = winLocation.pathname
 if winHistory.replaceState
   # Replace the initial state with the current URL immediately,
   # so that it will be rendered if the state is later popped
-  winHistory.replaceState {render: true, method: 'get'}, null, winLocation.href
+  winHistory.replaceState {$render: true, $method: 'get'}, null, winLocation.href
 
 History = module.exports = (page, routes, dom) ->
   @_page = page
@@ -26,24 +26,24 @@ History = module.exports = (page, routes, dom) ->
         # Ignore hash links to the same page
         return if ~(i = url.indexOf '#') && 
           url.substr(0, i) == winLocation.href.replace(/#.*/, '')
-        @push url, true, e
+        @push url, true, null, e
 
     addListener doc, 'submit', (e) =>
       if e.target.tagName.toLowerCase() is 'form'
         form = e.target
         return if !(url = form.action) || form._forceSubmit ||
           form.enctype == 'multipart/form-data'
-        @push url, true, e
+        @push url, true, null, e
 
     addListener win, 'popstate', (e) =>
       previous = currentPath
       currentPath = winLocation.pathname
       # Pop states without a state object were generated externally,
       # such as by a jump link, so they shouldn't be handled 
-      return unless (state = e.state) && state.render
+      return unless (state = e.state) && state.$render
       # Note that the post body is only sent on the initial reqest
       # and null is sent if the state is later popped
-      renderRoute page, routes, previous, winLocation.pathname, state.method, e
+      renderRoute page, routes, previous, winLocation.pathname, state.$method, e
 
   else
     @push = @replace = ->
@@ -54,9 +54,9 @@ History = module.exports = (page, routes, dom) ->
 
 History:: =
 
-  push: (url, render, e) -> @_update 'pushState', url, render, e
+  push: (url, render, state, e) -> @_update 'pushState', url, render, state, e
 
-  replace: (url, render, e) -> @_update 'replaceState', url, render, e
+  replace: (url, render, state, e) -> @_update 'replaceState', url, render, state, e
 
   # Rerender the current url locally
   refresh: ->
@@ -69,7 +69,7 @@ History:: =
 
   go: (i) -> winHistory.go i
 
-  _update: (historyMethod, url, render = true, e) ->
+  _update: (historyMethod, url, render = true, state = {}, e) ->
     return unless path = routePath url
 
     # If this is a form submission, extract the form data and
@@ -96,7 +96,9 @@ History:: =
 
     # Update the URL
     previous = winLocation.pathname
-    winHistory[historyMethod] {render, method}, null, path
+    state.$render = render
+    state.$method = method
+    winHistory[historyMethod] state, null, url
     currentPath = winLocation.pathname
 
     renderRoute @_page, @_routes, previous, path, method, e, body, form  if render

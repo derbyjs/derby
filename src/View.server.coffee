@@ -76,7 +76,9 @@ View::_load = (isStatic, callback) ->
 
       # Templates are appended to the js bundle here so that it does
       # not have to be regenerated if only the template files are modified
-      js += loadTemplatesScript require, templates, instances
+      loadTemplates = loadTemplatesScript require, templates, instances
+      loadTemplates = uglify loadTemplates if isProduction
+      js += ';' + loadTemplates
 
       files.writeJs root, js, options, (jsFile, appHash) =>
         @_jsFile = jsFile
