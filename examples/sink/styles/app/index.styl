@@ -21,22 +21,27 @@ table {
   padding-left: 1em;
   margin: 0
 }
-
+.cssOutput {
+  border: 1px solid rgba(black, 0);
+  background: rgba(white, 0);
+}
 .popupTitle {
   display: none;
 }
 .poppedOut {
   position: fixed;
-  border: 1px solid rgba(black, .1);
-  box-shadow: 0 2px 3px rgba(black, .1), 0 4px 8px rgba(black, .2);
+  border: 1px solid rgba(black, .2);
+  box-shadow: 0 1px 8px rgba(black, .2), 0 16px 32px rgba(black, .2);
   top: 45px;
   bottom: 1em;
   left: 50%;
   right: 1em;
   background: rgba(white, .8);
+  transition-property: border, box-shadow;
+  transition-duration: .5s;
+  transition-timing-function: ease-out;
 
   .popupTitle {
-
     display: block;
     padding: .5em 1em;
     text-align: right;
