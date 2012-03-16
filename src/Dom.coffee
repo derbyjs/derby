@@ -1,4 +1,6 @@
-{merge} = require('racer').util
+racer = require 'racer'
+{merge} = racer.util
+{lookup} = racer.path
 EventDispatcher = require './EventDispatcher'
 {escapeHtml} = require './html'
 
@@ -22,7 +24,7 @@ Dom = module.exports = (model, appExports) ->
 
       if listener.length <= 3
         [fn, id, delay] = listener
-        callback = fns[fn] || appExports[fn]
+        callback = fns[fn] || appExports[fn] || lookup(fn, appExports)
         return  unless callback
       else
         [pathId, id, method, property, delay, invert] = listener

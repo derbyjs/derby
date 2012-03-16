@@ -1,0 +1,12 @@
+<import: src=shared>
+
+<Body:>
+  {{> shared:nav}}
+  <h1>Top scores</h1>
+  <ul>
+    ((#_sorted))
+      <li>
+        ((.text)) with ((.score))
+      </li>
+    ((/))
+  </ul>

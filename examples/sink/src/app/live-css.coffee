@@ -30,8 +30,8 @@ get from: '/live-css', to: '/live-css/popout',
 
 ready (model) ->
 
-  app.addStyle = ->
-    model.push 'liveCss.styles', {}
-
-  app.deleteStyle = (e) ->
-    model.at(e.target).remove()
+  app.liveCss =
+    addStyle: ->
+      model.push 'liveCss.styles', {}
+    deleteStyle: (e) ->
+      model.at(e.target).remove()

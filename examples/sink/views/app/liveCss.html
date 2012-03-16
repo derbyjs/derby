@@ -13,11 +13,11 @@
         <input type=checkbox checked=((.active))> 
         <input value=((.prop)) disabled=!((.active))> 
         <input value=((.value)) disabled=!((.active))> 
-        <button x-bind=click:deleteStyle>Delete</button>
+        <button x-bind="click: liveCss.deleteStyle">Delete</button>
       </p>
     ((/))
   </div>
-  <button x-bind=click:addStyle>Add</button>
+  <button x-bind="click: liveCss.addStyle">Add</button>
   <h3>Currently applied:</h3>
   <div>
     ((#_hasActiveStyles))

@@ -2,6 +2,7 @@
 {render} = require './shared'
 require './live-css'
 require './table'
+require './sortedList'
 
 get '/', (page) ->
   render page, 'home'
