@@ -59,7 +59,13 @@ View:: =
   _find: (name, ns) ->
     if ns
       ns = ns.toLowerCase()
-      return @_views["#{ns}:#{name}"] || @_views[name] || notFound "#{ns}:#{name}"
+      return view if view = @_views["#{ns}:#{name}"]
+      segments = ns.split ':'
+      if (from = segments.length - 2) >= 0
+        for i in [from..0]
+          testNs = segments[0..i].join ':'
+          return view if view = @_views["#{testNs}:#{name}"]
+      return @_views[name] || notFound "#{ns}:#{name}"
     return @_views[name] || notFound name
 
   get: (name, ns, ctx) ->
