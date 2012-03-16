@@ -60,7 +60,7 @@ derby = module.exports = mergeAll Object.create(racer),
     session = null
     createModel = -> store.createModel()
     appExports._setStore = setStore = (_store) ->
-      autoRefresh _store, options
+      autoRefresh _store, options, view
       session?._setStore _store
       return store = _store
     appExports.createStore = (options) -> setStore racer.createStore options
@@ -96,7 +96,7 @@ Static:: =
       view._clientName = name
     view.render res, model, ns, ctx, status, true
 
-addWatches = (appFilename, options, sockets) ->
+addWatches = (appFilename, options, sockets, view) ->
   {root, clientName} = files.parseName appFilename, options
 
   files.watch root, 'css', ->
@@ -105,15 +105,17 @@ addWatches = (appFilename, options, sockets) ->
         socket.emit 'refreshCss', css
 
   files.watch root, 'html', ->
-    files.templates root, clientName, (templates) ->
+    files.templates root, clientName, (templates, instances) ->
+      view.clear()
+      view._makeAll templates, instances
       for socket in sockets
-        socket.emit 'refreshHtml', templates
+        socket.emit 'refreshHtml', templates, instances
 
   files.watch root, 'js', ->
     process.send type: 'reload'
 
 appHashes = {}
-autoRefresh = (store, options) ->
+autoRefresh = (store, options, view) ->
   return if isProduction || store._derbySocketsSetup
   store._derbySocketsSetup = true
   listeners = {}
@@ -128,4 +130,4 @@ autoRefresh = (store, options) ->
         return listeners[appFilename].push socket
 
       sockets = listeners[appFilename] = [socket]
-      addWatches appFilename, options, sockets
+      addWatches appFilename, options, sockets, view

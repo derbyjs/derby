@@ -11,17 +11,19 @@ defaultCtx =
   $i: []
 
 View = module.exports = ->
-  @_views = Object.create @default
-  @_viewInstances = {}
-  @_inline = ''
-
-  # All automatically created ids start with a dollar sign
-  @_idCount = 0
-  @_uniqueId = => '$' + (@_idCount++).toString 36
-
+  @clear()
   return
 
 View:: =
+
+  clear: ->
+    @_views = Object.create @default
+    @_viewInstances = {}
+    @_inline = ''
+    # All automatically created ids start with a dollar sign
+    @_idCount = 0
+
+  _uniqueId: -> '$' + (@_idCount++).toString 36
 
   default:
     doctype: -> '<!DOCTYPE html><meta charset=utf-8>'

@@ -49,7 +49,7 @@ autoRefresh = (view, model, appFilename, appHash) ->
     el = document.getElementById '$_css'
     el.innerHTML = css  if el
 
-  socket.on 'refreshHtml', (templates) ->
-    for name, template of templates
-      view.make name, template
+  socket.on 'refreshHtml', (templates, instances) ->
+    view.clear()
+    view._makeAll templates, instances
     view.history.refresh()
