@@ -93,19 +93,24 @@ exports.init = (model, dom) ->
       # Happens when an id cannot be found
       return dom.update id, method, options && options.ignore, value, property, index
 
-  model.on 'set', ([path, value], out, local, options) ->
+  # Derby's mutator listeners are added via unshift instead of model.on, because
+  # it needs to handle events in the same order that racer applies mutations.
+  # If there is a listener to an event that applies a mutation, event listeners
+  # later in the listeners queues could receive events in a different order
+
+  model.listeners('set').unshift ([path, value], previous, local, options) ->
     events.trigger pathMap.id(path), value, 'html', local, options
 
-  model.on 'del', ([path], out, local, options) ->
+  model.listeners('del').unshift ([path], out, local, options) ->
     events.trigger pathMap.id(path), undefined, 'html', local, options
 
-  model.on 'push', ([path, values...], out, local, options) ->
+  model.listeners('push').unshift ([path, values...], out, local, options) ->
     id = pathMap.id path
     for value in values
       events.trigger id, value, 'append', local, options
     return
 
-  model.on 'move', ([path, from, to, howMany], out, local, options) ->
+  model.listeners('move').unshift ([path, from, to, howMany], out, local, options) ->
     len = model.get(path).length
     from = refIndex from
     to = refIndex to
@@ -115,23 +120,23 @@ exports.init = (model, dom) ->
     pathMap.onMove path, from, to, howMany  # Update indicies in pathMap
     events.trigger pathMap.id(path), [from, to, howMany], 'move', local, options
 
-  model.on 'unshift', ([path, values...], out, local, options) ->
+  model.listeners('unshift').unshift ([path, values...], out, local, options) ->
     insert events, pathMap, path, 0, values, local, options
 
-  model.on 'insert', ([path, index, values...], out, local, options) ->
+  model.listeners('insert').unshift ([path, index, values...], out, local, options) ->
     insert events, pathMap, path, index, values, local, options
 
-  model.on 'remove', ([path, start, howMany], out, local, options) ->
+  model.listeners('remove').unshift ([path, start, howMany], out, local, options) ->
     remove events, pathMap, path, start, howMany, local, options
 
-  model.on 'pop', ([path], out, local, options) ->
+  model.listeners('pop').unshift ([path], out, local, options) ->
     remove events, pathMap, path, model.get(path).length, 1, local, options
 
-  model.on 'shift', ([path], out, local, options) ->
+  model.listeners('shift').unshift ([path], out, local, options) ->
     remove events, pathMap, path, 0, 1, local, options
 
   for event in ['connected', 'canConnect']
-    do (event) -> model.on event, (value) ->
+    do (event) -> model.listeners(event).unshift (value) ->
       events.trigger pathMap.id(event), value
 
   return model

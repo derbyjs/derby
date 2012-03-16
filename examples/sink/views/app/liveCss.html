@@ -20,7 +20,7 @@
   <button x-bind=click:addStyle>Add</button>
   <h3>Currently applied:</h3>
   <div>
-    ((#_numStyles))
+    ((#_hasActiveStyles))
       <p>{</p>
       <ul class=css>
         ((#liveCss.styles :style))
