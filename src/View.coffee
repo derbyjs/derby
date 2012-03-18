@@ -98,13 +98,31 @@ View:: =
     @dom.clear()
 
     title = @get('title$s', ns, ctx)
+    rootHtml = @get('root', ns, ctx)
     bodyHtml = @get('header', ns, ctx) + @get('body', ns, ctx) + @get('footer', ns, ctx)
     return if silent
-    container = document.createElement 'html'
-    container.innerHTML = bodyHtml
-    body = container.getElementsByTagName('body')[0]
-    document.body.parentNode.replaceChild body, document.body
-    document.title = title
+
+    doc = document
+    documentElement = doc.documentElement
+
+    # Remove all current attributes on the documentElement and replace
+    # them with the attributes in the rendered rootHtml.
+    for attr in documentElement.attributes
+      documentElement.removeAttribute attr.name
+    # Using the DOM to get the attributes on an <html> tag would require
+    # some sort of iframe hack until DOMParser has better browser support.
+    # String parsing the html should be simpler and more efficient
+    parseHtml rootHtml, start: (tag, tagName, attrs) ->
+      return unless tagName is 'html'
+      for attr, value of attrs
+        documentElement.setAttribute attr, value
+      return
+
+    fakeRoot = doc.createElement 'html'
+    fakeRoot.innerHTML = bodyHtml
+    body = fakeRoot.getElementsByTagName('body')[0]
+    documentElement.replaceChild body, doc.body
+    doc.title = title
 
   escapeHtml: escapeHtml
   escapeAttr: escapeAttr

@@ -249,11 +249,6 @@ do clearElements = ->
     $doc: doc
   markers = {}
 
-Dom::contains = contains = if doc.contains
-  (a, b) -> a.contains b
-else
-  (a, b) -> !!(a.compareDocumentPosition(b) & 16)
-
 getRange = (name) ->
   start = markers[name]
   end = markers['$' + name]
@@ -268,7 +263,7 @@ getRange = (name) ->
 
   # Comment nodes may continue to exist even if they have been removed from
   # the page. Thus, make sure they are still somewhere in the page body.
-  unless contains doc.body, start
+  unless doc.body.contains start
     delete markers[name]
     delete markers['$' + name]
     return
@@ -279,6 +274,11 @@ getRange = (name) ->
 
 element = (id) ->
   elements[id] || (elements[id] = doc.getElementById(id)) || getRange(id)
+
+# Add support for Node.contains for Firefox < 9
+unless doc.body.contains
+  Node::contains = (node) ->
+    !!(@compareDocumentPosition(node) & 16)
 
 # Add support for insertAdjacentHTML for Firefox < 8
 # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com

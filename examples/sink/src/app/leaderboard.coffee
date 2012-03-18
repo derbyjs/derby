@@ -43,15 +43,16 @@ ready (model) ->
       return unless name = newPlayer.get()
       list.push {name, score: randomScore()}
       newPlayer.set ''
-    # incr: -> selected.at('score').incr 5
+
     incr: ->
       players.at(selected.get().id).incr 'score', 5
+
     decr: -> selected.incr 'score', -5
+
     select: (e, el) ->
       id = model.at(el).get 'id'
       selectedId.set id
-    deselect: (e, el) ->
-      
-  # view.dom.addListener document, 'click', (e) ->
-  #   unless view.dom.contains $('leaderboard'), e.target
-  #     selectedId.set null
+
+    deselect: (e) ->
+      unless document.getElementById('leaderboard').contains e.target
+        selectedId.set null
