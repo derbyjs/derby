@@ -14,7 +14,10 @@ Model::at = (node, absolute) ->
     continue if comment.$derbyChecked
     comment.$derbyChecked = true
     id = comment.data
-    continue unless id.charAt(0) == '$' && id.charAt(1) != '$'
+    continue unless id.charAt(0) == '$'
+    if id.charAt(1) == '$'
+      comment.$derbyMarkerEnd = true
+      id = id[1..]
     comment.$derbyMarkerId = id
     comment.parentNode.$derbyMarkerParent = true
 
@@ -26,6 +29,7 @@ Model::at = (node, absolute) ->
       node = last
       while node = node.previousSibling
         continue unless id = node.$derbyMarkerId
+        break if node.$derbyMarkerEnd
         break unless pathId = blockPaths[id]
         path = pathMap.paths[pathId]
         if pathMap.arrays[path] && last
