@@ -33,6 +33,7 @@ View:: =
     head: empty
     header: empty
     body: empty
+    footer: empty
     scripts: empty
     tail: empty
 
@@ -97,7 +98,7 @@ View:: =
     @dom.clear()
 
     title = @get('title$s', ns, ctx)
-    bodyHtml = @get('header', ns, ctx) + @get('body', ns, ctx)
+    bodyHtml = @get('header', ns, ctx) + @get('body', ns, ctx) + @get('footer', ns, ctx)
     return if silent
     container = document.createElement 'html'
     container.innerHTML = bodyHtml

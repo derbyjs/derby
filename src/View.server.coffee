@@ -161,7 +161,7 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   res.write "#{doctype}#{root}#{charset}<title>#{title}</title>#{head}#{@_css}#{header}"
 
   # Remaining HTML
-  res.write @get 'body', ns, ctx
+  res.write @get('body', ns, ctx) + @get('footer', ns, ctx)
 
   # Inline scripts and external scripts
   clientName = @_clientName
