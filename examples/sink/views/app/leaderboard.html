@@ -1,0 +1,29 @@
+<import: src=shared>
+
+<Body:>
+  {{> shared:nav}}
+  {{#leaderboard}}
+  <div id=leaderboard>
+    <form x-bind="submit: leaderboard.add">
+      <input value=((._newPlayer))> <input type=submit value="Add player">
+    </form>
+    <div class=selectedPlayer>
+      ((#._selected))
+        <p class=vote>
+          <button x-bind="click: leaderboard.incr">+ 5</button>
+          <button x-bind="click: leaderboard.decr">- 5</button>
+        </p>
+        <span>((.name))</span>
+      ((^))
+        Click a player to select
+      ((/))
+    </div>
+    <ul>
+      ((#._list))
+        <li class="((._class))" x-bind="click: leaderboard.select">
+          <p class=score>((.score))</p>{{.name}}
+        </li>
+      ((/))
+    </ul>
+  </div>
+  {{/}}

@@ -58,7 +58,6 @@ Model::at = (node, absolute) ->
 exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap
   events = model.__events = new EventDispatcher
-    onBind: (name, listener) -> pathMap.id name
     onTrigger: (name, listener, value, type, local, options) ->
       [id, method, property] = listener
       partial = listener.fn

@@ -12,9 +12,12 @@ emptyRes =
   setHeader: empty
   write: empty
   end: empty
+emptyPathMap =
+  id: empty
 emptyModel =
   get: empty
   bundle: empty
+  __pathMap: emptyPathMap
 emptyDom =
   events: new EventDispatcher
 
@@ -133,6 +136,7 @@ View::_init = (model) ->
   @dom = emptyDom
   model.__events = new EventDispatcher
   model.__blockPaths = {}
+  model.__pathMap ||= emptyPathMap
   @model = model
   @_idCount = 0
 
@@ -149,10 +153,12 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   # If there is a small amount of header HTML that will display well by itself,
   # it is a good idea to add this to the Header view so that it renders ASAP.
   doctype = @get 'doctype', ns, ctx
+  root = @get 'root', ns, ctx
+  charset = @get 'charset', ns, ctx
   title = escapeHtml @get 'title$s', ns, ctx
   head = @get 'head', ns, ctx
   header = @get 'header', ns, ctx
-  res.write "#{doctype}<title>#{title}</title>#{head}#{@_css}#{header}"
+  res.write "#{doctype}#{root}#{charset}<title>#{title}</title>#{head}#{@_css}#{header}"
 
   # Remaining HTML
   res.write @get 'body', ns, ctx

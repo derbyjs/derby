@@ -25,12 +25,12 @@ ready (model) ->
   cols = model.at 'table.cols'
 
   app.tableEditor =
-    deleteRow: (e) ->
-      model.at(e.target).parent(2).remove()
+    deleteRow: (e, el) ->
+      model.at(el).parent(2).remove()
 
-    deleteCol: (e) ->
+    deleteCol: (e, el) ->
       # TODO: Make these move operations atomic when Racer has atomic support
-      i = model.at(e.target).leaf()
+      i = model.at(el).leaf()
       row = rows.get 'length'
       while row--
         rows.remove "#{row}.cells", i

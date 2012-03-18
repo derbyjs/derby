@@ -2,7 +2,7 @@ pages = [
   {name: 'home', text: 'Home', url: '/'}
   {name: 'liveCss', text: 'Live CSS', url: '/live-css'}
   {name: 'tableEditor', text: 'Table editor', url: '/table'}
-  {name: 'sortedList', text: 'Sorted list', url: '/sorted-list'}
+  {name: 'leaderboard', text: 'Leaderboard', url: '/leaderboard'}
   {name: 'submit', text: 'Submit form', url: '/submit'}
   {name: 'back', text: 'Back redirect', url: '/back'}
   {name: 'error', text: 'Error test', url: '/error'}

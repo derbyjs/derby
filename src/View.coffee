@@ -26,7 +26,9 @@ View:: =
   _uniqueId: -> '$' + (@_idCount++).toString 36
 
   default:
-    doctype: -> '<!DOCTYPE html><meta charset=utf-8>'
+    doctype: -> '<!DOCTYPE html>'
+    root: empty
+    charset: -> '<meta charset=utf-8>'
     title$s: -> 'Derby app'
     head: empty
     header: empty
@@ -119,13 +121,13 @@ bindEvents = (events, name, fn, params) ->
   events.push (ctx, modelEvents, domEvents, pathMap, blockPaths, triggerId) ->
     return  unless path = modelPath ctx, name
     listener = if params.call then params triggerId, pathMap, blockPaths, path else params
-    modelEvents.bind path, listener
+    modelEvents.bind pathMap.id(path), listener
     listener.fn = fn
     listener.ctx = ctx.$stringCtx || ctx
 bindEventsById = (events, name, fn, attrs, method, prop, isBlock) ->
   bindEvents events, name, fn, (triggerId, pathMap, blockPaths, path) ->
     id = attrs._id || attrs.id
-    blockPaths[id] = pathMap.id path  if pathMap && isBlock
+    blockPaths[id] = pathMap.id path  if isBlock
     return [id, method, prop]
 bindEventsByIdString = (events, name, fn, attrs, method, prop) ->
   bindEvents events, name, fn, (triggerId) ->

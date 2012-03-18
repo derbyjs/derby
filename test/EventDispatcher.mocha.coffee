@@ -94,7 +94,6 @@ describe 'EventDispatcher', ->
         expect(name).to.equal name1
         expect(listener).to.eql listener1
         done()
-        return name
     dispatcher.bind name1, listener1
     dispatcher.trigger name1, value1, options1
     dispatcher.trigger name1, value1, options1

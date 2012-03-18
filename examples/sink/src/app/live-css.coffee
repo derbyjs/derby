@@ -33,5 +33,5 @@ ready (model) ->
   app.liveCss =
     addStyle: ->
       model.push 'liveCss.styles', {}
-    deleteStyle: (e) ->
-      model.at(e.target).remove()
+    deleteStyle: (e, el) ->
+      model.at(el).remove()

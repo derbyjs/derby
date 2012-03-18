@@ -147,23 +147,23 @@ module.exports =
       return true if eventName is expected
     return false
 
-  addDomEvent: addDomEvent = (events, attrs, eventNames, name, getMethod, property, invert) ->
+  addDomEvent: addDomEvent = (events, attrs, eventNames, name, method, property, invert) ->
     eventList = splitEvents eventNames
 
     if arguments.length > 3
       if eventList.length == 1
         [eventName, delay] = eventList[0]
-        events.push (ctx, modelEvents, domEvents) ->
-          path = modelPath ctx, name
+        events.push (ctx, modelEvents, domEvents, pathMap) ->
+          pathId = pathMap.id modelPath(ctx, name)
           id = attrs._id || attrs.id
-          domEvents.bind eventName, [path, id, getMethod, property, delay, invert]
+          domEvents.bind "#{eventName}:#{id}", {pathId, method, property, invert, delay}
           return
         return
-      events.push (ctx, modelEvents, domEvents) ->
-        path = modelPath ctx, name
+      events.push (ctx, modelEvents, domEvents, pathMap) ->
+        pathId = pathMap.id modelPath(ctx, name)
         id = attrs._id || attrs.id
         for [eventName, delay] in eventList
-          domEvents.bind eventName, [path, id, getMethod, property, delay, invert]
+          domEvents.bind "#{eventName}:#{id}", {pathId, method, property, invert, delay}
         return
       return
 
@@ -171,11 +171,11 @@ module.exports =
       [eventName, delay, fn] = eventList[0]
       events.push (ctx, modelEvents, domEvents) ->
         id = attrs._id || attrs.id
-        domEvents.bind eventName, [fn, id, delay]
+        domEvents.bind eventName + ':' + id, {fn, delay}
         return
       return
     events.push (ctx, modelEvents, domEvents) ->
       id = attrs._id || attrs.id
       for [eventName, delay, fn] in eventList
-        domEvents.bind eventName, [fn, id, delay]
+        domEvents.bind eventName + ':' + id, {fn, delay}
       return
