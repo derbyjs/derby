@@ -148,8 +148,9 @@ module.exports =
     pairs = eventNames.replace(/\s/g, '').split ','
     out = []
     for pair in pairs
-      [name, fn] = pair.split ':'
-      [name, delay] = name.split '/'
+      segments = pair.split ':'
+      [name, delay] = segments[0].split '/'
+      fn = segments[1] || ''
       out.push [name, delay, fn]
     return out
 

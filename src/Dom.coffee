@@ -12,7 +12,7 @@ Dom = module.exports = (model, appExports) ->
   captureListenerAdded = {}
 
   onTrigger = (name, listener, id, e, el, next) ->
-    if fn = listener.fn
+    if (fn = listener.fn)?
       callback = fns[fn] || appExports[fn] || lookup(fn, appExports)
       return  unless callback
     else
