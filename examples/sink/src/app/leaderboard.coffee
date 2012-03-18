@@ -47,12 +47,12 @@ ready (model) ->
     incr: ->
       players.at(selected.get().id).incr 'score', 5
 
-    decr: -> selected.incr 'score', -5
+    decr: ->
+      selected.incr 'score', -5
 
     select: (e, el) ->
       id = model.at(el).get 'id'
       selectedId.set id
 
-    deselect: (e) ->
-      unless document.getElementById('leaderboard').contains e.target
-        selectedId.set null
+    deselect: ->
+      selectedId.set null

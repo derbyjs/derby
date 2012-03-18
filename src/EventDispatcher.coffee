@@ -9,8 +9,8 @@ EventDispatcher:: =
   clear: ->
     @_names = {}
 
-  bind: (name, listener) ->
-    @_onBind name, listener
+  bind: (name, listener, arg0) ->
+    @_onBind name, listener, arg0
     names = @_names
     obj = names[name] || {}
     obj[JSON.stringify listener] = listener

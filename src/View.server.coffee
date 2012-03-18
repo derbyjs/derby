@@ -19,7 +19,7 @@ emptyModel =
   bundle: empty
   __pathMap: emptyPathMap
 emptyDom =
-  events: new EventDispatcher
+  bind: empty
 
 escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
 

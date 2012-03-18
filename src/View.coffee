@@ -137,7 +137,7 @@ extend = (parent, obj) ->
   return out
 
 bindEvents = (events, name, fn, params) ->
-  events.push (ctx, modelEvents, domEvents, pathMap, blockPaths, triggerId) ->
+  events.push (ctx, modelEvents, dom, pathMap, blockPaths, triggerId) ->
     return  unless path = modelPath ctx, name
     listener = if params.call then params triggerId, pathMap, blockPaths, path else params
     modelEvents.bind pathMap.id(path), listener
@@ -268,13 +268,13 @@ renderer = (view, items, events) ->
     pathMap = model.__pathMap
     modelEvents = model.__events
     blockPaths = model.__blockPaths
-    domEvents = view.dom.events
+    dom = view.dom
     html = ''
     for item in items
       html += if item.call then item(ctx, model, triggerPath) || '' else item
     i = 0
     while event = events[i++]
-      event ctx, modelEvents, domEvents, pathMap, blockPaths, triggerId
+      event ctx, modelEvents, dom, pathMap, blockPaths, triggerId
     return html
 
 parseMatch = (view, match, queues, {onStart, onEnd, onVar}) ->

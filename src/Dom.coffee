@@ -7,38 +7,54 @@ EventDispatcher = require './EventDispatcher'
 Dom = module.exports = (model, appExports) ->
   dom = this
 
-  # Maps dom event name -> true
+  # Map dom event name -> true
   listenerAdded = {}
+  captureListenerAdded = {}
 
-  @events = events = new EventDispatcher
-    onBind: (name, listener) ->
-      i = name.indexOf ':'
-      eventName = name[0...i]
+  onTrigger = (name, listener, id, e, el, next) ->
+    if fn = listener.fn
+      callback = fns[fn] || appExports[fn] || lookup(fn, appExports)
+      return  unless callback
+    else
+      # Remove this listener if its path id is no longer registered
+      return false  unless path = model.__pathMap.paths[listener.pathId]
+
+    # Update the model when the element's value changes
+    finish = ->
+      value = getMethods[listener.method] el, listener.property
+      value = !value  if listener.invert
+      return  if model.get(path) == value
+      model.set path, value
+
+    if (delay = listener.delay)?
+      setTimeout callback || finish, delay, e, el, next, dom
+    else
+      (callback || finish) e, el, next, dom
+    return
+
+  # DOM listener capturing allows blur and focus to be delegated
+  # http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+  @_events = events = new EventDispatcher
+    onTrigger: onTrigger
+
+    onBind: (name, listener, eventName) ->
       unless listenerAdded[eventName]
-        # Note that capturing is used so that blur and focus can be delegated
-        # http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
         addListener doc, eventName, trigger, true
         listenerAdded[eventName] = true
       return
-    onTrigger: (name, listener, id, e, el, next) ->
-      if fn = listener.fn
-        callback = fns[fn] || appExports[fn] || lookup(fn, appExports)
-        return  unless callback
-      else
-        # Remove this listener if its path id is no longer registered
-        return false  unless path = model.__pathMap.paths[listener.pathId]
 
-      # Update the model when the element's value changes
-      finish = ->
-        value = getMethods[listener.method] el, listener.property
-        value = !value  if listener.invert
-        return  if model.get(path) == value
-        model.set path, value
+  @_captureEvents = captureEvents = new EventDispatcher
+    onTrigger: (name, listener, e) ->
+      id = listener.id
+      el = doc.getElementById id
+      if el.tagName is 'HTML' || el.contains e.target
+        onTrigger name, listener, id, e, el
+      return
 
-      if (delay = listener.delay)?
-        setTimeout callback || finish, delay, e, el, next, dom
-      else
-        (callback || finish) e, el, next, dom
+    onBind: (name, listener) ->
+      unless captureListenerAdded[name]
+        addListener doc, name, captureTrigger, true
+        captureListenerAdded[name] = true
       return
 
   @trigger = trigger = (e, el, noBubble, continued) ->
@@ -59,19 +75,8 @@ Dom = module.exports = (model, appExports) ->
       el = el.parentNode
     return
 
-  if doc.addEventListener
-    addListener = (el, name, cb, captures = false) ->
-      el.addEventListener name, cb, captures
-    removeListener = (el, name, cb, captures = false) ->
-      el.removeEventListener name, cb, captures
-
-  else if doc.attachEvent
-    addListener = (el, name, cb) ->
-      el.attachEvent 'on' + name, ->
-        event.target || event.target = event.srcElement
-        cb event
-    removeListener = ->
-      throw new Error 'Not implemented'
+  @captureTrigger = captureTrigger = (e) ->
+    captureEvents.trigger e.type, e
 
   @addListener = addListener
   @removeListener = removeListener
@@ -81,8 +86,16 @@ Dom = module.exports = (model, appExports) ->
 Dom:: =
 
   clear: ->
-    @events.clear()
+    @_events.clear()
+    @_captureEvents.clear()
     clearElements()
+
+  bind: (eventName, id, listener) ->
+    if listener.capture
+      listener.id = id
+      @_captureEvents.bind eventName, listener
+    else
+      @_events.bind "#{eventName}:#{id}", listener, eventName
 
   update: (id, method, ignore, value, property, index) ->
     # Fail and remove the listener if the element can't be found
@@ -274,6 +287,20 @@ getRange = (name) ->
 
 element = (id) ->
   elements[id] || (elements[id] = doc.getElementById(id)) || getRange(id)
+
+if doc.addEventListener
+  addListener = (el, name, cb, captures = false) ->
+    el.addEventListener name, cb, captures
+  removeListener = (el, name, cb, captures = false) ->
+    el.removeEventListener name, cb, captures
+
+else if doc.attachEvent
+  addListener = (el, name, cb) ->
+    el.attachEvent 'on' + name, ->
+      event.target || event.target = event.srcElement
+      cb event
+  removeListener = ->
+    throw new Error 'Not implemented'
 
 # Add support for Node.contains for Firefox < 9
 unless doc.body.contains

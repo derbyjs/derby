@@ -1,4 +1,6 @@
-{lookup} = require('racer').path
+racer = require 'racer'
+{lookup} = racer.path
+{merge} = racer.util
 
 module.exports =
 
@@ -23,18 +25,18 @@ module.exports =
           # Update value unless window and element are focused
           method = 'propPolite'
         
-        addDomEvent events, attrs, eventNames, name, 'prop', 'value'
+        addDomEvent events, attrs, eventNames, name, {method: 'prop', property: 'value'}
         # Update the element's property unless it has focus
         return {method}
 
     'checked':
       '*': (events, attrs, name, invert) ->
-        addDomEvent events, attrs, 'change', name, 'prop', 'checked', invert
+        addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'checked', invert}
         return method: 'prop', bool: true
     
     'selected':
       '*': (events, attrs, name, invert) ->
-        addDomEvent events, attrs, 'change', name, 'prop', 'selected', invert
+        addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'selected', invert}
         return method: 'prop', bool: true
 
     'disabled':
@@ -54,7 +56,7 @@ module.exports =
   boundParent:
     'contenteditable':
       '*': (events, attrs, name) ->
-        addDomEvent events, attrs, TEXT_EVENTS, name, 'html'
+        addDomEvent events, attrs, TEXT_EVENTS, name, {method: 'html'}
         return
 
   element:
@@ -78,18 +80,27 @@ module.exports =
         addDomEvent events, attrs, eventNames
         return addId: true, del: true
 
-      'a': (events, attrs, eventNames) ->
+      'a': onBindA = (events, attrs, eventNames) ->
         if containsEvent(eventNames, 'click') && !('href' of attrs)
           attrs.href = '#'
           unless 'onclick' of attrs
             attrs.onclick = 'return false'
         return
 
-      'form': (events, attrs, eventNames) ->
+      'form': onBindForm = (events, attrs, eventNames) ->
         if containsEvent(eventNames, 'submit')
           unless 'onsubmit' of attrs
             attrs.onsubmit = 'return false'
         return
+
+    'x-capture':
+      '*': (events, attrs, eventNames) ->
+        addDomEvent events, attrs, eventNames, null, {capture: true}
+        return addId: true, del: true
+
+      'a': onBindA
+
+      'form': onBindForm
 
   TEXT_EVENTS: TEXT_EVENTS = 'keyup,keydown,paste/0,dragover/0,blur'
 
@@ -147,35 +158,36 @@ module.exports =
       return true if eventName is expected
     return false
 
-  addDomEvent: addDomEvent = (events, attrs, eventNames, name, method, property, invert) ->
+  addDomEvent: addDomEvent = (events, attrs, eventNames, name, options) ->
     eventList = splitEvents eventNames
 
-    if arguments.length > 3
+    if name
+      {method, property, invert} = options
       if eventList.length == 1
         [eventName, delay] = eventList[0]
-        events.push (ctx, modelEvents, domEvents, pathMap) ->
+        events.push (ctx, modelEvents, dom, pathMap) ->
           pathId = pathMap.id modelPath(ctx, name)
           id = attrs._id || attrs.id
-          domEvents.bind "#{eventName}:#{id}", {pathId, method, property, invert, delay}
+          dom.bind eventName, id, merge {pathId, delay}, options
           return
         return
-      events.push (ctx, modelEvents, domEvents, pathMap) ->
+      events.push (ctx, modelEvents, dom, pathMap) ->
         pathId = pathMap.id modelPath(ctx, name)
         id = attrs._id || attrs.id
         for [eventName, delay] in eventList
-          domEvents.bind "#{eventName}:#{id}", {pathId, method, property, invert, delay}
+          dom.bind eventName, id, merge {pathId, delay}, options
         return
       return
 
     if eventList.length == 1
       [eventName, delay, fn] = eventList[0]
-      events.push (ctx, modelEvents, domEvents) ->
+      events.push (ctx, modelEvents, dom) ->
         id = attrs._id || attrs.id
-        domEvents.bind eventName + ':' + id, {fn, delay}
+        dom.bind eventName, id, merge {fn, delay}, options
         return
       return
-    events.push (ctx, modelEvents, domEvents) ->
+    events.push (ctx, modelEvents, dom) ->
       id = attrs._id || attrs.id
       for [eventName, delay, fn] in eventList
-        domEvents.bind eventName + ':' + id, {fn, delay}
+        dom.bind eventName, id, merge {fn, delay}, options
       return
