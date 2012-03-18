@@ -26,7 +26,7 @@ ready (model) ->
 
   app.tableEditor =
     deleteRow: (e, el) ->
-      model.at(el).parent(2).remove()
+      model.at(el).remove()
 
     deleteCol: (e, el) ->
       # TODO: Make these move operations atomic when Racer has atomic support

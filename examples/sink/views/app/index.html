@@ -6,3 +6,16 @@
 
 <Title:>
   Derby demo: {{title}}
+
+<Header:>
+  <body class={{currentPage}}>
+  <nav>
+    {{#pages}}
+      {{#current}}
+        <b>{{text}}</b>{{^isLast}} | {{/}}
+      {{^}}
+        <a href={{url}}>{{text}}</a>{{^isLast}} | {{/}}
+      {{/}}
+    {{/}}
+    <hr>
+  </nav>
