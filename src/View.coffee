@@ -351,8 +351,8 @@ partialFn = (name, type, alias, render) ->
 
 textFn = (name, escape) ->
   (ctx, model) ->
-    text = dataValue ctx, model, name
-    text = if text? then text.toString() else ''
+    value = dataValue ctx, model, name
+    text = if value? then value.toString() else ''
     return if escape then escape text else text
 
 blockFn = (view, queue) ->
