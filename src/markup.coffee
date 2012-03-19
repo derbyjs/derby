@@ -108,6 +108,8 @@ module.exports =
     checkbox: true
     radio: true
 
+  # TODO: This function could be optimized to do some of these
+  # checks on the name once insted of on every render
   modelPath: modelPath = (ctx, name, noReplace) ->
     firstChar = name.charAt(0)
 

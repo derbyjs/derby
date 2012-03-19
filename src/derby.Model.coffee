@@ -104,6 +104,16 @@ exports.init = (model, dom) ->
   model.listeners('set').unshift (args, out, local, options) ->
     model.emit 'pre:set', args, out, local, options
     [path, value] = args
+
+    # For set operations on array items, also emit a remove and insert in case the
+    # array is bound
+    if /\.\d+$/.test path
+      i = path.lastIndexOf('.')
+      arrayPath = path[0...i]
+      index = path.slice i + 1
+      events.trigger pathMap.id(arrayPath), index, 'remove', local, options
+      events.trigger pathMap.id(arrayPath), [index, value], 'insert', local, options
+
     events.trigger pathMap.id(path), value, 'html', local, options
 
   model.listeners('del').unshift (args, out, local, options) ->
