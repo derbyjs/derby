@@ -97,15 +97,13 @@ Dom:: =
     else
       @_events.bind "#{eventName}:#{id}", listener, eventName
 
-  update: (id, method, ignore, value, property, index) ->
-    # Fail and remove the listener if the element can't be found
-    return false  unless el = element id
-
+  update: (el, method, ignore, value, property, index) ->
     # Don't do anything if the element is already up to date
-    return  if value == getMethods[method] el, property
-
+    return if value == getMethods[method] el, property
+    # Otherwise, apply the update
     setMethods[method] el, ignore, value, property, index
-    return
+
+  element: (id) -> doc.getElementById(id) || elements[id] || elements[id] = getRange(id)
 
   getMethods: getMethods =
     attr: (el, attr) -> el.getAttribute attr
@@ -114,9 +112,7 @@ Dom:: =
     html: (el) -> el.innerHTML
     # These methods return NaN, because it never equals anything else. Thus,
     # when compared against the new value, the new value will always be set
-    visible: getNaN = -> NaN
-    displayed: getNaN
-    append: getNaN
+    append: getNaN = -> NaN
     insert: getNaN
     remove: getNaN
     move: getNaN
@@ -136,16 +132,6 @@ Dom:: =
       return if ignore && el.id == ignore
       if el != doc.activeElement || !doc.hasFocus()
         el[prop] = value
-      return
-
-    visible: (el, ignore, value) ->
-      return if ignore && el.id == ignore
-      el.style.visibility = if value then '' else 'hidden'
-      return
-
-    displayed: (el, ignore, value) ->
-      return if ignore && el.id == ignore
-      el.style.display = if value then '' else 'none'
       return
 
     html: (obj, ignore, value, escape) ->
@@ -255,12 +241,12 @@ Dom:: =
 win = window
 doc = win.document
 
-elements = markers = null
+markers = elements = null
 do clearElements = ->
-  elements =
-    $win: win
-    $doc: doc
   markers = {}
+  elements =
+    $_win: win
+    $_doc: doc
 
 getRange = (name) ->
   start = markers[name]
@@ -284,9 +270,6 @@ getRange = (name) ->
   range.setStartAfter start
   range.setEndBefore end
   return range
-
-element = (id) ->
-  elements[id] || (elements[id] = doc.getElementById(id)) || getRange(id)
 
 if doc.addEventListener
   addListener = (el, name, cb, captures = false) ->

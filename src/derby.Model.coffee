@@ -63,11 +63,16 @@ exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap
   events = model.__events = new EventDispatcher
     onTrigger: (name, listener, value, type, local, options) ->
-      [id, method, property] = listener
+      id = listener[0]
+      # Fail and remove the listener if the element can't be found
+      return false unless el = dom.element id
+
+      method = listener[1]
+      property = listener[2]
       partial = listener.fn
       path = pathMap.paths[name]
 
-      method = 'prop'  if method is 'propPolite' && local
+      method = 'prop' if method is 'propPolite' && local
 
       if partial is '$inv'
         value = !value
@@ -90,11 +95,11 @@ exports.init = (model, dom) ->
             [value, property, index] = value
         unless noRender
           value = partial listener.ctx, model, path, triggerId, value, index, true
-          value = ''  unless value?
+          value = '' unless value?
 
       # Remove this listener if the DOM update fails
       # Happens when an id cannot be found
-      return dom.update id, method, options && options.ignore, value, property, index
+      dom.update el, method, options && options.ignore, value, property, index
 
   # Derby's mutator listeners are added via unshift instead of model.on, because
   # it needs to handle events in the same order that racer applies mutations.

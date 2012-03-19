@@ -55,7 +55,7 @@ View:: =
     @_renders[templatePath] = render if templatePath
 
     if name is 'title$s' then onBind = (events, name) ->
-      bindEvents events, name, render, ['$doc', 'prop', 'title']
+      bindEvents events, name, render, ['$_doc', 'prop', 'title']
     return
 
   _makeAll: (templates, instances) ->
@@ -224,6 +224,7 @@ reduceStack = (stack) ->
       when 'start'
         html[i] += '<' + item[1]
         attrs = item[2]
+        # Make sure that the id attribute is rendered first
         if 'id' of attrs
           html[i] += ' id='
           pushValue attrs.id, true
@@ -426,7 +427,11 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
       addId view, attrs
       render = parse view, viewName, value, true, (events, name) ->
         bindEventsByIdString events, name, render, attrs, 'attr', attr
-      attrs[attr] = (ctx, model) -> escapeAttr render(ctx, model)
+
+      attrs[attr] = if attr is 'id'
+        (ctx, model) -> attrs._id = escapeAttr render(ctx, model)
+      else
+        (ctx, model) -> escapeAttr render(ctx, model)
       return
 
     out = parseMarkup 'bound', attr, tagName, events, attrs, name, invert
@@ -466,10 +471,7 @@ parse = (view, viewName, template, isString, onBind) ->
       addId view, attrs  if out?.addId
 
     for attr, value of attrs
-      continue if attr is 'style'
       forAttr view, viewName, stack, events, tagName, attrs, attr, value
-    if 'style' of attrs
-      forAttr view, viewName, stack, events, tagName, attrs, 'style', attrs.style
 
     stack.push ['start', tagName, attrs]
 

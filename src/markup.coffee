@@ -43,16 +43,6 @@ module.exports =
       '*': ->
         return method: 'prop', bool: true
 
-    'x-visible':
-      '*': (events, attrs, name, invert) ->
-        addConditionalStyle attrs, name, invert, 'visibility:hidden'
-        return method: 'visible', del: true
-
-    'x-displayed':
-      '*': (events, attrs, name, invert) ->
-        addConditionalStyle attrs, name, invert, 'display:none'
-        return method: 'displayed', del: true
-
   boundParent:
     'contenteditable':
       '*': (events, attrs, name) ->
@@ -140,11 +130,6 @@ module.exports =
 
     # Interpolate the value of names within square brackets
     return name.replace /\[([^\]]+)\]/g, (match, name) -> lookup name, ctx
-
-  addConditionalStyle: addConditionalStyle = (attrs, name, invert, styleText) ->
-    type = if invert then '#' else '^'
-    cat = "{{#{type}#{name}}}#{styleText}{{/}}"
-    attrs.style = if style = attrs.style then "#{style};#{cat}" else cat
 
   splitEvents: splitEvents = (eventNames) ->
     pairs = eventNames.replace(/\s/g, '').split ','

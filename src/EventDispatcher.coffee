@@ -7,17 +7,17 @@ EventDispatcher = module.exports = (options = {}) ->
 
 EventDispatcher:: =
   clear: ->
-    @_names = {}
+    @names = {}
 
   bind: (name, listener, arg0) ->
     @_onBind name, listener, arg0
-    names = @_names
+    names = @names
     obj = names[name] || {}
     obj[JSON.stringify listener] = listener
     names[name] = obj
 
   trigger: (name, value, arg0, arg1, arg2, arg3) ->
-    names = @_names
+    names = @names
     listeners = names[name]
     onTrigger = @_onTrigger
     count = 0
