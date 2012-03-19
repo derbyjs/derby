@@ -79,7 +79,7 @@ View:: =
   get: (name, ns, ctx) ->
     if typeof ns is 'object'
       ctx = ns
-      ns = null
+      ns = ''
     ctx = if ctx then extend ctx, defaultCtx else Object.create defaultCtx
     @_find(name, ns) ctx
 
@@ -89,7 +89,7 @@ View:: =
     if typeof ns is 'object'
       silent = ctx
       ctx = ns
-      ns = null
+      ns = ''
 
     @_idCount = 0
     @model.__pathMap.clear()
@@ -477,7 +477,8 @@ parse = (view, viewName, template, isString, onBind) ->
 
   chars = (text, isRawText, remainder) ->
     if isRawText || !(match = extractPlaceholder text)
-      pushChars stack, trim(text)
+      text = if isString then unescapeEntities trim text else trim text
+      pushChars stack, text
       return
 
     {pre, post} = match
