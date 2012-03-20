@@ -4,7 +4,7 @@ uglify = require 'racer/node_modules/uglify-js'
 EventDispatcher = require './EventDispatcher'
 files = require './files'
 {escapeHtml} = require './html'
-module.exports = View = require './View'
+{trim} = module.exports = View = require './View'
 
 empty = ->
 emptyRes =

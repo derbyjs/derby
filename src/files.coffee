@@ -12,9 +12,9 @@ module.exports =
 
   css: (root, clientName, compress, callback) ->
     findPath root + '/styles', clientName, '.styl', (path) ->
-      return callback ''  unless path
+      return callback '' unless path
       fs.readFile path, 'utf8', (err, styl) ->
-        return callback ''  if err
+        return callback err if err
         stylus(styl)
           .use(nib())
           .set('filename', path)
