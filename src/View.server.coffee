@@ -83,7 +83,8 @@ View::_load = (isStatic, callback) ->
       loadTemplates = uglify loadTemplates if isProduction
       js += ';' + loadTemplates
 
-      files.writeJs root, js, options, (jsFile, appHash) =>
+      files.writeJs root, js, options, (err, jsFile, appHash) =>
+        throw err if err
         @_jsFile = jsFile
         @_appHashes[appFilename] = @_appHash = appHash
         promise.resolve()
@@ -92,17 +93,23 @@ View::_load = (isStatic, callback) ->
       js = @_js
       finish()
 
-    else files.js appFilename, (value, inline) =>
+    else files.js appFilename, (err, value, inline) =>
+      throw err if err
       js = value
       @_js = value unless isProduction
       @inline "function(){#{inline}}"  if inline
       finish()
 
-  files.css root, clientName, (value) =>
+  files.css root, clientName, isProduction, (err, value) =>
+    if err
+      console.error err
+      @_css = ''
+      return finish()
+    value = if isProduction then trim value else '\n' + value
     @_css = if value then "<style id=$_css>#{value}</style>" else ''
     finish()
 
-  files.templates root, clientName, (_templates, _instances) =>
+  files.templates root, clientName, (err, _templates, _instances) =>
     templates = _templates
     instances = _instances
     @_makeAll templates, instances
