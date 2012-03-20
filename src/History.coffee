@@ -24,9 +24,10 @@ History = module.exports = (page, routes, dom) ->
       if e.target.href && !e.metaKey && e.which == 1
         url = e.target.href
         # Ignore hash links to the same page
-        return if ~(i = url.indexOf '#') && 
-          url.substr(0, i) == winLocation.href.replace(/#.*/, '')
+        return if ~(i = url.indexOf '#') &&
+          url[0...i] == winLocation.href.replace(/#.*/, '')
         @push url, true, null, e
+      return
 
     addListener doc, 'submit', (e) =>
       if e.target.tagName.toLowerCase() is 'form'
@@ -34,16 +35,24 @@ History = module.exports = (page, routes, dom) ->
         return if !(url = form.action) || form._forceSubmit ||
           form.enctype == 'multipart/form-data'
         @push url, true, null, e
+      return
 
-    addListener win, 'popstate', (e) =>
+    addListener win, 'popstate', (e) ->
       previous = currentPath
       currentPath = winLocation.pathname
-      # Pop states without a state object were generated externally,
-      # such as by a jump link, so they shouldn't be handled 
-      return unless (state = e.state) && state.$render
-      # Note that the post body is only sent on the initial reqest
-      # and null is sent if the state is later popped
-      renderRoute page, routes, previous, winLocation.pathname, state.$method, e
+      if state = e.state
+        return unless state.$render
+        # Note that the post body is only sent on the initial reqest
+        # and null is sent if the state is later popped
+        return renderRoute page, routes, previous, currentPath, state.$method
+
+      # The state object will be null for states created by jump links
+      if (hash = winLocation.hash) && currentPath != previous
+        renderRoute page, routes, previous, currentPath, 'get'
+        id = hash[1..]
+        if el = doc.getElementById(id) || doc.getElementsByName(id)[0]
+          el.scrollIntoView()
+      return
 
   else
     @push = @replace = ->
