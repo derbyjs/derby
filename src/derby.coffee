@@ -5,7 +5,7 @@ racer = require 'racer'
 up = require 'up'
 View = require './View.server'
 files = require './files'
-{addHttpMethods} = require './routes.server'
+{addHttpMethods} = require './router.server'
 {mergeAll, isProduction} = racer.util
 
 derby = module.exports = mergeAll Object.create(racer),

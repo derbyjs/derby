@@ -3,7 +3,7 @@ derbyModel = require './derby.Model'
 Dom = require './Dom'
 View = require './View'
 History = require './History'
-{addHttpMethods, Page} = require './routes'
+{addHttpMethods, Page} = require './router'
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports

@@ -1,5 +1,5 @@
 qs = require 'qs'
-{render: renderRoute} = require './routes'
+{render: renderRoute} = require './router'
 
 win = window
 winHistory = win.history

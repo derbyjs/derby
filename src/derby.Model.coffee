@@ -65,7 +65,7 @@ exports.init = (model, dom) ->
     onTrigger: (name, listener, value, type, local, options) ->
       id = listener[0]
       # Fail and remove the listener if the element can't be found
-      return false unless el = dom.element id
+      return false unless el = dom.item id
 
       method = listener[1]
       property = listener[2]

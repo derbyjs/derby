@@ -88,7 +88,7 @@ Dom:: =
   clear: ->
     @_events.clear()
     @_captureEvents.clear()
-    clearElements()
+    markers = {}
 
   bind: (eventName, id, listener) ->
     if listener.capture
@@ -103,7 +103,7 @@ Dom:: =
     # Otherwise, apply the update
     setMethods[method] el, ignore, value, property, index
 
-  element: (id) -> doc.getElementById(id) || elements[id] || elements[id] = getRange(id)
+  item: (id) -> doc.getElementById(id) || elements[id] || getRange(id)
 
   getMethods: getMethods =
     attr: (el, attr) -> el.getAttribute attr
@@ -154,6 +154,7 @@ Dom:: =
       else
         # Range
         el = obj.endContainer
+        obj.endOffset
         ref = el.childNodes[obj.endOffset]
         el.insertBefore obj.createContextualFragment(value), ref
       return
@@ -237,17 +238,11 @@ Dom:: =
         dom.trigger e, element, false, true
       return
 
+elements =
+  $_win: win = window
+  $_doc: doc = win.document
 
-win = window
-doc = win.document
-
-markers = elements = null
-do clearElements = ->
-  markers = {}
-  elements =
-    $_win: win
-    $_doc: doc
-
+markers = {}
 getRange = (name) ->
   start = markers[name]
   end = markers['$' + name]
