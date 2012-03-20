@@ -1,0 +1,37 @@
+<Body:>
+
+  <div>
+    <p>
+      ((#_mode))
+        Mode: <b>((_mode))</b> &nbsp; FPS: <b>((_fps))</b>
+      ((^))
+        Select a mode to run:
+      ((/))
+    </p>
+    <p>
+      {{#modes}}<button x-bind="click: start">{{.}}</button>{{/}}
+      <button x-bind="click: stop">Stop</button>
+    </p>
+  </div>
+
+  ((#_bindProperties))
+    <div>
+      ((#_boxes))
+        <div class="box-view">
+          <div id="box-{{i}}" class="box" style="top: ((.top))px; left: ((.left))px; background: rgb(0, 0, ((.color)) );">
+            ((.content))
+          </div>
+        </div>
+      ((/))
+    </div>
+  ((^))
+    <div>
+      ((#_boxes))
+        <div class="box-view">
+          <div id="box-{{i}}" class="box" style="top: {{top}}px; left: {{left}}px; background: rgb(0, 0, {{color}} );">
+            {{content}}
+          </div>
+        </div>
+      ((/))
+    </div>
+  ((/))

@@ -3,6 +3,7 @@ pages = [
   {name: 'liveCss', text: 'Live CSS', url: '/live-css'}
   {name: 'tableEditor', text: 'Table editor', url: '/table'}
   {name: 'leaderboard', text: 'Leaderboard', url: '/leaderboard'}
+  {name: 'bindingsBench', text: 'Bindings benchmark', url: '/bindings-bench'}
   {name: 'submit', text: 'Submit form', url: '/submit'}
   {name: 'back', text: 'Back redirect', url: '/back'}
   {name: 'error', text: 'Error test', url: '/error'}

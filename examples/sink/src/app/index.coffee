@@ -3,6 +3,7 @@
 require './live-css'
 require './table'
 require './leaderboard'
+require './bindings-bench'
 
 get '/', (page) ->
   render page, 'home'
