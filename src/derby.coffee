@@ -100,16 +100,27 @@ addWatches = (appFilename, options, sockets, view) ->
   {root, clientName} = files.parseName appFilename, options
 
   files.watch root, 'css', ->
-    files.css root, clientName, (css) ->
+    files.css root, clientName, false, (err, css) ->
+      if err
+        errMessage = err.message
+        console.error 'CSS PARSE ERROR'
+        console.error errMessage
+        css = ''
       for socket in sockets
-        socket.emit 'refreshCss', css
+        socket.emit 'refreshCss', errMessage, css
 
   files.watch root, 'html', ->
-    files.templates root, clientName, (templates, instances) ->
+    files.templates root, clientName, (err, templates, instances) ->
+      if err
+        errMessage = err.message
+        console.error 'TEMPLATE ERROR'
+        console.error errMessage
+        templates = {}
+        instances = {}
       view.clear()
       view._makeAll templates, instances
       for socket in sockets
-        socket.emit 'refreshHtml', templates, instances
+        socket.emit 'refreshHtml', errMessage, templates, instances
 
   files.watch root, 'js', ->
     process.send type: 'reload'

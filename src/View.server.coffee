@@ -102,7 +102,8 @@ View::_load = (isStatic, callback) ->
 
   files.css root, clientName, isProduction, (err, value) =>
     if err
-      console.error err
+      console.error 'CSS PARSE ERROR:'
+      console.error err.message
       @_css = ''
       return finish()
     value = if isProduction then trim value else '\n' + value
@@ -110,8 +111,14 @@ View::_load = (isStatic, callback) ->
     finish()
 
   files.templates root, clientName, (err, _templates, _instances) =>
-    templates = _templates
-    instances = _instances
+    if err
+      console.error 'TEMPLATE ERROR:'
+      console.error err.message
+      templates = {}
+      instances = {}
+    else
+      templates = _templates
+      instances = _instances
     @_makeAll templates, instances
     finish()
 

@@ -111,16 +111,20 @@ findPath = (root, name, extension, callback) ->
     exists path, (value) ->
       callback if value then path else null
 
-loadTemplates = (root, fileName, get, calls, files = {}, templates = {}, instances = {}, alias, currentNs = '') ->
+loadTemplates = (root, fileName, get, calls, files, templates, instances, alias, currentNs = '') ->
   calls.incr()
   findPath root, fileName, '.html', (path) ->
     if path is null
-      # Return without doing anything if the path isn't found, and this is the
-      # initial lookup based on the clientName. Return an error
-      if fileName
+      if !files
+        # Return without doing anything if the path isn't found, and this is the
+        # initial automatic lookup based on the clientName
         return calls.finish null, {}, {}
       else
-        return calls.finish new Error "Can't find #{root}/views/#{fileName}"
+        return calls.finish new Error "Can't find file #{fileName}"
+
+    files ||= {}
+    templates ||= {}
+    instances ||= {}
 
     got = false
     if get is 'import'
