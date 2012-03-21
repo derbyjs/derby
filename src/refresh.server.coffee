@@ -1,0 +1,51 @@
+{isProduction} = require('racer').util
+files = require './files'
+refresh = module.exports = require './refresh'
+
+appHashes = {}
+refresh.autoRefresh = (store, options, view) ->
+  return if isProduction || store._derbySocketsSetup
+  view._appHashes = appHashes
+  store._derbySocketsSetup = true
+  listeners = {}
+  store.sockets.on 'connection', (socket) ->
+    socket.on 'derbyClient', (appFilename, callback) ->
+      return unless appFilename
+
+      # TODO: Wait for appHash to be set if it is undefined
+      callback appHashes[appFilename]
+
+      if listeners[appFilename]
+        return listeners[appFilename].push socket
+
+      sockets = listeners[appFilename] = [socket]
+      addWatches appFilename, options, sockets, view
+
+addWatches = (appFilename, options, sockets, view) ->
+  {root, clientName} = files.parseName appFilename, options
+
+  files.watch root, 'css', ->
+    files.css root, clientName, false, (err, css) ->
+      if err
+        errMessage = err.message
+        console.error 'CSS PARSE ERROR'
+        console.error errMessage
+        css = ''
+      for socket in sockets
+        socket.emit 'refreshCss', errMessage, css
+
+  files.watch root, 'html', ->
+    files.templates root, clientName, (err, templates, instances) ->
+      if err
+        errMessage = err.message
+        console.error 'TEMPLATE ERROR'
+        console.error errMessage
+        templates = {}
+        instances = {}
+      view.clear()
+      view._makeAll templates, instances
+      for socket in sockets
+        socket.emit 'refreshHtml', errMessage, templates, instances
+
+  files.watch root, 'js', ->
+    process.send type: 'reload'

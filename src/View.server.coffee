@@ -4,6 +4,7 @@ uglify = require 'racer/node_modules/uglify-js'
 EventDispatcher = require './EventDispatcher'
 files = require './files'
 {escapeHtml} = require './html'
+{errorHtml} = require './refresh.server'
 {trim} = module.exports = View = require './View'
 
 empty = ->
@@ -52,9 +53,10 @@ View::_load = (isStatic, callback) ->
   promise = @_loadPromise = (new Promise).on callback
 
   # Once loading is complete, make the files reload from disk the next time
-  promise.on => process.nextTick => delete @_loadPromise
+  promise.on => delete @_loadPromise
 
   templates = instances = js = null
+  errors = {}
 
   if isStatic
     root = @_root
@@ -83,6 +85,8 @@ View::_load = (isStatic, callback) ->
       loadTemplates = uglify loadTemplates if isProduction
       js += ';' + loadTemplates
 
+      @_errors = errorHtml(errors) || ''
+
       files.writeJs root, js, options, (err, jsFile, appHash) =>
         throw err if err
         @_jsFile = jsFile
@@ -104,7 +108,8 @@ View::_load = (isStatic, callback) ->
     if err
       console.error 'CSS PARSE ERROR:'
       console.error err.message
-      @_css = ''
+      @_css = '<style id=$_css></style>'
+      errors['CSS'] = err.message
       return finish()
     value = if isProduction then trim value else '\n' + value
     @_css = if value then "<style id=$_css>#{value}</style>" else ''
@@ -116,6 +121,7 @@ View::_load = (isStatic, callback) ->
       console.error err.message
       templates = {}
       instances = {}
+      errors['Template'] = err.message
     else
       templates = _templates
       instances = _instances
@@ -195,4 +201,4 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
     escapeInlineScript(bundle) + ",'#{@_appHash}','" + (ns || '') + "'," +
     (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
     (if @_watch then ",'#{@_appFilename}'" else '' ) +
-    ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
+    ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}#{@_errors}"

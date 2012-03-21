@@ -4,7 +4,7 @@ http = require 'http'
 racer = require 'racer'
 up = require 'up'
 View = require './View.server'
-files = require './files'
+{autoRefresh} = require './refresh.server'
 {addHttpMethods} = require './router.server'
 {mergeAll, isProduction} = racer.util
 
@@ -54,7 +54,6 @@ derby = module.exports = mergeAll Object.create(racer),
 
     view._derbyOptions = options = @options
     view._appFilename = appModule.filename
-    view._appHashes = appHashes
 
     store = null
     session = null
@@ -95,50 +94,3 @@ Static:: =
       view._root = @root
       view._clientName = name
     view.render res, model, ns, ctx, status, true
-
-addWatches = (appFilename, options, sockets, view) ->
-  {root, clientName} = files.parseName appFilename, options
-
-  files.watch root, 'css', ->
-    files.css root, clientName, false, (err, css) ->
-      if err
-        errMessage = err.message
-        console.error 'CSS PARSE ERROR'
-        console.error errMessage
-        css = ''
-      for socket in sockets
-        socket.emit 'refreshCss', errMessage, css
-
-  files.watch root, 'html', ->
-    files.templates root, clientName, (err, templates, instances) ->
-      if err
-        errMessage = err.message
-        console.error 'TEMPLATE ERROR'
-        console.error errMessage
-        templates = {}
-        instances = {}
-      view.clear()
-      view._makeAll templates, instances
-      for socket in sockets
-        socket.emit 'refreshHtml', errMessage, templates, instances
-
-  files.watch root, 'js', ->
-    process.send type: 'reload'
-
-appHashes = {}
-autoRefresh = (store, options, view) ->
-  return if isProduction || store._derbySocketsSetup
-  store._derbySocketsSetup = true
-  listeners = {}
-  store.sockets.on 'connection', (socket) ->
-    socket.on 'derbyClient', (appFilename, callback) ->
-      return unless appFilename
-
-      # TODO: Wait for appHash to be set if it is undefined
-      callback appHashes[appFilename]
-
-      if listeners[appFilename]
-        return listeners[appFilename].push socket
-
-      sockets = listeners[appFilename] = [socket]
-      addWatches appFilename, options, sockets, view
