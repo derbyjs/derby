@@ -482,7 +482,7 @@ Logic-less templates better enforce separation of logic from presentation by mak
 
 With Mustache, application code generates a context object before rendering the view. It then passes that object along with the template at render time. Derby templates can be used this way as well. However, in addition to looking for objects in a context object, Derby assumes that the model is part of the context. Even better, Derby is able to automatically establish live bindings between the view and objects in the model. Derby slightly extends the Mustache syntax in order to support these featueres.
 
-The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within text, within attribute values, and surrounding elements. In addition, template tags may *not* be used within the value of an `id` attribute.
+The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within elements or text, within attribute values, and surrounding elements.
 
 #### Invalid template tag placements
 {% highlight html %}
@@ -497,9 +497,6 @@ The other major difference between Mustache and Derby templates is that Derby te
 
 <!-- INVALID: Splitting an element -->
 {{"{{"}}#maybe}}<b>{{"{{"}}/maybe}}Bad boy!</b>
-
-<!-- INVALID: Within an id attribute value -->
-<b id="{{"{{"}}id}}">Bad boy!</b>
 {% endhighlight %}
 
 #### Valid placements
@@ -507,7 +504,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 <!-- Within text -->
 <b>Let's go {{"{{"}}activity}}!</b>
 
-<!-- Within attribute values (other than id) -->
+<!-- Within attribute values -->
 <b style="color:{{"{{"}}displayColor}}">Let's go running!</b>
 
 <!-- Surrounding an element -->
@@ -708,7 +705,9 @@ Model-view binding is a relatively recent approach to adding dyanmic interaction
 
 Derby templates declare bindings by using double or triple parentheses instead of curly braces. Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for elements that change upon user interaction---such as form inputs---Derby will update the model automatically as their values change.
 
-Any template tag may be live bound, but bindings only work for data in the model. Context data is passed in at render time, and it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model, since the path may be defined later.
+Any template tag may be live bound, except for within an `id` attribute. The id must be set at render time and not change until the element is re-rendered, since it is used to figure out which element to update.
+
+Bindings only work for data in the model. Context data is passed in at render time, and it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model, since the path may be defined later.
 
 #### Template
 
@@ -960,22 +959,7 @@ There is also a special syntax for boolean attributes only where a data value ca
   <input type="checkbox" disabled="!((active))">
 {% endhighlight %}
 
-### x-visible and x-displayed
-
-While template sections may be used to conditionally hide and show elements, it is sometimes preferrable to use CSS to set `visibility: hidden` or `display: none` on an element. The `x-visible` and `x-displayed` attributes are boolean attributes that make it easier to bind these CSS properties to a boolean value. They will append to or add a style attribute on the element with the proper CSS.
-
-Note that `x-displayed` may be useful in cases where HTML elements should be shown conditionally, and they cannot be wrapped in an element for live binding. For example, list items might need to be shown conditionally, but a `<ul>` element must only contain `<li>` elements.
-
-{% highlight html %}
-<Body:>
-  <ul>
-    ((#items))
-      <li x-displayed="((.shown))">((.text))
-    ((/))
-  </ul>
-{% endhighlight %}
-
-### Miscellaneous
+### Form elements
 
 Binding the selected attribute of `<option>` elements in a `<select>` is difficult, because the `change` event is only fired on the `<select>` element, and the `selected` attribute must be place on the options. Therefore, Derby distributes the change event to each of the children of a select element, raising the event on each of the options as well. This makes it possible to bind the selected state on each of the options.
 
