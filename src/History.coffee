@@ -46,10 +46,13 @@ History = module.exports = (page, routes, dom) ->
         # and null is sent if the state is later popped
         return renderRoute page, routes, previous, currentPath, state.$method
 
-      # The state object will be null for states created by jump links
-      if (hash = winLocation.hash) && currentPath != previous
+      # The state object will be null for states created by jump links.
+      # window.location.hash cannot be used, because it returns nothing
+      # if the url ends in just a hash character
+      url = winLocation.href
+      if ~(i = url.indexOf '#') && currentPath != previous
         renderRoute page, routes, previous, currentPath, 'get'
-        id = hash[1..]
+        id = url.slice i + 1
         if el = doc.getElementById(id) || doc.getElementsByName(id)[0]
           el.scrollIntoView()
       return
