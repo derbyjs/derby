@@ -3,24 +3,24 @@
 
 randomScore = -> Math.floor(Math.random() * 20) * 5
 
+addPlayer = (players, name) ->
+  id = players.id()
+  players.set id, {id, name, score: randomScore()}
+
 get '/leaderboard', (page, model) ->
   model.subscribe 'leaderboard', (err, leaderboard) ->
     players = leaderboard.at 'players'
-    sortedIds = leaderboard.at '_sortedIds'
-    list = leaderboard.at '_list'
-    list.refList players, sortedIds
-
-    # Create list of ids in sorted in descending order by score
-    model.fn sortedIds, players, (items) ->
-      out = []
-      for id of items
-        out.push id if items[id].id
-      return out.sort (a, b) ->
-        items[b].score - items[a].score
-
     unless players.get()
       for name in ['Parker Blue', 'Kelly Green', 'Winston Fairbanks']
-        list.push {name, score: randomScore()}
+        addPlayer players, name
+
+    # Create list sorted in descending order by score
+    list = leaderboard.at '_list'
+    list.fn players, (items) ->
+      out = []
+      for id, item of items
+        out.push item if item?.id
+      return out.sort (a, b) -> b.score - a.score
 
     render page, 'leaderboard'
 
@@ -28,7 +28,6 @@ get '/leaderboard', (page, model) ->
 ready (model) ->
   leaderboard = model.at 'leaderboard'
   players = leaderboard.at 'players'
-  list = leaderboard.at '_list'
   newPlayer = leaderboard.at '_newPlayer'
   selectedId = leaderboard.at '_selectedId'
   selected = leaderboard.at '_selected'
@@ -41,18 +40,17 @@ ready (model) ->
   app.leaderboard =
     add: ->
       return unless name = newPlayer.get()
-      list.push {name, score: randomScore()}
+      addPlayer players, name
       newPlayer.set ''
+    remove: ->
+      id = selected.get 'id'
+      players.del id
 
-    incr: ->
-      players.at(selected.get().id).incr 'score', 5
-
-    decr: ->
-      selected.incr 'score', -5
+    incr: -> selected.incr 'score', 5
+    decr: -> selected.incr 'score', -5
 
     select: (e, el) ->
       id = model.at(el).get 'id'
       selectedId.set id
-
     deselect: ->
       selectedId.set null
