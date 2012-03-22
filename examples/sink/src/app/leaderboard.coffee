@@ -14,13 +14,14 @@ get '/leaderboard', (page, model) ->
       for name in ['Parker Blue', 'Kelly Green', 'Winston Fairbanks']
         addPlayer players, name
 
-    # Create list sorted in descending order by score
+    # Create list of players sorted in descending order by score
     list = leaderboard.at '_list'
     list.fn players, (items) ->
       out = []
       for id, item of items
         out.push item if item?.id
-      return out.sort (a, b) -> b.score - a.score
+      return out.sort (a, b) ->
+        (b.score - a.score) || (b.id > a.id)
 
     render page, 'leaderboard'
 
