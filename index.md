@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.1.9
+version: 0.1.10
 headers:
   - text: Introduction
     type: h1
@@ -195,7 +195,7 @@ Derby radically simplifies this process of adding dynamic interactions. It runs 
 
 ## Features
 
-* **HTML templates:** [Mustache](http://mustache.github.com/mustache.5.html)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
+* **HTML templates:** [Handlebars](http://handlebarsjs.com/)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
 
 * **View bindings:** In addition to HTML rendering, templates specify live bindings between the view and model. When model data change, the view updates the properties, text, or HTML neccessary to reflect the new data. When the user interacts with the page---such as editing the value of a text input---the model data are updated.
 
@@ -453,15 +453,15 @@ ol>li:before{content: counter(item) ". "; counter-increment: item}
 
 ## Template syntax
 
-Derby's template syntax is largely based on [Mustache](http://mustache.github.com/mustache.5.html), a popular logic-less templating language. Following is an example borrowed from the Mustache site.
+Derby's template syntax is largely based on [Handlebars](http://handlebarsjs.com/), a popular logic-less templating language similar to [Mustache](http://mustache.github.com/mustache.5.html). Following is a simple example.
 
-A typical Mustache template:
+A simple Handlebars template:
 
     Hello {{"{{"}}name}}
     You have just won ${{"{{"}}value}}!
-    {{"{{"}}#in_ca}}
+    {{"{{"}}#if in_ca}}
     Well, ${{"{{"}}taxed_value}}, after taxes.
-    {{"{{"}}/in_ca}}
+    {{"{{"}}/if}}
 
 Given the following data context:
 
@@ -478,11 +478,11 @@ Will produce the following:
     You have just won $10000!
     Well, $6000.0, after taxes.
 
-Logic-less templates better enforce separation of logic from presentation by making it impossible to embed logic within views. Instead of conditional statements and loops, logic-less templates use placeholders that are replaced with data passed in when the template is rendered. This data is often referred to as the "context."
+Logic-less templates better enforce separation of logic from presentation by making it impossible to embed logic within views. Instead of conditional statements and loops, logic-less templates use a restricted set of template tags. These tags are replaced with data passed in when the template is rendered. This data is often referred to as the "context."
 
-With Mustache, application code generates a context object before rendering the view. It then passes that object along with the template at render time. Derby templates can be used this way as well. However, in addition to looking for objects in a context object, Derby assumes that the model is part of the context. Even better, Derby is able to automatically establish live bindings between the view and objects in the model. Derby slightly extends the Mustache syntax in order to support these featueres.
+With Handlebars, application code generates a context object before rendering the view. It then passes that object along with the template at render time. Derby templates can be used this way as well. However, in addition to looking for objects in a context object, Derby assumes that the model is part of the context. Even better, Derby is able to automatically establish live bindings between the view and objects in the model. Derby slightly extends the Handlebars syntax in order to support these featueres.
 
-The other major difference between Mustache and Derby templates is that Derby templates must be valid HTML first. Mustache is completely language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within elements or text, within attribute values, and surrounding elements.
+The other major difference between Handlebars and Derby templates is that Derby templates must be valid HTML first. Handlebars is language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within elements or text, within attribute values, and surrounding elements.
 
 #### Invalid template tag placements
 {% highlight html %}
@@ -493,10 +493,10 @@ The other major difference between Mustache and Derby templates is that Derby te
 <b {{"{{"}}attrName}}="confused" {{"{{"}}booleanAttr}}>Bad boy!</b>
 
 <!-- INVALID: Splitting an html tag -->
-<b{{"{{"}}#maybe}}>Bad boy!</b{{"{{"}}/maybe}}>
+<b{{"{{"}}#if maybe}}>Bad boy!</b{{"{{"}}/}}>
 
 <!-- INVALID: Splitting an element -->
-{{"{{"}}#maybe}}<b>{{"{{"}}/maybe}}Bad boy!</b>
+{{"{{"}}#if maybe}}<b>{{"{{"}}/}}Bad boy!</b>
 {% endhighlight %}
 
 #### Valid placements
@@ -508,7 +508,7 @@ The other major difference between Mustache and Derby templates is that Derby te
 <b style="color:{{"{{"}}displayColor}}">Let's go running!</b>
 
 <!-- Surrounding an element -->
-{{"{{"}}#maybe}}<b>Let's go dancing!</b>{{"{{"}}/maybe}}
+{{"{{"}}#if maybe}}<b>Let's go dancing!</b>{{"{{"}}/}}
 {% endhighlight %}
 
 ### Whitespace and HTML conformance
@@ -654,7 +654,7 @@ I like <a href="http://derbyjs.com/">turtles</a>.
 
 Partials are used to include one template inside of another. The scope of the parent context is inherited inside of the partial. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use partials for each significant unit.
 
-As in Mustache, partials are included by name with the syntax `{{"{{"}}> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{"{{"}}users > profile}}` syntax. This is equivalent to `{{"{{"}}#users}}{{"{{"}}> profile}}{{"{{"}}/}}`.
+As in Handlebars, partials are included by name with the syntax `{{"{{"}}> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{"{{"}}each users > profile}}` syntax. This is equivalent to `{{"{{"}}#each}}{{"{{"}}> profile}}{{"{{"}}/}}`. `if`, `unless`, and `with` are valid as well as `each`.
 
 #### Template
 
