@@ -3,7 +3,7 @@ derby = require '../derby'
 program = require 'commander'
 mkdirp = require 'mkdirp'
 fs = require 'fs'
-{join} = require 'path'
+{join, resolve, basename} = require 'path'
 
 
 ## TEMPLATES ##
@@ -130,12 +130,13 @@ ready(function(model) {
     clearInterval(timer)
   }
 
-  ;(exports.start = function() {
+  exports.start = function() {
     model.set('_stopped', false)
     timer = setInterval(function() {
       model.set('_timer', (((+new Date()) - start) / 1000).toFixed(1))
     }, 100)
-  })()
+  }
+  exports.start()
 
 
   model.set('_showReconnect', true)
@@ -321,11 +322,11 @@ APP_HTML = '''
 
 <Body:>
   <h1>((_room.welcome))</h1>
-  <p><label>Welcome message: <input value="((_room.welcome))"></label>
+  <p><label>Welcome message: <input value="((_room.welcome))"></label></p>
 
-  <p>This page has been visted ((_room.visits)) times. {{> timer}}
+  <p>This page has been visted ((_room.visits)) times. {{> timer}}</p>
 
-  <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.
+  <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.</p>
 
 <timer:>
   ((#if _stopped))
@@ -562,8 +563,9 @@ abort = (message) ->
 
 
 createProject = (dir, app, useCoffee) ->
-  dirPath = join process.cwd(), dir
-  project = if dir == '.' then 'derby-app' else dir
+  dirPath = resolve process.cwd(), dir
+  throw new Error 'Cannot create project at /' if dirPath == '/'
+  project = basename dirPath
   views = dir + '/views'
   styles = dir + '/styles'
   scripts = if useCoffee then dir + '/src' else dir + '/lib'
