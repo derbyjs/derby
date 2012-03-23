@@ -214,13 +214,13 @@ Dom:: =
 
   fns: fns =
     $forChildren: forChildren = (e, el, next, dom) ->
-      # If a listener called next, continue bubbling
-      return next() unless next.firstTrigger
+      # Prevent infinte emission
+      return unless next.firstTrigger
 
       # Re-trigger the event on all child elements
       for child in el.childNodes
         continue if child.nodeType != 1  # Node.ELEMENT_NODE
-        dom.trigger e, child, true
+        dom.trigger e, child, true, true
         forChildren e, child, next, dom
       return
 

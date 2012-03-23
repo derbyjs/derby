@@ -29,7 +29,7 @@ View:: =
     doctype: -> '<!DOCTYPE html>'
     root: empty
     charset: -> '<meta charset=utf-8>'
-    title$s: -> 'Derby app'
+    title$s: empty
     head: empty
     header: empty
     body: empty
@@ -434,15 +434,15 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
         (ctx, model) -> escapeAttr render(ctx, model)
       return
 
-    out = parseMarkup 'bound', attr, tagName, events, attrs, name, invert
+    out = parseMarkup('bound', attr, tagName, events, attrs, name, invert) || {}
 
     if bound
       addId view, attrs
       fn = '$inv'  if invert
-      bindEventsById events, name, fn, attrs, out?.method || 'attr', attr
+      bindEventsById events, name, fn, attrs, (out.method || 'attr'), (out.property || attr)
 
-    unless out?.del
-      attrs[attr] = if out?.bool
+    unless out.del
+      attrs[attr] = if out.bool
           bool: (ctx, model) ->
             if !dataValue(ctx, model, name) == invert then ' ' + attr else ''
         else textFn name, escapeAttr

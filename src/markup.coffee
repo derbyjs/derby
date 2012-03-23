@@ -33,7 +33,7 @@ module.exports =
       '*': (events, attrs, name, invert) ->
         addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'checked', invert}
         return method: 'prop', bool: true
-    
+
     'selected':
       '*': (events, attrs, name, invert) ->
         addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'selected', invert}
@@ -42,6 +42,14 @@ module.exports =
     'disabled':
       '*': ->
         return method: 'prop', bool: true
+
+    'x-value':
+      'select': (events, attrs, name) ->
+        if 'multiple' of attrs
+          throw new Error 'select elements may not specify both `x-value` and `multiple` attributes'
+        options = {method: 'prop', property: 'value'}
+        addDomEvent events, attrs, 'change', name, options
+        return options
 
   boundParent:
     'contenteditable':
@@ -91,6 +99,10 @@ module.exports =
       'a': onBindA
 
       'form': onBindForm
+
+    'x-value':
+      'select': (events, attrs, eventNames) ->
+        return del: true
 
   TEXT_EVENTS: TEXT_EVENTS = 'keyup,keydown,paste/0,dragover/0,blur'
 
