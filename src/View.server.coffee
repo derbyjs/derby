@@ -182,6 +182,7 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   catch err
     errText = templateError err
     @_errors ||= errorHtml Template: errText
+    res.write '<!DOCTYPE html><meta charset=utf-8><title></title>' + @_css
 
   # Inline scripts and external scripts
   clientName = @_clientName
