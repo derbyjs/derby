@@ -17,7 +17,11 @@ exports.createApp = (appModule) ->
       derbyModel.init model, dom
       page = new Page view, model
       history = view.history = new History page, routes, dom
-      view.render model, ns, ctx, true
+      # Ignore errors thrown when rendering; these will also be thrown
+      # on the server, and throwing here causes the app not to connect
+      try
+        view.render model, ns, ctx, true
+      catch err then
 
     # The ready event is fired after the model data is initialized and
     # the socket object is set

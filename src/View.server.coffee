@@ -106,8 +106,7 @@ View::_load = (isStatic, callback) ->
 
   files.css root, clientName, isProduction, (err, value) =>
     if err
-      console.error 'CSS PARSE ERROR:'
-      console.error err.message
+      console.error '\nCSS PARSE ERROR\n' + err.message
       @_css = '<style id=$_css></style>'
       errors['CSS'] = err.message
       return finish()
@@ -117,8 +116,7 @@ View::_load = (isStatic, callback) ->
 
   files.templates root, clientName, (err, _templates, _instances) =>
     if err
-      console.error 'TEMPLATE ERROR:'
-      console.error err.message
+      console.error '\nTEMPLATE ERROR\n' + err.message
       templates = {}
       instances = {}
       errors['Template'] = err.message
@@ -166,22 +164,27 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
 
-  # The view.get function renders and sets event listeners
+  try
+    # The view.get function renders and sets event listeners
 
-  # The first chunk includes everything through header. Head should contain
-  # any meta tags and script tags, since it is included before CSS.
-  # If there is a small amount of header HTML that will display well by itself,
-  # it is a good idea to add this to the Header view so that it renders ASAP.
-  doctype = @get 'doctype', ns, ctx
-  root = @get 'root', ns, ctx
-  charset = @get 'charset', ns, ctx
-  title = escapeHtml @get 'title$s', ns, ctx
-  head = @get 'head', ns, ctx
-  header = @get 'header', ns, ctx
-  res.write "#{doctype}#{root}#{charset}<title>#{title}</title>#{head}#{@_css}#{header}"
+    # The first chunk includes everything through header. Head should contain
+    # any meta tags and script tags, since it is included before CSS.
+    # If there is a small amount of header HTML that will display well by itself,
+    # it is a good idea to add this to the Header view so that it renders ASAP.
+    doctype = @get 'doctype', ns, ctx
+    root = @get 'root', ns, ctx
+    charset = @get 'charset', ns, ctx
+    title = escapeHtml @get 'title$s', ns, ctx
+    head = @get 'head', ns, ctx
+    header = @get 'header', ns, ctx
+    res.write "#{doctype}#{root}#{charset}<title>#{title}</title>#{head}#{@_css}#{header}"
 
-  # Remaining HTML
-  res.write @get('body', ns, ctx) + @get('footer', ns, ctx)
+    # Remaining HTML
+    res.write @get('body', ns, ctx) + @get('footer', ns, ctx)
+
+  catch err
+    console.error '\nTEMPLATE ERROR\n' + err.message
+    @_errors ||= errorHtml Template: err.message
 
   # Inline scripts and external scripts
   clientName = @_clientName

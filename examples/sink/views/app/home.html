@@ -4,7 +4,7 @@
   <p>
     <label>Title color: 
       <select x-value=((titleColor))>
-        {{#titleColors}}<option>{{.}}</option>{{/}}
+        {{#each titleColors}}<option>{{this}}</option>{{/}}
       </select>
     </label>
   </p><br>

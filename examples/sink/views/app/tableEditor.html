@@ -5,21 +5,21 @@
   <table>
     <tr>
       <td></td>
-      ((#table.cols))
+      ((#each table.cols))
         <th x-bind="mousedown: tableEditor.colDown" class=col>((.name))</th>
       ((/))
       <td></td>
     </tr>
-    ((#table.rows))
+    ((#each table.rows))
       <tr class=row>
         <th x-bind="mousedown: tableEditor.rowDown">((.name))</th>
-        ((#.cells))<td><input value=((.text))></td>((/))
+        ((#each .cells))<td><input value=((.text))></td>((/))
         <td><button x-bind="click: tableEditor.deleteRow">Delete</button></td>
       </tr>
     ((/))
     <tr class=foot>
       <td></td>
-      ((#table.cols))<td><button x-bind="click: tableEditor.deleteCol">Delete</button></td>((/))
+      ((#each table.cols))<td><button x-bind="click: tableEditor.deleteCol">Delete</button></td>((/))
       <td></td>
     </tr>
   </table>

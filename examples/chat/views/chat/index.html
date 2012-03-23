@@ -25,7 +25,7 @@
     <!-- Partials use Mustache syntax -->
     {{> info}}
     <!-- An object can be passed into the partial to set its context -->
-    <div id=messages><ul id=messageList>((_room.messages > message))</ul></div>
+    <div id=messages><ul id=messageList>((each _room.messages > message))</ul></div>
     <div id=foot>
       <img id=inputPic src=/img/s.png class="pic ((_user.picClass))" alt="">
       <div id=inputs>
@@ -48,13 +48,13 @@
       Mustache syntax is used for conditional blocks, except that the
       name need not be repeated in the closing tag or if-else blocks
     -->
-    ((^connected))
+    ((#unless connected))
       <p>
-        ((#canConnect))
+        ((#if canConnect))
           <!-- Leading space is removed, and trailing space is maintained -->
           Offline 
-          ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
-        ((^))
+          ((#if _showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
+        ((else))
           Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
         ((/))
       </p>

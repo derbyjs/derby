@@ -176,7 +176,8 @@ unboundPlaceholder = ///^
   ([\s\S]*)  # Text after placeholder
 ///
 placeholderContent = ///^
-  \s*([\#^/]?)  # Block type
+  \s*([\#/]?)  # Start or end block
+  (if|else|elseif|unless|each|with)?  # Block type
   \s*([^\s>]*)  # Name of context object
   (?:\s+:([^\s>]+))?  # Alias name
   (?:\s*>\s*([^\s]+)\s*)?  # Partial name
@@ -189,13 +190,16 @@ extractPlaceholder = (text) ->
   else
     return
   return unless content = placeholderContent.exec match[3]
+  if name = content[3]
+    name = if name is '.this' then '.' else name.replace(/\.this$/, '')
+  bound: bound
   pre: trim match[1]
   escaped: match[2].length is 2
-  bound: bound
-  type: content[1]
-  name: content[2]
-  alias: content[3]
-  partial: content[4]?.toLowerCase()
+  hash: content[1]
+  type: content[2]
+  name: name
+  alias: content[4]
+  partial: content[5]?.toLowerCase()
   post: trim match[4]
 
 # True if remaining text does not immediately close the current tag
@@ -278,21 +282,42 @@ renderer = (view, items, events) ->
       event ctx, modelEvents, dom, pathMap, blockPaths, triggerId
     return html
 
-parseMatch = (view, match, queues, {onStart, onEnd, onVar}) ->
-  {type, name} = match
-  {block} = queues.last()
+parseMatchError = (text, message) ->
+  throw new Error message + '\n\n' + text + '\n'
 
-  if type is '/'
-    endBlock = true
-  else if type is '^'
-    startBlock = true
-    if block && block.type is '#' && (!name || name == block.name)
+parseMatch = (view, text, match, queues, {onStart, onEnd, onVar}) ->
+  {hash, type, name, partial} = match
+  {block} = queues.last()
+  blockType = block && block.type
+
+  if partial
+    if hash
+      parseMatchError text, 'partial tag cannot start with ' + hash
+
+  else if type is 'if' || type is 'unless' || type is 'each' || type is 'with'
+    if hash is '#'
+      startBlock = true
+    else if hash is '/'
       endBlock = true
-  else if type is '#'
+    else
+      parseMatchError text, type + ' blocks must begin with a #'
+
+  else if type is 'else' || type is 'elseif'
+    if hash
+      parseMatchError text, type + ' blocks may not start with ' + hash
+    if blockType isnt 'if' && blockType isnt 'elseif' && blockType isnt 'each'
+      parseMatchError text, type + ' may only follow if, elseif, or each'
     startBlock = true
+    endBlock = true
+
+  else if hash is '/'
+    endBlock = true
+
+  else if hash is '#'
+    parseMatchError text, '# must be followed by if, unless, each, or with'
 
   if endBlock
-    throw new Error 'Unmatched template end tag'  unless block
+    parseMatchError text, 'Unmatched template end tag' unless block
     match.name = block.name
     endQueue = queues.pop()
 
@@ -313,6 +338,7 @@ parseMatch = (view, match, queues, {onStart, onEnd, onVar}) ->
 
 extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx = extend ctx, value
+  ctx.this = value
   if path = modelPath ctx, name, true
     ctx.$paths = [path].concat ctx.$paths
   if alias
@@ -325,29 +351,62 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
   return ctx
 
+partialValue = (ctx, model, name, value, useValue) ->
+  if useValue
+    value
+  else
+    if name then dataValue ctx, model, name else true
+
 partialFn = (name, type, alias, render) ->
-  (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-    unless useValue
-      value = if name then dataValue ctx, model, name else true
-    
-    if Array.isArray value
-      if type is '#'
-        ctx = extendCtx ctx, null, name, alias, null, true
-        out = ''
-        indices = ctx.$i
-        for item, i in value
-          _ctx = extend ctx, item
-          _ctx.$i = indices.concat i
-          out += render _ctx, model, triggerPath
-        return out
-      else
-        unless value.length
-          ctx = extendCtx ctx, value, name, alias, index
-          return render ctx, model, triggerPath
-    else
-      if (if type is '#' then value else !value)
-        ctx = extendCtx ctx, value, name, alias, index
-        return render ctx, model, triggerPath
+
+  withFn = (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+    value = partialValue ctx, model, name, value, useValue
+
+    renderCtx = extendCtx ctx, value, name, alias, index
+    return render renderCtx, model, triggerPath
+
+  if type is 'var'
+    return render
+
+  if type is 'with'
+    return withFn
+
+  if type is 'if' || type is 'elseif'
+    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+      value = partialValue ctx, model, name, value, useValue
+
+      if (if Array.isArray(value) then value.length else value)
+        renderCtx = extendCtx ctx, value, name, alias, index
+        return render renderCtx, model, triggerPath
+      return
+
+  if type is 'else' || type is 'unless'
+    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+      value = partialValue ctx, model, name, value, useValue
+
+      if (Array.isArray(value) && !value.length) || !value
+        renderCtx = extendCtx ctx, value, name, alias, index
+        return render renderCtx, model, triggerPath
+      return
+
+  if type is 'each'
+    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+      value = partialValue ctx, model, name, value, useValue
+
+      unless Array.isArray(value)
+        return withFn ctx, model, triggerPath, triggerId, value, index, true
+
+      ctx = extendCtx ctx, null, name, alias, null, true
+      out = ''
+      indices = ctx.$i
+      for item, i in value
+        renderCtx = extend ctx, item
+        renderCtx.this = item
+        renderCtx.$i = indices.concat i
+        out += render renderCtx, model, triggerPath
+      return out
+
+  throw new Error 'Unknown block type'
 
 textFn = (name, escape) ->
   (ctx, model) ->
@@ -384,7 +443,9 @@ pushVarFns = (view, stack, fn, fn2, name, escaped) ->
 
 pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
   {name, escaped, partial} = match
-  fn = partialFn name, '#', match.alias, view._find(partial, ns)  if partial
+  if partial
+    type = match.type || 'var'
+    fn = partialFn name, type, match.alias, view._find(partial, ns)
 
   if match.bound
     last = stack[stack.length - 1]
@@ -409,7 +470,9 @@ pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
 
 pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
   {name, partial} = match
-  fn = partialFn name, '#', match.alias, view._find(partial + '$s', ns)  if partial
+  if partial
+    type = match.type || 'var'
+    fn = partialFn name, type, match.alias, view._find(partial + '$s', ns)
   bindOnce = (ctx) ->
     ctx.$onBind events, name
     bindOnce = empty
@@ -485,7 +548,7 @@ parse = (view, viewName, template, isString, onBind) ->
     pre = unescapeEntities pre  if isString
     pushChars stack, pre
 
-    parseMatch view, match, queues,
+    parseMatch view, text, match, queues,
       onStart: (queue) ->
         {stack, events, block} = queue
       onEnd: (queue) ->

@@ -12,10 +12,10 @@
     </div>
   </form>
   <div id=dragbox></div>
-  <div id=content><ul id=todos>((_todoList > todo))</ul></div>
+  <div id=content><ul id=todos>((each _todoList > todo))</ul></div>
 
 <todo:>
-  <li data-id={{id}} class=((#.completed))completed((/))>
+  <li data-id={{id}} class="((#if .completed))completed((/))">
     <table width=100%>
       <tr>
         <td class=handle width=0></td>
@@ -32,11 +32,11 @@
 
 <info:>
   <div id=info>
-    ((^connected))
+    ((#unless connected))
       <p>
-        ((#canConnect))
-          Offline ((#_showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
-        ((^))
+        ((#if canConnect))
+          Offline ((#if _showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
+        ((else))
           Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
         ((/))
       </p>

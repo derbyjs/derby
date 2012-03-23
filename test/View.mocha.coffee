@@ -135,9 +135,9 @@ describe 'View', ->
     view._init model
 
     view.make 'literal',
-      '{{#show}}Yep{{^}}Nope{{/}}{{#show}} Yes!{{/}} {{^show}}No{{/}}'
+      '{{#if show}}Yep{{else}}Nope{{/}}{{#if show}} Yes!{{/}} {{#unless show}}No{{/}}'
     view.make 'bound',
-      '((#show))Yep((^))Nope((/))((#show)) Yes!((/)) ((^show))No((/))'
+      '((#if show))Yep((else))Nope((/))((#if show)) Yes!((/)) ((#unless show))No((/))'
 
     literalTruthy = 'Yep Yes! '
     literalFalsey = 'Nope No'
@@ -201,9 +201,9 @@ describe 'View', ->
 
     template = """
     <ul>
-    {{#arr}}
+    {{#each arr}}
       <li>{{name}}
-    {{^}}
+    {{else}}
       <li>Nothing to see
     {{/}}
     </ul>
@@ -241,7 +241,7 @@ describe 'View', ->
     view = new View
     view._init new Model
 
-    view.make 'test', '{{#user}}<b>{{.name}}</b>{{/}}'
+    view.make 'test', '{{#if user}}<b>{{.name}}</b>{{/}}'
     ctx = user: {name: 'John'}
 
     expect(view.get 'test', ctx).to.eql '<b>John</b>'
@@ -250,8 +250,8 @@ describe 'View', ->
     view = new View
     view._init new Model
 
-    view.make 'test1', '{{#bools}}<b>{{.}}</b>{{/}}'
-    view.make 'test2', '{{#bools :value}}<b>{{:value}}</b>{{/}}'
+    view.make 'test1', '{{#each bools}}<b>{{this}}</b>{{/}}'
+    view.make 'test2', '{{#each bools :value}}<b>{{:value}}</b>{{/}}'
     ctx = bools: [true, false, true]
 
     expect(view.get 'test1', ctx).to.eql '<b>true</b><b>false</b><b>true</b>'

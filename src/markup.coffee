@@ -116,10 +116,10 @@ module.exports =
     if firstChar is ':'
       # Dereference alias name
       if ~(i = name.indexOf '.')
-        aliasName = name.substring 1, i
-        name = name.substr i
+        aliasName = name[1...i]
+        name = name[i..]
       else
-        aliasName = name.substr 1
+        aliasName = name.slice 1
         name = ''
       # Calculate depth difference between alias's definition and usage
       i = ctx.$depth - ctx.$aliases[aliasName]
@@ -130,7 +130,7 @@ module.exports =
       # Dereference relative path
       i = 0
       i++ while name.charAt(i) == '.'
-      name = if i == name.length then '' else name.substr(i - 1)
+      name = if i == name.length then '' else name.slice i - 1
 
     if i && (name = ctx.$paths[i - 1] + name) && !noReplace
       # Replace array index placeholders with the proper index

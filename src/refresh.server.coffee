@@ -28,8 +28,7 @@ addWatches = (appFilename, options, sockets, view) ->
     files.css root, clientName, false, (err, css) ->
       if err
         errMessage = err.message
-        console.error 'CSS PARSE ERROR'
-        console.error errMessage
+        console.error '\nCSS PARSE ERROR\n' + errMessage
         css = ''
       for socket in sockets
         socket.emit 'refreshCss', errMessage, css
@@ -38,8 +37,7 @@ addWatches = (appFilename, options, sockets, view) ->
     files.templates root, clientName, (err, templates, instances) ->
       if err
         errMessage = err.message
-        console.error 'TEMPLATE ERROR'
-        console.error errMessage
+        console.error '\nTEMPLATE ERROR\n' + errMessage
         templates = {}
         instances = {}
       view.clear()

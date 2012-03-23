@@ -19,7 +19,10 @@ module.exports =
     socket.on 'refreshHtml', (err, templates, instances) ->
       view.clear()
       view._makeAll templates, instances
-      view.history.refresh()
+      try
+        view.history.refresh()
+      catch _err
+        err ||= _err
       updateError 'Template', err
 
   errorHtml: errorHtml = (errors) ->

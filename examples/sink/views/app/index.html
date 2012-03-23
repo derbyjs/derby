@@ -11,11 +11,11 @@
 <Header:>
   <body class={{currentPage}}>
   <nav>
-    {{#pages}}
-      {{#current}}
-        <b>{{text}}</b>{{^isLast}} | {{/}}
-      {{^}}
-        <a href={{url}}>{{text}}</a>{{^isLast}} | {{/}}
+    {{#each pages}}
+      {{#if current}}
+        <b>{{text}}</b>{{#unless isLast}} | {{/}}
+      {{else}}
+        <a href={{url}}>{{text}}</a>{{#unless isLast}} | {{/}}
       {{/}}
     {{/}}
     <hr>
