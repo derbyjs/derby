@@ -4,6 +4,11 @@ racer = require 'racer'
 EventDispatcher = require './EventDispatcher'
 {escapeHtml} = require './html'
 
+markers = {}
+elements =
+  $_win: win = window
+  $_doc: doc = win.document
+
 Dom = module.exports = (model, appExports) ->
   dom = this
 
@@ -238,11 +243,7 @@ Dom:: =
         dom.trigger e, element, false, true
       return
 
-elements =
-  $_win: win = window
-  $_doc: doc = win.document
 
-markers = {}
 getRange = (name) ->
   start = markers[name]
   end = markers['$' + name]
