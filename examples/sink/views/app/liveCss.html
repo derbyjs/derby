@@ -21,7 +21,7 @@
       <p>{</p>
       <ul class=css>
         ((#each liveCss.styles :style))
-          <li x-displayed=((:style.active))>((> cssProperty))</li>
+          <li>((> cssProperty))</li>
         ((/))
       </ul>
       <p>}</p>

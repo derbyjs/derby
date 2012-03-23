@@ -192,15 +192,18 @@ extractPlaceholder = (text) ->
   return unless content = placeholderContent.exec match[3]
   if name = content[3]
     name = if name is '.this' then '.' else name.replace(/\.this$/, '')
-  bound: bound
-  pre: trim match[1]
-  escaped: match[2].length is 2
-  hash: content[1]
-  type: content[2]
-  name: name
-  alias: content[4]
-  partial: content[5]?.toLowerCase()
-  post: trim match[4]
+
+  return {
+    bound: bound
+    pre: trim match[1]
+    escaped: match[2].length is 2
+    hash: content[1]
+    type: content[2]
+    name: name
+    alias: content[4]
+    partial: content[5]?.toLowerCase()
+    post: trim match[4]
+  }
 
 # True if remaining text does not immediately close the current tag
 wrapRemainder = (tagName, remainder) ->
@@ -253,7 +256,7 @@ reduceStack = (stack) ->
   return html
 
 
-renderer = (view, items, events) ->
+renderer = (view, items, events, onRender) ->
   (ctx, model, triggerPath, triggerId) ->
     if triggerPath && path = ctx.$paths[0]
       _path = path.split '.'
@@ -275,6 +278,7 @@ renderer = (view, items, events) ->
     blockPaths = model.__blockPaths
     dom = view.dom
     html = ''
+    ctx = onRender ctx if onRender
     for item in items
       html += if item.call then item(ctx, model, triggerPath) || '' else item
     i = 0
@@ -339,11 +343,11 @@ parseMatch = (view, text, match, queues, {onStart, onEnd, onVar}) ->
 extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx = extend ctx, value
   ctx.this = value
-  if path = modelPath ctx, name, true
-    ctx.$paths = [path].concat ctx.$paths
   if alias
     aliases = ctx.$aliases = Object.create ctx.$aliases
     aliases[alias] = ctx.$depth
+  if path = modelPath ctx, name, true
+    ctx.$paths = [path].concat ctx.$paths
   ctx.$depth++  if name
   if index?
     ctx.$i = ctx.$i.concat index
@@ -397,6 +401,7 @@ partialFn = (name, type, alias, render) ->
         return withFn ctx, model, triggerPath, triggerId, value, index, true
 
       ctx = extendCtx ctx, null, name, alias, null, true
+
       out = ''
       indices = ctx.$i
       for item, i in value
@@ -519,10 +524,12 @@ parse = (view, viewName, template, isString, onBind) ->
 
   if isString
     push = pushVarString
-    if onBind then pushChars stack, (ctx) ->
+    onRender = (ctx) ->
+      return ctx if ctx.$stringCtx
+      ctx = Object.create ctx
       ctx.$onBind = onBind
       ctx.$stringCtx = ctx
-      return ''
+      return ctx
   else
     push = pushVar
 
@@ -568,4 +575,4 @@ parse = (view, viewName, template, isString, onBind) ->
   else
     parseHtml template, {start, chars, end}
 
-  return renderer view, reduceStack(stack), events
+  return renderer view, reduceStack(stack), events, onRender

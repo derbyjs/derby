@@ -4,7 +4,7 @@ uglify = require 'racer/node_modules/uglify-js'
 EventDispatcher = require './EventDispatcher'
 files = require './files'
 {escapeHtml} = require './html'
-{errorHtml} = require './refresh.server'
+{errorHtml, cssError, templateError} = require './refresh.server'
 {trim} = module.exports = View = require './View'
 
 empty = ->
@@ -23,9 +23,6 @@ emptyDom =
   bind: empty
 
 escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
-
-# Don't execute before or after functions on the server
-View::before = View::after = empty
 
 # This is overridden but is here for testing
 View::_appHashes = {}
@@ -106,9 +103,8 @@ View::_load = (isStatic, callback) ->
 
   files.css root, clientName, isProduction, (err, value) =>
     if err
-      console.error '\nCSS PARSE ERROR\n' + err.message
       @_css = '<style id=$_css></style>'
-      errors['CSS'] = err.message
+      errors['CSS'] = cssError err
       return finish()
     value = if isProduction then trim value else '\n' + value
     @_css = if value then "<style id=$_css>#{value}</style>" else ''
@@ -116,10 +112,9 @@ View::_load = (isStatic, callback) ->
 
   files.templates root, clientName, (err, _templates, _instances) =>
     if err
-      console.error '\nTEMPLATE ERROR\n' + err.message
       templates = {}
       instances = {}
-      errors['Template'] = err.message
+      errors['Template'] = templateError err
     else
       templates = _templates
       instances = _instances
@@ -183,8 +178,8 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
     res.write @get('body', ns, ctx) + @get('footer', ns, ctx)
 
   catch err
-    console.error '\nTEMPLATE ERROR\n' + err.message
-    @_errors ||= errorHtml Template: err.message
+    errText = templateError err
+    @_errors ||= errorHtml Template: errText
 
   # Inline scripts and external scripts
   clientName = @_clientName

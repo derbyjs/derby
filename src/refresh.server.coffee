@@ -2,6 +2,14 @@
 files = require './files'
 refresh = module.exports = require './refresh'
 
+refresh.cssError = cssError = (err) ->
+  console.error '\nCSS PARSE ERROR\n' + err.stack
+  return err.stack
+
+refresh.templateError = templateError = (err) ->
+  console.error '\nTEMPLATE ERROR\n' + err.stack
+  return err.stack
+
 appHashes = {}
 refresh.autoRefresh = (store, options, view) ->
   return if isProduction || store._derbySocketsSetup
@@ -27,23 +35,21 @@ addWatches = (appFilename, options, sockets, view) ->
   files.watch root, 'css', ->
     files.css root, clientName, false, (err, css) ->
       if err
-        errMessage = err.message
-        console.error '\nCSS PARSE ERROR\n' + errMessage
+        errText = cssError err
         css = ''
       for socket in sockets
-        socket.emit 'refreshCss', errMessage, css
+        socket.emit 'refreshCss', errText, css
 
   files.watch root, 'html', ->
     files.templates root, clientName, (err, templates, instances) ->
       if err
-        errMessage = err.message
-        console.error '\nTEMPLATE ERROR\n' + errMessage
+        errText = templateError err
         templates = {}
         instances = {}
       view.clear()
       view._makeAll templates, instances
       for socket in sockets
-        socket.emit 'refreshHtml', errMessage, templates, instances
+        socket.emit 'refreshHtml', errText, templates, instances
 
   files.watch root, 'js', ->
     process.send type: 'reload'
