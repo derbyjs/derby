@@ -19,6 +19,8 @@ emptyModel =
   get: empty
   bundle: empty
   __pathMap: emptyPathMap
+emptyEventDispatcher =
+  bind: empty
 emptyDom =
   bind: empty
 
@@ -147,9 +149,9 @@ View::render = (res = emptyRes) ->
 View::_init = (model) ->
   # Initialize view & model for rendering
   @dom = emptyDom
-  model.__events = new EventDispatcher
+  model.__events = emptyEventDispatcher
   model.__blockPaths = {}
-  model.__pathMap ||= emptyPathMap
+  model.__pathMap = emptyPathMap
   @model = model
   @_idCount = 0
 

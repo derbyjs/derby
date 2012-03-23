@@ -1,9 +1,11 @@
 <Title:>
   Todos
 
+<Header:>
+  {{> alert}}
+
 <Body:>
   <div id=overlay></div>
-  {{> info}}
   <form id=head x-bind=submit:add>
     <h1>Todos <span>((_remaining)) remaining</span></h1>
     <div id=add>
@@ -30,8 +32,8 @@
     </table>
   </li>
 
-<info:>
-  <div id=info>
+<alert:>
+  <div id=alert>
     ((#unless connected))
       <p>
         ((#if canConnect))

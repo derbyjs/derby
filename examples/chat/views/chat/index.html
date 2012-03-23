@@ -1,11 +1,11 @@
 <!--
-  Derby templates are similar to Mustache, except that they are first
+  Derby templates are similar to Handlebars, except that they are first
   parsed as HTML, and there are a few extensions to make them work directly
   with models. A single HTML template defines the HTML output, the event
   handlers that update the model after user interaction, and the event handlers
   that update the DOM when the model changes.
 
-  As in Mustache, double and triple curly braces output a value literally.
+  As in Handlebars, double and triple curly braces output a value literally.
   Derby templates add double and triple parentheses, which output a value
   and set up model <- -> view bindings for that object.
 
@@ -20,10 +20,12 @@
 <Head:>
   <meta name=viewport content="width=device-width">
 
+<Header:>
+  <!-- Partials use Handlebars syntax -->
+  {{> alert}}
+
 <Body:>
   <div id=page>
-    <!-- Partials use Mustache syntax -->
-    {{> info}}
     <!-- An object can be passed into the partial to set its context -->
     <div id=messages><ul id=messageList>((each _room.messages > message))</ul></div>
     <div id=foot>
@@ -42,10 +44,10 @@
   is not defined in the current context, it will be looked up in the model
   data and the model properties
 -->
-<info:>
-  <div id=info>
+<alert:>
+  <div id=alert>
     <!--
-      Mustache syntax is used for conditional blocks, except that the
+      Handlebars syntax is used for conditional blocks, except that the
       name need not be repeated in the closing tag or if-else blocks
     -->
     ((#unless connected))
