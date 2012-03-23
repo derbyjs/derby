@@ -161,18 +161,19 @@ addId = (view, attrs) ->
 # whitespace is not removed in case whitespace is desired between lines
 View.trim = trim = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
-boundPlaceholder = ///^
+placeholder = ///^
   ([\s\S]*?)  # Text before placeholder
-  (\({2,3})  # Placeholder start
-  ([\s\S]+?)  # Placeholder contents
-  (?:\){2,3})  # End placeholder
-  ([\s\S]*)  # Text after placeholder
-///
-unboundPlaceholder = ///^
-  ([\s\S]*?)  # Text before placeholder
-  (\{{2,3})  # Placeholder start
-  ([\s\S]+?)  # Placeholder contents
-  (?:\}{2,3})  # End placeholder
+  (?:
+    (?:
+      (\({2,3})  # Placeholder start
+      ([\s\S]+?)  # Placeholder contents
+      (?:\){2,3})  # End placeholder
+    )|(?:
+      (\{{2,3})  # Placeholder start
+      ([\s\S]+?)  # Placeholder contents
+      (?:\}{2,3})  # End placeholder
+    )
+  )
   ([\s\S]*)  # Text after placeholder
 ///
 placeholderContent = ///^
@@ -183,26 +184,28 @@ placeholderContent = ///^
   (?:\s*>\s*([^\s]+)\s*)?  # Partial name
 ///
 extractPlaceholder = (text) ->
-  if match = boundPlaceholder.exec text
+  return unless match = placeholder.exec text
+  if open = match[2]
+    inner = match[3]
     bound = true
-  else if match = unboundPlaceholder.exec text
-    bound = false
   else
-    return
-  return unless content = placeholderContent.exec match[3]
+    open = match[4]
+    inner = match[5]
+    bound = false
+  return unless content = placeholderContent.exec inner
   if name = content[3]
     name = if name is '.this' then '.' else name.replace(/\.this$/, '')
 
   return {
     bound: bound
     pre: trim match[1]
-    escaped: match[2].length is 2
+    escaped: open.length is 2
     hash: content[1]
     type: content[2]
     name: name
     alias: content[4]
     partial: content[5]?.toLowerCase()
-    post: trim match[4]
+    post: trim match[6]
   }
 
 # True if remaining text does not immediately close the current tag
