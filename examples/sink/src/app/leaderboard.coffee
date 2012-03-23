@@ -23,6 +23,7 @@ get '/leaderboard', (page, model) ->
       return out.sort (a, b) ->
         (b.score - a.score) || (b.id > a.id)
 
+    model.ref leaderboard.at('_selected'), players, leaderboard.at('_selectedId')
     render page, 'leaderboard'
 
 
@@ -32,7 +33,6 @@ ready (model) ->
   newPlayer = leaderboard.at '_newPlayer'
   selectedId = leaderboard.at '_selectedId'
   selected = leaderboard.at '_selected'
-  selected.ref players, selectedId
 
   selectedId.on 'set', (value, previous) ->
     players.at(previous).del '_class' if previous
