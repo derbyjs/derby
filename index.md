@@ -627,7 +627,9 @@ Note how in the above example, the context becomes each array item inside of the
 
 {% highlight html %}
 <Body:>
-  {{"{{"}}#with users.jill}}I like <a href="{{"{{"}}link}}">{{"{{"}}favorite}}</a>.{{"{{"}}/}}
+  {{"{{"}}#with users.jill}}
+    I like <a href="{{"{{"}}link}}">{{"{{"}}favorite}}</a>.
+  {{"{{"}}/}}
 {% endhighlight %}
 
 #### Context
