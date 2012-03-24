@@ -627,9 +627,7 @@ Note how in the above example, the context becomes each array item inside of the
 
 {% highlight html %}
 <Body:>
-  {{"{{"}}#users}}
-    {{"{{"}}#jill}}I like <a href="{{"{{"}}link}}">{{"{{"}}favorite}}</a>.{{"{{"}}/}}
-  {{"{{"}}/}}
+  {{"{{"}}#with users.jill}}I like <a href="{{"{{"}}link}}">{{"{{"}}favorite}}</a>.{{"{{"}}/}}
 {% endhighlight %}
 
 #### Context
@@ -671,7 +669,7 @@ As in Handlebars, partials are included by name with the syntax `{{"{{"}}> profi
   {{"{{"}}> nav}}
 
 <nav:>
-  <ul>{{"{{"}}navItems > navItem}}</ul>
+  <ul>{{"{{"}}each navItems > navItem}}</ul>
 
 <navItem:>
   <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a></li>
@@ -827,13 +825,13 @@ Aliases to a specific scope may be defined, enabling relative model path referen
 {% highlight html %}
 <Body:>
   <h2>Toys in use:</h2>
-  ((#toys :toy))
-    ((#:toy.inUse))
+  ((#each toys :toy))
+    ((#if :toy.inUse))
       {{"{{"}}> toyStatus}}
     ((/))
   ((/))
   <h2>All toys:</h2>
-  ((toys :toy > toyStatus))
+  ((each toys :toy > toyStatus))
 
 <toyStatus:>
   <p>{{"{{"}}name}} on the ((:toy.location))</p>
