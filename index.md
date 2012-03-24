@@ -110,37 +110,37 @@ headers:
 
 <h3 class="javascript">hello.js</h3>
 {% highlight javascript %}
-var hello = require('derby').createApp(module),
-    view = hello.view,
-    get = hello.get;
+var hello = require('derby').createApp(module)
+  , view = hello.view
+  , get = hello.get
 
 // Templates define both HTML and model <- -> view bindings
-view.make('Body',
-  'Holler: <input value="((message))"><h1>((message))</h1>'
-);
+view.make('Body'
+, 'Holler: <input value="((message))"><h1>((message))</h1>'
+)
 
 // Routes render on client as well as server
 get('/', function(page, model) {
   // Subscribe specifies the data to sync
   model.subscribe('message', function() {
-    page.render();
-  });
-});
+    page.render()
+  })
+})
 {% endhighlight %}
 
 <h3 class="javascript">server.js</h3>
 {% highlight javascript %}
-var express = require('express'),
-    hello = require('./hello'),
-    server = express.createServer()
+var express = require('express')
+  , hello = require('./hello')
+  , server = express.createServer()
       .use(express.static(__dirname + '/public'))
       // Apps create an Express middleware
       .use(hello.router())
 
 // Apps also provide a server-side store for syncing data
-hello.createStore({ listen: server });
+hello.createStore({ listen: server })
 
-server.listen(3000);
+server.listen(3000)
 {% endhighlight %}
 
 <h3 class="coffeescript">hello.coffee</h3>
@@ -366,9 +366,9 @@ Typically, writing Derby apps begins with HTML templates. These templates define
 Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Pages usually define at least a `Title` and `Body` template. Templates may be created programatically via the `view.make()` method:
 
 {% highlight javascript %}
-var view = require('derby').createApp(module).view;
+var view = require('derby').createApp(module).view
 
-view.make('Body', '<h1>Howdy!</h1>');
+view.make('Body', '<h1>Howdy!</h1>')
 {% endhighlight %}
 
 {% highlight coffeescript %}
@@ -453,14 +453,14 @@ ol>li:before{content: counter(item) ". "; counter-increment: item}
 
 ## Template syntax
 
-Derby's template syntax is largely based on [Handlebars](http://handlebarsjs.com/), a popular logic-less templating language similar to [Mustache](http://mustache.github.com/mustache.5.html). Following is a simple example.
+Derby's template syntax is largely based on [Handlebars](http://handlebarsjs.com/), a popular logic-less templating language similar to [Mustache](http://mustache.github.com/mustache.5.html).
 
 A simple Handlebars template:
 
     Hello {{"{{"}}name}}
     You have just won ${{"{{"}}value}}!
-    {{"{{"}}#if in_ca}}
-    Well, ${{"{{"}}taxed_value}}, after taxes.
+    {{"{{"}}#if inCalifornia}}
+    Well, ${{"{{"}}taxedValue}}, after taxes.
     {{"{{"}}/if}}
 
 Given the following data context:
@@ -468,8 +468,8 @@ Given the following data context:
     {
       name: "Chris",
       value: 10000,
-      taxed_value: 10000 - (10000 * 0.4),
-      in_ca: true
+      taxedValue: 10000 - (10000 * 0.4),
+      inCalifornia: true
     }
 
 Will produce the following:
@@ -501,13 +501,16 @@ The other major difference between Handlebars and Derby templates is that Derby 
 
 #### Valid placements
 {% highlight html %}
+<!-- Within an element -->
+Let's go <b>{{"{{"}}activity}}</b>!
+
 <!-- Within text -->
 <b>Let's go {{"{{"}}activity}}!</b>
 
 <!-- Within attribute values -->
 <b style="color:{{"{{"}}displayColor}}">Let's go running!</b>
 
-<!-- Surrounding an element -->
+<!-- Surrounding one or more elements and text -->
 {{"{{"}}#if maybe}}<b>Let's go dancing!</b>{{"{{"}}/}}
 {% endhighlight %}
 
@@ -538,7 +541,7 @@ Variables insert a value from the context or model with a given name. If the nam
 #### Context
 
 {% highlight javascript %}
-page.render({ name: 'Parker', location: '<b>500 ft</b> away' });
+page.render({ name: 'Parker', location: '<b>500 ft</b> away' })
 {% endhighlight %}
 {% highlight coffeescript %}
 page.render name: 'Parker', location: '<b>500 ft</b> away'
@@ -555,30 +558,30 @@ page.render name: 'Parker', location: '<b>500 ft</b> away'
 
 ### Sections
 
-Sections cause their contents to be conditionally rendered. They also set the scope of the context for their contents. In Mustatche, sections must begin and end with the same name, but Derby requires only an end tag without the name.
+Sections set the scope of the context for their contents. In the case of `if`, `unless`, and `each`, they also  cause their contents to be conditionally rendered. `with` is used to only set the scope and always render. In Handlebars, sections begin and end with the same block type, but Derby requires only an ending slash.
 
-Sections of the form `{{"{{"}}#shown}}Example{{"{{"}}/}}` render their contents when the name matches a truthy value. If the section matches an array, it will render the contents once for each item in the array.
-
-Inverted sections take the form `{{"{{"}}^shown}}Counter example{{"{{"}}/}}`. Their contents render when the name matches a falsey value (false, null, undefined, 0, '', or NaN) or an empty array. Derby also provides a shorthand syntax for defining a section and inverted section together: `{{"{{"}}#shown}}Example{{"{{"}}^}}Counter example{{"{{"}}/}}`
+In Handlebars, falsey values include all falsey JavaScript values (`false`, `null`, `undefined`, `0`, `''`, and `NaN`) as well as empty arrays (`[]`). All other values are truthy.
 
 #### Template
 
 {% highlight html %}
 <Body:>
   <h1>
-    {{"{{"}}#visited}}
+    {{"{{"}}#if visited}}
       Welcome back!
-    {{"{{"}}^}}
+    {{"{{"}}else}}
       Welcome to the party!
     {{"{{"}}/}}
   </h1>
   <ul>
-    {{"{{"}}#users}}
+    {{"{{"}}#each users}}
       <li>{{"{{"}}name}}: {{"{{"}}motto}}
     {{"{{"}}/}}
   </ul>
-  {{"{{"}}^hideFooter}}
-    <small>Copyright &copy; 1999 Party Like It's.</small>
+  {{"{{"}}#unless hideFooter}}
+    {{"{{"}}#with meta}}
+      <small>Copyright &copy; {{"{{"}}year}} Party Like It's.</small>
+    {{"{{"}}/}}
   {{"{{"}}/}}
 {% endhighlight %}
 
@@ -586,12 +589,15 @@ Inverted sections take the form `{{"{{"}}^shown}}Counter example{{"{{"}}/}}`. Th
 
 {% highlight javascript %}
 page.render({
-  visited: true,
-  users: [
-    { name: 'Billy', motto: "Shufflin', shufflin'" },
-    { name: 'Ringo', motto: "Make haste slowly." }
+  visited: true
+, users: [
+    { name: 'Billy', motto: "Shufflin', shufflin'" }
+  , { name: 'Ringo', motto: "Make haste slowly." }
   ]
-});
+, meta: {
+    year: 1999
+  }
+})
 {% endhighlight %}
 {% highlight coffeescript %}
 page.render
@@ -600,6 +606,8 @@ page.render
     { name: 'Billy', motto: "Shufflin', shufflin'" }
     { name: 'Ringo', motto: "Make haste slowly." }
   ]
+  meta:
+    year: 1999
 {% endhighlight %}
 
 #### Output
@@ -613,7 +621,7 @@ page.render
 <small>Copyright &copy; 1999 Party Like It's.</small>
 {% endhighlight %}
 
-Note how in the above example, the context becomes each array item inside of the `#users` section. Similarly, sections set scope when reffering to the name of an object. In addition to the local scope, template tags may refer to anything in the parent scope.
+Note how in the above example, the context becomes each array item inside of the `#each users` section. Similarly, sections set scope when reffering to the name of an object. In addition to the local scope, template tags may refer to anything in the parent scope.
 
 #### Template
 
@@ -632,8 +640,8 @@ page.render({
     jill: {
       favorite: 'turtles'
     }
-  },
-  link: 'http://derbyjs.com/'
+  }
+, link: 'http://derbyjs.com/'
 });
 {% endhighlight %}
 {% highlight coffeescript %}
@@ -666,7 +674,7 @@ As in Handlebars, partials are included by name with the syntax `{{"{{"}}> profi
   <ul>{{"{{"}}navItems > navItem}}</ul>
 
 <navItem:>
-  <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a>
+  <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a></li>
 {% endhighlight %}
 
 #### Context
@@ -674,9 +682,9 @@ As in Handlebars, partials are included by name with the syntax `{{"{{"}}> profi
 {% highlight javascript %}
 page.render({
   navItems: [
-    { title: 'Home', link '/' },
-    { title: 'About', link '/about' },
-    { title: 'Contact us', link '/contact' }
+    { title: 'Home', link '/' }
+  , { title: 'About', link '/about' }
+  , { title: 'Contact us', link '/contact' }
   ]
 });
 {% endhighlight %}
@@ -693,9 +701,9 @@ page.render
 
 {% highlight html %}
 <ul>
-  <li><a href="/">Home</a>
-  <li><a href="/about">About</a>
-  <li><a href="/contact">Contact us</a>
+  <li><a href="/">Home</a></li>
+  <li><a href="/about">About</a></li>
+  <li><a href="/contact">Contact us</a></li>
 </ul>
 {% endhighlight %}
 
@@ -719,8 +727,8 @@ Bindings only work for data in the model. Context data is passed in at render ti
 #### Context
   
 {% highlight javascript %}
-model.set('message', 'Yo, dude.');
-page.render();
+model.set('message', 'Yo, dude.')
+page.render()
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'message', 'Yo, dude.'
@@ -751,8 +759,8 @@ If a bound template tag or section is not fully contained by an HTML element, De
 #### Context
   
 {% highlight javascript %}
-model.set('adjective', 'funny');
-page.render();
+model.set('adjective', 'funny')
+page.render()
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'adjective', 'funny'
@@ -775,7 +783,7 @@ Yet, a template might need to define how each item in an array should be rendere
 
 {% highlight html %}
 <Body:>
-  <ul>((items > item))</ul>
+  <ul>((each items > item))</ul>
 
 <item:>
   <li><a href="{{"{{"}}url}}">((.name))</a>: $((.price))
@@ -785,11 +793,11 @@ Yet, a template might need to define how each item in an array should be rendere
 
 {% highlight javascript %}
 model.set('items', [
-  { name: 'Cool can', price: 5.99, url: '/p/0' },
-  { name: 'Fun fin', price: 10.99, url: '/p/1' },
-  { name: 'Bam bot', price: 24.95, url: '/p/2' }
-]);
-page.render();
+  { name: 'Cool can', price: 5.99, url: '/p/0' }
+, { name: 'Fun fin', price: 10.99, url: '/p/1' }
+, { name: 'Bam bot', price: 24.95, url: '/p/2' }
+])
+page.render()
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'items', [
@@ -835,10 +843,10 @@ Aliases to a specific scope may be defined, enabling relative model path referen
 
 {% highlight javascript %}
 model.set('toys', [
-  { name: 'Ball', location: 'floor', inUse: true },
-  { name: 'Blocks', location: 'shelf' },
-  { name: 'Truck', location: 'shelf' }
-]);
+  { name: 'Ball', location: 'floor', inUse: true }
+, { name: 'Blocks', location: 'shelf' }
+, { name: 'Truck', location: 'shelf' }
+])
 page.render();
 {% endhighlight %}
 {% highlight coffeescript %}
@@ -909,7 +917,7 @@ It is often useful to relate back a DOM element, such as `e.target`, to the mode
 {% highlight html %}
 <Body:>
   <ul>
-    ((#_users))
+    ((#each _users))
       <li x-bind="click:upcase">((.name))</li>
     ((/))
   </ul>
@@ -919,13 +927,13 @@ It is often useful to relate back a DOM element, such as `e.target`, to the mode
 
 {% highlight javascript %}
 exports.upcase = function(e) {
-  user = model.at(e.target);
+  user = model.at(e.target)
 
   // Logs something like "_users.3"
-  console.log(user.path());
+  console.log(user.path())
 
-  user.set('name', user.get('name').toUpperCase());
-};
+  user.set('name', user.get('name').toUpperCase())
+}
 {% endhighlight %}
 {% highlight coffeescript %}
 exports.upcase = (e) ->
@@ -1255,15 +1263,15 @@ Path patterns are specified as strings that correspond to model paths. A path pa
 It is also possible to use an asterisk as a wildcard character in place of a path segment. For example, `rooms.*.playerCount` subscribes a model to the playerCount for all rooms but no other properties. The scoped model passed to a subscribe callback is scoped to the segments up to the first wildcard character. For this example, the model would be scoped to `rooms`. More complex subscriptions may be specified via [queries](#queries).
 
 {% highlight javascript %}
-var roomName = 'lobby';
+var roomName = 'lobby'
 model.subscribe('rooms.' + roomName, (err, room) {
   // Logs: 'rooms.lobby'
-  console.log(room.path());
+  console.log(room.path())
   // A reference is frequently created from a parameterized
   // path pattern for use later. Refs may be created directly
   // from a scoped model
-  model.ref('_room', room);
-});
+  model.ref('_room', room)
+})
 {% endhighlight %}
 {% highlight coffeescript %}
 roomName = 'lobby'
@@ -1317,23 +1325,23 @@ Scoped models provide a more convenient way to interact with commonly used paths
 > **segment:** Returns the last segment for the reference path. This may be useful for getting indicies or other properties set at the end of a path
 
 {% highlight javascript %}
-room = model.at('_room');
+room = model.at('_room')
 
 // These are equivalent:
-room.at('name').set('Fun room');
-room.set('name', 'Fun room');
+room.at('name').set('Fun room')
+room.set('name', 'Fun room')
 
 // Logs: {name: 'Fun room'}
-console.log(room.get());
+console.log(room.get())
 // Logs: 'Fun room'
-console.log(room.get('name'));
+console.log(room.get('name'))
 
 // Array methods can take a subpath as a first argument
 // when the scoped model points to an object
-room.push('toys', 'blocks', 'puzzles');
+room.push('toys', 'blocks', 'puzzles')
 // When the scoped model points to an array, no subpath
 // argument should be supplied
-room.at('toys').push('cards', 'dominoes');
+room.at('toys').push('cards', 'dominoes')
 {% endhighlight %}
 {% highlight coffeescript %}
 room = model.at '_room'
@@ -1392,10 +1400,10 @@ All model mutators have an optional callback with the arguments `callback(err, m
 Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
 
 {% highlight javascript %}
-var model = store.createModel();
-model.set('cars.DeLorean.DMC12.color', 'silver');
+var model = store.createModel()
+model.set('cars.DeLorean.DMC12.color', 'silver')
 // Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
-console.log(model.get());
+console.log(model.get())
 {% endhighlight %}
 {% highlight coffeescript %}
 model = store.createModel()
@@ -1562,17 +1570,17 @@ In path patterns, wildcards (`*`) will only match a single segment in the middle
 // Matches only model.push('messages', message)
 model.on('push', 'messages', function (message, messagesLength) {
   ...
-});
+})
 
 // Matches model.set('todos.4.completed', true), etc.
 model.on('set', 'todos.*.completed', function (todoId, isComplete) {
   ...
-});
+})
 
 // Matches all set operations
 model.on('set', '*', function (path, value) {
   ...
-});
+})
 {% endhighlight %}
 {% highlight coffeescript %}
 # Matches only model.push('messages', message)
@@ -1598,10 +1606,10 @@ This method can be chained before calling a mutator method to pass an argument t
 //   'green', 'hi'
 
 model.on('set', 'color', function (value, out, isLocal, passed) {
-  console.log(value, passed);
-});
-model.set('color', 'red');
-model.pass('hi').set('color', 'green');
+  console.log(value, passed)
+})
+model.set('color', 'red')
+model.pass('hi').set('color', 'green')
 {% endhighlight %}
 {% highlight coffeescript %}
 # Logs:
@@ -1634,13 +1642,13 @@ Reactive functions created on the server are sent to the client as a string and 
 
 {% highlight javascript %}
 model.set('players', [
-  {name: 'John', score: 4000},
-  {name: 'Bill', score: 600},
-  {name: 'Kim', score: 9000},
-  {name: 'Megan', score: 3000},
-  {name: 'Sam', score: 2000}
-]);
-model.set('cutoff', 3);
+  {name: 'John', score: 4000}
+, {name: 'Bill', score: 600}
+, {name: 'Kim', score: 9000}
+, {name: 'Megan', score: 3000}
+, {name: 'Sam', score: 2000}
+])
+model.set('cutoff', 3)
 
 // Sort the players by score and return the top X players. The
 // function will automatically update the value of '_leaders' as
@@ -1650,9 +1658,9 @@ model.fn('_leaders', 'players', 'cutoff', function(players, cutoff) {
   // Note that the input array is copied with splice before sorting
   // it. The function should not modify the values of its inputs.
   return players.splice().sort(function(a, b) {
-    return a.score - b.score;
-  }).splice(0, cutoff - 1);
-});
+    return a.score - b.score
+  }).splice(0, cutoff - 1)
+})
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'players', [
@@ -1693,38 +1701,38 @@ References must be declared per model, since calling `model.ref` creates a numbe
 
 {% highlight javascript %}
 model.set('colors', {
-  red: {hex: '#f00'},
-  green: {hex: '#0f0'},
-  blue: {hex: '#00f'}
+  red: {hex: '#f00'}
+, green: {hex: '#0f0'}
+, blue: {hex: '#00f'}
 });
 
 // Getting a reference returns the referenced data
-model.ref('_green', 'colors.green');
+model.ref('_green', 'colors.green')
 // Logs {hex: '#0f0'}
-console.log(model.get('_green'));
+console.log(model.get('_green'))
 
 // Setting a property of the reference path modifies
 // the underlying data
-model.set('_green.rgb', [0, 255, 0]);
+model.set('_green.rgb', [0, 255, 0])
 // Logs {hex: '#0f0', rgb: [0, 255, 0]}
-console.log(model.get('colors.green'));
+console.log(model.get('colors.green'))
 
 // Setting or deleting the reference path modifies
 // the reference and not the underlying data
-model.del('_green');
+model.del('_green')
 // Logs undefined
-console.log(model.get('_green'));
+console.log(model.get('_green'))
 // Logs {hex: '#0f0', rgb: [0, 255, 0]}
-console.log(model.get('colors.green'));
+console.log(model.get('colors.green'))
 
 // Changing a reference key updates the reference
-model.set('selected', 'red');
-model.ref('_selectedColor', 'colors', 'selected');
+model.set('selected', 'red')
+model.ref('_selectedColor', 'colors', 'selected')
 // Logs '#f00'
-console.log(model.get('_selectedColor.hex'));
-model.set('selected', 'blue');
+console.log(model.get('_selectedColor.hex'))
+model.set('selected', 'blue')
 // Logs '#00f'
-console.log(model.get('_selectedColor.hex'));
+console.log(model.get('_selectedColor.hex'))
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'colors'
@@ -1777,21 +1785,21 @@ Racer also supports a special reference type created via `model.refList`. This t
 // refLists may only consist of objects with an id that matches
 // their property on their parent
 model.set('colors', {
-  red: {hex: '#f00', id: 'red'},
-  green: {hex: '#0f0', id: 'green'},
-  blue: {hex: '#00f', id: 'blue'}
-});
-model.set('_colorIds', ['blue', 'red']);
-model.ref('_myColors', 'colors', '_colorIds');
+  red: {hex: '#f00', id: 'red'}
+, green: {hex: '#0f0', id: 'green'}
+, blue: {hex: '#00f', id: 'blue'}
+})
+model.set('_colorIds', ['blue', 'red'])
+model.ref('_myColors', 'colors', '_colorIds')
 
-model.push('_myColors', {hex: '#ff0', id: 'yellow'});
+model.push('_myColors', {hex: '#ff0', id: 'yellow'})
 
 // Logs: [
 //   {hex: '#00f', id: 'blue'},
 //   {hex: '#f00', id: 'red'},
 //   {hex: '#ff0', id: 'yellow'}
 // ]
-console.log(model.get('_myColors'));
+console.log(model.get('_myColors'))
 {% endhighlight %}
 {% highlight coffeescript %}
 # refLists may only consist of objects with an id that matches
