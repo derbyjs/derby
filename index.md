@@ -391,24 +391,20 @@ Template files are also HTML, but each template is wrapped in a tag that names t
   <h1>Howdy!</h1>
 {% endhighlight %}
 
-Templates can be imported from another file for sharing among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. A single template may be imported, or all templates in the file may be imported with the reserved template name `All`.
+Templates can be imported from another file for making multiple page apps and sharing templates among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. Like in Node.js, either `pageName.html` or `pageName/index.html` can be imported as `pageName`.
 
-#### shared.html
 {% highlight html %}
-<sharedTitle:>
-  Too awesome not to share
-{% endhighlight %}
+<!-- all templates from "./home.html" with the namespace "home" -->
+<import: src="home">
 
-#### app.html
-{% highlight html %}
-<!-- import template keeping the same name -->
-<sharedTitle: from="./shared">
+<!-- all templates from "./home.html" into the current namespace -->
+<import: src="home" ns="">
 
-<!-- import template and change its name -->
-<Title: from="./shared" import="sharedTitle">
+<!-- one or more templates by name with the namespace "home" -->
+<import: src="home" template="message alert">
 
-<!-- import all templates in a file keeping the same names -->
-<All: from="./shared">
+<!-- one template as a different name in the current namespace -->
+<import: src="home" template="message" as="myMessage">
 {% endhighlight %}
 
 ### Pre-defined templates
@@ -423,34 +419,39 @@ Note that template files don't contain boilerplate HTML, such as doctype definit
 
 #### First chunk
 
-1. **`Doctype:`** Standard HTML5 doctype and character set definition---`<!DOCTYPE html><meta charset=utf-8>`---unless overridden 
-2. **`Title:`** "Derby app" unless overridden
-3. **`Head:`** Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
-4. CSS is compiled and inserted after the Head template automatically.
-5. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it should render correctly by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes fixed content, such as a logo and a top navigation bar.
+1. **`Doctype:`** Standard HTML5 doctype---`<!DOCTYPE html>`---unless overridden 
+2. **`Root:`** Optional location for an `<html>` element if desired. This template should not include any other elements
+3. **`Charset:`** `<meta charset=utf-8>` unless overridden
+4. **`Title:`** The text content of the page's `<title>` element
+5. **`Head:`** Optional location for meta tags, scripts that must be placed in the HTML `<head>`, and manually included stylesheets
+6. CSS is compiled and inserted after the Head template automatically
+7. **`Header:`** Optional location for a page header that will be sent with the initial response chunk. Note that this is actually part of the HTML `<body>`, but it should render correctly by itself. It is separated out so that it can be displayed to the user before the rest of the page if the remainder of the page takes a while to download. Typically this includes fixed content, such as a logo and a top navigation bar
 
 #### Second chunk
 
-6. **`Body:`** The page's content.
+8. **`Body:`** The page's main content
+9. **`Footer:`** Optional location for content to include after the body. Used for copyright notices, footer links, and other content repeated at the bottom of multiple pages
 
 #### Third chunk
 
-7. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size.
-8. **`Scripts:`** Optional location for external scripts loaded before the client scripts. For example, this is where a script tag that includes jQuery would be placed. Note that this template is just a location within the page, and it is not wrapped in a script tag.
-9. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term.
+10. Inline scripts placed in a file named `inline.js` or added via the `view.inline()` method. Scripts are typically included this way if they are needed to properly render the page, such as resizing an element based on the window size
+11. **`Scripts:`** Optional location for external scripts loaded before the client scripts. For example, this is where a script tag that includes jQuery would be placed. Note that this template is just a location within the page, and it is not wrapped in a script tag
+12. Client scripts are automatically included via an asynchronously loaded external script. The name of the script is a hash of its content so that it can be cached by the browser long term
 
 #### Fourth chunk
 
-10. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads.
-11. **`Tail:`** Optional location for additional scripts to be included at the very end of the page.
+13. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads
+14. **`Tail:`** Optional location for additional scripts to be included at the very end of the page
+
+In the browser, only the `title`, `root`, `header`, `body`, and `footer` templates are re-rendered. Thus, model-view bindings may only be defined within these templates.
 
 <style>
 ol{counter-reset: item}
 ol>li{display: block}
 ol>li:before{content: counter(item) ". "; counter-increment: item}
-#second_chunk+ol{counter-reset: item 5}
-#third_chunk+ol{counter-reset: item 6}
-#fourth_chunk+ol{counter-reset: item 9}
+#second_chunk+ol{counter-reset: item 7}
+#third_chunk+ol{counter-reset: item 9}
+#fourth_chunk+ol{counter-reset: item 12}
 </style>
 
 ## Template syntax
