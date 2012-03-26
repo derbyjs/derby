@@ -24,24 +24,32 @@ ready (model) ->
   rows = model.at 'table.rows'
   cols = model.at 'table.cols'
 
-  app.deleteRow = (e) ->
-    model.at(e.target).parent(2).remove()
+  app.tableEditor =
+    deleteRow: (e, el) ->
+      model.at(el).remove()
 
-  app.deleteCol = (e) ->
-    # TODO: Make these move operations atomic when Racer has atomic support
-    i = model.at(e.target).leaf()
-    row = rows.get 'length'
-    while row--
-      rows.remove "#{row}.cells", i
-    cols.remove i
+    deleteCol: (e, el) ->
+      # TODO: Make these move operations atomic when Racer has atomic support
+      i = model.at(el).leaf()
+      row = rows.get 'length'
+      while row--
+        rows.remove "#{row}.cells", i
+      cols.remove i
 
-  app.addRow = ->
-    name = model.incr('table.lastRow') + 1
-    cells = []
-    col = cols.get 'length'
-    while col--
-      cells.push {}
-    rows.push {name, cells}
+    addRow: ->
+      name = model.incr('table.lastRow') + 1
+      cells = []
+      col = cols.get 'length'
+      while col--
+        cells.push {}
+      rows.push {name, cells}
+
+    addCol: ->
+      row = rows.get 'length'
+      while row--
+        rows.push "#{row}.cells", {}
+      name = alpha model.incr 'table.lastCol'
+      cols.push {name}
 
   alpha = (num, out = '') ->
     mod = num % 26
@@ -51,14 +59,7 @@ ready (model) ->
     else
       return out
 
-  app.addCol = ->
-    row = rows.get 'length'
-    while row--
-      rows.push "#{row}.cells", {}
-    name = alpha model.incr 'table.lastCol'
-    cols.push {name}
-
-  sortableTable.init app,
+  sortableTable.init app, app.tableEditor,
     onRowMove: (from, to) ->
       rows.move from, to
     onColMove: (from, to) ->

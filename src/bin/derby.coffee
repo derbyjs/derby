@@ -3,7 +3,7 @@ derby = require '../derby'
 program = require 'commander'
 mkdirp = require 'mkdirp'
 fs = require 'fs'
-{join} = require 'path'
+{join, resolve, basename} = require 'path'
 
 
 ## TEMPLATES ##
@@ -62,52 +62,62 @@ ready (model) ->
       model.set '_timer', (((+new Date()) - start) / 1000).toFixed(1)
     , 100
 
+
+  model.set '_showReconnect', true
+  exports.connect = ->
+    # Hide the reconnect link for a second after clicking it
+    model.set '_showReconnect', false
+    setTimeout (-> model.set '_showReconnect', true), 1000
+    model.socket.socket.connect()
+
+  exports.reload = -> window.location.reload()
+
 '''
 
 APP_JS = '''
-var <<app>> = require('derby').createApp(module),
-    get = <<app>>.get,
-    view = <<app>>.view,
-    ready = <<app>>.ready,
-    start;
+var <<app>> = require('derby').createApp(module)
+  , get = <<app>>.get
+  , view = <<app>>.view
+  , ready = <<app>>.ready
+  , start
 
 // ROUTES //
 
-start = +new Date();
+start = +new Date()
 
 // Derby routes can be rendered on the client and the server
 get('/:roomName?', function(page, model, params) {
-  var roomName = params.roomName || 'home';
+  var roomName = params.roomName || 'home'
 
   // Subscribes the model to any updates on this room's object. Calls back
   // with a scoped model equivalent to:
-  //   room = model.at('rooms.' + roomName);
+  //   room = model.at('rooms.' + roomName)
   model.subscribe('rooms.' + roomName, function(err, room) {
-    model.ref('_room', room);
+    model.ref('_room', room)
 
     // setNull will set a value if the object is currently null or undefined
-    room.setNull('welcome', 'Welcome to ' + roomName + '!');
+    room.setNull('welcome', 'Welcome to ' + roomName + '!')
 
-    room.incr('visits');
+    room.incr('visits')
 
     // This value is set for when the page initially renders
-    model.set('_timer', '0.0');
+    model.set('_timer', '0.0')
     // Reset the counter when visiting a new route client-side
-    start = +new Date();
+    start = +new Date()
 
     // Render will use the model data as well as an optional context object
     page.render({
-      roomName: roomName,
-      randomUrl: parseInt(Math.random() * 1e9).toString(36)
-    });
-  });
-});
+      roomName: roomName
+    , randomUrl: parseInt(Math.random() * 1e9).toString(36)
+    })
+  })
+})
 
 
 // CONTROLLER FUNCTIONS //
 
 ready(function(model) {
-  var timer;
+  var timer
 
   // Exported functions are exposed as a global in the browser with the same
   // name as the module that includes Derby. They can also be bound to DOM
@@ -116,17 +126,34 @@ ready(function(model) {
 
     // Any path name that starts with an underscore is private to the current
     // client. Nothing set under a private path is synced back to the server.
-    model.set('_stopped', true);
-    clearInterval(timer);
-  };
+    model.set('_stopped', true)
+    clearInterval(timer)
+  }
 
-  (exports.start = function() {
-    model.set('_stopped', false);
+  exports.start = function() {
+    model.set('_stopped', false)
     timer = setInterval(function() {
-      model.set('_timer', (((+new Date()) - start) / 1000).toFixed(1));
-    }, 100);
-  })();
-});
+      model.set('_timer', (((+new Date()) - start) / 1000).toFixed(1))
+    }, 100)
+  }
+  exports.start()
+
+
+  model.set('_showReconnect', true)
+  exports.connect = function() {
+    // Hide the reconnect link for a second after clicking it
+    model.set('_showReconnect', false)
+    setTimeout(function() {
+      model.set('_showReconnect', true)
+    }, 1000)
+    model.socket.socket.connect()
+  }
+
+  exports.reload = function() {
+    window.location.reload()
+  }
+
+})
 
 '''
 
@@ -197,22 +224,22 @@ store = <<app>>.createStore listen: server
 '''
 
 SERVER_JS = '''
-var path = require('path'),
-    express = require('express'),
-    derby = require('derby'),
-    gzip = require('connect-gzip'),
-    <<app>> = require('../<<app>>');
+var path = require('path')
+  , express = require('express')
+  , derby = require('derby')
+  , gzip = require('connect-gzip')
+  , <<app>> = require('../<<app>>')
 
 
 // SERVER CONFIGURATION //
 
-var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
-    root = path.dirname(path.dirname(__dirname)),
-    publicPath = path.join(root, 'public'),
-    staticPages = derby.createStatic(root),
-    server, store;
+var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 }
+  , root = path.dirname(path.dirname(__dirname))
+  , publicPath = path.join(root, 'public')
+  , staticPages = derby.createStatic(root)
+  , server, store
 
-(module.exports = server = express.createServer())
+;(module.exports = server = express.createServer())
   // The express.static middleware can be used instead of gzip.staticGzip
   .use(gzip.staticGzip(publicPath, MAX_AGE_ONE_YEAR))
   .use(express.favicon())
@@ -232,7 +259,7 @@ var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
 
   // The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
-  .use(server.router);
+  .use(server.router)
 
 
 // ERROR HANDLING //
@@ -240,45 +267,45 @@ var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 },
 server.configure('development', function() {
   // Log errors in development only
   server.error(function(err, req, res, next) {
-    if (err) console.log(err.stack ? err.stack : err);
-    next(err);
-  });
-});
+    if (err) console.log(err.stack ? err.stack : err)
+    next(err)
+  })
+})
 
 server.error(function(err, req, res) {
   // Customize error handling here //
-  var message = err.message || err.toString(),
-      status = parseInt(message);
+  var message = err.message || err.toString()
+    , status = parseInt(message)
   if (status === 404) {
-    staticPages.render('404', res, {url: req.url}, 404);
+    staticPages.render('404', res, {url: req.url}, 404)
   } else {
-    res.send( ((status >= 400) && (status < 600)) ? status : 500 );
+    res.send( ((status >= 400) && (status < 600)) ? status : 500 )
   }
-});
+})
 
 
 // SERVER ONLY ROUTES //
 
 server.all('*', function(req) {
-  throw '404: ' + req.url;
-});
+  throw '404: ' + req.url
+})
 
 
 // STORE SETUP //
 
-store = <<app>>.createStore({ listen: server });
+store = <<app>>.createStore({ listen: server })
 
 '''
 
 APP_HTML = '''
 <!--
-  Derby templates are similar to Mustache, except that they are first
+  Derby templates are similar to Handlebars, except that they are first
   parsed as HTML, and there are a few extensions to make them work directly
   with models. A single HTML template defines the HTML output, the event
   handlers that update the model after user interaction, and the event handlers
   that update the DOM when the model changes.
 
-  As in Mustache, double and triple curly braces output a value literally.
+  As in Handlebars, double and triple curly braces output a value literally.
   Derby templates add double and triple parentheses, which output a value
   and set up model <- -> view bindings for that object.
 
@@ -290,20 +317,43 @@ APP_HTML = '''
 <Title:>
   {{roomName}} - ((_room.visits)) visits
 
+<Header:>
+  {{> alert}}
+
 <Body:>
   <h1>((_room.welcome))</h1>
-  <p><label>Welcome message: <input value="((_room.welcome))"></label>
+  <p><label>Welcome message: <input value="((_room.welcome))"></label></p>
 
-  <p>This page has been visted ((_room.visits)) times. {{> timer}}
+  <p>This page has been visted ((_room.visits)) times. {{> timer}}</p>
 
-  <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.
+  <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.</p>
 
 <timer:>
-  ((#_stopped))
+  ((#if _stopped))
     <a x-bind="click:start">Start timer</a>
-  ((^))
+  ((else))
     You have been here for ((_timer)) seconds. <a x-bind="click:stop">Stop</a>
   ((/))
+
+<!--
+  connected and canConnect are built-in properties of model. If a variable
+  is not defined in the current context, it will be looked up in the model
+  data and the model properties
+-->
+<alert:>
+  <div id="alert">
+    ((#unless connected))
+      <p>
+        ((#if canConnect))
+          <!-- Leading space is removed, and trailing space is maintained -->
+          Offline 
+          ((#if _showReconnect))&ndash; <a x-bind="click:connect">Reconnect</a>((/))
+        ((else))
+          Unable to reconnect &ndash; <a x-bind="click:reload">Reload</a>
+        ((/))
+      </p>
+    ((/))
+  </div>
 
 '''
 
@@ -372,6 +422,25 @@ p {
 APP_STYL = '''
 @import "../base";
 
+#alert {
+  position: absolute;
+  text-align: center;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  z-index: 99;
+}
+#alert > p {
+  background: #fff1a8;
+  border: 1px solid #999;
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+  display: inline-block;
+  line-height: 21px;
+  padding: 0 12px;
+}
+
 '''
 
 _404_STYL = '''
@@ -380,7 +449,7 @@ _404_STYL = '''
 '''
 
 SERVER = '''
-require('derby').run(__dirname + '/lib/server');
+require('derby').run(__dirname + '/lib/server')
 
 '''
 
@@ -495,8 +564,9 @@ abort = (message) ->
 
 
 createProject = (dir, app, useCoffee) ->
-  dirPath = join process.cwd(), dir
-  project = if dir == '.' then 'derby-app' else dir
+  dirPath = resolve process.cwd(), dir
+  throw new Error 'Cannot create project at /' if dirPath == '/'
+  project = basename dirPath
   views = dir + '/views'
   styles = dir + '/styles'
   scripts = if useCoffee then dir + '/src' else dir + '/lib'

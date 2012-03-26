@@ -4,8 +4,8 @@ http = require 'http'
 racer = require 'racer'
 up = require 'up'
 View = require './View.server'
-files = require './files'
-{addHttpMethods} = require './routes.server'
+{autoRefresh} = require './refresh.server'
+{addHttpMethods} = require './router.server'
 {mergeAll, isProduction} = racer.util
 
 derby = module.exports = mergeAll Object.create(racer),
@@ -54,13 +54,12 @@ derby = module.exports = mergeAll Object.create(racer),
 
     view._derbyOptions = options = @options
     view._appFilename = appModule.filename
-    view._appHashes = appHashes
 
     store = null
     session = null
     createModel = -> store.createModel()
     appExports._setStore = setStore = (_store) ->
-      autoRefresh _store, options
+      autoRefresh _store, options, view
       session?._setStore _store
       return store = _store
     appExports.createStore = (options) -> setStore racer.createStore options
@@ -95,37 +94,3 @@ Static:: =
       view._root = @root
       view._clientName = name
     view.render res, model, ns, ctx, status, true
-
-addWatches = (appFilename, options, sockets) ->
-  {root, clientName} = files.parseName appFilename, options
-
-  files.watch root, 'css', ->
-    files.css root, clientName, (css) ->
-      for socket in sockets
-        socket.emit 'refreshCss', css
-
-  files.watch root, 'html', ->
-    files.templates root, clientName, (templates) ->
-      for socket in sockets
-        socket.emit 'refreshHtml', templates
-
-  files.watch root, 'js', ->
-    process.send type: 'reload'
-
-appHashes = {}
-autoRefresh = (store, options) ->
-  return if isProduction || store._derbySocketsSetup
-  store._derbySocketsSetup = true
-  listeners = {}
-  store.sockets.on 'connection', (socket) ->
-    socket.on 'derbyClient', (appFilename, callback) ->
-      return unless appFilename
-
-      # TODO: Wait for appHash to be set if it is undefined
-      callback appHashes[appFilename]
-
-      if listeners[appFilename]
-        return listeners[appFilename].push socket
-
-      sockets = listeners[appFilename] = [socket]
-      addWatches appFilename, options, sockets

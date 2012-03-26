@@ -1,52 +1,49 @@
-<import: src=shared>
-
 <Body:>
-  {{> shared:nav}}
   <select multiple>
     <optgroup label="CSS properties">
-      ((#liveCss.styles))<option selected=((.active))>((.prop))</option>((/))
+      ((#each liveCss.styles))<option selected=((.active))>((.prop))</option>((/))
     </optgroup>
   </select>
   <div>
-    ((#liveCss.styles))
+    ((#each liveCss.styles))
       <p>
         <input type=checkbox checked=((.active))> 
         <input value=((.prop)) disabled=!((.active))> 
         <input value=((.value)) disabled=!((.active))> 
-        <button x-bind=click:deleteStyle>Delete</button>
+        <button x-bind="click: liveCss.deleteStyle">Delete</button>
       </p>
     ((/))
   </div>
-  <button x-bind=click:addStyle>Add</button>
+  <button x-bind="click: liveCss.addStyle">Add</button>
   <h3>Currently applied:</h3>
   <div>
-    ((#_numStyles))
+    ((#if _hasActiveStyles))
       <p>{</p>
       <ul class=css>
-        ((#liveCss.styles :style))
-          <li x-displayed=((:style.active))>((> cssProperty))</li>
+        ((#each liveCss.styles :style))
+          <li>((> cssProperty))</li>
         ((/))
       </ul>
       <p>}</p>
-    ((^))
+    ((else))
       (None)
     ((/))
   </div>
   <div>
-    ((^_poppedOut))
+    ((#unless _poppedOut))
       <h3 style=display:inline-block>Output:</h3> &nbsp; <a href="/live-css/popout">Pop out</a>
     ((/))
   </div>
-  <div class="((#_poppedOut))poppedOut((/))">
+  <div class="((#if _poppedOut))poppedOut((/)) cssOutput">
     <p class=popupTitle><a href="/live-css">Close</a></p>
     <div class=popupContent>
-      <p style="((liveCss.styles :style > cssProperty))" contenteditable>
+      <p style="((each liveCss.styles :style > cssProperty))" contenteditable>
         (((liveCss.outputText)))
       </p>
     </div>
   </div>
 
 <cssProperty:>
-  ((#:style.active))
+  ((#if :style.active))
     ((:style.prop)): ((:style.value));
   ((/))

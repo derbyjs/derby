@@ -1,30 +1,25 @@
-<import: src=shared>
-
 <Body:>
-  {{> shared:nav}}
-  <div id=tableEditor>
-    <button x-bind=click:addRow>Add row</button> 
-    <button x-bind=click:addCol>Add column</button>
-    <hr>
-    <table>
-      <tr>
-        <td></td>
-        ((#table.cols))
-          <th x-bind=mousedown:colDown class=col>((.name))</th>
-        ((/))
-        <td></td>
-      </tr>
-      ((#table.rows))
-        <tr class=row>
-          <th x-bind=mousedown:rowDown>((.name))</th>
-          ((#.cells))<td><input value=((.text))></td>((/))
-          <td><button x-bind=click:deleteRow>Delete</button></td>
-        </tr>
+  <button x-bind="click: tableEditor.addRow">Add row</button> 
+  <button x-bind="click: tableEditor.addCol">Add column</button>
+  <hr>
+  <table>
+    <tr>
+      <td></td>
+      ((#each table.cols))
+        <th x-bind="mousedown: tableEditor.colDown" class=col>((.name))</th>
       ((/))
-      <tr class=foot>
-        <td></td>
-        ((#table.cols))<td><button x-bind=click:deleteCol>Delete</button></td>((/))
-        <td></td>
+      <td></td>
+    </tr>
+    ((#each table.rows))
+      <tr class=row>
+        <th x-bind="mousedown: tableEditor.rowDown">((.name))</th>
+        ((#each .cells))<td><input value=((.text))></td>((/))
+        <td><button x-bind="click: tableEditor.deleteRow">Delete</button></td>
       </tr>
-    </table>
-  </div>
+    ((/))
+    <tr class=foot>
+      <td></td>
+      ((#each table.cols))<td><button x-bind="click: tableEditor.deleteCol">Delete</button></td>((/))
+      <td></td>
+    </tr>
+  </table>

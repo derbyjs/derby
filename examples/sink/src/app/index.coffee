@@ -1,9 +1,11 @@
-{get} = app = require('derby').createApp module
+{get, ready} = app = require('derby').createApp module
 {render} = require './shared'
 require './live-css'
 require './table'
+require './leaderboard'
+require './bindings-bench'
 
-get '/', (page) ->
+get '/', (page, model) ->
   render page, 'home'
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
@@ -16,3 +18,14 @@ get '/error', ->
 
 get '/back', (page) ->
   page.redirect 'back'
+
+
+ready (model) ->
+  model.set '_showReconnect', true
+  exports.connect = ->
+    # Hide the reconnect link for a second after clicking it
+    model.set '_showReconnect', false
+    setTimeout (-> model.set '_showReconnect', true), 1000
+    model.socket.socket.connect()
+
+  exports.reload = -> window.location.reload()

@@ -1,0 +1,43 @@
+<Root:>
+  <html x-bind="click: leaderboard.deselect">
+
+<Body:>
+  {{#with leaderboard}}
+  <form x-bind="submit: leaderboard.add">
+    <input value=((._newPlayer))> <input type=submit value="Add player"> 
+    <button x-bind="click: leaderboard.remove" disabled="!((._selected))">
+      Remove 
+      ((#if ._selected))
+        ((.name))
+      ((else))
+        selected
+      ((/))
+    </button>
+  </form>
+
+  <!--
+    By binding click here, it will prevent click events within this div
+    from bubbling further and reaching the document node. All clicks
+    outside of this div will continue bubbling up to the document.
+  -->
+  <div id=leaderboard x-bind=click>
+    <div class=selectedPlayer>
+      ((#if ._selected))
+        <p class=vote>
+          <button x-bind="click: leaderboard.incr">+ 5</button>
+          <button x-bind="click: leaderboard.decr">- 5</button>
+        </p>
+        <span>((.name))</span>
+      ((else))
+        Click a player to select
+      ((/))
+    </div>
+    <ul>
+      ((#each ._list))
+        <li class="((._class))" x-bind="click: leaderboard.select">
+          <p class=score>((.score))</p>{{name}}
+        </li>
+      ((/))
+    </ul>
+  </div>
+  {{/}}

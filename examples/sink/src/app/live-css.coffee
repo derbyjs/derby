@@ -10,7 +10,7 @@ get '/live-css', (page, model) ->
         {prop: 'font-size', value: '18px', active: false}
       ]
       outputText: 'Edit this text...'
-    model.fn '_numStyles', 'liveCss.styles', (styles) ->
+    model.fn '_hasActiveStyles', 'liveCss.styles', (styles) ->
       for style in styles
         return true if style.active
       return false
@@ -30,8 +30,8 @@ get from: '/live-css', to: '/live-css/popout',
 
 ready (model) ->
 
-  app.addStyle = ->
-    model.push 'liveCss.styles', {}
-
-  app.deleteStyle = (e) ->
-    model.at(e.target).remove()
+  app.liveCss =
+    addStyle: ->
+      model.push 'liveCss.styles', {}
+    deleteStyle: (e, el) ->
+      model.at(el).remove()

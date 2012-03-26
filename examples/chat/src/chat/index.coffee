@@ -41,10 +41,6 @@ getRoom = (page, model, roomName, userId) ->
 
 ## CONTROLLER FUNCTIONS ##
 
-# "before" and "after" functions are called when the view is rendered in the
-# browser. Note that they are not called on the server.
-view.after 'message', -> $('messages').scrollTop = $('messageList').offsetHeight
-
 ready (model) ->
   months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
   displayTime = (time) ->
@@ -77,8 +73,31 @@ ready (model) ->
 
   exports.reload = -> window.location.reload()
 
-  model.on 'push', '_room.messages', (message, len) ->
+
+  messages = $ 'messages'
+  messageList = $ 'messageList'
+  atBottom = true
+
+  # Derby emits pre mutator events after the model has been updated, but
+  # before the view bindings have been updated
+  model.on 'pre:push', '_room.messages', ->
+    # Check to see if the page is scrolled to the bottom before adding
+    # a new message
+    bottom = messageList.offsetHeight
+    containerHeight = messages.offsetHeight
+    scrollBottom = messages.scrollTop + containerHeight
+    atBottom = bottom < containerHeight || scrollBottom == bottom
+
+  # Regular model mutator events are emitted after both the model and view
+  # bindings have been updated
+  model.on 'push', '_room.messages', (message, len, isLocal) ->
+    # Scoll page when adding a message or when another user adds a message
+    # and the page is already at the bottom
+    if isLocal || atBottom
+      messages.scrollTop = messageList.offsetHeight
+    # Update display time using local timezone
     model.set "_room.messages.#{len - 1}._displayTime", displayTime message.time
+
 
   exports.postMessage = ->
     model.push '_room.messages',

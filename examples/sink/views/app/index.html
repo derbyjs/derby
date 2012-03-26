@@ -1,7 +1,38 @@
 <import: src=home>
 <import: src=liveCss>
-<import: src=submit>
 <import: src=tableEditor>
+<import: src=leaderboard>
+<import: src=submit>
+<import: src=bindingsBench>
 
 <Title:>
   Derby demo: {{title}}
+
+<Header:>
+  <body class={{currentPage}}>
+  {{> alert}}
+  <nav>
+    {{#each pages}}
+      {{#if current}}
+        <b>{{text}}</b>{{#unless isLast}} | {{/}}
+      {{else}}
+        <a href={{url}}>{{text}}</a>{{#unless isLast}} | {{/}}
+      {{/}}
+    {{/}}
+    <hr>
+  </nav>
+
+<alert:>
+  <div id=alert>
+    ((#unless connected))
+      <p>
+        ((#if canConnect))
+          <!-- Leading space is removed, and trailing space is maintained -->
+          Offline 
+          ((#if _showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
+        ((else))
+          Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
+        ((/))
+      </p>
+    ((/))
+  </div>

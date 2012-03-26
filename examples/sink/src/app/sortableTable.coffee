@@ -1,16 +1,16 @@
 dragging = null
 onRowMove = onColMove = ->
 
-exports.init = (app, options) ->
-  addListener = app.view.dom.addListener
+exports.init = (app, exported, options) ->
+  {addListener} = app.view.dom
   addListener document, 'mousemove', onMove
   addListener document, 'mouseup', -> endDragging()
   addListener window, 'blur', -> endDragging(true)
   {onRowMove, onColMove} = options
 
-  app.rowDown = (e) ->
+  exported.rowDown = (e) ->
     dragStart e, cloneRow, setTop, breakTop, '.row', finishRow, e.target.parentNode
-  app.colDown = (e) ->
+  exported.colDown = (e) ->
     dragStart e, cloneCol, setLeft, breakLeft, '.col', finishCol, e.target
 
 onMove = (e) ->

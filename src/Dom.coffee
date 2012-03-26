@@ -1,65 +1,87 @@
-{merge} = require('racer').util
+racer = require 'racer'
+{merge} = racer.util
+{lookup} = racer.path
 EventDispatcher = require './EventDispatcher'
 {escapeHtml} = require './html'
+
+markers = {}
+elements =
+  $_win: win = window
+  $_doc: doc = win.document
 
 Dom = module.exports = (model, appExports) ->
   dom = this
 
-  @events = events = new EventDispatcher
-    onBind: (name, listener) ->
-      if listener.length > 3
-        listener[0] = model.__pathMap.id listener[0]
-      unless name of events._names
-        # Note that capturing is used so that blur and focus can be delegated
-        # http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
-        addListener doc, name, domHandler, true
-      return name
-    onTrigger: (name, listener, targetId, e) ->
-      id = listener[1]
-      return  unless id is targetId
-      # Remove this listener if the element doesn't exist
-      return false  unless el = element id
+  # Map dom event name -> true
+  listenerAdded = {}
+  captureListenerAdded = {}
 
-      if listener.length <= 3
-        [fn, id, delay] = listener
-        callback = fns[fn] || appExports[fn]
-        return  unless callback
-      else
-        [pathId, id, method, property, delay, invert] = listener
-        # Remove this listener if its path id is no longer registered
-        return false  unless path = model.__pathMap.paths[pathId]
+  onTrigger = (name, listener, id, e, el, next) ->
+    if (fn = listener.fn)?
+      callback = fns[fn] || appExports[fn] || lookup(fn, appExports)
+      return  unless callback
+    else
+      # Remove this listener if its path id is no longer registered
+      return false  unless path = model.__pathMap.paths[listener.pathId]
 
-      # Update the model when the element's value changes
-      finish = ->
-        value = getMethods[method] el, property
-        value = !value  if invert
-        return  if model.get(path) == value
-        model.set path, value
+    # Update the model when the element's value changes
+    finish = ->
+      value = getMethods[listener.method] el, listener.property
+      value = !value  if listener.invert
+      return  if model.get(path) == value
+      model.set path, value
 
-      if delay?
-        setTimeout callback || finish, delay, e, dom
-      else
-        (callback || finish) e, dom
+    if (delay = listener.delay)?
+      setTimeout callback || finish, delay, e, el, next, dom
+    else
+      (callback || finish) e, el, next, dom
+    return
+
+  # DOM listener capturing allows blur and focus to be delegated
+  # http://www.quirksmode.org/blog/archives/2008/04/delegating_the.html
+  @_events = events = new EventDispatcher
+    onTrigger: onTrigger
+
+    onBind: (name, listener, eventName) ->
+      unless listenerAdded[eventName]
+        addListener doc, eventName, trigger, true
+        listenerAdded[eventName] = true
       return
 
-  @domHandler = domHandler = (e) ->
-    target = e.target
-    target = target.parentNode  if target.nodeType == 3  # Node.TEXT_NODE
-    events.trigger e.type, target.id, e
+  @_captureEvents = captureEvents = new EventDispatcher
+    onTrigger: (name, listener, e) ->
+      id = listener.id
+      el = doc.getElementById id
+      if el.tagName is 'HTML' || el.contains e.target
+        onTrigger name, listener, id, e, el
+      return
 
-  if doc.addEventListener
-    addListener = (el, name, cb, captures = false) ->
-      el.addEventListener name, cb, captures
-    removeListener = (el, name, cb, captures = false) ->
-      el.removeEventListener name, cb, captures
+    onBind: (name, listener) ->
+      unless captureListenerAdded[name]
+        addListener doc, name, captureTrigger, true
+        captureListenerAdded[name] = true
+      return
 
-  else if doc.attachEvent
-    addListener = (el, name, cb) ->
-      el.attachEvent 'on' + name, ->
-        event.target || event.target = event.srcElement
-        cb event
-    removeListener = ->
-      throw new Error 'Not implemented'
+  @trigger = trigger = (e, el, noBubble, continued) ->
+    prefix = e.type + ':'
+    el ||= e.target
+    # Next can be called from a listener to continue bubbling
+    next = -> trigger e, el.parentNode, false, true
+    next.firstTrigger = !continued
+
+    if noBubble && id = el.id
+      return events.trigger prefix + id, id, e, el, next
+
+    while true
+      while !(id = el.id)
+        return unless el = el.parentNode
+      # Stop bubbling once the event is handled
+      return if events.trigger prefix + id, id, e, el, next
+      el = el.parentNode
+    return
+
+  @captureTrigger = captureTrigger = (e) ->
+    captureEvents.trigger e.type, e
 
   @addListener = addListener
   @removeListener = removeListener
@@ -69,18 +91,24 @@ Dom = module.exports = (model, appExports) ->
 Dom:: =
 
   clear: ->
-    @events.clear()
-    clearElements()
+    @_events.clear()
+    @_captureEvents.clear()
+    markers = {}
 
-  update: (id, method, ignore, value, property, index) ->
-    # Fail and remove the listener if the element can't be found
-    return false  unless el = element id
+  bind: (eventName, id, listener) ->
+    if listener.capture
+      listener.id = id
+      @_captureEvents.bind eventName, listener
+    else
+      @_events.bind "#{eventName}:#{id}", listener, eventName
 
+  update: (el, method, ignore, value, property, index) ->
     # Don't do anything if the element is already up to date
-    return  if value == getMethods[method] el, property
-
+    return if value == getMethods[method] el, property
+    # Otherwise, apply the update
     setMethods[method] el, ignore, value, property, index
-    return
+
+  item: (id) -> doc.getElementById(id) || elements[id] || getRange(id)
 
   getMethods: getMethods =
     attr: (el, attr) -> el.getAttribute attr
@@ -89,9 +117,7 @@ Dom:: =
     html: (el) -> el.innerHTML
     # These methods return NaN, because it never equals anything else. Thus,
     # when compared against the new value, the new value will always be set
-    visible: getNaN = -> NaN
-    displayed: getNaN
-    append: getNaN
+    append: getNaN = -> NaN
     insert: getNaN
     remove: getNaN
     move: getNaN
@@ -111,16 +137,6 @@ Dom:: =
       return if ignore && el.id == ignore
       if el != doc.activeElement || !doc.hasFocus()
         el[prop] = value
-      return
-
-    visible: (el, ignore, value) ->
-      return if ignore && el.id == ignore
-      el.style.visibility = if value then '' else 'hidden'
-      return
-
-    displayed: (el, ignore, value) ->
-      return if ignore && el.id == ignore
-      el.style.display = if value then '' else 'none'
       return
 
     html: (obj, ignore, value, escape) ->
@@ -143,6 +159,7 @@ Dom:: =
       else
         # Range
         el = obj.endContainer
+        obj.endOffset
         ref = el.childNodes[obj.endOffset]
         el.insertBefore obj.createContextualFragment(value), ref
       return
@@ -200,45 +217,32 @@ Dom:: =
       el.insertBefore child, ref
       return
 
-  isEvent: isEvent = (obj) -> toString.call(obj) == '[object Event]'
-
   fns: fns =
-    $forChildren: (e, dom) ->
-      # Clone the event object first, since the e.target property is read only
-      forChildren merge({}, e), dom.domHandler
-
-    $forName: (e, dom) ->
+    $forChildren: forChildren = (e, el, next, dom) ->
       # Prevent infinte emission
-      return unless isEvent(e)
+      return unless next.firstTrigger
 
-      target = e.target
-      return unless name = target.getAttribute 'name'
-      elements = doc.getElementsByName name
-      return unless elements.length > 1
-      # Clone the event object first, since the e.target property is read only
-      clone = merge {}, e
-      domHandler = dom.domHandler
-      for el in elements
-        continue if el is target
-        elEvent = Object.create clone
-        elEvent.target = el
-        domHandler elEvent
+      # Re-trigger the event on all child elements
+      for child in el.childNodes
+        continue if child.nodeType != 1  # Node.ELEMENT_NODE
+        dom.trigger e, child, true, true
+        forChildren e, child, next, dom
       return
 
+    $forName: (e, el, next, dom) ->
+      # Prevent infinte emission
+      return unless next.firstTrigger
 
-toString = Object::toString
-win = window
-doc = win.document
+      # Re-trigger the event on all other elements with
+      # the same 'name' attribute
+      return unless name = el.getAttribute 'name'
+      elements = doc.getElementsByName name
+      return unless elements.length > 1
+      for element in elements
+        continue if element is el
+        dom.trigger e, element, false, true
+      return
 
-elements = markers = null
-do clearElements = ->
-  elements =
-    $win: win
-    $doc: doc
-  markers = {}
-
-# TODO: Also implement with body.compare for IE
-inPage = (node) -> doc.body.compareDocumentPosition(node) & 16
 
 getRange = (name) ->
   start = markers[name]
@@ -254,7 +258,7 @@ getRange = (name) ->
 
   # Comment nodes may continue to exist even if they have been removed from
   # the page. Thus, make sure they are still somewhere in the page body.
-  unless inPage start
+  unless doc.body.contains start
     delete markers[name]
     delete markers['$' + name]
     return
@@ -263,17 +267,24 @@ getRange = (name) ->
   range.setEndBefore end
   return range
 
-element = (id) ->
-  elements[id] || (elements[id] = doc.getElementById(id)) || getRange(id)
+if doc.addEventListener
+  addListener = (el, name, cb, captures = false) ->
+    el.addEventListener name, cb, captures
+  removeListener = (el, name, cb, captures = false) ->
+    el.removeEventListener name, cb, captures
 
-forChildren = (e, domHandler) ->
-  for child in e.target.childNodes
-    return unless child.nodeType == 1  # Node.ELEMENT_NODE
-    childEvent = Object.create e
-    childEvent.target = child
-    domHandler childEvent
-    forChildren childEvent, domHandler
-  return
+else if doc.attachEvent
+  addListener = (el, name, cb) ->
+    el.attachEvent 'on' + name, ->
+      event.target || event.target = event.srcElement
+      cb event
+  removeListener = ->
+    throw new Error 'Not implemented'
+
+# Add support for Node.contains for Firefox < 9
+unless doc.body.contains
+  Node::contains = (node) ->
+    !!(@compareDocumentPosition(node) & 16)
 
 # Add support for insertAdjacentHTML for Firefox < 8
 # Based on insertAdjacentHTML.js by Eli Grey, http://eligrey.com

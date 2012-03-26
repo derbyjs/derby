@@ -14,7 +14,10 @@ Model::at = (node, absolute) ->
     continue if comment.$derbyChecked
     comment.$derbyChecked = true
     id = comment.data
-    continue unless id.charAt(0) == '$' && id.charAt(1) != '$'
+    continue unless id.charAt(0) == '$'
+    if id.charAt(1) == '$'
+      comment.$derbyMarkerEnd = true
+      id = id[1..]
     comment.$derbyMarkerId = id
     comment.parentNode.$derbyMarkerParent = true
 
@@ -26,6 +29,7 @@ Model::at = (node, absolute) ->
       node = last
       while node = node.previousSibling
         continue unless id = node.$derbyMarkerId
+        break if node.$derbyMarkerEnd
         break unless pathId = blockPaths[id]
         path = pathMap.paths[pathId]
         if pathMap.arrays[path] && last
@@ -58,13 +62,17 @@ Model::at = (node, absolute) ->
 exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap
   events = model.__events = new EventDispatcher
-    onBind: (name, listener) -> pathMap.id name
     onTrigger: (name, listener, value, type, local, options) ->
-      [id, method, property] = listener
+      id = listener[0]
+      # Fail and remove the listener if the element can't be found
+      return false unless el = dom.item id
+
+      method = listener[1]
+      property = listener[2]
       partial = listener.fn
       path = pathMap.paths[name]
 
-      method = 'prop'  if method is 'propPolite' && local
+      method = 'prop' if method is 'propPolite' && local
 
       if partial is '$inv'
         value = !value
@@ -87,25 +95,48 @@ exports.init = (model, dom) ->
             [value, property, index] = value
         unless noRender
           value = partial listener.ctx, model, path, triggerId, value, index, true
-          value = ''  unless value?
+          value = '' unless value?
 
       # Remove this listener if the DOM update fails
       # Happens when an id cannot be found
-      return dom.update id, method, options && options.ignore, value, property, index
+      dom.update el, method, options && options.ignore, value, property, index
 
-  model.on 'set', ([path, value], out, local, options) ->
-    events.trigger pathMap.id(path), value, 'html', local, options
+  # Derby's mutator listeners are added via unshift instead of model.on, because
+  # it needs to handle events in the same order that racer applies mutations.
+  # If there is a listener to an event that applies a mutation, event listeners
+  # later in the listeners queues could receive events in a different order
 
-  model.on 'del', ([path], out, local, options) ->
-    events.trigger pathMap.id(path), undefined, 'html', local, options
+  model.listeners('set').unshift (args, out, local, pass) ->
+    model.emit 'pre:set', args, out, local, pass
+    [path, value] = args
 
-  model.on 'push', ([path, values...], out, local, options) ->
+    # For set operations on array items, also emit a remove and insert in case the
+    # array is bound
+    if /\.\d+$/.test path
+      i = path.lastIndexOf('.')
+      arrayPath = path[0...i]
+      index = path.slice i + 1
+      events.trigger pathMap.id(arrayPath), index, 'remove', local, pass
+      events.trigger pathMap.id(arrayPath), [index, value], 'insert', local, pass
+
+    events.trigger pathMap.id(path), value, 'html', local, pass
+
+  model.listeners('del').unshift (args, out, local, pass) ->
+    model.emit 'pre:del', args, out, local, pass
+    [path] = args
+    events.trigger pathMap.id(path), undefined, 'html', local, pass
+
+  model.listeners('push').unshift (args, out, local, pass) ->
+    model.emit 'pre:push', args, out, local, pass
+    [path, values...] = args
     id = pathMap.id path
     for value in values
-      events.trigger id, value, 'append', local, options
+      events.trigger id, value, 'append', local, pass
     return
 
-  model.on 'move', ([path, from, to, howMany], out, local, options) ->
+  model.listeners('move').unshift (args, out, local, pass) ->
+    model.emit 'pre:move', args, out, local, pass
+    [path, from, to, howMany] = args
     len = model.get(path).length
     from = refIndex from
     to = refIndex to
@@ -113,25 +144,35 @@ exports.init = (model, dom) ->
     to += len if to < 0
     return if from == to
     pathMap.onMove path, from, to, howMany  # Update indicies in pathMap
-    events.trigger pathMap.id(path), [from, to, howMany], 'move', local, options
+    events.trigger pathMap.id(path), [from, to, howMany], 'move', local, pass
 
-  model.on 'unshift', ([path, values...], out, local, options) ->
-    insert events, pathMap, path, 0, values, local, options
+  model.listeners('unshift').unshift (args, out, local, pass) ->
+    model.emit 'pre:unshift', args, out, local, pass
+    [path, values...] = args
+    insert events, pathMap, path, 0, values, local, pass
 
-  model.on 'insert', ([path, index, values...], out, local, options) ->
-    insert events, pathMap, path, index, values, local, options
+  model.listeners('insert').unshift (args, out, local, pass) ->
+    model.emit 'pre:insert', args, out, local, pass
+    [path, index, values...] = args
+    insert events, pathMap, path, index, values, local, pass
 
-  model.on 'remove', ([path, start, howMany], out, local, options) ->
-    remove events, pathMap, path, start, howMany, local, options
+  model.listeners('remove').unshift (args, out, local, pass) ->
+    model.emit 'pre:remove', args, out, local, pass
+    [path, start, howMany] = args
+    remove events, pathMap, path, start, howMany, local, pass
 
-  model.on 'pop', ([path], out, local, options) ->
-    remove events, pathMap, path, model.get(path).length, 1, local, options
+  model.listeners('pop').unshift (args, out, local, pass) ->
+    model.emit 'pre:pop', args, out, local, pass
+    [path] = args
+    remove events, pathMap, path, model.get(path).length, 1, local, pass
 
-  model.on 'shift', ([path], out, local, options) ->
-    remove events, pathMap, path, 0, 1, local, options
+  model.listeners('shift').unshift (args, out, local, pass) ->
+    model.emit 'pre:shift', args, out, local, pass
+    [path] = args
+    remove events, pathMap, path, 0, 1, local, pass
 
   for event in ['connected', 'canConnect']
-    do (event) -> model.on event, (value) ->
+    do (event) -> model.listeners(event).unshift (value) ->
       events.trigger pathMap.id(event), value
 
   return model
@@ -141,19 +182,19 @@ refIndex = (obj) ->
   # Get index if event was from arrayRef id object
   if typeof obj is 'object' then obj.index else +obj
 
-insert = (events, pathMap, path, start, values, local, options) ->
+insert = (events, pathMap, path, start, values, local, pass) ->
   start = refIndex start
   pathMap.onInsert path, start, values.length  # Update indicies in pathMap
   id = pathMap.id path
   for value, i in values
-    events.trigger id, [start + i, value], 'insert', local, options
+    events.trigger id, [start + i, value], 'insert', local, pass
   return
 
-remove = (events, pathMap, path, start, howMany, local, options) ->
+remove = (events, pathMap, path, start, howMany, local, pass) ->
   start = refIndex start
   end = start + howMany
   pathMap.onRemove path, start, howMany  # Update indicies in pathMap
   id = pathMap.id path
   for index in [start...end]
-    events.trigger id, index, 'remove', local, options
+    events.trigger id, index, 'remove', local, pass
   return

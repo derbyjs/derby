@@ -4,41 +4,47 @@ crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
 {Promise} = racer = require 'racer'
+{finishAfter} = racer.async
 {parse: parseHtml} = require './html'
 {trim} = require './View'
 
 module.exports =
 
-  css: (root, clientName, callback) ->
+  css: (root, clientName, compress, callback) ->
     findPath root + '/styles', clientName, '.styl', (path) ->
-      return callback ''  unless path
+      return callback '' unless path
       fs.readFile path, 'utf8', (err, styl) ->
-        return callback ''  if err
+        return callback err if err
         stylus(styl)
           .use(nib())
           .set('filename', path)
-          .set('compress', true)
-          .render (err, css) ->
-            throw err if err
-            callback trim css
+          .set('compress', compress)
+          .render callback
 
   templates: (root, clientName, callback) ->
-    loadTemplates root + '/views', clientName, 'import', callback
+    count = 0
+    calls =
+      incr: -> count++
+      finish: (err, templates, instances) ->
+        if err
+          calls.finish = ->
+          return callback err
+        --count || callback null, templates, instances
+    loadTemplates root + '/views', clientName, 'import', calls
 
   js: (parentFilename, callback) ->
     inlineFile = join dirname(parentFilename), 'inline.js'
-
     js = inline = null
-    count = 2
-    finish = ->
-      return if --count
-      callback js, inline
-    racer.js {require: parentFilename}, (value) ->
+    finish = finishAfter 2, (err) ->
+      callback err, js, inline
+    racer.js {require: parentFilename}, (err, value) ->
       js = value
-      finish()
+      finish err
     fs.readFile inlineFile, 'utf8', (err, value) ->
       inline = value
-      finish()
+      # Ignore file not found error
+      err = null if err && err.code is 'ENOENT'
+      finish err
 
   parseName: (parentFilename, options) ->
     root = parentDir = dirname parentFilename
@@ -73,7 +79,7 @@ module.exports =
     filename = hash + '.js'
     jsFile = join '/', staticDir, filename
     filePath = join staticPath, filename
-    finish = -> fs.writeFile filePath, js, -> callback jsFile, hash
+    finish = -> fs.writeFile filePath, js, (err) -> callback err, jsFile, hash
 
     exists staticPath, (value) ->
       return finish() if value
@@ -105,14 +111,20 @@ findPath = (root, name, extension, callback) ->
     exists path, (value) ->
       callback if value then path else null
 
-loadTemplates = (root, fileName, get, callback, files = {}, templates = {}, instances = {}, alias, currentNs = '') ->
-  callback.count = (callback.count || 0) + 1
+loadTemplates = (root, fileName, get, calls, files, templates, instances, alias, currentNs = '') ->
+  calls.incr()
   findPath root, fileName, '.html', (path) ->
-    unless path
-      # Return without doing anything if the path isn't found, and this is the
-      # initial lookup based on the clientName. Otherwise, throw an error
-      if fileName then return callback {}, {}
-      else throw new Error "Can't find #{root}/views/#{fileName}"
+    if path is null
+      if !files
+        # Return without doing anything if the path isn't found, and this is the
+        # initial automatic lookup based on the clientName
+        return calls.finish null, {}, {}
+      else
+        return calls.finish new Error "Can't find file #{fileName}"
+
+    files ||= {}
+    templates ||= {}
+    instances ||= {}
 
     got = false
     if get is 'import'
@@ -135,13 +147,12 @@ loadTemplates = (root, fileName, get, callback, files = {}, templates = {}, inst
         promise.resolve err, file
 
     promise.on (err, file) ->
-      throw err if err
-      parseTemplateFile root, dirname(path), path, files, templates, instances, alias, currentNs, matchesGet, file, callback
-      throw new Error "Can't find template '#{get}' in #{path}"  unless got
-      unless --callback.count
-        callback templates, instances
+      calls.finish err if err
+      parseTemplateFile root, dirname(path), path, calls, files, templates, instances, alias, currentNs, matchesGet, file
+      calls.finish new Error "Can't find template '#{get}' in #{path}"  unless got
+      calls.finish null, templates, instances
 
-parseTemplateFile = (root, dir, path, files, templates, instances, alias, currentNs, matchesGet, file, callback) ->
+parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias, currentNs, matchesGet, file) ->
   name = src = ns = as = importTemplates = null
   relativePath = relative root, path
   parseHtml file,
@@ -152,15 +163,15 @@ parseTemplateFile = (root, dir, path, files, templates, instances, alias, curren
       name = (if tagName.charAt(i) == ':' then tagName[0...i] else '').toLowerCase()
       if name is 'import'
         {src, ns, as, template} = attrs
-        throw new Error "Template import in #{path} must have a 'src' attribute" unless src
+        calls.finish new Error "Template import in #{path} must have a 'src' attribute" unless src
 
         if template
           importTemplates = template.toLowerCase().split(' ')
           if importTemplates.length > 1 && as?
-            throw new Error "Template import of '#{src}' in #{path} can't specify multiple 'template' values with 'as'"
+            calls.finish new Error "Template import of '#{src}' in #{path} can't specify multiple 'template' values with 'as'"
 
         ns = if 'ns' of attrs
-          throw new Error "Template import of '#{src}' in #{path} can't specifiy both 'ns' and 'as' attributes" if as
+          calls.finish new Error "Template import of '#{src}' in #{path} can't specifiy both 'ns' and 'as' attributes" if as
           # Import into the namespace specified via 'ns' underneath
           # the current namespace
           if ns
@@ -181,9 +192,9 @@ parseTemplateFile = (root, dir, path, files, templates, instances, alias, curren
       return unless matchesGet name
       if src
         unless onlyWhitespace.test text
-          throw new Error "Template import of '#{src}' in #{path} can't contain content"
+          calls.finish new Error "Template import of '#{src}' in #{path} can't contain content"
         toGet = importTemplates || 'import'
-        return loadTemplates root, join(dir, src), toGet, callback, files, templates, instances, as, ns
+        return loadTemplates root, join(dir, src), toGet, calls, files, templates, instances, as, ns
 
       templateName = relativePath + ':' + name
       instanceName = alias || name
@@ -193,7 +204,7 @@ parseTemplateFile = (root, dir, path, files, templates, instances, alias, curren
       return if templates[templateName]
       unless name && literal
         return if onlyWhitespace.test text
-        throw new Error "Can't read template in #{path} near the text: #{text}"
+        calls.finish new Error "Can't read template in #{path} near the text: #{text}"
       templates[templateName] = trim text
 
 extensions =

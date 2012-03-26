@@ -4,7 +4,8 @@ uglify = require 'racer/node_modules/uglify-js'
 EventDispatcher = require './EventDispatcher'
 files = require './files'
 {escapeHtml} = require './html'
-module.exports = View = require './View'
+{errorHtml, cssError, templateError} = require './refresh.server'
+{trim} = module.exports = View = require './View'
 
 empty = ->
 emptyRes =
@@ -12,16 +13,18 @@ emptyRes =
   setHeader: empty
   write: empty
   end: empty
+emptyPathMap =
+  id: empty
 emptyModel =
   get: empty
   bundle: empty
+  __pathMap: emptyPathMap
+emptyEventDispatcher =
+  bind: empty
 emptyDom =
-  events: new EventDispatcher
+  bind: empty
 
 escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
-
-# Don't execute before or after functions on the server
-View::before = View::after = empty
 
 # This is overridden but is here for testing
 View::_appHashes = {}
@@ -49,9 +52,10 @@ View::_load = (isStatic, callback) ->
   promise = @_loadPromise = (new Promise).on callback
 
   # Once loading is complete, make the files reload from disk the next time
-  promise.on => process.nextTick => delete @_loadPromise
+  promise.on => delete @_loadPromise
 
   templates = instances = js = null
+  errors = {}
 
   if isStatic
     root = @_root
@@ -76,9 +80,14 @@ View::_load = (isStatic, callback) ->
 
       # Templates are appended to the js bundle here so that it does
       # not have to be regenerated if only the template files are modified
-      js += loadTemplatesScript require, templates, instances
+      loadTemplates = loadTemplatesScript require, templates, instances
+      loadTemplates = uglify loadTemplates if isProduction
+      js += ';' + loadTemplates
 
-      files.writeJs root, js, options, (jsFile, appHash) =>
+      @_errors = errorHtml(errors) || ''
+
+      files.writeJs root, js, options, (err, jsFile, appHash) =>
+        throw err if err
         @_jsFile = jsFile
         @_appHashes[appFilename] = @_appHash = appHash
         promise.resolve()
@@ -87,19 +96,30 @@ View::_load = (isStatic, callback) ->
       js = @_js
       finish()
 
-    else files.js appFilename, (value, inline) =>
+    else files.js appFilename, (err, value, inline) =>
+      throw err if err
       js = value
       @_js = value unless isProduction
       @inline "function(){#{inline}}"  if inline
       finish()
 
-  files.css root, clientName, (value) =>
+  files.css root, clientName, isProduction, (err, value) =>
+    if err
+      @_css = '<style id=$_css></style>'
+      errors['CSS'] = cssError err
+      return finish()
+    value = if isProduction then trim value else '\n' + value
     @_css = if value then "<style id=$_css>#{value}</style>" else ''
     finish()
 
-  files.templates root, clientName, (_templates, _instances) =>
-    templates = _templates
-    instances = _instances
+  files.templates root, clientName, (err, _templates, _instances) =>
+    if err
+      templates = {}
+      instances = {}
+      errors['Template'] = templateError err
+    else
+      templates = _templates
+      instances = _instances
     @_makeAll templates, instances
     finish()
 
@@ -129,8 +149,9 @@ View::render = (res = emptyRes) ->
 View::_init = (model) ->
   # Initialize view & model for rendering
   @dom = emptyDom
-  model.__events = new EventDispatcher
+  model.__events = emptyEventDispatcher
   model.__blockPaths = {}
+  model.__pathMap = emptyPathMap
   @model = model
   @_idCount = 0
 
@@ -140,20 +161,28 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   unless res.getHeader 'content-type'
     res.setHeader 'Content-Type', 'text/html; charset=utf-8'
 
-  # The view.get function renders and sets event listeners
+  try
+    # The view.get function renders and sets event listeners
 
-  # The first chunk includes everything through header. Head should contain
-  # any meta tags and script tags, since it is included before CSS.
-  # If there is a small amount of header HTML that will display well by itself,
-  # it is a good idea to add this to the Header view so that it renders ASAP.
-  doctype = @get 'doctype', ns, ctx
-  title = escapeHtml @get 'title$s', ns, ctx
-  head = @get 'head', ns, ctx
-  header = @get 'header', ns, ctx
-  res.write "#{doctype}<title>#{title}</title>#{head}#{@_css}#{header}"
+    # The first chunk includes everything through header. Head should contain
+    # any meta tags and script tags, since it is included before CSS.
+    # If there is a small amount of header HTML that will display well by itself,
+    # it is a good idea to add this to the Header view so that it renders ASAP.
+    doctype = @get 'doctype', ns, ctx
+    root = @get 'root', ns, ctx
+    charset = @get 'charset', ns, ctx
+    title = escapeHtml @get 'title$s', ns, ctx
+    head = @get 'head', ns, ctx
+    header = @get 'header', ns, ctx
+    res.write "#{doctype}#{root}#{charset}<title>#{title}</title>#{head}#{@_css}#{header}"
 
-  # Remaining HTML
-  res.write @get 'body', ns, ctx
+    # Remaining HTML
+    res.write @get('body', ns, ctx) + @get('footer', ns, ctx)
+
+  catch err
+    errText = templateError err
+    @_errors ||= errorHtml Template: errText
+    res.write '<!DOCTYPE html><meta charset=utf-8><title></title>' + @_css
 
   # Inline scripts and external scripts
   clientName = @_clientName
@@ -173,4 +202,4 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
     escapeInlineScript(bundle) + ",'#{@_appHash}','" + (ns || '') + "'," +
     (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
     (if @_watch then ",'#{@_appFilename}'" else '' ) +
-    ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}"
+    ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}#{@_errors}"

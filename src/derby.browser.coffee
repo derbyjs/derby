@@ -3,7 +3,8 @@ derbyModel = require './derby.Model'
 Dom = require './Dom'
 View = require './View'
 History = require './History'
-{addHttpMethods, Page} = require './routes'
+{autoRefresh} = require './refresh'
+{addHttpMethods, Page} = require './router'
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports
@@ -16,7 +17,11 @@ exports.createApp = (appModule) ->
       derbyModel.init model, dom
       page = new Page view, model
       history = view.history = new History page, routes, dom
-      view.render model, ns, ctx, true
+      # Ignore errors thrown when rendering; these will also be thrown
+      # on the server, and throwing here causes the app not to connect
+      try
+        view.render model, ns, ctx, true
+      catch err then
 
     # The ready event is fired after the model data is initialized and
     # the socket object is set
@@ -33,23 +38,3 @@ exports.createApp = (appModule) ->
   routes = addHttpMethods appExports
   appExports.ready = (fn) -> racer.on 'ready', fn
   return appExports
-
-autoRefresh = (view, model, appFilename, appHash) ->
-  return unless appFilename
-
-  {socket} = model
-  model.on 'connectionStatus', (connected, canConnect) ->
-    window.location.reload true  unless canConnect
-
-  socket.on 'connect', ->
-    socket.emit 'derbyClient', appFilename, (serverHash) ->
-      window.location.reload true  if appHash != serverHash
-
-  socket.on 'refreshCss', (css) ->
-    el = document.getElementById '$_css'
-    el.innerHTML = css  if el
-
-  socket.on 'refreshHtml', (templates) ->
-    for name, template of templates
-      view.make name, template
-    view.history.refresh()
