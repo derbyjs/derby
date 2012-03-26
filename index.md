@@ -477,7 +477,7 @@ Template partials are referenced relative to their current namespace. Namespaces
 <Body:>
   Welcome to the home page
   <!-- include template partial from an imported namespace -->
-  {{> shared:profile}}
+  {{"{{"}}> shared:profile}}
 {% endhighlight %}
 
 #### index.html
@@ -490,7 +490,7 @@ Template partials are referenced relative to their current namespace. Namespaces
   Default page content
 
 <Footer:>
-  <p><small>&copy; {{year}}</small></p>
+  <p><small>&copy; {{"{{"}}year}}</small></p>
 {% endhighlight %}
 
 #### Context
