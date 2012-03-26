@@ -4,7 +4,7 @@ crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
 {Promise} = racer = require 'racer'
-{finishAfter} = racer.async
+{finishAfter} = racer.util.async
 {parse: parseHtml} = require './html'
 {trim} = require './View'
 
