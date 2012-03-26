@@ -3,8 +3,8 @@ fs = require 'fs'
 crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
-{Promise} = racer = require 'racer'
-{finishAfter} = racer.util.async
+Promise = require 'racer/lib/Promise'
+{finishAfter} = require 'racer/lib/util/async'
 {parse: parseHtml} = require './html'
 {trim} = require './View'
 

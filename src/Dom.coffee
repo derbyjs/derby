@@ -1,6 +1,5 @@
-racer = require 'racer'
-{merge} = racer.util
-{lookup} = racer.path
+{merge} = require 'racer/lib/util'
+{lookup} = require 'racer/lib/path'
 EventDispatcher = require './EventDispatcher'
 {escapeHtml} = require './html'
 

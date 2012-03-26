@@ -1,6 +1,5 @@
-racer = require 'racer'
-{lookup} = racer.path
-{merge} = racer.util
+{lookup} = require 'racer/lib/path'
+{merge} = require 'racer/lib/util'
 
 module.exports =
 

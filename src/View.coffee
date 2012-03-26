@@ -1,4 +1,4 @@
-{lookup} = require('racer').path
+{lookup} = require 'racer/lib/path'
 {parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr, isVoid} = require './html'
 {modelPath} = markup = require './markup'
 

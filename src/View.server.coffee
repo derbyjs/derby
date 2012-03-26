@@ -1,6 +1,7 @@
 uglify = require 'racer/node_modules/uglify-js'
-{Model, Promise} = racer = require 'racer'
-{isProduction} = racer.util
+{Model} = require 'racer'
+Promise = require 'racer/lib/Promise'
+{isProduction} = require 'racer/lib/util'
 EventDispatcher = require './EventDispatcher'
 files = require './files'
 {escapeHtml} = require './html'

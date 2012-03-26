@@ -1,4 +1,4 @@
-{isProduction} = require('racer').util
+{isProduction} = require 'racer/lib/util'
 files = require './files'
 refresh = module.exports = require './refresh'
 
