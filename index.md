@@ -32,6 +32,8 @@ headers:
     type: h2
   - text: Pre-defined templates
     type: h3
+  - text: Importing templates
+    type: h3
   - text: Template syntax
     type: h2
   - text: Whitespace and HTML conformance
@@ -48,7 +50,7 @@ headers:
     type: h3
   - text: HTML extensions
     type: h2
-  - text: x-bind
+  - text: DOM event binding
     type: h3
   - text: Boolean attributes
     type: h3
@@ -391,27 +393,13 @@ Template files are also HTML, but each template is wrapped in a tag that names t
   <h1>Howdy!</h1>
 {% endhighlight %}
 
-Templates can be imported from another file for making multiple page apps and sharing templates among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. Like in Node.js, either `pageName.html` or `pageName/index.html` can be imported as `pageName`.
-
-{% highlight html %}
-<!-- all templates from "./home.html" with the namespace "home" -->
-<import: src="home">
-
-<!-- all templates from "./home.html" into the current namespace -->
-<import: src="home" ns="">
-
-<!-- one or more templates by name with the namespace "home" -->
-<import: src="home" template="message alert">
-
-<!-- one template as a different name in the current namespace -->
-<import: src="home" template="message" as="myMessage">
-{% endhighlight %}
-
 ### Pre-defined templates
 
-By default, Derby includes templates with the names `Doctype`, `Title`, `Head`, `Header`, `Body`, `Scripts`, and `Tail` when it renders a page.
+By default, Derby includes templates with the names `Doctype`, `Root`, `Charset`, `Title`, `Head`, `Header`, `Body`, `Footer`, `Scripts`, and `Tail` when it renders a page on the server.
 
-Some of these templates have names that also are the names of HTML tags, but only `Title` wraps the template in a tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>` by default. Browsers don't need them, and pages will validate as proper HTML5 without them.
+In the browser, only the `Root`, `Title`, `Header`, `Body`, and `Footer` templates are re-rendered. Thus, model-view bindings may only be defined within these templates.
+
+Some of pre-defined templates have names that also are the names of HTML tags, but only `Title` wraps the template inside of a `<title>` tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>` by default.
 
 By convention, Pre-defined template names are capitalized to indicate that the page renderer will include them automatically. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
 
@@ -443,8 +431,6 @@ Note that template files don't contain boilerplate HTML, such as doctype definit
 13. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads
 14. **`Tail:`** Optional location for additional scripts to be included at the very end of the page
 
-In the browser, only the `title`, `root`, `header`, `body`, and `footer` templates are re-rendered. Thus, model-view bindings may only be defined within these templates.
-
 <style>
 ol{counter-reset: item}
 ol>li{display: block}
@@ -453,6 +439,71 @@ ol>li:before{content: counter(item) ". "; counter-increment: item}
 #third_chunk+ol{counter-reset: item 9}
 #fourth_chunk+ol{counter-reset: item 12}
 </style>
+
+### Importing templates
+
+Templates can be imported from another file for making multiple page apps and sharing templates among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. Like in Node.js modules, either `pageName.html` or `pageName/index.html` can be imported as `pageName`.
+
+{% highlight html %}
+<!-- all templates from "./home.html" with the namespace "home" -->
+<import: src="home">
+
+<!-- all templates from "./home.html" into the current namespace -->
+<import: src="home" ns="">
+
+<!-- one or more specific templates with the namespace "home" -->
+<import: src="home" template="message alert">
+
+<!-- one template as a different name in the current namespace -->
+<import: src="home" template="message" as="myMessage">
+{% endhighlight %}
+
+Templates defined in a parent namespace are inherited unless they are overridden by a template with the same name in the child namespace. Thus, it often makes sense to place common page elements in a main file that imports a number of other files and override the part of the page that is different.
+
+Template partials are referenced relative to their current namespace. Namespaces are separated by colons, and a namespace can be passed to the `page.render()` method to render a specific page or application state.
+
+#### shared.html
+{% highlight html %}
+<profile:>
+  <div class="profile">
+    ...
+  </div>
+{% endhighlight %}
+
+#### home.html
+{% highlight html %}
+<import: src="shared">
+
+<Body:>
+  Welcome to the home page
+  <!-- include template partial from an imported namespace -->
+  {{> shared:profile}}
+{% endhighlight %}
+
+#### index.html
+{% highlight html %}
+<import: src="home">
+<import: src="contact">
+<import: src="about">
+
+<Body:>
+  Default page content
+
+<Footer:>
+  <p><small>&copy; {{year}}</small></p>
+{% endhighlight %}
+
+#### Context
+{% highlight javascript %}
+page.render('home', {
+  year: 2012
+})
+{% endhighlight %}
+{% highlight coffeescript %}
+page.render 'home',
+  year: 2012
+{% endhighlight %}
+
 
 ## Template syntax
 
@@ -521,7 +572,9 @@ Let's go <b>{{"{{"}}activity}}</b>!
 
 Before parsing, all HTML comments, leading whitespace, and new lines are removed from templates. Whitespace at the end of lines is maintained, in case a space is desired in the HTML output. The contents of `<script>` and `<style>` tags are passed through literally.
 
-Derby's HTML parser should be able to parse any valid HTML, including elements that don't require closing tags and unquoted attributes. HTML attribute values only need to be quoted if they are the empty string or if they contain a space, equals sign, or greater than sign. Note that since Derby templates are parsed as HTML first, any of these characters within a template tag require an attribute to be escaped. When in doubt, add quotes around attributes---Derby will remove them from the output HTML when they are not required.
+Derby's HTML parser should be able to parse any valid HTML, including elements that don't require closing tags and unquoted attributes. However, it is recommended that you always include closing tags for elements like `<p>` and `<li>` that might not require a closing tag. The rules around how tags are automatically closed are complex, and there are certain cases where template sections may be included within an unexpected element. 
+
+HTML attribute values only need to be quoted if they are the empty string or if they contain a space, equals sign, or greater than sign. Since Derby templates are parsed as HTML first, any of these characters within a template tag require an attribute to be escaped. Using quotes around all attribute values is recommended.
 
 Because it understands the HTML context, Derby's HTML escaping is much more minimal than that of most templating libraries. You may be surprised to see unescaped `>` and `&` characters. These only need to be escaped in certain contexts, and Derby only escapes them when needed. If you are skeptical, an [HTML5 validator](http://html5.validator.nu/) will detect most escaping bugs.
 
@@ -884,9 +937,13 @@ Derby provides a few extensions to HTML that make it easier to bind models and v
 
 Custom attributes used during template parsing start with the prefix `x-` to avoid conflicts with future extensions to HTML. Note that Derby uses this prefix instead of `data-`, since that prefix is intended for custom data attributes that are included in the DOM. Derby removes `x-` attributes as it parses, and the output HTML does not include these non-standard attributes.
 
-### x-bind
+### DOM event binding
 
-The `x-bind` attribute may be added to any HTML element to bind one or more DOM events to a controller function by name. The bound function must be exported on the app. Bound functions are passed the original event object, and should use `e.target` to get a reference to the element on which the event was raised.
+The `x-bind` attribute may be added to any HTML element to bind one or more DOM events to a controller function by name. The bound function must be exported on the app. Bound functions are passed the original event object, the element on which the `x-bind` attribute was placed, and a `next()` function that can be called to continue event bubbling.
+
+DOM events are typically emitted on the target and then each of its parent nodes all the way up to the document's root element, unless a handler calls `e.stopPropogation()`. Derby performs event delegation and manages event bubbling more like routes---the handler function for the target element or the first bound parent element is called and then event bubbling stops. The handler can call the `next()` function to continue bubbling the event.
+
+The `x-capture` attribute may be used if the handler should *always* be called whenever a child element emits a given event. This may be especially useful on the root `<html>` element for handling events like `mousemove`.
 
 If the click event is bound on an `<a>` tag without an `href` attribute, Derby will add the attributes `href="#"` and `onclick="return false"` automatically. If the submit event is bound on a `<form>` tag, `onsubmit="return false"` will be added to prevent a default redirect action.
 
@@ -913,7 +970,7 @@ Internally, Derby only binds each type of event once to the `document` and perfo
   <input x-bind="paste/50:afterPaste">
 {% endhighlight %}
 
-It is often useful to relate back a DOM element, such as `e.target`, to the model path that was used to render the item. For example, one might want to remove an item from a list when an icon is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [scoped model](#scoped_models) that is scoped to the context of the closest bound path in the template.
+It is often useful to relate back a DOM element to the model path that was used to render the item. For example, one might want to remove an item from a list when a button is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [scoped model](#scoped_models) that is scoped to the context of the closest bound path in the template.
 
 #### Template
 
@@ -929,8 +986,8 @@ It is often useful to relate back a DOM element, such as `e.target`, to the mode
 #### App
 
 {% highlight javascript %}
-exports.upcase = function(e) {
-  user = model.at(e.target)
+exports.upcase = function(e, el, next) {
+  user = model.at(el)
 
   // Logs something like "_users.3"
   console.log(user.path())
@@ -939,8 +996,8 @@ exports.upcase = function(e) {
 }
 {% endhighlight %}
 {% highlight coffeescript %}
-exports.upcase = (e) ->
-  user = model.at e.target
+exports.upcase = (e, el, next) ->
+  user = model.at el
 
   # Logs something like "_users.3"
   console.log user.path()
@@ -973,6 +1030,8 @@ There is also a special syntax for boolean attributes only where a data value ca
 ### Form elements
 
 Binding the selected attribute of `<option>` elements in a `<select>` is difficult, because the `change` event is only fired on the `<select>` element, and the `selected` attribute must be place on the options. Therefore, Derby distributes the change event to each of the children of a select element, raising the event on each of the options as well. This makes it possible to bind the selected state on each of the options.
+
+For radio buttons, change events are only fired on the element that is clicked. However, clicking a radio button unchecks the value of all other radio buttons with the same name. Thus, Derby also emits the change event on other elements with the same name so that each radio button's checked attribute may be bound.
 
 ## Performance
 
@@ -1039,26 +1098,6 @@ For creating error pages and other static pages, Derby provides a `staticPages` 
 ## app.view
 
 Derby adds an `app.view` object for creating and rendering views.
-
-> ### view.after` ( name, callback(context) )`
-> 
-> **name:** Name of the template
-> 
-> **callback:** Function called after the template is rendered on the client each time.
->
-> **context:** The callback is passed the context object used to render the template.
-
-> ### view.before` ( name, callback(context) )`
-> 
-> **name:** Name of the template
-> 
-> **callback:** Function called after the template is rendered on the client each time.
->
-> **context:** The callback is passed the context object used to render the template.
-
-The `view.after()` and `view.before()` methods are used to attach a function to a view that is called each time the view is rendered. For example, this might be useful for creating animations in JavaScript, or for scrolling the page when new messages are pushed to a chat window.
-
-Calling these methods on the server has no effect, and their callbacks will not be invoked on the server.
 
 > ### view.make` ( name, template )`
 > 
@@ -1164,7 +1203,7 @@ For convenience, the navigational methods of [`window.history`](https://develope
 
 Derby automates a great deal of user event handling via [model-view binding](#bindings). This should be used for any data that is tied directly to an element's attribute or HTML content. For example, as users interact with an `<input>`, value and checked properties will be updated. In addition, the `selected` attribute of `<option>` elements and edits to the innerHTML of `contenteditable` elements will update bound model objects.
 
-For other types of user events, such as `click` or `dragover`, Derby's [`x-bind`](#xbind) attribute can be used to tie DOM events on a specific element to a callback function in the controller. Such functions must be exported on the app module.
+For other types of user events, such as `click` or `dragover`, Derby's [`x-bind`](#dom_event_binding) attribute can be used to tie DOM events on a specific element to a callback function in the controller. Such functions must be exported on the app module.
 
 Even if controller code is responding to a DOM event, it should typically only update the view indirectly by manipulating data in the model. Since views are bound to model data, the view will update automatically when the correct data is set. While this way of writing client code may take some getting used to, it is ultimately much simpler and less error-prone.
 
@@ -1405,7 +1444,7 @@ room.push 'toys', 'blocks', 'puzzles'
 room.at('toys').push 'cards', 'dominoes'
 {% endhighlight %}
 
-Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#xbind).
+Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#dom_event_binding).
 
 ### Mutators
 
