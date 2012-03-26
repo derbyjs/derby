@@ -54,9 +54,7 @@ headers:
     type: h3
   - text: Boolean attributes
     type: h3
-  - text: x-visible and x-displayed
-    type: h3
-  - text: Miscellaneous
+  - text: Form elements
     type: h3
   - text: Performance
     type: h2
