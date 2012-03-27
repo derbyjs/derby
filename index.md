@@ -1191,7 +1191,7 @@ get({from: '/photo/:id', to: '/photo/:id/lightbox'}, {
   forward: function(model, params, next) {
     model.set('_showLightbox', true)
   })
-  back: function(model, params, next) {
+, back: function(model, params, next) {
     model.del('_showLightbox')
   })
 })
