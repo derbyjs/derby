@@ -1226,11 +1226,31 @@ After that, the original route is executed up to the `page.render()` call. Next,
 In the above example, the possible transitions would be:
 
 <table>
-  <tr><th>Starting from<th>Going to<th>Effect
-  <tr><td>From server or another page<td>/photo/42<td>Run the original route normally
-  <tr><td>/photo/42<td>/photo/42/lightbox<td>Run the `forward` callback only
-  <tr><td>/photo/42/lightbox<td>/photo/42<td>Run the `back` callback only
-  <tr><td>From server or another page<td>/photo/42/lightbox<td>Run the original route for `/photo/42` up to `page.render()`, then the `forward` callback, then render
+  <tr>
+    <th>Starting from</th>
+    <th>Going to</th>
+    <th>Effect</th>
+  </tr>
+  <tr>
+    <td>From server or another page</td>
+    <td>/photo/42</td>
+    <td>Run the original route normally</td>
+  </tr>
+  <tr>
+    <td>/photo/42</td>
+    <td>/photo/42/lightbox</td>
+    <td>Run the `forward` callback only</td>
+  </tr>
+  <tr>
+    <td>/photo/42/lightbox</td>
+    <td>/photo/42</td>
+    <td>Run the `back` callback only</td>
+  </tr>
+  <tr>
+    <td>From server or another page</td>
+    <td>/photo/42/lightbox</td>
+    <td>Run the original route for `/photo/42` up to `page.render()`, then the `forward` callback, then render</td>
+  </tr>
 </table>
 
 ### History
