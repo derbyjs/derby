@@ -1162,6 +1162,77 @@ Express is used directly on the server. On the client, Derby inclues Express's r
 
 Derby can also capture form submissions client-side. It provides support for `post`, `put`, and `del` HTTP methods using the same hidden form field [override approach](http://expressjs.com/guide.html#http-methods) as Express.
 
+### Transitional routes
+
+In the client, there are a number of situations where it makes sense to update the URL but only part of the UI needs to update. For example, one might want to show a lightbox on top of a given page or update only the content area of a page and not the surrounding chrome.
+
+In these cases, transitional routes provide a more efficient and flexible solution to updating the page. On the server or from a different page, calling a transitional route renders the entire page like a normal route. However, when coming from the same page in the client, a transitional route only runs code to update the model and the appropriate view bindings.
+
+Transitional routes make it possible to use CSS animations, since only the relevant elements are updated. If the full page were re-rendered, the current HTML elements would be replaced with new ones. Then, the CSS animation would not be able to figure out how a given element's styles had changed.
+
+Transitional routes use the same `get`, `post`, `put`, and `del` methods, but they take both a from and to pattern as well as a forward and back callback. Since transitional routes cannot render the entire page but only update data in the model, their callbacks do not have a `page` argument.
+
+{% highlight javascript %}
+get('/photo/:id', function(page, model, params, next) {
+  // Normal page rendering code goes here
+  ...
+
+  // Any state set in the `forward` route callback should be
+  // reset in the main route, in case the user navigates to
+  // a different page and then back to this page directly
+  model.del('_showLightbox')
+
+  // The transitional route callback will execute right before
+  // the render method is called
+  page.render()
+})
+
+get({from: '/photo/:id', to: '/photo/:id/lightbox'}, {
+  forward: function(model, params, next) {
+    model.set('_showLightbox', true)
+  })
+  back: function(model, params, next) {
+    model.del('_showLightbox')
+  })
+})
+{% endhighlight %}
+{% highlight coffeescript %}
+get '/photo/:id', (page, model, params, next) ->
+  # Normal page rendering code goes here
+  ...
+
+  # Any state set in the `forward` route callback should be
+  # reset in the main route, in case the user navigates to
+  # a different page and then back to this page directly
+  model.del '_showLightbox'
+
+  # The transitional route callback will execute right before
+  # the render method is called
+  page.render()
+
+get from: '/photo/:id', to: '/photo/:id/lightbox',
+  forward: (model, params, next) ->
+    model.set '_showLightbox', true
+  back: (model, params, next) ->
+    model.del '_showLightbox'
+{% endhighlight %}
+
+Transitional routes support literal string routes and patterned routes with named parameters like `:id` and wildcard captures like `*`. However, they do not support arbitrary regular expressions.
+
+When a `to` route is requested on the server or from a different page, the router first pretends like the `from` route was called. It replaces any named parameters and wildcards based on their equivalents in the from route, and then does a lookup for the from route.
+
+After that, the original route is executed up to the `page.render()` call. Next, the `forward` callback of the transitional route is called. This simulates first navigating to the original route and then transitioning to the new route. Finally, `page.render()` is executed.
+
+In the above example, the possible transitions would be:
+
+<table>
+  <tr><th>Starting from<th>Going to<th>Effect
+  <tr><td>From server or another page<td>/photo/42<td>Run the original route normally
+  <tr><td>/photo/42<td>/photo/42/lightbox<td>Run the `forward` callback only
+  <tr><td>/photo/42/lightbox<td>/photo/42<td>Run the `back` callback only
+  <tr><td>From server or another page<td>/photo/42/lightbox<td>Run the original route for `/photo/42` up to `page.render()`, then the `forward` callback, then render
+</table>
+
 ### History
 
 For the most part, updating the URL client-side should be done with normal HTML links. The default action of requesting a new page from the server is canceled automatically if the app has a route that matches the new URL.
