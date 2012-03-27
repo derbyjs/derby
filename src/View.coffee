@@ -416,10 +416,17 @@ partialFn = (name, type, alias, render) ->
 
   throw new Error 'Unknown block type'
 
+objectToString = Object::toString
+
 textFn = (name, escape) ->
   (ctx, model) ->
     value = dataValue ctx, model, name
-    text = if value? then value.toString() else ''
+    text = if typeof value is 'string' then value else
+      if `value == null` then '' else
+        if value.toString is objectToString
+          JSON.stringify value
+        else
+          value.toString()
     return if escape then escape text else text
 
 blockFn = (view, queue) ->
