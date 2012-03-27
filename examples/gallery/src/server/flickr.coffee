@@ -2,15 +2,16 @@ request = require 'request'
 
 FLICKR_API = 'http://api.flickr.com/services/rest/'
 
-exports.setup = (store, options)
+exports.setup = (store, options) ->
   flickr = new Flickr options
 
-  store.route 'flickr.users.*.publicPhotos', (username, done) ->
-    flickr.getPublicPhotos username, done
+  store.route 'get', 'flickr.users.*.publicPhotos', (username, done) ->
+    flickr.publicPhotos username, done
 
 
 Flickr = (options) ->
   @key = options.key
+  @userIds = {}
   return
 
 Flickr:: =
@@ -26,12 +27,12 @@ Flickr:: =
       callback null, data
 
   userId: (username, callback) ->
-    if id = userIds[username]
+    if id = @userIds[username]
       return callback null, id
     qs = {method: 'flickr.people.findByUsername', username}
-    get qs, (err, body) ->
+    @get qs, (err, body) =>
       return callback err if err
-      id = userIds[username] = body.user.id
+      id = @userIds[username] = body.user.id
       callback null, id
 
   publicPhotos: (username, callback) ->
