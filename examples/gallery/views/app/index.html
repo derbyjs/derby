@@ -1,0 +1,22 @@
+<Title:>
+  Gallery
+
+<Header:>
+  {{> alert}}
+
+<Body:>
+  
+
+<alert:>
+  <div id="alert">
+    ((#unless connected))
+      <p>
+        ((#if canConnect))
+          Offline 
+          ((#if _showReconnect))&ndash; <a x-bind="click:connect">Reconnect</a>((/))
+        ((else))
+          Unable to reconnect &ndash; <a x-bind="click:reload">Reload</a>
+        ((/))
+      </p>
+    ((/))
+  </div>

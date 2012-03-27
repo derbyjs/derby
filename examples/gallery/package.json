@@ -1,0 +1,16 @@
+{
+  "name": "derby-gallery-example",
+  "description": "Demo gallery application for Derby",
+  "version": "0.0.0",
+  "main": "./server.js",
+  "dependencies": {
+    "derby": "*",
+    "express": ">=2 <3",
+    "connect-gzip": ">=0.1.5",
+    "request": ">=2.9.153"
+  },
+  "private": true,
+  "devDependencies": {
+    "coffee-script": ">=1.2"
+  }
+}
