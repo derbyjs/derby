@@ -1197,7 +1197,7 @@ For convenience, the navigational methods of [`window.history`](https://develope
 
 > ### view.history.go` ( i )`
 >
-> Call `window.history.go()`, which is equivalent to clicking the browser's forward button
+> Call `window.history.go()`
 >
 > **i:** An integer specifying the number of times to go back or forward. Navigates back if negative or forward if positive
 
