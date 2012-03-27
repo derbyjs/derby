@@ -947,7 +947,7 @@ If the click event is bound on an `<a>` tag without an `href` attribute, Derby w
 
 `x-bind` can also delay the callback's execution after a timeout, which can be useful when handling events like paste, which are fired before the contents are inserted. The value of the delay in milliseconds is included after the name of the event, such as `x-bind="paste/0:afterPaste"`.
 
-Internally, Derby only binds each type of event once to the `document` and performs event delegation. It uses element ids to keep track of which elements should be bound to which events. Thus, much like with mode-view bindings, Derby will add an automatically generated `id` attribute to an element that uses `x-bind` if it does not already have an id.
+Internally, Derby only binds each type of event once to the `document` and performs event delegation. It uses element ids to keep track of which elements should be bound to which events. Thus, much like with model-view bindings, Derby will add an automatically generated `id` attribute to an element that uses `x-bind` if it does not already have an id.
 
 #### Template
 
