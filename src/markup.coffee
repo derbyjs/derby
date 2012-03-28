@@ -98,6 +98,7 @@ module.exports =
     radio: true
 
   modelPath: modelPath = (ctx, name, noReplace) ->
+    name = if name is '.this' then '.' else name.replace(/\.this$/, '')
     firstChar = name.charAt(0)
 
     if firstChar is ':'

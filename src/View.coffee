@@ -10,9 +10,18 @@ defaultCtx =
   $paths: []
   $i: []
 
+defaultGetFns =
+  equal: (a, b) -> a == b
+  not: (value) -> !value
+
+defaultSetFns =
+  equal: (value) -> [value]
+  not: (value) -> [!value]
+
 View = module.exports = ->
   @clear()
-  @fns = {}
+  @getFns = Object.create defaultGetFns
+  @setFns = Object.create defaultSetFns
   return
 
 View:: =
@@ -87,7 +96,12 @@ View:: =
   inline: empty
 
   fn: (name, fn) ->
-    @fns[name] = fn
+    if typeof fn is 'object'
+      {get, set} = fn
+    else
+      get = fn
+    @getFns[name] = get
+    @setFns[name] = set if set
 
   render: (@model, ns, ctx, silent) ->
     if typeof ns is 'object'
@@ -142,7 +156,11 @@ extend = (parent, obj) ->
 
 bindEvents = (events, name, fn, params) ->
   events.push (ctx, modelEvents, dom, pathMap, blockPaths, triggerId) ->
-    return  unless path = modelPath ctx, name
+    if ~name.indexOf('(')
+      paths = pathFnArgs ctx, name
+      return
+
+    return unless path = modelPath ctx, name
     listener = if params.call then params triggerId, pathMap, blockPaths, path else params
     modelEvents.bind pathMap.id(path), listener
     listener.fn = fn
@@ -226,10 +244,7 @@ extractPlaceholder = (text) ->
 
   inner = remainder[0...endInner]
   post = remainder[end..]
-
-  return unless content = placeholderContent.exec inner
-  if name = content[3]
-    name = if name is '.this' then '.' else name.replace(/\.this$/, '')
+  return unless content = placeholderContent.exec inner    
 
   return {
     pre: trim pre
@@ -238,7 +253,7 @@ extractPlaceholder = (text) ->
     escaped: escaped
     hash: content[1]
     type: content[2]
-    name: name
+    name: content[3]
     alias: content[4]
     partial: content[5]?.toLowerCase()
   }
@@ -255,11 +270,7 @@ notSeparator = /[^,\s]/g
 fnCallError = (name) ->
   throw new Error 'malformed view function call: ' + name
 
-fnValue = (view, ctx, model, name) ->
-  fnCallError name unless match = fnCall.exec name
-  fnName = match[1]
-  inner = match[2]
-
+fnArgs = (inner) ->
   args = []
   lastIndex = 0
   while match = argSeparator.exec inner
@@ -277,10 +288,31 @@ fnValue = (view, ctx, model, name) ->
     lastIndex = argSeparator.lastIndex
 
   # Push the last argument
-  args.push inner[lastIndex..]
+  if last = inner[lastIndex..]
+    args.push last
+  return args
+
+fnValue = (view, ctx, model, name) ->
+  fnCallError name unless match = fnCall.exec name
+  fnName = match[1]
+  args = fnArgs match[2]
 
   # Get values for each argument
   for arg, i in args
+
+    # Support null, true, and false -- the same keyword values as JSON 
+    if arg is 'null'
+      args[i] = null
+      continue
+
+    if arg is 'true'
+      args[i] = true
+      continue
+
+    if arg is 'false'
+      args[i] = false
+      continue
+
     firstChar = arg.charAt 0
 
     if firstChar is "'"
@@ -306,7 +338,7 @@ fnValue = (view, ctx, model, name) ->
 
     args[i] = dataValue view, ctx, model, arg
 
-  unless fn = view.fns[fnName]
+  unless fn = view.getFns[fnName]
     throw new Error 'view function "' + fnName + '" not found for call: ' + name
 
   return fn args...
@@ -319,6 +351,26 @@ dataValue = (view, ctx, model, name) ->
   return value if value isnt undefined
   value = model.get path
   return if value isnt undefined then value else model[path]
+
+notPathArg = ///
+  (?:^ ['"-\d[{] )|  # String, number, or object literal
+  (?:^ null $)|
+  (?:^ true $)|
+  (?:^ false $)
+///
+pathFnArgs = (ctx, name, paths = []) ->
+  fnCallError name unless match = fnCall.exec name
+  args = fnArgs match[2]
+
+  for arg in args
+    if notPathArg.test arg
+      continue
+    if ~arg.indexOf('(')
+      pathFnArgs ctx, arg, paths
+      continue
+    paths.push modelPath ctx, arg
+
+  return paths
 
 reduceStack = (stack) ->
   html = ['']

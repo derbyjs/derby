@@ -265,7 +265,6 @@ describe 'View', ->
     expect(view.get 'test').to.equal 'hi <!--$0-->hi<!--$$0-->'
 
     view.fn 'sum', (a, b) -> a + b
-    view.fn 'equal', (a, b) -> a == b
 
     view.make 'test', '{{sum(4, 9)}}'
     expect(view.get 'test').to.equal '13'
