@@ -29,8 +29,7 @@ describe 'View', ->
 
   it 'rendering a string literal view', ->
     view = new View
-    model = new Model
-    view._init model
+    view._init new Model
 
     view.make 'test', """
       <style>
@@ -196,8 +195,7 @@ describe 'View', ->
 
   it 'lists in text', ->
     view = new View
-    model = new Model
-    view._init model
+    view._init new Model
 
     template = """
     <ul>
@@ -219,8 +217,7 @@ describe 'View', ->
 
   it 'boolean attributes', ->
     view = new View
-    model = new Model
-    view._init model
+    view._init new Model
 
     view.make 'test', '<input disabled=((maybe))>'
 
@@ -251,8 +248,18 @@ describe 'View', ->
     view._init new Model
 
     view.make 'test1', '{{#each bools}}<b>{{this}}</b>{{/}}'
-    view.make 'test2', '{{#each bools :value}}<b>{{:value}}</b>{{/}}'
+    view.make 'test2', '{{#each bools as :value}}<b>{{:value}}</b>{{/}}'
     ctx = bools: [true, false, true]
 
     expect(view.get 'test1', ctx).to.eql '<b>true</b><b>false</b><b>true</b>'
     expect(view.get 'test2', ctx).to.eql '<b>true</b><b>false</b><b>true</b>'
+
+  it 'views should support helper functions', ->
+    view = new View
+    model = new Model
+    view._init model
+
+    view.fn 'lower', (s) -> s.toLowerCase()
+
+    view.make 'test', '''{{lower('HI')}} ((lower( "HI" )))'''
+    expect(view.get 'test').to.eql 'hi <!--$0-->hi<!--$$0-->'

@@ -20,7 +20,7 @@
     ((#if _hasActiveStyles))
       <p>{</p>
       <ul class=css>
-        ((#each liveCss.styles :style))
+        ((#each liveCss.styles as :style))
           <li>((> cssProperty))</li>
         ((/))
       </ul>
@@ -37,7 +37,7 @@
   <div class="((#if _poppedOut))poppedOut((/)) cssOutput">
     <p class=popupTitle><a href="/live-css">Close</a></p>
     <div class=popupContent>
-      <p style="((each liveCss.styles :style > cssProperty))" contenteditable>
+      <p style="((each liveCss.styles as :style > cssProperty))" contenteditable>
         (((liveCss.outputText)))
       </p>
     </div>

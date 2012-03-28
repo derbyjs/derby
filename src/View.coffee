@@ -12,6 +12,7 @@ defaultCtx =
 
 View = module.exports = ->
   @clear()
+  @fns = {}
   return
 
 View:: =
@@ -84,6 +85,9 @@ View:: =
     @_find(name, ns) ctx
 
   inline: empty
+
+  fn: (name, fn) ->
+    @fns[name] = fn
 
   render: (@model, ns, ctx, silent) ->
     if typeof ns is 'object'
@@ -161,51 +165,77 @@ addId = (view, attrs) ->
 # whitespace is not removed in case whitespace is desired between lines
 View.trim = trim = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
-placeholder = ///^
-  ([\s\S]*?)  # Text before placeholder
-  (?:
-    (?:
-      (\({2,3})  # Placeholder start
-      ([\s\S]+?)  # Placeholder contents
-      (?:\){2,3})  # End placeholder
-    )|(?:
-      (\{{2,3})  # Placeholder start
-      ([\s\S]+?)  # Placeholder contents
-      (?:\}{2,3})  # End placeholder
-    )
-  )
-  ([\s\S]*)  # Text after placeholder
+openPlaceholder = ///^
+  ([\s\S]*?)  # Before the placeholder
+  (\({2,3}|\{{2,3})  # Opening of placeholder
+  ([\s\S]*)  # Remainder
 ///
+
 placeholderContent = ///^
   \s*([\#/]?)  # Start or end block
   (if|else|elseif|unless|each|with)?  # Block type
-  \s*([^\s>]*)  # Name of context object
-  (?:\s+:([^\s>]+))?  # Alias name
+  \s*(  # Name of context object
+    [^\s>]*
+    (?: \( .* \) )?
+  )
+  (?:\s+as\s+:([^\s>]+))?  # Alias name
   (?:\s*>\s*([^\s]+)\s*)?  # Partial name
 ///
+
+matchParens = (text, num, i) ->
+  i++
+  while num
+    close = text.indexOf ')', i
+    open = text.indexOf '(', i
+    hasClose = ~close
+    hasOpen = ~open
+    if hasClose && (!hasOpen || (close < open))
+      i = close + 1
+      num--
+      continue
+    else if hasOpen
+      i = open + 1
+      num++
+      continue
+    else
+      return
+  return i
+
 extractPlaceholder = (text) ->
-  return unless match = placeholder.exec text
-  if open = match[2]
-    inner = match[3]
-    bound = true
+  return unless match = openPlaceholder.exec text
+  pre = match[1]
+  open = match[2]
+  remainder = match[3]
+  bound = open.charAt(0) is '('
+  openLen = open.length
+  escaped = openLen is 2
+
+  if bound
+    return unless end = matchParens remainder, openLen, 0
+    endInner = end - openLen
+
   else
-    open = match[4]
-    inner = match[5]
-    bound = false
+    close = if escaped then '}}' else '}}}'
+    return unless ~(endInner = remainder.indexOf close)
+    end = endInner + openLen
+
+  inner = remainder[0...endInner]
+  post = remainder[end..]
+
   return unless content = placeholderContent.exec inner
   if name = content[3]
     name = if name is '.this' then '.' else name.replace(/\.this$/, '')
 
   return {
+    pre: trim pre
+    post: trim post
     bound: bound
-    pre: trim match[1]
-    escaped: open.length is 2
+    escaped: escaped
     hash: content[1]
     type: content[2]
     name: name
     alias: content[4]
     partial: content[5]?.toLowerCase()
-    post: trim match[6]
   }
 
 # True if remaining text does not immediately close the current tag
