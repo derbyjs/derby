@@ -282,3 +282,28 @@ describe 'View', ->
     expect(view.get 'test', {count: 7}).to.equal '11'
     model.set 'count', 13
     expect(view.get 'test').to.equal '17'
+
+    view._idCount = 0
+    view.make 'test', '''
+      <select>
+        {{#each items}}
+          <option selected="{{equal(this, current)}}">{{this}}
+        {{/}}
+      </select>
+      '''
+    expect(view.get 'test',
+      items: ['a', 'b', 'c']
+      current: 'c'
+    ).to.equal '<select id=$0><option>a<option>b<option selected>c</select>'
+
+    view.fn 'positive', (num) -> num >= 0
+
+    view.make 'test', '''
+      {{#each nums as :num}}
+        {{#if positive(:num)}}
+          {{:num}},
+        {{/}}
+      {{/}}
+      '''
+    expect(view.get 'test', {nums: [-4, 8, 0, 2.3, -9]}).to.equal '8,0,2.3,'
+
