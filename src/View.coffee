@@ -165,6 +165,11 @@ addId = (view, attrs) ->
 # whitespace is not removed in case whitespace is desired between lines
 View.trim = trim = (s) -> if s then s.replace /\n\s*/g, '' else ''
 
+# True if remaining text does not immediately close the current tag
+wrapRemainder = (tagName, remainder) ->
+  return false unless remainder
+  return !(new RegExp '^<\/' + tagName, 'i').test(remainder)
+
 openPlaceholder = ///^
   ([\s\S]*?)  # Before the placeholder
   (\({2,3}|\{{2,3})  # Opening of placeholder
@@ -175,8 +180,8 @@ placeholderContent = ///^
   \s*([\#/]?)  # Start or end block
   (if|else|elseif|unless|each|with)?  # Block type
   \s*(  # Name of context object
-    [^\s>]*
-    (?: \( .* \) )?
+    [^\s(>]*
+    (?: \s* \( [\s\S]* \) )?
   )
   (?:\s+as\s+:([^\s>]+))?  # Alias name
   (?:\s*>\s*([^\s]+)\s*)?  # Partial name
@@ -238,12 +243,77 @@ extractPlaceholder = (text) ->
     partial: content[5]?.toLowerCase()
   }
 
-# True if remaining text does not immediately close the current tag
-wrapRemainder = (tagName, remainder) ->
-  return false unless remainder
-  return !(new RegExp '^<\/' + tagName, 'i').test(remainder)
+fnCall = ///^
+  ([^(]+)  # Function name
+  \s* \( \s*
+  ([\s\S]*?)  # Arguments
+  \s* \) \s*
+$///
+argSeparator = /\s*([,(])\s*/g
+notSeparator = /[^,\s]/g
 
-dataValue = (ctx, model, name) ->
+fnCallError = (name) ->
+  throw new Error 'malformed view function call: ' + name
+
+fnValue = (view, ctx, model, name) ->
+  fnCallError name unless match = fnCall.exec name
+  fnName = match[1]
+  inner = match[2]
+
+  args = []
+  lastIndex = 0
+  while match = argSeparator.exec inner
+    # Find nested function calls
+    if match[1] is '('
+      end = matchParens inner, 1, argSeparator.lastIndex
+      args.push inner[lastIndex...end]
+      notSeparator.lastIndex = end
+      lastIndex = argSeparator.lastIndex =
+        if notSeparator.test inner then notSeparator.lastIndex - 1 else end
+      continue
+
+    # Push an argument
+    args.push inner[lastIndex...match.index]
+    lastIndex = argSeparator.lastIndex
+
+  # Push the last argument
+  args.push inner[lastIndex..]
+
+  # Get values for each argument
+  for arg, i in args
+    firstChar = arg.charAt 0
+
+    if firstChar is "'"
+      fnCallError name unless match = /^'(.*)'$/.exec arg
+      args[i] = match[1]
+      continue
+
+    if firstChar is '"'
+      fnCallError name unless match = /^"(.*)"$/.exec arg
+      args[i] = match[1]
+      continue
+
+    if /^[-\d]/.test firstChar
+      # JavaScript's isNaN will be false for any number or string
+      # that could be a number, such as '3'. Otherwise, it is true
+      fnCallError name if isNaN arg
+      # Cast into a number
+      args[i] = +arg
+      continue
+
+    if firstChar is '[' || firstChar is '{'
+      throw new Error 'object literals not supported in view function call: ' + name
+
+    args[i] = dataValue view, ctx, model, arg
+
+  unless fn = view.fns[fnName]
+    throw new Error 'view function "' + fnName + '" not found for call: ' + name
+
+  return fn args...
+
+dataValue = (view, ctx, model, name) ->
+  if ~name.indexOf('(')
+    return fnValue view, ctx, model, name
   path = modelPath ctx, name
   value = lookup path, ctx
   return value if value isnt undefined
@@ -388,16 +458,16 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
   return ctx
 
-partialValue = (ctx, model, name, value, useValue) ->
+partialValue = (view, ctx, model, name, value, useValue) ->
   if useValue
     value
   else
-    if name then dataValue ctx, model, name else true
+    if name then dataValue view, ctx, model, name else true
 
-partialFn = (name, type, alias, render) ->
+partialFn = (view, name, type, alias, render) ->
 
   withFn = (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-    value = partialValue ctx, model, name, value, useValue
+    value = partialValue view, ctx, model, name, value, useValue
 
     renderCtx = extendCtx ctx, value, name, alias, index
     return render renderCtx, model, triggerPath
@@ -410,7 +480,7 @@ partialFn = (name, type, alias, render) ->
 
   if type is 'if' || type is 'elseif'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue ctx, model, name, value, useValue
+      value = partialValue view, ctx, model, name, value, useValue
 
       if (if Array.isArray(value) then value.length else value)
         renderCtx = extendCtx ctx, value, name, alias, index
@@ -419,7 +489,7 @@ partialFn = (name, type, alias, render) ->
 
   if type is 'else' || type is 'unless'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue ctx, model, name, value, useValue
+      value = partialValue view, ctx, model, name, value, useValue
 
       if (Array.isArray(value) && !value.length) || !value
         renderCtx = extendCtx ctx, value, name, alias, index
@@ -428,7 +498,7 @@ partialFn = (name, type, alias, render) ->
 
   if type is 'each'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue ctx, model, name, value, useValue
+      value = partialValue view, ctx, model, name, value, useValue
 
       unless Array.isArray(value)
         return withFn ctx, model, triggerPath, triggerId, value, index, true
@@ -448,9 +518,9 @@ partialFn = (name, type, alias, render) ->
 
 objectToString = Object::toString
 
-textFn = (name, escape) ->
+textFn = (view, name, escape) ->
   (ctx, model) ->
-    value = dataValue ctx, model, name
+    value = dataValue view, ctx, model, name
     text = if typeof value is 'string' then value else
       if `value == null` then '' else
         if value.toString is objectToString
@@ -464,7 +534,7 @@ blockFn = (view, queue) ->
   {stack, events, block} = queue
   {name, escaped, type, alias} = block
   render = renderer view, reduceStack(stack), events
-  return partialFn name, type, alias, render
+  return partialFn view, name, type, alias, render
 
 parseMarkup = (type, attr, tagName, events, attrs, name, invert) ->
   return  unless parser = markup[type][attr]
@@ -484,13 +554,13 @@ pushVarFns = (view, stack, fn, fn2, name, escaped) ->
     pushChars stack, fn
     pushChars stack, fn2
   else
-    pushChars stack, textFn name, escaped && escapeHtml
+    pushChars stack, textFn view, name, escaped && escapeHtml
 
 pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
   {name, escaped, partial} = match
   if partial
     type = match.type || 'var'
-    fn = partialFn name, type, match.alias, view._find(partial, ns)
+    fn = partialFn view, name, type, match.alias, view._find(partial, ns)
 
   if match.bound
     last = stack[stack.length - 1]
@@ -517,7 +587,7 @@ pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
   {name, partial} = match
   if partial
     type = match.type || 'var'
-    fn = partialFn name, type, match.alias, view._find(partial + '$s', ns)
+    fn = partialFn view, name, type, match.alias, view._find(partial + '$s', ns)
   bindOnce = (ctx) ->
     ctx.$onBind events, name
     bindOnce = empty
@@ -552,8 +622,8 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
     unless out.del
       attrs[attr] = if out.bool
           bool: (ctx, model) ->
-            if !dataValue(ctx, model, name) == invert then ' ' + attr else ''
-        else textFn name, escapeAttr
+            if !dataValue(view, ctx, model, name) == invert then ' ' + attr else ''
+        else textFn view, name, escapeAttr
 
   out = parseMarkup 'attr', attr, tagName, events, attrs, value
   addId view, attrs  if out?.addId

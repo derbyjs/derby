@@ -221,9 +221,9 @@ describe 'View', ->
 
     view.make 'test', '<input disabled=((maybe))>'
 
-    expect(view.get 'test').to.eql '<input id=$0>'
-    expect(view.get 'test', maybe: false).to.eql '<input id=$1>'
-    expect(view.get 'test', maybe: true).to.eql '<input id=$2 disabled>'
+    expect(view.get 'test').to.equal '<input id=$0>'
+    expect(view.get 'test', maybe: false).to.equal '<input id=$1>'
+    expect(view.get 'test', maybe: true).to.equal '<input id=$2 disabled>'
 
   it 'paths containing dots should work for ctx object items', ->
     view = new View
@@ -232,7 +232,7 @@ describe 'View', ->
     view.make 'test', '<b>{{user.name}}</b>'
     ctx = user: {name: 'John'}
 
-    expect(view.get 'test', ctx).to.eql '<b>John</b>'
+    expect(view.get 'test', ctx).to.equal '<b>John</b>'
 
   it 'relative paths should work for ctx object items', ->
     view = new View
@@ -241,7 +241,7 @@ describe 'View', ->
     view.make 'test', '{{#if user}}<b>{{.name}}</b>{{/}}'
     ctx = user: {name: 'John'}
 
-    expect(view.get 'test', ctx).to.eql '<b>John</b>'
+    expect(view.get 'test', ctx).to.equal '<b>John</b>'
 
   it 'Arrays containing non-objects should work from ctx', ->
     view = new View
@@ -251,8 +251,8 @@ describe 'View', ->
     view.make 'test2', '{{#each bools as :value}}<b>{{:value}}</b>{{/}}'
     ctx = bools: [true, false, true]
 
-    expect(view.get 'test1', ctx).to.eql '<b>true</b><b>false</b><b>true</b>'
-    expect(view.get 'test2', ctx).to.eql '<b>true</b><b>false</b><b>true</b>'
+    expect(view.get 'test1', ctx).to.equal '<b>true</b><b>false</b><b>true</b>'
+    expect(view.get 'test2', ctx).to.equal '<b>true</b><b>false</b><b>true</b>'
 
   it 'views should support helper functions', ->
     view = new View
@@ -262,4 +262,23 @@ describe 'View', ->
     view.fn 'lower', (s) -> s.toLowerCase()
 
     view.make 'test', '''{{lower('HI')}} ((lower( "HI" )))'''
-    expect(view.get 'test').to.eql 'hi <!--$0-->hi<!--$$0-->'
+    expect(view.get 'test').to.equal 'hi <!--$0-->hi<!--$$0-->'
+
+    view.fn 'sum', (a, b) -> a + b
+    view.fn 'equal', (a, b) -> a == b
+
+    view.make 'test', '{{sum(4, 9)}}'
+    expect(view.get 'test').to.equal '13'
+
+    view._idCount = 0
+    view.make 'test', '(((equal(1, sum(-5, 6)))))'
+    expect(view.get 'test').to.equal '<!--$0-->true<!--$$0-->'
+
+    view._idCount = 0
+    view.make 'test', '(((equal(sum(-5, 6), 1))))'
+    expect(view.get 'test').to.equal '<!--$0-->true<!--$$0-->'
+
+    view.make 'test', '{{sum(4, count)}}'
+    expect(view.get 'test', {count: 7}).to.equal '11'
+    model.set 'count', 13
+    expect(view.get 'test').to.equal '17'
