@@ -6,10 +6,16 @@ require './leaderboard'
 require './bindings-bench'
 
 # Define a view helper function for use in templates
-view.fn 'unspace', (value) -> value?.replace /\s/g, ''
+view.fn 'unspace', (s) -> s && s.replace /\s/g, ''
+
+# View helper functions can have setters as well
+view.fn 'capitalizeFirst',
+  get: (s) -> s && s.charAt(0).toUpperCase() + s.slice(1)
+  set: (s) -> [s.toLowerCase()]
 
 get '/', (page, model) ->
-  model.subscribe 'titleColor', ->
+  model.subscribe 'titleColor', (err, titleColor) ->
+    titleColor.setNull 'black'
     render page, 'home',
       titleColors: ['Black', 'Deep pink', 'Lime green', 'Coral', 'Dark turquoise', 'Dark orchid']
 

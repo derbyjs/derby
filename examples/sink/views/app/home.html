@@ -1,11 +1,11 @@
 <Body:>
-  <h1 style="color:((unspace(titleColor)))">Welcome!</h1>
+  <h1 style="color:((unspace(titleColor)))">Welcome! in ((titleColor))</h1>
   <p>This is a collection of random demos. Check 'em out!</p><br>
   <p>
     <label>Title color: 
       <select>
         {{#each titleColors}}
-          <option selected="((equal(titleColor, .this)))">{{this}}</option>
+          <option selected="((equal(capitalizeFirst(titleColor), .this)))">{{this}}</option>
         {{/}}
       </select>
     </label>

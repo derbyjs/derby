@@ -221,7 +221,7 @@ exports.dataValue = dataValue = (view, ctx, model, name) ->
   value = model.get path
   return if value isnt undefined then value else model[path]
 
-exports.setBoundFn = (view, ctx, model, name, value) ->
+exports.setBoundFn = setBoundFn = (view, ctx, model, name, value) ->
   fnCallError name unless match = fnCall.exec name
   fnName = match[1]
   args = fnArgs match[2]
@@ -241,6 +241,9 @@ exports.setBoundFn = (view, ctx, model, name, value) ->
   # Set each of the defined output values
   for value, i in out
     arg = args[i]
+    if ~arg.indexOf('(')
+      setBoundFn view, ctx, model, arg, value
+      continue
     continue if value is undefined || notPathArg.test arg
     path = modelPath ctx, arg
     continue if model.get(path) == value
