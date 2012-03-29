@@ -166,7 +166,7 @@ fnArgValue = (view, ctx, model, name, arg) ->
     fnCallError name unless match = /^"(.*)"$/.exec arg
     return match[1]
 
-  if /^[-\d]/.test firstChar
+  if /^[\d-]/.test firstChar
     # JavaScript's isNaN will be false for any number or string
     # that could be a number, such as '3'. Otherwise, it is true
     fnCallError name if isNaN arg
@@ -193,7 +193,7 @@ fnValue = (view, ctx, model, name) ->
   return fn args...
 
 notPathArg = ///
-  (?:^ ['"-\d[{] )|  # String, number, or object literal
+  (?:^ ['"\d[{-] )|  # String, number, or object literal
   (?:^ null $)|
   (?:^ true $)|
   (?:^ false $)
