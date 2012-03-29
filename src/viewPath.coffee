@@ -43,13 +43,13 @@ exports.modelPath = modelPath = (ctx, name, noReplace) ->
 
 openPlaceholder = ///^
   ([\s\S]*?)  # Before the placeholder
-  (\({2,3}|\{{2,3})  # Opening of placeholder
+  (\{{1,3})  # Opening of placeholder
   ([\s\S]*)  # Remainder
 ///
 
 placeholderContent = ///^
   \s*([\#/]?)  # Start or end block
-  (if|else|elseif|unless|each|with)?  # Block type
+  (if|else|elseif|unless|each|with|unescaped)?  # Block type
   \s*(  # Name of context object
     [^\s(>]*
     (?: \s* \( [\s\S]* \) )?
@@ -57,6 +57,40 @@ placeholderContent = ///^
   (?:\s+as\s+:([^\s>]+))?  # Alias name
   (?:\s*>\s*([^\s]+)\s*)?  # Partial name
 ///
+
+exports.extractPlaceholder = (text) ->
+  return unless match = openPlaceholder.exec text
+  pre = match[1]
+  open = match[2]
+  remainder = match[3]
+  openLen = open.length
+  bound = openLen is 1
+
+  close = Array(openLen + 1).join "}"
+  return unless ~(endInner = remainder.indexOf close)
+  end = endInner + openLen
+
+  inner = remainder[0...endInner]
+  post = remainder[end..]
+  return unless content = placeholderContent.exec inner
+
+  type = content[2]
+  escaped = true
+  if type is 'unescaped'
+    escaped = false
+    type = ''
+
+  return {
+    pre: trim pre
+    post: trim post
+    bound: bound
+    hash: content[1]
+    escaped: escaped
+    type: type
+    name: content[3]
+    alias: content[4]
+    partial: content[5]?.toLowerCase()
+  }
 
 matchParens = (text, num, i) ->
   i++
@@ -76,40 +110,6 @@ matchParens = (text, num, i) ->
     else
       return
   return i
-
-exports.extractPlaceholder = (text) ->
-  return unless match = openPlaceholder.exec text
-  pre = match[1]
-  open = match[2]
-  remainder = match[3]
-  bound = open.charAt(0) is '('
-  openLen = open.length
-  escaped = openLen is 2
-
-  if bound
-    return unless end = matchParens remainder, openLen, 0
-    endInner = end - openLen
-
-  else
-    close = if escaped then '}}' else '}}}'
-    return unless ~(endInner = remainder.indexOf close)
-    end = endInner + openLen
-
-  inner = remainder[0...endInner]
-  post = remainder[end..]
-  return unless content = placeholderContent.exec inner    
-
-  return {
-    pre: trim pre
-    post: trim post
-    bound: bound
-    escaped: escaped
-    hash: content[1]
-    type: content[2]
-    name: content[3]
-    alias: content[4]
-    partial: content[5]?.toLowerCase()
-  }
 
 fnCall = ///^
   ([^(]+)  # Function name

@@ -24,15 +24,15 @@
 
 <alert:>
   <div id=alert>
-    ((#unless connected))
+    {#unless connected}
       <p>
-        ((#if canConnect))
+        {#if canConnect}
           <!-- Leading space is removed, and trailing space is maintained -->
           Offline 
-          ((#if _showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
-        ((else))
+          {#if _showReconnect}&ndash; <a x-bind=click:connect>Reconnect</a>{/}
+        {else}
           Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
-        ((/))
+        {/}
       </p>
-    ((/))
+    {/}
   </div>

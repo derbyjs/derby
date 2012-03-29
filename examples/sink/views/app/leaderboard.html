@@ -4,14 +4,14 @@
 <Body:>
   {{#with leaderboard}}
   <form x-bind="submit: leaderboard.add">
-    <input value=((._newPlayer))> <input type=submit value="Add player"> 
-    <button x-bind="click: leaderboard.remove" disabled="(( not(._selected) ))">
+    <input value={._newPlayer}> <input type=submit value="Add player"> 
+    <button x-bind="click: leaderboard.remove" disabled={not(._selected)}>
       Remove 
-      ((#if ._selected))
-        ((.name))
-      ((else))
+      {#if ._selected}
+        {.name}
+      {else}
         selected
-      ((/))
+      {/}
     </button>
   </form>
 
@@ -22,23 +22,23 @@
   -->
   <div id=leaderboard x-bind=click>
     <div class=selectedPlayer>
-      ((#if ._selected))
+      {#if ._selected}
         <p class=vote>
           <button x-bind="click: leaderboard.incr">+ 5</button>
           <button x-bind="click: leaderboard.decr">- 5</button>
         </p>
-        <span>((.name))</span>
-      ((else))
+        <span>{.name}</span>
+      {else}
         Click a player to select
-      ((/))
+      {/}
     </div>
     <ul>
-      ((#each ._list))
-        <li class="((#if equal(.id, leaderboard._selectedId) ))selected((/))"
+      {#each ._list}
+        <li class="{#if equal(.id, leaderboard._selectedId)}selected{/}"
             x-bind="click: leaderboard.select">
-          <p class=score>((.score))</p>{{name}}
+          <p class=score>{.score}</p>{{name}}
         </li>
-      ((/))
+      {/}
     </ul>
   </div>
   {{/}}

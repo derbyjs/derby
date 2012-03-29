@@ -15,7 +15,7 @@
 -->
 
 <Title:>
-  Chat &lpar;((_numMessages))&rpar; - ((_user.name))
+  Chat ({_numMessages}) - {_user.name}
 
 <Head:>
   <meta name=viewport content="width=device-width">
@@ -27,13 +27,13 @@
 <Body:>
   <div id=page>
     <!-- An object can be passed into the partial to set its context -->
-    <div id=messages><ul id=messageList>((each _room.messages > message))</ul></div>
+    <div id=messages><ul id=messageList>{each _room.messages > message}</ul></div>
     <div id=foot>
-      <img id=inputPic src=/img/s.png class="pic ((_user.picClass))" alt="">
+      <img id=inputPic src=/img/s.png class="pic {_user.picClass}" alt="">
       <div id=inputs>
-        <input id=inputName value=((_user.name))>
+        <input id=inputName value={_user.name}>
         <form id=inputForm x-bind=submit:postMessage>
-          <input id=commentInput value=((_newComment)) autofocus>
+          <input id=commentInput value={_newComment} autofocus>
         </form>
       </div>
     </div>
@@ -50,17 +50,17 @@
       Handlebars syntax is used for conditional blocks, except that the
       name need not be repeated in the closing tag or if-else blocks
     -->
-    ((#unless connected))
+    {#unless connected}
       <p>
-        ((#if canConnect))
+        {#if canConnect}
           <!-- Leading space is removed, and trailing space is maintained -->
           Offline 
-          ((#if _showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
-        ((else))
+          {#if _showReconnect}&ndash; <a x-bind=click:connect>Reconnect</a>{/}
+        {else}
           Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
-        ((/))
+        {/}
       </p>
-    ((/))
+    {/}
   </div>
 
 <message:>
@@ -68,8 +68,8 @@
   <li>
     <img src=img/s.png class="pic {{users.[userId].picClass}}" alt="">
     <div class=message>
-      <p class=time>((._displayTime))</p>
-      <p><b>((users.[userId].name))</b></p>
+      <p class=time>{._displayTime}</p>
+      <p><b>{users.[userId].name}</b></p>
       <p>{{comment}}</p>
     </div>
   </li>

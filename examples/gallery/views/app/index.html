@@ -5,18 +5,18 @@
   {{> alert}}
 
 <Body:>
-  ((_user.publicPhotos))
+  {_user.publicPhotos}
 
 <alert:>
   <div id="alert">
-    ((#unless connected))
+    {#unless connected}
       <p>
-        ((#if canConnect))
+        {#if canConnect}
           Offline 
-          ((#if _showReconnect))&ndash; <a x-bind="click:connect">Reconnect</a>((/))
-        ((else))
-          Unable to reconnect &ndash; <a x-bind="click:reload">Reload</a>
-        ((/))
+          {#if _showReconnect}&ndash; <a x-bind="click: connect">Reconnect</a>{/}
+        {else}
+          Unable to reconnect &ndash; <a x-bind="click: reload">Reload</a>
+        {/}
       </p>
-    ((/))
+    {/}
   </div>

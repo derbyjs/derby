@@ -78,12 +78,12 @@ describe 'View', ->
     view._init model
 
     view.make 'test', '''
-      ((connected))((canConnect)) ((nada))
+      {connected}{canConnect} {nada}
       <p>
-        ((name))
+        {name}
       </p>
       <p>
-        ((age)) - ((height)) - ((weight))
+        {age} - {height} - {weight}
       </p>
       '''
     ctx =
@@ -108,7 +108,7 @@ describe 'View', ->
     # Attribute values are escaped regardless of placeholder type
     # Ampersands are escaped at the end of a replacement even when not
     # required, because it is sometimes needed depending on the following item
-    template = '''<input value=(((html)))> ((html))x(((html)))'''
+    template = '''<input value="{unescaped html}"> {html}x{unescaped html}'''
     value = '<b id="hey">&Hi! & x& </b>&'
     expected =
       '<input id=$0 value="<b id=&quot;hey&quot;>&amp;Hi! & x& </b>&amp;"> ' +
@@ -136,7 +136,7 @@ describe 'View', ->
     view.make 'literal',
       '{{#if show}}Yep{{else}}Nope{{/}}{{#if show}} Yes!{{/}} {{#unless show}}No{{/}}'
     view.make 'bound',
-      '((#if show))Yep((else))Nope((/))((#if show)) Yes!((/)) ((#unless show))No((/))'
+      '{#if show}Yep{else}Nope{/}{#if show} Yes!{/} {#unless show}No{/}'
 
     literalTruthy = 'Yep Yes! '
     literalFalsey = 'Nope No'
@@ -219,7 +219,7 @@ describe 'View', ->
     view = new View
     view._init new Model
 
-    view.make 'test', '<input disabled=((maybe))>'
+    view.make 'test', '<input disabled={maybe}>'
 
     expect(view.get 'test').to.equal '<input id=$0>'
     expect(view.get 'test', maybe: false).to.equal '<input id=$1>'
@@ -261,7 +261,7 @@ describe 'View', ->
 
     view.fn 'lower', (s) -> s.toLowerCase()
 
-    view.make 'test', '''{{lower('HI')}} ((lower( "HI" )))'''
+    view.make 'test', '''{{lower('HI')}} {lower( "HI" )}'''
     expect(view.get 'test').to.equal 'hi <!--$0-->hi<!--$$0-->'
 
     view.fn 'sum', (a, b) -> a + b
@@ -270,11 +270,11 @@ describe 'View', ->
     expect(view.get 'test').to.equal '13'
 
     view._idCount = 0
-    view.make 'test', '(((equal(1, sum(-5, 6)))))'
+    view.make 'test', '{equal(1, sum(-5, 6))}'
     expect(view.get 'test').to.equal '<!--$0-->true<!--$$0-->'
 
     view._idCount = 0
-    view.make 'test', '(((equal(sum(-5, 6), 1))))'
+    view.make 'test', '{unescaped equal(sum(-5, 6), 1)}'
     expect(view.get 'test').to.equal '<!--$0-->true<!--$$0-->'
 
     view.make 'test', '{{sum(4, count)}}'

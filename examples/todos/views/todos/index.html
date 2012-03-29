@@ -7,24 +7,24 @@
 <Body:>
   <div id=overlay></div>
   <form id=head x-bind=submit:add>
-    <h1>Todos <span>((_remaining)) remaining</span></h1>
+    <h1>Todos <span>{_remaining} remaining</span></h1>
     <div id=add>
-      <div id=add-input><input id=new-todo value=((_newTodo))></div>
+      <div id=add-input><input id=new-todo value={_newTodo}></div>
       <input id=add-button type=submit value=Add>
     </div>
   </form>
   <div id=dragbox></div>
-  <div id=content><ul id=todos>((each _todoList > todo))</ul></div>
+  <div id=content><ul id=todos>{each _todoList > todo}</ul></div>
 
 <todo:>
-  <li data-id={{id}} class="((#if .completed))completed((/))">
+  <li data-id={{id}} class="{#if .completed}completed{/}">
     <table width=100%>
       <tr>
         <td class=handle width=0></td>
         <td width=100%>
           <div class=todo>
-            <label><input type=checkbox checked=((.completed))><i></i></label>
-            <div x-bind=keydown:shortcuts contenteditable>(((.text)))</div>
+            <label><input type=checkbox checked={.completed}><i></i></label>
+            <div x-bind=keydown:shortcuts contenteditable>{unescaped .text}</div>
           </div>
         </td>
         <td width=0><button class=delete x-bind=click:del>Delete</button></td>
@@ -34,15 +34,15 @@
 
 <alert:>
   <div id=alert>
-    ((#unless connected))
+    {#unless connected}
       <p>
-        ((#if canConnect))
-          Offline ((#if _showReconnect))&ndash; <a x-bind=click:connect>Reconnect</a>((/))
-        ((else))
+        {#if canConnect}
+          Offline {#if _showReconnect}&ndash; <a x-bind=click:connect>Reconnect</a>{/}
+        {else}
           Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
-        ((/))
+        {/}
       </p>
-    ((/))
+    {/}
   </div>
 
 <Scripts:>

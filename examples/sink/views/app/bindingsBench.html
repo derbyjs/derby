@@ -2,11 +2,11 @@
 
   <div>
     <p>
-      ((#if _mode))
-        Mode: <b>((_mode))</b> &nbsp; FPS: <b>((_fps))</b>
-      ((else))
+      {#if _mode}
+        Mode: <b>{_mode}</b> &nbsp; FPS: <b>{_fps}</b>
+      {else}
         Select a mode to run:
-      ((/))
+      {/}
     </p>
     <p>
       {{#each modes}}<button x-bind="click: start">{{this}}</button>{{/}}
@@ -14,24 +14,24 @@
     </p>
   </div>
 
-  ((#if _bindProperties))
+  {#if _bindProperties}
     <div>
-      ((#each _boxes))
+      {#each _boxes}
         <div class="box-view">
-          <div id="box-{{i}}" class="box" style="top: ((.top))px; left: ((.left))px; background: rgb(0, 0, ((.color)));">
-            ((.content))
+          <div id="box-{{i}}" class="box" style="top: {.top}px; left: {.left}px; background: rgb(0, 0, {.color});">
+            {.content}
           </div>
         </div>
-      ((/))
+      {/}
     </div>
-  ((else))
+  {else}
     <div>
-      ((#each _boxes))
+      {#each _boxes}
         <div class="box-view">
           <div id="box-{{i}}" class="box" style="top: {{top}}px; left: {{left}}px; background: rgb(0, 0, {{color}});">
             {{content}}
           </div>
         </div>
-      ((/))
+      {/}
     </div>
-  ((/))
+  {/}

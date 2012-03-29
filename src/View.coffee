@@ -200,13 +200,14 @@ addId = (view, attrs) ->
 reduceStack = (stack) ->
   html = ['']
   i = 0
-  for item in stack
-    pushValue = (value, isAttr) ->
-      if value && value.call
-        i = html.push(value, '') - 1
-      else
-        html[i] += if isAttr then escapeAttr value else value
 
+  pushValue = (value, isAttr) ->
+    if value && value.call
+      i = html.push(value, '') - 1
+    else
+      html[i] += if isAttr then escapeAttr value else value
+
+  for item in stack
     switch item[0]
       when 'start'
         html[i] += '<' + item[1]
@@ -216,7 +217,7 @@ reduceStack = (stack) ->
           html[i] += ' id='
           pushValue attrs.id, true
         for key, value of attrs
-          continue  if key is 'id'
+          continue if key is 'id'
           if value?
             if bool = value.bool
               pushValue bool
@@ -472,6 +473,7 @@ pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
 
 parse = null
 forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
+  return if typeof value is 'function'
   if match = extractPlaceholder value
     {pre, post, name, bound, partial} = match
     
