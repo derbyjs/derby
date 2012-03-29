@@ -1,5 +1,6 @@
 {lookup} = require 'racer/lib/path'
 {merge} = require 'racer/lib/util'
+{modelPath} = require './viewPath'
 
 module.exports =
 
@@ -96,38 +97,6 @@ module.exports =
   AUTOCOMPLETE_OFF: AUTOCOMPLETE_OFF =
     checkbox: true
     radio: true
-
-  modelPath: modelPath = (ctx, name, noReplace) ->
-    name = if name is '.this' then '.' else name.replace(/\.this$/, '')
-    firstChar = name.charAt(0)
-
-    if firstChar is ':'
-      # Dereference alias name
-      if ~(i = name.indexOf '.')
-        aliasName = name[1...i]
-        name = name[i..]
-      else
-        aliasName = name.slice 1
-        name = ''
-      # Calculate depth difference between alias's definition and usage
-      i = ctx.$depth - ctx.$aliases[aliasName]
-      if i != i  # If NaN
-        throw new Error "Can't find alias for #{aliasName}"
-
-    else if firstChar is '.'
-      # Dereference relative path
-      i = 0
-      i++ while name.charAt(i) == '.'
-      name = if i == name.length then '' else name.slice i - 1
-
-    if i && (name = ctx.$paths[i - 1] + name) && !noReplace
-      # Replace array index placeholders with the proper index
-      i = 0
-      indices = ctx.$i
-      name = name.replace /\$#/g, -> indices[i++]
-
-    # Interpolate the value of names within square brackets
-    return name.replace /\[([^\]]+)\]/g, (match, name) -> lookup name, ctx
 
   splitEvents: splitEvents = (eventNames) ->
     pairs = eventNames.replace(/\s/g, '').split ','
