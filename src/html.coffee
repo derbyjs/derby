@@ -69,7 +69,7 @@ exports.parse = (html, handler = {}) ->
       index = html.indexOf '<'
       parseChars index
 
-    throw 'HTML parse error: ' + html  if html == last
+    throw new Error 'HTML parse error: ' + html  if html == last
 
 exports.escapeHtml = (s) ->
   unless s? then '' else s.toString().replace /&(?!\s)|</g, (s) ->

@@ -34,7 +34,8 @@
     </div>
     <ul>
       ((#each ._list))
-        <li class="((._class))" x-bind="click: leaderboard.select">
+        <li class="((#if equal(.id, leaderboard._selectedId) ))selected((/))"
+            x-bind="click: leaderboard.select">
           <p class=score>((.score))</p>{{name}}
         </li>
       ((/))

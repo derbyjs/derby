@@ -153,6 +153,20 @@ loadTemplates = (root, fileName, get, calls, files, templates, instances, alias,
       calls.finish new Error "Can't find template '#{get}' in #{path}"  unless got
       calls.finish null, templates, instances
 
+# Trim linebreaks and leading space, while
+# maintaining a linebreak within HTML tags
+compactHtml = (html) ->
+  compact = ''
+  onTag = (tag) ->
+    compact += tag.replace /\n\s*/g, '\n'
+  onText = (text) ->
+    compact += trim text
+  parseHtml html,
+    start: onTag
+    end: onTag
+    chars: onText
+  return compact
+
 parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias, currentNs, matchesGet, file) ->
   name = src = ns = as = importTemplates = null
   relativePath = relative root, path
@@ -206,7 +220,8 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
       unless name && literal
         return if onlyWhitespace.test text
         calls.finish new Error "Can't read template in #{path} near the text: #{text}"
-      templates[templateName] = trim text
+
+      templates[templateName] = compactHtml text
 
 extensions =
   html: /\.html$/

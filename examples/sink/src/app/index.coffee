@@ -1,14 +1,17 @@
-{get, ready} = app = require('derby').createApp module
+{get, ready, view} = app = require('derby').createApp module
 {render} = require './shared'
 require './live-css'
 require './table'
 require './leaderboard'
 require './bindings-bench'
 
+# Define a view helper function for use in templates
+view.fn 'unspace', (value) -> value?.replace /\s/g, ''
+
 get '/', (page, model) ->
   model.subscribe 'titleColor', ->
     render page, 'home',
-      titleColors: ['black', 'deeppink', 'limegreen', 'coral', 'darkturquoise', 'darkorchid']
+      titleColors: ['Black', 'Deep pink', 'Lime green', 'Coral', 'Dark turquoise', 'Dark orchid']
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
   app[method] '/submit', (page, model, {body, query}) ->

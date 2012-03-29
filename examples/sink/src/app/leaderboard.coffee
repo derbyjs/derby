@@ -34,10 +34,6 @@ ready (model) ->
   selectedId = leaderboard.at '_selectedId'
   selected = leaderboard.at '_selected'
 
-  selectedId.on 'set', (value, previous) ->
-    players.at(previous).del '_class' if previous
-    players.at(value).set '_class', 'selected' if value
-
   app.leaderboard =
     add: ->
       return unless name = newPlayer.get()
