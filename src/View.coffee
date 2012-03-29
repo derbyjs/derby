@@ -64,8 +64,8 @@ View:: =
     @_views[name] = render
     @_renders[templatePath] = render if templatePath
 
-    if name is 'title$s' then onBind = (events, name) ->
-      bindEvents events, name, render, ['$_doc', 'prop', 'title']
+    if name is 'title$s' then onBind = (events, name) =>
+      bindEvents this, events, name, render, ['$_doc', 'prop', 'title']
     return
 
   _makeAll: (templates, instances) ->
@@ -154,24 +154,35 @@ extend = (parent, obj) ->
     out[key] = obj[key]
   return out
 
-bindEvents = (events, name, fn, params) ->
+modelListener = (params, triggerId, blockPaths, pathId, partial, ctx) ->
+  listener = if params.call then params triggerId, blockPaths, pathId else params
+  listener.partial = partial
+  listener.ctx = ctx.$stringCtx || ctx
+  return listener
+
+bindEvents = (view, events, name, partial, params) ->
   events.push (ctx, modelEvents, dom, pathMap, blockPaths, triggerId) ->
     if ~name.indexOf('(')
-      paths = pathFnArgs ctx, name
+      listener = modelListener params, triggerId, blockPaths, null, partial, ctx
+      listener.getValue = (model) -> dataValue view, ctx, model, name
+      for path in pathFnArgs ctx, name
+        pathId = pathMap.id path
+        modelEvents.bind pathId, listener
       return
 
-    return unless path = modelPath ctx, name
-    listener = if params.call then params triggerId, pathMap, blockPaths, path else params
-    modelEvents.bind pathMap.id(path), listener
-    listener.fn = fn
-    listener.ctx = ctx.$stringCtx || ctx
-bindEventsById = (events, name, fn, attrs, method, prop, isBlock) ->
-  bindEvents events, name, fn, (triggerId, pathMap, blockPaths, path) ->
+    return unless path = modelPath(ctx, name)
+    pathId = pathMap.id path
+    listener = modelListener params, triggerId, blockPaths, pathId, partial, ctx
+    modelEvents.bind pathId, listener
+
+bindEventsById = (view, events, name, partial, attrs, method, prop, isBlock) ->
+  bindEvents view, events, name, partial, (triggerId, blockPaths, pathId) ->
     id = attrs._id || attrs.id
-    blockPaths[id] = pathMap.id path  if isBlock
+    blockPaths[id] = pathId  if isBlock && pathId
     return [id, method, prop]
-bindEventsByIdString = (events, name, fn, attrs, method, prop) ->
-  bindEvents events, name, fn, (triggerId) ->
+
+bindEventsByIdString = (view, events, name, partial, attrs, method, prop) ->
+  bindEvents view, events, name, partial, (triggerId) ->
     id = triggerId || attrs._id || attrs.id
     return [id, method, prop]
 
@@ -588,12 +599,12 @@ blockFn = (view, queue) ->
   render = renderer view, reduceStack(stack), events
   return partialFn view, name, type, alias, render
 
-parseMarkup = (type, attr, tagName, events, attrs, name, invert) ->
+parseMarkup = (type, attr, tagName, events, attrs, name) ->
   return  unless parser = markup[type][attr]
   if anyParser = parser['*']
-    anyOut = anyParser events, attrs, name, invert
+    anyOut = anyParser events, attrs, name
   if elParser = parser[tagName]
-    elOut = elParser events, attrs, name, invert
+    elOut = elParser events, attrs, name
   out = if anyOut then extend anyOut, elOut else elOut
   delete attrs[attr]  if out?.del
   return out
@@ -629,8 +640,8 @@ pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
     addId view, attrs
 
-    bindEventsById events, name, fn, attrs, 'html', !fn && escaped, true
-    bindEventsById events, name, fn2, attrs, 'append'  if fn2
+    bindEventsById view, events, name, fn, attrs, 'html', !fn && escaped, true
+    bindEventsById view, events, name, fn2, attrs, 'append'  if fn2
 
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
@@ -651,12 +662,11 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
   if match = extractPlaceholder value
     {pre, post, name, bound, partial} = match
     
-    invert = /^\s*!\s*$/.test pre
-    if (pre && !invert) || post || partial
+    if pre || post || partial
       # Attributes must be a single string, so create a string partial
       addId view, attrs
       render = parse view, viewName, value, true, (events, name) ->
-        bindEventsByIdString events, name, render, attrs, 'attr', attr
+        bindEventsByIdString view, events, name, render, attrs, 'attr', attr
 
       attrs[attr] = if attr is 'id'
         (ctx, model) -> attrs._id = escapeAttr render(ctx, model)
@@ -664,18 +674,18 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
         (ctx, model) -> escapeAttr render(ctx, model)
       return
 
-    out = parseMarkup('bound', attr, tagName, events, attrs, name, invert) || {}
+    out = parseMarkup('bound', attr, tagName, events, attrs, name) || {}
 
     if bound
       addId view, attrs
-      fn = '$inv'  if invert
-      bindEventsById events, name, fn, attrs, (out.method || 'attr'), (out.property || attr)
+      bindEventsById view, events, name, null, attrs, (out.method || 'attr'), (out.property || attr)
 
     unless out.del
       attrs[attr] = if out.bool
           bool: (ctx, model) ->
-            if !dataValue(view, ctx, model, name) == invert then ' ' + attr else ''
-        else textFn view, name, escapeAttr
+            if dataValue(view, ctx, model, name) then ' ' + attr else ''
+        else
+          textFn view, name, escapeAttr
 
   out = parseMarkup 'attr', attr, tagName, events, attrs, value
   addId view, attrs  if out?.addId

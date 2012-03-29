@@ -7,9 +7,9 @@
   <div>
     ((#each liveCss.styles))
       <p>
-        <input type=checkbox checked=((.active))> 
-        <input value=((.prop)) disabled=!((.active))> 
-        <input value=((.value)) disabled=!((.active))> 
+        <input type="checkbox" checked="((.active))"> 
+        <input value="((.prop))" disabled="(( not(.active) ))"> 
+        <input value="((.value))" disabled="(( not(.active) ))"> 
         <button x-bind="click: liveCss.deleteStyle">Delete</button>
       </p>
     ((/))

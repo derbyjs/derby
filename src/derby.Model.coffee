@@ -69,14 +69,15 @@ exports.init = (model, dom) ->
 
       method = listener[1]
       property = listener[2]
-      partial = listener.fn
+      partial = listener.partial
       path = pathMap.paths[name]
 
       method = 'prop' if method is 'propPolite' && local
 
-      if partial is '$inv'
-        value = !value
-      else if partial
+      if listener.getValue
+        value = listener.getValue model
+
+      if partial
         triggerId = id
         if method is 'html' && type
           # Handle array updates

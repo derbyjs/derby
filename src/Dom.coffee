@@ -26,7 +26,6 @@ Dom = module.exports = (model, appExports) ->
     # Update the model when the element's value changes
     finish = ->
       value = getMethods[listener.method] el, listener.property
-      value = !value  if listener.invert
       return  if model.get(path) == value
       model.set path, value
 

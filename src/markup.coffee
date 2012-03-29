@@ -29,13 +29,13 @@ module.exports =
         return {method}
 
     'checked':
-      '*': (events, attrs, name, invert) ->
-        addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'checked', invert}
+      '*': (events, attrs, name) ->
+        addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'checked'}
         return method: 'prop', bool: true
 
     'selected':
-      '*': (events, attrs, name, invert) ->
-        addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'selected', invert}
+      '*': (events, attrs, name) ->
+        addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'selected'}
         return method: 'prop', bool: true
 
     'disabled':
@@ -148,7 +148,7 @@ module.exports =
     eventList = splitEvents eventNames
 
     if name
-      {method, property, invert} = options
+      {method, property} = options
       if eventList.length == 1
         [eventName, delay] = eventList[0]
         events.push (ctx, modelEvents, dom, pathMap) ->
