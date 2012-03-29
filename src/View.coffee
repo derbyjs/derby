@@ -15,7 +15,7 @@ defaultGetFns =
   not: (value) -> !value
 
 defaultSetFns =
-  equal: (value) -> [value]
+  equal: (value, b) -> if value then [b] else []
   not: (value) -> [!value]
 
 View = module.exports = ->
@@ -64,8 +64,8 @@ View:: =
     @_views[name] = render
     @_renders[templatePath] = render if templatePath
 
-    if name is 'title$s' then onBind = (events, name) =>
-      bindEvents this, events, name, render, ['$_doc', 'prop', 'title']
+    if name is 'title$s' then onBind = (events, name) ->
+      bindEvents events, name, render, ['$_doc', 'prop', 'title']
     return
 
   _makeAll: (templates, instances) ->
@@ -161,29 +161,35 @@ modelListener = (params, triggerId, blockPaths, pathId, partial, ctx) ->
   listener.ctx = ctx.$stringCtx || ctx
   return listener
 
-bindEvents = (view, events, name, partial, params) ->
-  events.push (ctx, modelEvents, dom, pathMap, blockPaths, triggerId) ->
-    if ~name.indexOf('(')
+bindEvents = (events, name, partial, params) ->
+  if ~name.indexOf('(')
+    args = pathFnArgs name
+    return unless args.length
+    events.push (ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId) ->
       listener = modelListener params, triggerId, blockPaths, null, partial, ctx
-      listener.getValue = (model) -> dataValue view, ctx, model, name
-      for path in pathFnArgs ctx, name
+      listener.getValue = (model) ->
+        dataValue view, ctx, model, name
+      for arg in args
+        path = modelPath ctx, arg
         pathId = pathMap.id path
         modelEvents.bind pathId, listener
       return
+    return
 
-    return unless path = modelPath(ctx, name)
+  events.push (ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId) ->
+    return unless path = modelPath ctx, name
     pathId = pathMap.id path
     listener = modelListener params, triggerId, blockPaths, pathId, partial, ctx
     modelEvents.bind pathId, listener
 
-bindEventsById = (view, events, name, partial, attrs, method, prop, isBlock) ->
-  bindEvents view, events, name, partial, (triggerId, blockPaths, pathId) ->
+bindEventsById = (events, name, partial, attrs, method, prop, isBlock) ->
+  bindEvents events, name, partial, (triggerId, blockPaths, pathId) ->
     id = attrs._id || attrs.id
     blockPaths[id] = pathId  if isBlock && pathId
     return [id, method, prop]
 
-bindEventsByIdString = (view, events, name, partial, attrs, method, prop) ->
-  bindEvents view, events, name, partial, (triggerId) ->
+bindEventsByIdString = (events, name, partial, attrs, method, prop) ->
+  bindEvents events, name, partial, (triggerId) ->
     id = triggerId || attrs._id || attrs.id
     return [id, method, prop]
 
@@ -229,7 +235,6 @@ reduceStack = (stack) ->
         html[i] += '-->'
   return html
 
-
 renderer = (view, items, events, onRender) ->
   (ctx, model, triggerPath, triggerId) ->
     if triggerPath && path = ctx.$paths[0]
@@ -257,7 +262,7 @@ renderer = (view, items, events, onRender) ->
       html += if item.call then item(ctx, model, triggerPath) || '' else item
     i = 0
     while event = events[i++]
-      event ctx, modelEvents, dom, pathMap, blockPaths, triggerId
+      event ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId
     return html
 
 parseMatchError = (text, message) ->
@@ -448,8 +453,8 @@ pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
     addId view, attrs
 
-    bindEventsById view, events, name, fn, attrs, 'html', !fn && escaped, true
-    bindEventsById view, events, name, fn2, attrs, 'append'  if fn2
+    bindEventsById events, name, fn, attrs, 'html', !fn && escaped, true
+    bindEventsById events, name, fn2, attrs, 'append'  if fn2
 
   pushVarFns view, stack, fn, fn2, name, escaped
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
@@ -474,7 +479,7 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
       # Attributes must be a single string, so create a string partial
       addId view, attrs
       render = parse view, viewName, value, true, (events, name) ->
-        bindEventsByIdString view, events, name, render, attrs, 'attr', attr
+        bindEventsByIdString events, name, render, attrs, 'attr', attr
 
       attrs[attr] = if attr is 'id'
         (ctx, model) -> attrs._id = escapeAttr render(ctx, model)
@@ -486,7 +491,7 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
 
     if bound
       addId view, attrs
-      bindEventsById view, events, name, null, attrs, (out.method || 'attr'), (out.property || attr)
+      bindEventsById events, name, null, attrs, (out.method || 'attr'), (out.property || attr)
 
     unless out.del
       attrs[attr] = if out.bool

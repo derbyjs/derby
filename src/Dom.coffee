@@ -17,22 +17,27 @@ Dom = module.exports = (model, appExports) ->
 
   onTrigger = (name, listener, id, e, el, next) ->
     if (fn = listener.fn)?
-      callback = fns[fn] || appExports[fn] || lookup(fn, appExports)
-      return  unless callback
+      finish = fns[fn] || appExports[fn] || lookup(fn, appExports)
+      return  unless finish
     else
-      # Remove this listener if its path id is no longer registered
-      return false  unless path = model.__pathMap.paths[listener.pathId]
+      # Update the model when the element's value changes
+      finish = ->
+        value = getMethods[listener.method] el, listener.property
 
-    # Update the model when the element's value changes
-    finish = ->
-      value = getMethods[listener.method] el, listener.property
-      return  if model.get(path) == value
-      model.set path, value
+        if setValue = listener.setValue
+          setValue model, value
+          return
+
+        # Remove this listener if its path id is no longer registered
+        return false  unless path = model.__pathMap.paths[listener.pathId]
+        # Set the value if changed
+        return  if model.get(path) == value
+        model.set path, value
 
     if (delay = listener.delay)?
-      setTimeout callback || finish, delay, e, el, next, dom
+      setTimeout finish, delay, e, el, next, dom
     else
-      (callback || finish) e, el, next, dom
+      finish e, el, next, dom
     return
 
   # DOM listener capturing allows blur and focus to be delegated

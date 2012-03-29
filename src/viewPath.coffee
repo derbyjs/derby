@@ -145,6 +145,39 @@ fnArgs = (inner) ->
     args.push last
   return args
 
+fnArgValue = (view, ctx, model, name, arg) ->
+  # Support null, true, and false -- the same keyword values as JSON 
+  if arg is 'null'
+    return null
+
+  if arg is 'true'
+    return true
+
+  if arg is 'false'
+    return false
+
+  firstChar = arg.charAt 0
+
+  if firstChar is "'"
+    fnCallError name unless match = /^'(.*)'$/.exec arg
+    return match[1]
+
+  if firstChar is '"'
+    fnCallError name unless match = /^"(.*)"$/.exec arg
+    return match[1]
+
+  if /^[-\d]/.test firstChar
+    # JavaScript's isNaN will be false for any number or string
+    # that could be a number, such as '3'. Otherwise, it is true
+    fnCallError name if isNaN arg
+    # Cast into a number
+    return +arg
+
+  if firstChar is '[' || firstChar is '{'
+    throw new Error 'object literals not supported in view function call: ' + name
+
+  return dataValue view, ctx, model, arg
+
 fnValue = (view, ctx, model, name) ->
   fnCallError name unless match = fnCall.exec name
   fnName = match[1]
@@ -152,44 +185,7 @@ fnValue = (view, ctx, model, name) ->
 
   # Get values for each argument
   for arg, i in args
-
-    # Support null, true, and false -- the same keyword values as JSON 
-    if arg is 'null'
-      args[i] = null
-      continue
-
-    if arg is 'true'
-      args[i] = true
-      continue
-
-    if arg is 'false'
-      args[i] = false
-      continue
-
-    firstChar = arg.charAt 0
-
-    if firstChar is "'"
-      fnCallError name unless match = /^'(.*)'$/.exec arg
-      args[i] = match[1]
-      continue
-
-    if firstChar is '"'
-      fnCallError name unless match = /^"(.*)"$/.exec arg
-      args[i] = match[1]
-      continue
-
-    if /^[-\d]/.test firstChar
-      # JavaScript's isNaN will be false for any number or string
-      # that could be a number, such as '3'. Otherwise, it is true
-      fnCallError name if isNaN arg
-      # Cast into a number
-      args[i] = +arg
-      continue
-
-    if firstChar is '[' || firstChar is '{'
-      throw new Error 'object literals not supported in view function call: ' + name
-
-    args[i] = dataValue view, ctx, model, arg
+    args[i] = fnArgValue view, ctx, model, name, arg
 
   unless fn = view.getFns[fnName]
     throw new Error 'view function "' + fnName + '" not found for call: ' + name
@@ -202,7 +198,7 @@ notPathArg = ///
   (?:^ true $)|
   (?:^ false $)
 ///
-exports.pathFnArgs = pathFnArgs = (ctx, name, paths = []) ->
+exports.pathFnArgs = pathFnArgs = (name, paths = []) ->
   fnCallError name unless match = fnCall.exec name
   args = fnArgs match[2]
 
@@ -210,9 +206,9 @@ exports.pathFnArgs = pathFnArgs = (ctx, name, paths = []) ->
     if notPathArg.test arg
       continue
     if ~arg.indexOf('(')
-      pathFnArgs ctx, arg, paths
+      pathFnArgs arg, paths
       continue
-    paths.push modelPath ctx, arg
+    paths.push arg
 
   return paths
 
@@ -224,3 +220,29 @@ exports.dataValue = dataValue = (view, ctx, model, name) ->
   return value if value isnt undefined
   value = model.get path
   return if value isnt undefined then value else model[path]
+
+exports.setBoundFn = (view, ctx, model, name, value) ->
+  fnCallError name unless match = fnCall.exec name
+  fnName = match[1]
+  args = fnArgs match[2]
+
+  unless (get = view.getFns[fnName]) && (set = view.setFns[fnName])
+    throw new Error 'view function "' + fnName + '" not found for binding to: ' + name
+
+  # Get each of the input values
+  numInputs = set.length - 1
+  i = args.length - numInputs
+  inputs = [value]
+  while arg = args[i++]
+    inputs.push fnArgValue view, ctx, model, name, arg
+
+  out = set inputs...
+
+  # Set each of the defined output values
+  for value, i in out
+    arg = args[i]
+    continue if value is undefined || notPathArg.test arg
+    path = modelPath ctx, arg
+    continue if model.get(path) == value
+    model.set path, value
+  return

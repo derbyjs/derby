@@ -1,6 +1,15 @@
 <Body:>
-  <h1>Welcome!</h1>
+  <h1 style="color:((titleColor))">Welcome!</h1>
   <p>This is a collection of random demos. Check 'em out!</p><br>
+  <p>
+    <label>Title color: 
+      <select>
+        {{#each titleColors}}
+          <option selected="((equal(titleColor, .this)))">{{this}}</option>
+        {{/}}
+      </select>
+    </label>
+  </p><br>
   <p><a href=#jump>Test jump link</a></p><br>
   <p><a href=/live-css/popout>Test Live CSS popped out</a></p>
   <p style="margin:400px 0 1000px">

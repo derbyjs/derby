@@ -6,7 +6,9 @@ require './leaderboard'
 require './bindings-bench'
 
 get '/', (page, model) ->
-  render page, 'home'
+  model.subscribe 'titleColor', ->
+    render page, 'home',
+      titleColors: ['black', 'deeppink', 'limegreen', 'coral', 'darkturquoise', 'darkorchid']
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
   app[method] '/submit', (page, model, {body, query}) ->

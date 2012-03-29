@@ -1,6 +1,5 @@
-{lookup} = require 'racer/lib/path'
 {merge} = require 'racer/lib/util'
-{modelPath} = require './viewPath'
+{modelPath, pathFnArgs, setBoundFn} = require './viewPath'
 
 module.exports =
 
@@ -117,32 +116,34 @@ module.exports =
     eventList = splitEvents eventNames
 
     if name
-      {method, property} = options
-      if eventList.length == 1
-        [eventName, delay] = eventList[0]
-        events.push (ctx, modelEvents, dom, pathMap) ->
-          pathId = pathMap.id modelPath(ctx, name)
+      if ~name.indexOf('(')
+        args = pathFnArgs name
+        return unless args.length
+
+        events.push (ctx, modelEvents, dom, pathMap, view) ->
           id = attrs._id || attrs.id
-          dom.bind eventName, id, merge {pathId, delay}, options
+          paths = []
+          options.setValue = (model, value) ->
+            setBoundFn view, ctx, model, name, value
+          for arg in args
+            path = modelPath ctx, arg
+            paths.push path
+            pathId = pathMap.id path
+            for [eventName, delay] in eventList
+              dom.bind eventName, id, merge({pathId, delay}, options)
           return
         return
+
       events.push (ctx, modelEvents, dom, pathMap) ->
-        pathId = pathMap.id modelPath(ctx, name)
         id = attrs._id || attrs.id
+        pathId = pathMap.id modelPath(ctx, name)
         for [eventName, delay] in eventList
-          dom.bind eventName, id, merge {pathId, delay}, options
+          dom.bind eventName, id, merge({pathId, delay}, options)
         return
       return
 
-    if eventList.length == 1
-      [eventName, delay, fn] = eventList[0]
-      events.push (ctx, modelEvents, dom) ->
-        id = attrs._id || attrs.id
-        dom.bind eventName, id, merge {fn, delay}, options
-        return
-      return
     events.push (ctx, modelEvents, dom) ->
       id = attrs._id || attrs.id
       for [eventName, delay, fn] in eventList
-        dom.bind eventName, id, merge {fn, delay}, options
+        dom.bind eventName, id, merge({fn, delay}, options)
       return
