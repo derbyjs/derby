@@ -62,7 +62,7 @@ Model::at = (node, absolute) ->
 exports.init = (model, dom) ->
   pathMap = model.__pathMap = new PathMap
   events = model.__events = new EventDispatcher
-    onTrigger: (name, listener, value, type, local, options) ->
+    onTrigger: (pathId, listener, type, local, options, value, index, arg) ->
       id = listener[0]
       # Fail and remove the listener if the element can't be found
       return false unless el = dom.item id
@@ -70,7 +70,7 @@ exports.init = (model, dom) ->
       method = listener[1]
       property = listener[2]
       partial = listener.partial
-      path = pathMap.paths[name]
+      path = pathMap.paths[pathId]
 
       method = 'prop' if method is 'propPolite' && local
 
@@ -86,14 +86,13 @@ exports.init = (model, dom) ->
             path += '.' + (index = model.get(path).length - 1)
             triggerId = null
           else if type is 'insert'
-            [index, value] = value
             path += '.' + index
             triggerId = null
           else if type is 'remove'
             noRender = true
           else if type is 'move'
             noRender = true
-            [value, property, index] = value
+            property = arg
         unless noRender
           value = partial listener.ctx, model, path, triggerId, value, index, true
           value = '' unless value?
@@ -117,22 +116,22 @@ exports.init = (model, dom) ->
       i = path.lastIndexOf('.')
       arrayPath = path[0...i]
       index = path.slice i + 1
-      events.trigger pathMap.id(arrayPath), index, 'remove', local, pass
-      events.trigger pathMap.id(arrayPath), [index, value], 'insert', local, pass
+      events.trigger pathMap.id(arrayPath), 'remove', local, pass, null, index
+      events.trigger pathMap.id(arrayPath), 'insert', local, pass, value, index
 
-    events.trigger pathMap.id(path), value, 'html', local, pass
+    events.trigger pathMap.id(path), 'html', local, pass, value
 
   model.listeners('del').unshift (args, out, local, pass) ->
     model.emit 'pre:del', args, out, local, pass
     [path] = args
-    events.trigger pathMap.id(path), undefined, 'html', local, pass
+    events.trigger pathMap.id(path), 'html', local, pass
 
   model.listeners('push').unshift (args, out, local, pass) ->
     model.emit 'pre:push', args, out, local, pass
     [path, values...] = args
     id = pathMap.id path
     for value in values
-      events.trigger id, value, 'append', local, pass
+      events.trigger id, 'append', local, pass, value
     return
 
   model.listeners('move').unshift (args, out, local, pass) ->
@@ -145,7 +144,7 @@ exports.init = (model, dom) ->
     to += len if to < 0
     return if from == to
     pathMap.onMove path, from, to, howMany  # Update indicies in pathMap
-    events.trigger pathMap.id(path), [from, to, howMany], 'move', local, pass
+    events.trigger pathMap.id(path), 'move', local, pass, from, howMany, to
 
   model.listeners('unshift').unshift (args, out, local, pass) ->
     model.emit 'pre:unshift', args, out, local, pass
@@ -174,7 +173,7 @@ exports.init = (model, dom) ->
 
   for event in ['connected', 'canConnect']
     do (event) -> model.listeners(event).unshift (value) ->
-      events.trigger pathMap.id(event), value
+      events.trigger pathMap.id(event), null, true, null, value
 
   return model
 
@@ -188,7 +187,7 @@ insert = (events, pathMap, path, start, values, local, pass) ->
   pathMap.onInsert path, start, values.length  # Update indicies in pathMap
   id = pathMap.id path
   for value, i in values
-    events.trigger id, [start + i, value], 'insert', local, pass
+    events.trigger id, 'insert', local, pass, value, start + i
   return
 
 remove = (events, pathMap, path, start, howMany, local, pass) ->
@@ -197,5 +196,5 @@ remove = (events, pathMap, path, start, howMany, local, pass) ->
   pathMap.onRemove path, start, howMany  # Update indicies in pathMap
   id = pathMap.id path
   for index in [start...end]
-    events.trigger id, index, 'remove', local, pass
+    events.trigger id, 'remove', local, pass, null, index
   return

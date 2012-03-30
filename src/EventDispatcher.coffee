@@ -16,14 +16,14 @@ EventDispatcher:: =
     obj[JSON.stringify listener] = listener
     names[name] = obj
 
-  trigger: (name, value, arg0, arg1, arg2, arg3) ->
+  trigger: (name, value, arg0, arg1, arg2, arg3, arg4, arg5) ->
     names = @names
     listeners = names[name]
     onTrigger = @_onTrigger
     count = 0
     for key, listener of listeners
       count++
-      continue unless false == onTrigger name, listener, value, arg0, arg1, arg2, arg3
+      continue unless false == onTrigger name, listener, value, arg0, arg1, arg2, arg3, arg4, arg5
       delete listeners[key]
       count--
     delete names[name]  unless count

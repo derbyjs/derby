@@ -14,10 +14,17 @@ view.fn 'capitalizeFirst',
   set: (s) -> [s.toLowerCase()]
 
 get '/', (page, model) ->
-  model.subscribe 'titleColor', (err, titleColor) ->
-    titleColor.setNull 'black'
-    render page, 'home',
-      titleColors: ['Black', 'Deep pink', 'Lime green', 'Coral', 'Dark turquoise', 'Dark orchid']
+  model.subscribe 'home', (err, home) ->
+    home.setNull 'titleColor', 'black'
+    home.setNull 'colors', [
+      'Black'
+      'Deep pink'
+      'Lime green'
+      'Coral'
+      'Dark turquoise'
+      'Dark orchid'
+    ]
+    render page, 'home'
 
 ['get', 'post', 'put', 'del'].forEach (method) ->
   app[method] '/submit', (page, model, {body, query}) ->

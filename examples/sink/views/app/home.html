@@ -1,14 +1,19 @@
 <Body:>
-  <h1 style="color:{unspace(titleColor)}">Welcome in {titleColor}!</h1>
+  {{#with home}}
+  <h1 style="color:{unspace(.titleColor)}">Welcome in {.titleColor}!</h1>
+  <input id=title value={.titleColor}>
   <p>This is a collection of random demos. Check 'em out!</p><br>
   <p>
     <label>Title color: 
-      <select>
-        {{#each titleColors}}
-          <option selected="{equal(capitalizeFirst(titleColor), this)}">{{this}}</option>
+      <select id=titleSelect>
+        {{#each .colors}}
+          <option selected="{stickyEqual(this, capitalizeFirst(home.titleColor))}">{this}</option>
         {{/}}
       </select>
     </label>
+<!--     {{#each .colors}}
+      <p><input value={this} x-update=></p>
+    {{/}} -->
   </p><br>
   <p><a href=#jump>Test jump link</a></p><br>
   <p><a href=/live-css/popout>Test Live CSS popped out</a></p>
@@ -17,3 +22,4 @@
     <a href="#">Back to top</a> - 
     <a href=/live-css>Go to Live CSS</a>
   </p>
+  {{/}}
