@@ -10,7 +10,6 @@ exports.wrapRemainder = (tagName, remainder) ->
   return !(new RegExp '^<\/' + tagName, 'i').test(remainder)
 
 exports.modelPath = modelPath = (ctx, name, noReplace) ->
-  name = if name is '.this' then '.' else name.replace(/\.this$/, '')
   firstChar = name.charAt(0)
 
   if firstChar is ':'
@@ -80,6 +79,10 @@ exports.extractPlaceholder = (text) ->
     escaped = false
     type = ''
 
+  name = content[3]
+  if bound
+    name = name.replace /\bthis\b/, '.'
+
   return {
     pre: trim pre
     post: trim post
@@ -87,7 +90,7 @@ exports.extractPlaceholder = (text) ->
     hash: content[1]
     escaped: escaped
     type: type
-    name: content[3]
+    name: name
     alias: content[4]
     partial: content[5]?.toLowerCase()
   }
