@@ -234,16 +234,20 @@ exports.setBoundFn = setBoundFn = (view, ctx, model, name, value) ->
 
   # Get each of the input values
   numInputs = set.length - 1
-  i = args.length - numInputs
-  inputs = [value]
-  while arg = args[i++]
-    inputs.push fnArgValue view, ctx, model, name, arg
+  if numInputs
+    inputs = [value]
+    i = 0
+    while i < numInputs
+      inputs.push fnArgValue view, ctx, model, name, args[i++]
+    out = set inputs...
+  else
+    out = set value
 
-  out = set inputs...
+  return unless out
 
   # Set each of the defined output values
   for value, i in out
-    arg = args[i]
+    arg = args[i + numInputs]
     if ~arg.indexOf('(')
       setBoundFn view, ctx, model, arg, value
       continue

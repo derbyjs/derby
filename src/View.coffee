@@ -15,7 +15,7 @@ defaultGetFns =
   not: (value) -> !value
 
 defaultSetFns =
-  equal: (value, b) -> if value then [b] else []
+  equal: (value, a) -> if value then [a] else []
   not: (value) -> [!value]
 
 View = module.exports = ->

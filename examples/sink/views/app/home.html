@@ -7,7 +7,7 @@
     <label>Title color: 
       <select id=titleSelect>
         {{#each .colors}}
-          <option selected="{stickyEqual(this, capitalizeFirst(home.titleColor))}">{this}</option>
+          <option selected="{equal(this, capitalizeFirst(home.titleColor))}">{this}</option>
         {{/}}
       </select>
     </label>
