@@ -116,7 +116,7 @@ exports.init = (model, dom) ->
       i = path.lastIndexOf('.')
       arrayPath = path[0...i]
       index = path.slice i + 1
-      events.trigger pathMap.id(arrayPath), 'remove', local, pass, null, index
+      events.trigger pathMap.id(arrayPath), 'remove', local, pass, index
       events.trigger pathMap.id(arrayPath), 'insert', local, pass, value, index
 
     events.trigger pathMap.id(path), 'html', local, pass, value
@@ -196,5 +196,5 @@ remove = (events, pathMap, path, start, howMany, local, pass) ->
   pathMap.onRemove path, start, howMany  # Update indicies in pathMap
   id = pathMap.id path
   for index in [start...end]
-    events.trigger id, 'remove', local, pass, null, index
+    events.trigger id, 'remove', local, pass, index
   return
