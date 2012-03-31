@@ -5,16 +5,21 @@
   <p>
     <label>Title color: 
       <select id=titleSelect>
-        {{#each .colors}}
-          <option selected="{equal(this, home.titleColor)}">{this}</option>
-        {{/}}
+        {#each .colors}
+          <option selected="{equal(.name, home.titleColor)}">{capitalize(.name)}</option>
+        {/}
       </select>
-    </label> 
+    </label>
     <input id=titleInput value={.titleColor}>
     <h3>Colors:</h3>
-    {{#each .colors}}
-      <p><input class=colorInput value={this}></p>
-    {{/}}
+    <div>
+      {#each .colors}
+        <p>
+          <input class=colorInput value={.name}>
+          <button x-bind="click: home.select">Select</button>
+        </p>
+      {/}
+    </div>
   </p><br><br>
   <p><a href=#jump>Test jump link</a></p><br>
   <p><a href=/live-css/popout>Test Live CSS popped out</a></p>
