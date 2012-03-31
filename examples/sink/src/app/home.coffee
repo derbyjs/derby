@@ -45,7 +45,4 @@ ready (model) ->
 
   app.home =
     select: (e, el) ->
-      titleSelect.selectedIndex = model.at(el).leaf()
-      # Manually trigger a change event on the select element, since
-      # updating the selectedIndex does not emit an event
-      view.dom.trigger {type: 'change'}, titleSelect
+      titleColor.set model.at(el).get('name')

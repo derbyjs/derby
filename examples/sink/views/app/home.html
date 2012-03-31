@@ -9,13 +9,14 @@
           <option selected="{equal(.name, home.titleColor)}">{capitalize(.name)}</option>
         {/}
       </select>
-    </label>
+    </label> 
     <input id=titleInput value={.titleColor}>
     <h3>Colors:</h3>
     <div>
       {#each .colors}
         <p>
-          <input class=colorInput value={.name}>
+          <input type=radio name=titleRadio checked="{equal(.name, home.titleColor)}"> 
+          <input class=colorInput value={.name}> 
           <button x-bind="click: home.select">Select</button>
         </p>
       {/}
