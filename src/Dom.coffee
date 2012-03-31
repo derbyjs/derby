@@ -32,7 +32,7 @@ Dom = module.exports = (model, appExports) ->
         return false  unless path = model.__pathMap.paths[listener.pathId]
         # Set the value if changed
         return  if model.get(path) == value
-        model.set path, value
+        model.pass(e).set path, value
 
     if (delay = listener.delay)?
       setTimeout finish, delay, e, el, next, dom

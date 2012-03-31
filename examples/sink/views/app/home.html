@@ -1,20 +1,21 @@
 <Body:>
   {{#with home}}
   <h1 style="color:{unspace(.titleColor)}">Welcome in {.titleColor}!</h1>
-  <input id=title value={.titleColor}>
   <p>This is a collection of random demos. Check 'em out!</p><br>
   <p>
     <label>Title color: 
       <select id=titleSelect>
         {{#each .colors}}
-          <option selected="{equal(this, capitalizeFirst(home.titleColor))}">{this}</option>
+          <option selected="{equal(this, home.titleColor)}">{this}</option>
         {{/}}
       </select>
-    </label>
-<!--     {{#each .colors}}
-      <p><input value={this} x-update=></p>
-    {{/}} -->
-  </p><br>
+    </label> 
+    <input id=titleInput value={.titleColor}>
+    <h3>Colors:</h3>
+    {{#each .colors}}
+      <p><input class=colorInput value={this}></p>
+    {{/}}
+  </p><br><br>
   <p><a href=#jump>Test jump link</a></p><br>
   <p><a href=/live-css/popout>Test Live CSS popped out</a></p>
   <p style="margin:400px 0 1000px">
