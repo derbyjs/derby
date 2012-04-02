@@ -67,6 +67,8 @@ derby = module.exports = mergeAll Object.create(racer),
 
     addHttpMethods appExports, view, createModel
 
+    process.nextTick -> view.render()
+
     return appExports
 
   createStatic: (root) ->
