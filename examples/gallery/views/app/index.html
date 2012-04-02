@@ -5,7 +5,11 @@
   {{> alert}}
 
 <Body:>
-  {_user.publicPhotos}
+  {{#each _pages}}
+    {{#each this}}
+      <img src="{{flickrPhoto(this)}}">
+    {{/}}
+  {{/}}
 
 <alert:>
   <div id="alert">
