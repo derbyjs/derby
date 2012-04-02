@@ -14,7 +14,7 @@ derby = module.exports = mergeAll Object.create(racer),
 
   run: (file, port, options = {numWorkers: 1}) ->
     # Resolve relative filenames
-    file = path.join process.cwd(), file  if file[0] isnt '/'
+    file = path.resolve file
     port ?= if isProduction then 80 else 3000
 
     try
