@@ -47,7 +47,8 @@ Model::at = (node, absolute) ->
 
     if (id = node.id) && (pathId = blockPaths[id])
       path = pathMap.paths[pathId]
-      if pathMap.arrays[path] && last
+      isArray = pathMap.arrays[path] || Array.isArray(@get path)
+      if isArray && last
         for child, i in node.childNodes
           if child == last
             path = path + '.' + i
