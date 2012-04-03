@@ -5,10 +5,14 @@ FLICKR_API = 'http://api.flickr.com/services/rest/'
 exports.setup = (store, options) ->
   flickr = new Flickr options
 
-  store.route 'get', 'flickr.user.*.photos.pages.*', (username, page, done) ->
+  # Prefacing the ids with 'id_' is needed, since photosets
+  # start with a number, and paths must only start with a
+  # letter or underscore, like JS variable names
+
+  store.route 'get', 'flickr.user.id_*.photos.pages.*', (username, page, done) ->
     flickr.userPublicPhotos username, page, done
 
-  store.route 'get', 'flickr.photoset.*.photos.pages.*', (id, page, done) ->
+  store.route 'get', 'flickr.photoset.id_*.photos.pages.*', (id, page, done) ->
     flickr.setPhotos id, page, done
 
 
@@ -47,10 +51,10 @@ Flickr:: =
       qs = {method: 'flickr.people.getPublicPhotos', user_id, page: +page + 1}
       @get qs, (err, body) ->
         return callback err if err
-        callback null, body.photos.photo
+        callback null, body.photos.photo, -1
 
   setPhotos: (photoset_id, page, callback) ->
     qs = {method: 'flickr.photosets.getPhotos', photoset_id, page: +page + 1}
     @get qs, (err, body) ->
       return callback err if err
-      callback null, body.photoset.photo
+      callback null, body.photoset.photo, -1

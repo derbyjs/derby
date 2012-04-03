@@ -5,11 +5,22 @@
   {{> alert}}
 
 <Body:>
-  {{#each _pages}}
-    {{#each this}}
-      <img src="{{flickrPhoto(this)}}">
-    {{/}}
-  {{/}}
+  <div>
+    {#if _image}
+      <div id=lightbox>
+        <img src="{{flickrPhoto(this, 'm')}}">
+      </div>
+    {/}
+  </div>
+  <div>
+    {#each _pages}
+      <div>
+        {#each this}
+          {{#if this}}<img src="{{flickrPhoto(this)}}" width=75 height=75 x-bind="click: select">{{/}}
+        {/}
+      </div>
+    {/}
+  </div>
 
 <alert:>
   <div id="alert">
