@@ -128,6 +128,15 @@ describe 'View', ->
       {a: '"', b: "'", c: '<', d: '>', e: '=', f: ' ', g: '', h: null}
     ).to.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
 
+  it 'HTML entity unescaping in string partials', ->
+    view = new View
+    model = new Model
+    view._init model
+
+    view.make 'title', '{{unescaped name}} - stuff'
+    ctx = name: 'Cr&egrave;me Br&ucirc;l&eacute;e'
+    expect(view.get 'title$s', ctx).to.eql 'Crème Brûlée - stuff'
+
   it 'conditional blocks in text', ->
     view = new View
     model = new Model
