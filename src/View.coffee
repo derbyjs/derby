@@ -426,15 +426,16 @@ parseMarkup = (type, attr, tagName, events, attrs, name) ->
 pushChars = (stack, text) ->
   stack.push ['chars', text]  if text
 
-pushVarFns = (view, stack, fn, fn2, name, escaped) ->
+pushVarFns = (view, stack, fn, fn2, name, escapeFn) ->
   if fn
     pushChars stack, fn
     pushChars stack, fn2
   else
-    pushChars stack, textFn view, name, escaped && escapeHtml
+    pushChars stack, textFn view, name, escapeFn
 
 pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
-  {name, escaped, partial} = match
+  {name, partial} = match
+  escapeFn = match.escaped && escapeHtml
   if partial
     type = match.type || 'var'
     fn = partialFn view, name, type, match.alias, view._find(partial, ns)
@@ -454,14 +455,15 @@ pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
     addId view, attrs
 
-    bindEventsById events, name, fn, attrs, 'html', !fn && escaped, true
+    bindEventsById events, name, fn, attrs, 'html', !fn && escapeFn, true
     bindEventsById events, name, fn2, attrs, 'append'  if fn2
 
-  pushVarFns view, stack, fn, fn2, name, escaped
+  pushVarFns view, stack, fn, fn2, name, escapeFn
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
 pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
   {name, partial} = match
+  escapeFn = !match.escaped && unescapeEntities
   if partial
     type = match.type || 'var'
     fn = partialFn view, name, type, match.alias, view._find(partial + '$s', ns)
@@ -469,7 +471,7 @@ pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
     ctx.$onBind events, name
     bindOnce = empty
   if match.bound then events.push (ctx) -> bindOnce ctx
-  pushVarFns view, stack, fn, fn2, name
+  pushVarFns view, stack, fn, fn2, name, escapeFn
 
 parse = null
 forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
