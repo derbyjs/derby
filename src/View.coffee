@@ -20,8 +20,10 @@ defaultSetFns =
 
 View = module.exports = ->
   @clear()
-  @getFns = Object.create defaultGetFns
-  @setFns = Object.create defaultSetFns
+  @_getFns = Object.create defaultGetFns
+  @_setFns = Object.create defaultSetFns
+  @_componentNamespaces = {app: true}
+  @_nonvoidComponents = {}
   return
 
 View:: =
@@ -30,9 +32,9 @@ View:: =
     @_views = Object.create @default
     @_renders = {}
     @_inline = ''
-    # All automatically created ids start with a dollar sign
     @_idCount = 0
 
+  # All automatically created ids start with a dollar sign
   _uniqueId: -> '$' + (@_idCount++).toString 36
 
   default:
@@ -100,8 +102,8 @@ View:: =
       {get, set} = fn
     else
       get = fn
-    @getFns[name] = get
-    @setFns[name] = set if set
+    @_getFns[name] = get
+    @_setFns[name] = set if set
 
   render: (@model, ns, ctx, silent) ->
     if typeof ns is 'object'
@@ -286,11 +288,12 @@ parseMatch = (view, text, match, queues, {onStart, onEnd, onVar}) ->
     else
       parseMatchError text, type + ' blocks must begin with a #'
 
-  else if type is 'else' || type is 'elseif'
+  else if type is 'else' || type is 'else if'
     if hash
       parseMatchError text, type + ' blocks may not start with ' + hash
-    if blockType isnt 'if' && blockType isnt 'elseif' && blockType isnt 'each'
-      parseMatchError text, type + ' may only follow if, elseif, or each'
+    if blockType isnt 'if' && blockType isnt 'else if' &&
+        blockType isnt 'unless' && blockType isnt 'each'
+      parseMatchError text, type + ' may only follow `if`, `else if`, `unless`, or `each`'
     startBlock = true
     endBlock = true
 
@@ -298,24 +301,26 @@ parseMatch = (view, text, match, queues, {onStart, onEnd, onVar}) ->
     endBlock = true
 
   else if hash is '#'
-    parseMatchError text, '# must be followed by if, unless, each, or with'
+    parseMatchError text, '# must be followed by `if`, `unless`, `each`, or `with`'
 
   if endBlock
     parseMatchError text, 'Unmatched template end tag' unless block
-    match.name = block.name
-    endQueue = queues.pop()
+    lastQueue = queues.pop()
+    queue = queues.last()
+    queue.sections.push lastQueue
 
   if startBlock
     queues.push queue =
       stack: []
       events: []
       block: match
-    queue.closed = endQueue  if endBlock
+      sections: []
     onStart queue
   else
     if endBlock
-      onStart queues.last()
-      onEnd endQueue
+      onStart queue
+      onEnd queue.sections
+      queue.sections = []
     else
       onVar match
   return
@@ -352,10 +357,10 @@ partialFn = (view, name, type, alias, render) ->
   if type is 'var'
     return render
 
-  if type is 'with'
+  if type is 'with' || type is 'else'
     return withFn
 
-  if type is 'if' || type is 'elseif'
+  if type is 'if' || type is 'else if'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
       value = partialValue view, ctx, model, name, value, useValue
 
@@ -364,7 +369,7 @@ partialFn = (view, name, type, alias, render) ->
         return render renderCtx, model, triggerPath
       return
 
-  if type is 'else' || type is 'unless'
+  if type is 'unless'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
       value = partialValue view, ctx, model, name, value, useValue
 
@@ -391,7 +396,7 @@ partialFn = (view, name, type, alias, render) ->
         out += render renderCtx, model, triggerPath
       return out
 
-  throw new Error 'Unknown block type'
+  throw new Error 'Unknown block type: ' + type
 
 objectToString = Object::toString
 
@@ -406,12 +411,23 @@ textFn = (view, name, escape) ->
           value.toString()
     return if escape then escape text else text
 
-blockFn = (view, queue) ->
-  return unless queue
+sectionFn = (view, queue) ->
   {stack, events, block} = queue
   {name, escaped, type, alias} = block
   render = renderer view, reduceStack(stack), events
   return partialFn view, name, type, alias, render
+
+blockFn = (view, sections) ->
+  return unless len = sections.length
+  if len is 1
+    return sectionFn view, sections[0]
+  else
+    fns = (sectionFn view, section for section in sections)
+    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+      for fn in fns
+        out = fn ctx, model, triggerPath, triggerId, value, index, useValue
+        return out if out
+      return ''
 
 parseMarkup = (type, attr, tagName, events, attrs, name) ->
   return  unless parser = markup[type][attr]
@@ -426,14 +442,13 @@ parseMarkup = (type, attr, tagName, events, attrs, name) ->
 pushChars = (stack, text) ->
   stack.push ['chars', text]  if text
 
-pushVarFns = (view, stack, fn, fn2, name, escapeFn) ->
+pushVarFn = (view, stack, fn, name, escapeFn) ->
   if fn
     pushChars stack, fn
-    pushChars stack, fn2
   else
     pushChars stack, textFn view, name, escapeFn
 
-pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
+pushVar = (view, ns, stack, events, remainder, match, fn) ->
   {name, partial} = match
   escapeFn = match.escaped && escapeHtml
   if partial
@@ -456,12 +471,11 @@ pushVar = (view, ns, stack, events, remainder, match, fn, fn2) ->
     addId view, attrs
 
     bindEventsById events, name, fn, attrs, 'html', !fn && escapeFn, true
-    bindEventsById events, name, fn2, attrs, 'append'  if fn2
 
-  pushVarFns view, stack, fn, fn2, name, escapeFn
+  pushVarFn view, stack, fn, name, escapeFn
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
-pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
+pushVarString = (view, ns, stack, events, remainder, match, fn) ->
   {name, partial} = match
   escapeFn = !match.escaped && unescapeEntities
   if partial
@@ -471,14 +485,14 @@ pushVarString = (view, ns, stack, events, remainder, match, fn, fn2) ->
     ctx.$onBind events, name
     bindOnce = empty
   if match.bound then events.push (ctx) -> bindOnce ctx
-  pushVarFns view, stack, fn, fn2, name, escapeFn
+  pushVarFn view, stack, fn, name, escapeFn
 
 parse = null
 forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
   return if typeof value is 'function'
   if match = extractPlaceholder value
     {pre, post, name, bound, partial} = match
-    
+
     if pre || post || partial
       # Attributes must be a single string, so create a string partial
       addId view, attrs
@@ -508,7 +522,7 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
   addId view, attrs  if out?.addId
 
 parse = (view, viewName, template, isString, onBind) ->
-  queues = [{stack: stack = [], events: events = []}]
+  queues = [{stack: stack = [], events: events = [], sections: []}]
   queues.last = -> queues[queues.length - 1]
 
   if isString
@@ -547,10 +561,9 @@ parse = (view, viewName, template, isString, onBind) ->
     parseMatch view, text, match, queues,
       onStart: (queue) ->
         {stack, events, block} = queue
-      onEnd: (queue) ->
-        fn = blockFn view, queue
-        fn2 = blockFn view, queue.closed
-        push view, ns, stack, events, (post || remainder), queue.block, fn, fn2
+      onEnd: (sections) ->
+        fn = blockFn view, sections
+        push view, ns, stack, events, (post || remainder), sections[0].block, fn
       onVar: (match) ->
         push view, ns, stack, events, (post || remainder), match
 

@@ -20,14 +20,14 @@ describe 'View', ->
   Model::_commit = ->
   Model::bundle = ->
 
-  it 'view.render with no defined views', ->
+  it 'supports view.render with no defined views', ->
     view = new View
     res = new ResMock
     res.onEnd = (html) ->
       expect(html).to.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
     view.render res
 
-  it 'rendering a string literal view', ->
+  it 'supports rendering a string literal view', ->
     view = new View
     view._init new Model
 
@@ -42,7 +42,7 @@ describe 'View', ->
     # String views should have line breaks and leading whitespace removed
     expect(view.get 'test').to.eql '<style>body {margin: 0}</style>'
 
-  it 'substituting variables into text', ->
+  it 'supports substituting variables into text', ->
     view = new View
     model = new Model
     view._init model
@@ -72,7 +72,7 @@ describe 'View', ->
 
     expect(view.get 'test', ctx).to.equal expected
 
-  it 'binding variables in text', ->
+  it 'supports binding variables in text', ->
     view = new View
     model = new Model
     view._init model
@@ -100,7 +100,7 @@ describe 'View', ->
       '<p id=$3>John</p>' +
       '<p><!--$4-->22<!--$$4--> - <!--$5-->6 ft 2 in<!--$$5--> - <!--$6-->165 lbs<!--$$6--></p>'
 
-  it 'HTML escaping', ->
+  it 'supports HTML escaping', ->
     view = new View
     model = new Model
     view._init model
@@ -128,7 +128,7 @@ describe 'View', ->
       {a: '"', b: "'", c: '<', d: '>', e: '=', f: ' ', g: '', h: null}
     ).to.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
 
-  it 'HTML entity unescaping in string partials', ->
+  it 'supports HTML entity unescaping in string partials', ->
     view = new View
     model = new Model
     view._init model
@@ -137,7 +137,7 @@ describe 'View', ->
     ctx = name: 'Cr&egrave;me Br&ucirc;l&eacute;e'
     expect(view.get 'title$s', ctx).to.eql 'Crème Brûlée - stuff'
 
-  it 'conditional blocks in text', ->
+  it 'supports conditional blocks in text', ->
     view = new View
     model = new Model
     view._init model
@@ -202,7 +202,43 @@ describe 'View', ->
     model.set 'show', []
     expect(view.get 'bound').to.eql modelFalsey
 
-  it 'lists in text', ->
+  it 'supports else if conditionals', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', """
+    {{#if equal('red', value)}}
+      1
+    {{else if equal('red', value)}}
+      2
+    {{else if equal('green', value)}}
+      3
+    {{else}}
+      4
+    {{/}}
+    """
+
+    expect(view.get 'test', value: 'red').to.equal '1'
+    expect(view.get 'test', value: 'green').to.equal '3'
+    expect(view.get 'test', value: 'blue').to.equal '4'
+    expect(view.get 'test').to.equal '4'
+
+  it 'supports unless then else conditionals', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', """
+    {{#unless value}}
+      1
+    {{else}}
+      2
+    {{/}}
+    """
+
+    expect(view.get 'test', value: true).to.equal '2'
+    expect(view.get 'test', value: false).to.equal '1'
+
+  it 'supports lists in text', ->
     view = new View
     view._init new Model
 
@@ -224,7 +260,7 @@ describe 'View', ->
     expect(view.get 'test', arr: [{name: 'stuff'}, {name: 'more'}])
       .to.eql '<ul><li>stuff<li>more</ul>'
 
-  it 'boolean attributes', ->
+  it 'supports boolean attributes', ->
     view = new View
     view._init new Model
 
@@ -234,7 +270,7 @@ describe 'View', ->
     expect(view.get 'test', maybe: false).to.equal '<input id=$1>'
     expect(view.get 'test', maybe: true).to.equal '<input id=$2 disabled>'
 
-  it 'paths containing dots should work for ctx object items', ->
+  it 'supports paths containing dots for ctx object items', ->
     view = new View
     view._init new Model
 
@@ -243,7 +279,7 @@ describe 'View', ->
 
     expect(view.get 'test', ctx).to.equal '<b>John</b>'
 
-  it 'relative paths should work for ctx object items', ->
+  it 'supports relative paths for ctx object items', ->
     view = new View
     view._init new Model
 
@@ -252,7 +288,7 @@ describe 'View', ->
 
     expect(view.get 'test', ctx).to.equal '<b>John</b>'
 
-  it 'Arrays containing non-objects should work from ctx', ->
+  it 'supports Arrays containing non-objects from ctx', ->
     view = new View
     view._init new Model
 
@@ -263,7 +299,7 @@ describe 'View', ->
     expect(view.get 'test1', ctx).to.equal '<b>true</b><b>false</b><b>true</b>'
     expect(view.get 'test2', ctx).to.equal '<b>true</b><b>false</b><b>true</b>'
 
-  it 'views should support helper functions', ->
+  it 'supports view helper functions', ->
     view = new View
     model = new Model
     view._init model
