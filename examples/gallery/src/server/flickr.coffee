@@ -27,6 +27,7 @@ Flickr:: =
     qs.format = 'json'
     qs.api_key = @key
     qs.per_page = 20
+    qs.extras = 'o_dims'
     request {url: FLICKR_API, qs}, (err, res, body) ->
       return callback err if err
       unless (match = /jsonFlickrApi\((.*)\)/.exec body) && (body = match[1])

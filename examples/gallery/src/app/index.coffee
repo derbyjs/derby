@@ -19,6 +19,7 @@ get '/flickr/:type/:id/:image?', (page, model, {type, id, image, query}) ->
 ready (model) ->
 
   app.select = (e, el) ->
+    console.log model.at(el).get()
     model.set '_selectedImage', model.at(el).leaf()
 
   model.set '_showReconnect', true
