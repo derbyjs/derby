@@ -2,13 +2,13 @@
   Gallery
 
 <Header:>
-  {{> alert}}
+  <app:alert>
 
 <Body:>
   <div>
     {#if _image}
       <div id=lightbox>
-        <img src="{{flickrPhoto(this, 'm')}}">
+        <app:photo source="{{source}}" size="m">
       </div>
     {/}
   </div>
@@ -16,7 +16,9 @@
     {#each _pages}
       <div>
         {#each this}
-          {{#if this}}<img src="{{flickrPhoto(this)}}" width=75 height=75 x-bind="click: select">{{/}}
+          <a x-bind="click: select">
+            <app:photo source="{{source}}">
+          </a>
         {/}
       </div>
     {/}
@@ -35,3 +37,11 @@
       </p>
     {/}
   </div>
+
+<photo:>
+  <img
+    alt={{this.title}}
+    src="{{photoSrc(this, {{{source}}}, {{{size}}} )}}"
+    width="{{photoWidth(this, {{{source}}}, {{{size}}} )}}"
+    height="{{photoHeight(this, {{{source}}}, {{{size}}} )}}"
+  >
