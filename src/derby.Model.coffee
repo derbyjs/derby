@@ -117,22 +117,21 @@ exports.init = (model, dom) ->
       i = path.lastIndexOf('.')
       arrayPath = path[0...i]
       index = path.slice i + 1
-      events.trigger pathMap.id(arrayPath), 'remove', local, pass, index
-      events.trigger pathMap.id(arrayPath), 'insert', local, pass, value, index
+      triggerEach events, pathMap, arrayPath, 'remove', local, pass, index
+      triggerEach events, pathMap, arrayPath, 'insert', local, pass, value, index
 
-    events.trigger pathMap.id(path), 'html', local, pass, value
+    triggerEach events, pathMap, path, 'html', local, pass, value
 
   model.listeners('del').unshift (args, out, local, pass) ->
     model.emit 'pre:del', args, out, local, pass
     [path] = args
-    events.trigger pathMap.id(path), 'html', local, pass
+    triggerEach events, pathMap, path, 'html', local, pass
 
   model.listeners('push').unshift (args, out, local, pass) ->
     model.emit 'pre:push', args, out, local, pass
     [path, values...] = args
-    id = pathMap.id path
     for value in values
-      events.trigger id, 'append', local, pass, value
+      triggerEach events, pathMap, path, 'append', local, pass, value
     return
 
   model.listeners('move').unshift (args, out, local, pass) ->
@@ -145,7 +144,7 @@ exports.init = (model, dom) ->
     to += len if to < 0
     return if from == to
     pathMap.onMove path, from, to, howMany  # Update indicies in pathMap
-    events.trigger pathMap.id(path), 'move', local, pass, from, howMany, to
+    triggerEach events, pathMap, path, 'move', local, pass, from, howMany, to
 
   model.listeners('unshift').unshift (args, out, local, pass) ->
     model.emit 'pre:unshift', args, out, local, pass
@@ -174,10 +173,25 @@ exports.init = (model, dom) ->
 
   for event in ['connected', 'canConnect']
     do (event) -> model.listeners(event).unshift (value) ->
-      events.trigger pathMap.id(event), null, true, null, value
+      triggerEach events, pathMap, event, null, true, null, value
 
   return model
 
+triggerEach = (events, pathMap, path, arg0, arg1, arg2, arg3, arg4, arg5) ->
+  # Trigger an event on the path if it has a pathMap ID
+  if id = pathMap.ids[path]
+    events.trigger id, arg0, arg1, arg2, arg3, arg4, arg5
+
+  # Also trigger a pattern event for the path and each of its parent paths
+  # This is used by view helper functions to match updates on a path
+  # or any of its child segments
+  segments = path.split '.'
+  i = segments.length + 1
+  while --i
+    pattern = segments.slice(0, i).join('.') + '*'
+    if id = pathMap.ids[pattern]
+      events.trigger id, arg0, arg1, arg2, arg3, arg4, arg5
+  return
 
 refIndex = (obj) ->
   # Get index if event was from arrayRef id object
@@ -186,16 +200,14 @@ refIndex = (obj) ->
 insert = (events, pathMap, path, start, values, local, pass) ->
   start = refIndex start
   pathMap.onInsert path, start, values.length  # Update indicies in pathMap
-  id = pathMap.id path
   for value, i in values
-    events.trigger id, 'insert', local, pass, value, start + i
+    triggerEach events, pathMap, path, 'insert', local, pass, value, start + i
   return
 
 remove = (events, pathMap, path, start, howMany, local, pass) ->
   start = refIndex start
   end = start + howMany
   pathMap.onRemove path, start, howMany  # Update indicies in pathMap
-  id = pathMap.id path
   for index in [start...end]
-    events.trigger id, 'remove', local, pass, index
+    triggerEach events, pathMap, path, 'remove', local, pass, index
   return

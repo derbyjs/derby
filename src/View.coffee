@@ -20,8 +20,12 @@ defaultSetFns =
 
 View = module.exports = ->
   @clear()
-  @_getFns = Object.create defaultGetFns
-  @_setFns = Object.create defaultSetFns
+  getFns = @getFns = Object.create defaultGetFns
+  @setFns = Object.create defaultSetFns
+
+  getFns.each = (fnName, items) ->
+    return items.map(getFns[fnName]).join('')
+
   @_componentNamespaces = {app: true}
   @_nonvoidComponents = {}
   return
@@ -102,8 +106,8 @@ View:: =
       {get, set} = fn
     else
       get = fn
-    @_getFns[name] = get
-    @_setFns[name] = set if set
+    @getFns[name] = get
+    @setFns[name] = set if set
 
   render: (@model, ns, ctx, silent) ->
     if typeof ns is 'object'
@@ -173,7 +177,7 @@ bindEvents = (events, name, partial, params) ->
         dataValue view, ctx, model, name
       for arg in args
         path = modelPath ctx, arg
-        pathId = pathMap.id path
+        pathId = pathMap.id path + '*'
         modelEvents.bind pathId, listener
       return
     return

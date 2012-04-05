@@ -20,8 +20,8 @@
     {#if _hasActiveStyles}
       <p>&#123;</p>
       <ul class=css>
-        {#each liveCss.styles as :style}
-          <li>{> cssProperty}</li>
+        {#each liveCss.styles}
+          <li>{cssProperty(this)}</li>
         {/}
       </ul>
       <p>}</p>
@@ -37,13 +37,8 @@
   <div class="{#if _poppedOut}poppedOut{/} cssOutput">
     <p class=popupTitle><a href="/live-css">Close</a></p>
     <div class=popupContent>
-      <p style="{each liveCss.styles as :style > cssProperty}" contenteditable>
+      <p style="{each('cssProperty', liveCss.styles)}" contenteditable>
         {unescaped liveCss.outputText}
       </p>
     </div>
   </div>
-
-<cssProperty:>
-  {#if :style.active}
-    {:style.prop}: {:style.value};
-  {/}

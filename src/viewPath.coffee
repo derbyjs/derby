@@ -48,7 +48,7 @@ openPlaceholder = ///^
 
 placeholderContent = ///^
   \s*([\#/]?)  # Start or end block
-  (else\sif|if|else|unless|each|with|unescaped)?  # Block type
+  (?:(else\sif|if|else|unless|each|with|unescaped)(?!\())?  # Block type
   \s*(  # Name of context object
     [^\s(>]*
     (?: \s* \( [\s\S]* \) )?
@@ -190,7 +190,7 @@ fnValue = (view, ctx, model, name) ->
   for arg, i in args
     args[i] = fnArgValue view, ctx, model, name, arg
 
-  unless fn = view._getFns[fnName]
+  unless fn = view.getFns[fnName]
     throw new Error 'view function "' + fnName + '" not found for call: ' + name
 
   return fn args...
@@ -229,7 +229,7 @@ exports.setBoundFn = setBoundFn = (view, ctx, model, name, value) ->
   fnName = match[1]
   args = fnArgs match[2]
 
-  unless (get = view._getFns[fnName]) && (set = view._setFns[fnName])
+  unless (get = view.getFns[fnName]) && (set = view.setFns[fnName])
     throw new Error 'view function "' + fnName + '" not found for binding to: ' + name
 
   # Get each of the input values

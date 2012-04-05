@@ -1,5 +1,8 @@
-{get, ready} = app = require './index'
+{get, ready, view} = app = require './index'
 {render} = require './shared'
+
+view.fn 'cssProperty', cssProperty = (style) ->
+  if style.active then "#{style.prop}: #{style.value};" else ''
 
 get '/live-css', (page, model) ->
   model.subscribe 'liveCss', (err, liveCss) ->
