@@ -1,24 +1,8 @@
 {expect, calls} = require 'racer/test/util'
-{Model} = require 'racer'
+{DetachedModel: Model, ResMock} = require './mocks'
 View = require '../src/View.server'
 
 describe 'View', ->
-
-  ResMock = ->
-    @html = ''
-    return
-  ResMock:: =
-    getHeader: ->
-    setHeader: ->
-    write: write = (value) ->
-      @html += value
-    send: write
-    end: (value) ->
-      write value
-      @onEnd? @html
-
-  Model::_commit = ->
-  Model::bundle = ->
 
   it 'supports view.render with no defined views', ->
     view = new View
@@ -350,27 +334,3 @@ describe 'View', ->
       {{/}}
       '''
     expect(view.get 'test', {nums: [-4, 8, 0, 2.3, -9]}).to.equal '8,0,2.3,'
-
-  it 'supports void html components', ->
-    view = new View
-    view._init new Model
-
-    view.make 'test', 'say "<app:test2>"'
-    view.make 'test2', 'hi'
-
-    expect(view.get 'test').to.equal 'say "hi"'
-
-  it 'supports void html components with attributes', ->
-    view = new View
-    view._init new Model
-
-    view.make 'test', 'say "<app:test2 message="Howdy">" or "<app:test2>"'
-    view.make 'test2', '''
-      {{{#if message}}}
-        {{{message}}}
-      {{{else}}}
-        Yo
-      {{{/}}}
-    '''
-
-    expect(view.get 'test').to.equal 'say "Howdy" or "Yo"'
