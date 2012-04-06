@@ -341,11 +341,9 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
   return ctx
 
 partialValue = (view, ctx, model, name, value, useValue, macro) ->
-  if macro
-    ctx = ctx.$macroCtx
-  else if useValue
+  if !macro && useValue
     return value
-  return if name then dataValue view, ctx, model, name else true
+  return if name then dataValue view, ctx, model, name, macro else true
 
 partialFn = (view, name, type, alias, render, macroCtx, macro) ->
 
@@ -409,8 +407,7 @@ objectToString = Object::toString
 
 textFn = (view, name, escape, macro) ->
   (ctx, model) ->
-    ctx = ctx.$macroCtx if macro
-    value = dataValue view, ctx, model, name
+    value = dataValue view, ctx, model, name, macro
     text = if typeof value is 'string' then value else
       if `value == null` then '' else
         if value.toString is objectToString
@@ -490,13 +487,12 @@ pushVarString = (view, ns, stack, events, remainder, match, fn) ->
   if match.bound then events.push (ctx) -> bindOnce ctx
   pushVarFn view, stack, fn, name, escapeFn, match.macro
 
-parse = null
-forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
+parseAttr = (view, viewName, events, tagName, attrs, attr, value) ->
   return if typeof value is 'function'
   if match = extractPlaceholder value
-    {pre, post, name, bound} = match
+    {name} = match
 
-    if pre || post
+    if match.pre || match.post
       # Attributes must be a single string, so create a string partial
       addId view, attrs
       render = parse view, viewName, value, true, (events, name) ->
@@ -510,7 +506,7 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
 
     out = parseMarkup('bound', attr, tagName, events, attrs, name) || {}
 
-    if bound
+    if match.bound
       addId view, attrs
       bindEventsById events, name, null, attrs, (out.method || 'attr'), (out.property || attr)
 
@@ -518,13 +514,28 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
       {macro} = match
       attrs[attr] = if out.bool
           bool: (ctx, model) ->
-            ctx = ctx.$macroCtx if macro
-            if dataValue(view, ctx, model, name) then ' ' + attr else ''
+            if dataValue(view, ctx, model, name, macro) then ' ' + attr else ''
         else
           textFn view, name, escapeAttr, macro
 
   out = parseMarkup 'attr', attr, tagName, events, attrs, value
   addId view, attrs  if out?.addId
+  return
+
+parsePartialAttr = (view, viewName, events, attrs, attr, value) ->
+  if match = extractPlaceholder value
+    {name} = match
+
+    if match.pre || match.post
+      # Attributes must be a single string, so create a string partial
+      render = parse view, viewName, value, true, (events, name) ->
+        bindEventsByIdString events, name, render, attrs, 'attr', attr
+
+      attrs[attr] = render
+      return
+
+    attrs[attr] = textFn view, name, null, match.macro
+  return
 
 parse = (view, viewName, template, isString, onBind) ->
   queues = [{stack: stack = [], events: events = [], sections: []}]
@@ -548,6 +559,8 @@ parse = (view, viewName, template, isString, onBind) ->
       tagNs = tagName[0...i]
       if view._componentNamespaces[tagNs]
         partial = tagName.slice i + 1
+        for attr, value of attrs
+          parsePartialAttr view, viewName, events, attrs, attr, value
         push view, ns, stack, events, '', {partial, macroCtx: attrs}
         return
 
@@ -556,7 +569,7 @@ parse = (view, viewName, template, isString, onBind) ->
       addId view, attrs  if out?.addId
 
     for attr, value of attrs
-      forAttr view, viewName, stack, events, tagName, attrs, attr, value
+      parseAttr view, viewName, events, tagName, attrs, attr, value
 
     stack.push ['start', tagName, attrs]
 

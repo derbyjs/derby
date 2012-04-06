@@ -10,10 +10,9 @@ describe 'View components', ->
 
     view.make 'test', 'say "<app:test2>"'
     view.make 'test2', 'hi'
-
     expect(view.get 'test').to.equal 'say "hi"'
 
-  it 'supports void html components with attributes', ->
+  it 'supports void html components with literal attributes', ->
     view = new View
     view._init new Model
 
@@ -25,5 +24,19 @@ describe 'View components', ->
         Yo
       {{{/}}}
     '''
-
     expect(view.get 'test').to.equal 'say "Howdy" or "Yo"'
+
+  it 'supports void html components with variable attributes', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', 'say "<app:test2 message="{{myMessage}}">"'
+    view.make 'test2', '''
+      {{{#if message}}}
+        {{{message}}}
+      {{{else}}}
+        Yo
+      {{{/}}}
+    '''
+    expect(view.get 'test').to.equal 'say "Yo"'
+    expect(view.get 'test', myMessage: 'Heyo').to.equal 'say "Heyo"'

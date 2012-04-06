@@ -147,7 +147,7 @@ fnArgs = (inner) ->
     args.push last
   return args
 
-fnArgValue = (view, ctx, model, name, arg) ->
+fnArgValue = (view, ctx, model, name, macro, arg) ->
   # Support null, true, and false -- the same keyword values as JSON 
   if arg is 'null'
     return null
@@ -178,16 +178,16 @@ fnArgValue = (view, ctx, model, name, arg) ->
   if firstChar is '[' || firstChar is '{'
     throw new Error 'object literals not supported in view function call: ' + name
 
-  return dataValue view, ctx, model, arg
+  return dataValue view, ctx, model, arg, macro
 
-fnValue = (view, ctx, model, name) ->
+fnValue = (view, ctx, model, name, macro) ->
   fnCallError name unless match = fnCall.exec name
   fnName = match[1]
   args = fnArgs match[2]
 
   # Get values for each argument
   for arg, i in args
-    args[i] = fnArgValue view, ctx, model, name, arg
+    args[i] = fnArgValue view, ctx, model, name, macro, arg
 
   unless fn = view.getFns[fnName]
     throw new Error 'view function "' + fnName + '" not found for call: ' + name
@@ -214,12 +214,14 @@ exports.pathFnArgs = pathFnArgs = (name, paths = []) ->
 
   return paths
 
-exports.dataValue = dataValue = (view, ctx, model, name) ->
+exports.dataValue = dataValue = (view, ctx, model, name, macro) ->
+  dataCtx = if macro then ctx.$macroCtx else ctx
   if ~name.indexOf('(')
-    return fnValue view, ctx, model, name
-  path = modelPath ctx, name
-  value = lookup path, ctx
-  return value if value isnt undefined
+    return fnValue view, ctx, model, name, macro
+  path = modelPath dataCtx, name
+  value = lookup path, dataCtx
+  if value isnt undefined
+    return if typeof value is 'function' then value(ctx, model) else value
   value = model.get path
   return if value isnt undefined then value else model[path]
 
