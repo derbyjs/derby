@@ -305,9 +305,9 @@ APP_HTML = '''
   handlers that update the model after user interaction, and the event handlers
   that update the DOM when the model changes.
 
-  As in Handlebars, double and triple curly braces output a value literally.
-  Derby templates add double and triple parentheses, which output a value
-  and set up model <- -> view bindings for that object.
+  As in Handlebars, double curly braces output a value literally. Derby
+  templates add single curly braces, which output a value and set up
+  model <- -> view bindings for that object.
 
   Elements that end in colon define template names. Pre-defined templates
   are capitalized by convention, but template names are case-insensitive.
@@ -315,25 +315,26 @@ APP_HTML = '''
 -->
 
 <Title:>
-  {{roomName}} - ((_room.visits)) visits
+  {{roomName}} - {_room.visits} visits
 
 <Header:>
-  {{> alert}}
+  <!-- Other templates are referenced like custom HTML elements -->
+  <app:alert>
 
 <Body:>
-  <h1>((_room.welcome))</h1>
-  <p><label>Welcome message: <input value="((_room.welcome))"></label></p>
+  <h1>{_room.welcome}</h1>
+  <p><label>Welcome message: <input value="{_room.welcome}"></label></p>
 
-  <p>This page has been visted ((_room.visits)) times. {{> timer}}</p>
+  <p>This page has been visted {_room.visits} times. <app:timer></p>
 
   <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.</p>
 
 <timer:>
-  ((#if _stopped))
+  {#if _stopped}
     <a x-bind="click:start">Start timer</a>
-  ((else))
-    You have been here for ((_timer)) seconds. <a x-bind="click:stop">Stop</a>
-  ((/))
+  {else}
+    You have been here for {_timer} seconds. <a x-bind="click:stop">Stop</a>
+  {/}
 
 <!--
   connected and canConnect are built-in properties of model. If a variable
@@ -342,17 +343,17 @@ APP_HTML = '''
 -->
 <alert:>
   <div id="alert">
-    ((#unless connected))
+    {#unless connected}
       <p>
-        ((#if canConnect))
+        {#if canConnect}
           <!-- Leading space is removed, and trailing space is maintained -->
           Offline 
-          ((#if _showReconnect))&ndash; <a x-bind="click:connect">Reconnect</a>((/))
-        ((else))
+          {#if _showReconnect}&ndash; <a x-bind="click:connect">Reconnect</a>{/}
+        {else}
           Unable to reconnect &ndash; <a x-bind="click:reload">Reload</a>
-        ((/))
+        {/}
       </p>
-    ((/))
+    {/}
   </div>
 
 '''

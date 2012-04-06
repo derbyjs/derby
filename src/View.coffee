@@ -20,7 +20,7 @@ defaultSetFns =
 
 View = module.exports = ->
   @clear()
-  getFns = @getFns = Object.create defaultGetFns
+  @getFns = getFns = Object.create defaultGetFns
   @setFns = Object.create defaultSetFns
 
   getFns.each = (fnName, items) ->
@@ -276,15 +276,11 @@ parseMatchError = (text, message) ->
   throw new Error message + '\n\n' + text + '\n'
 
 parseMatch = (view, text, match, queues, {onStart, onEnd, onVar}) ->
-  {hash, type, name, partial} = match
+  {hash, type, name} = match
   {block} = queues.last()
   blockType = block && block.type
 
-  if partial
-    if hash
-      parseMatchError text, 'partial tag cannot start with ' + hash
-
-  else if type is 'if' || type is 'unless' || type is 'each' || type is 'with'
+  if type is 'if' || type is 'unless' || type is 'each' || type is 'with'
     if hash is '#'
       startBlock = true
     else if hash is '/'
@@ -344,29 +340,36 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
   return ctx
 
-partialValue = (view, ctx, model, name, value, useValue) ->
-  if useValue
-    value
-  else
-    if name then dataValue view, ctx, model, name else true
+partialValue = (view, ctx, model, name, value, useValue, macro) ->
+  if macro
+    ctx = ctx.$macroCtx
+  else if useValue
+    return value
+  return if name then dataValue view, ctx, model, name else true
 
-partialFn = (view, name, type, alias, render) ->
+partialFn = (view, name, type, alias, render, macroCtx, macro) ->
 
   withFn = (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-    value = partialValue view, ctx, model, name, value, useValue
+    value = partialValue view, ctx, model, name, value, useValue, macro
 
     renderCtx = extendCtx ctx, value, name, alias, index
     return render renderCtx, model, triggerPath
 
-  if type is 'var'
-    return render
+  if type is 'partial'
+    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+      renderCtx = Object.create ctx
+      renderCtx.$macroCtx = if parentMacroCtx = ctx.$macroCtx
+        extend parentMacroCtx, macroCtx
+      else
+        macroCtx
+      return render renderCtx, model, triggerPath
 
   if type is 'with' || type is 'else'
     return withFn
 
   if type is 'if' || type is 'else if'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue view, ctx, model, name, value, useValue
+      value = partialValue view, ctx, model, name, value, useValue, macro
 
       if (if Array.isArray(value) then value.length else value)
         renderCtx = extendCtx ctx, value, name, alias, index
@@ -375,7 +378,7 @@ partialFn = (view, name, type, alias, render) ->
 
   if type is 'unless'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue view, ctx, model, name, value, useValue
+      value = partialValue view, ctx, model, name, value, useValue, macro
 
       if (Array.isArray(value) && !value.length) || !value
         renderCtx = extendCtx ctx, value, name, alias, index
@@ -384,7 +387,7 @@ partialFn = (view, name, type, alias, render) ->
 
   if type is 'each'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue view, ctx, model, name, value, useValue
+      value = partialValue view, ctx, model, name, value, useValue, macro
 
       unless Array.isArray(value)
         return withFn ctx, model, triggerPath, triggerId, value, index, true
@@ -404,8 +407,9 @@ partialFn = (view, name, type, alias, render) ->
 
 objectToString = Object::toString
 
-textFn = (view, name, escape) ->
+textFn = (view, name, escape, macro) ->
   (ctx, model) ->
+    ctx = ctx.$macroCtx if macro
     value = dataValue view, ctx, model, name
     text = if typeof value is 'string' then value else
       if `value == null` then '' else
@@ -416,10 +420,9 @@ textFn = (view, name, escape) ->
     return if escape then escape text else text
 
 sectionFn = (view, queue) ->
-  {stack, events, block} = queue
-  {name, escaped, type, alias} = block
-  render = renderer view, reduceStack(stack), events
-  return partialFn view, name, type, alias, render
+  render = renderer view, reduceStack(queue.stack), queue.events
+  {block} = queue
+  return partialFn view, block.name, block.type, block.alias, render, null, block.macro
 
 blockFn = (view, sections) ->
   return unless len = sections.length
@@ -446,18 +449,17 @@ parseMarkup = (type, attr, tagName, events, attrs, name) ->
 pushChars = (stack, text) ->
   stack.push ['chars', text]  if text
 
-pushVarFn = (view, stack, fn, name, escapeFn) ->
+pushVarFn = (view, stack, fn, name, escapeFn, macro) ->
   if fn
     pushChars stack, fn
   else
-    pushChars stack, textFn view, name, escapeFn
+    pushChars stack, textFn(view, name, escapeFn, macro)
 
 pushVar = (view, ns, stack, events, remainder, match, fn) ->
   {name, partial} = match
   escapeFn = match.escaped && escapeHtml
   if partial
-    type = match.type || 'var'
-    fn = partialFn view, name, type, match.alias, view._find(partial, ns)
+    fn = partialFn view, name, 'partial', match.alias, view._find(partial, ns), match.macroCtx
 
   if match.bound
     last = stack[stack.length - 1]
@@ -476,28 +478,25 @@ pushVar = (view, ns, stack, events, remainder, match, fn) ->
 
     bindEventsById events, name, fn, attrs, 'html', !fn && escapeFn, true
 
-  pushVarFn view, stack, fn, name, escapeFn
+  pushVarFn view, stack, fn, name, escapeFn, match.macro
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
 pushVarString = (view, ns, stack, events, remainder, match, fn) ->
-  {name, partial} = match
+  {name} = match
   escapeFn = !match.escaped && unescapeEntities
-  if partial
-    type = match.type || 'var'
-    fn = partialFn view, name, type, match.alias, view._find(partial + '$s', ns)
   bindOnce = (ctx) ->
     ctx.$onBind events, name
     bindOnce = empty
   if match.bound then events.push (ctx) -> bindOnce ctx
-  pushVarFn view, stack, fn, name, escapeFn
+  pushVarFn view, stack, fn, name, escapeFn, match.macro
 
 parse = null
 forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
   return if typeof value is 'function'
   if match = extractPlaceholder value
-    {pre, post, name, bound, partial} = match
+    {pre, post, name, bound} = match
 
-    if pre || post || partial
+    if pre || post
       # Attributes must be a single string, so create a string partial
       addId view, attrs
       render = parse view, viewName, value, true, (events, name) ->
@@ -516,11 +515,13 @@ forAttr = (view, viewName, stack, events, tagName, attrs, attr, value) ->
       bindEventsById events, name, null, attrs, (out.method || 'attr'), (out.property || attr)
 
     unless out.del
+      {macro} = match
       attrs[attr] = if out.bool
           bool: (ctx, model) ->
+            ctx = ctx.$macroCtx if macro
             if dataValue(view, ctx, model, name) then ' ' + attr else ''
         else
-          textFn view, name, escapeAttr
+          textFn view, name, escapeAttr, macro
 
   out = parseMarkup 'attr', attr, tagName, events, attrs, value
   addId view, attrs  if out?.addId
@@ -543,6 +544,13 @@ parse = (view, viewName, template, isString, onBind) ->
   ns = if ~(index = viewName.lastIndexOf ':') then viewName[0...index] else ''
 
   start = (tag, tagName, attrs) ->
+    if ~(i = tagName.indexOf ':')
+      tagNs = tagName[0...i]
+      if view._componentNamespaces[tagNs]
+        partial = tagName.slice i + 1
+        push view, ns, stack, events, '', {partial, macroCtx: attrs}
+        return
+
     if parser = markup.element[tagName]
       out = parser(events, attrs)
       addId view, attrs  if out?.addId
@@ -561,15 +569,16 @@ parse = (view, viewName, template, isString, onBind) ->
     {pre, post} = match
     pre = unescapeEntities pre  if isString
     pushChars stack, pre
+    remainder = post || remainder
 
     parseMatch view, text, match, queues,
       onStart: (queue) ->
         {stack, events, block} = queue
       onEnd: (sections) ->
         fn = blockFn view, sections
-        push view, ns, stack, events, (post || remainder), sections[0].block, fn
+        push view, ns, stack, events, remainder, sections[0].block, fn
       onVar: (match) ->
-        push view, ns, stack, events, (post || remainder), match
+        push view, ns, stack, events, remainder, match
 
     chars post  if post
 

@@ -2,7 +2,7 @@
   Todos
 
 <Header:>
-  {{> alert}}
+  <app:alert>
 
 <Body:>
   <div id=overlay></div>
@@ -14,7 +14,7 @@
     </div>
   </form>
   <div id=dragbox></div>
-  <div id=content><ul id=todos>{each _todoList > todo}</ul></div>
+  <div id=content><ul id=todos>{#each _todoList}<app:todo>{/}</ul></div>
 
 <todo:>
   <li data-id={{id}} class="{#if .completed}completed{/}">

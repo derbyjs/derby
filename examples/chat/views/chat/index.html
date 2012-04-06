@@ -5,9 +5,9 @@
   handlers that update the model after user interaction, and the event handlers
   that update the DOM when the model changes.
 
-  As in Handlebars, double and triple curly braces output a value literally.
-  Derby templates add double and triple parentheses, which output a value
-  and set up model <- -> view bindings for that object.
+  As in Handlebars, double curly braces output a value literally. Derby templates
+  add single curly braces, which output a value and set up model <- -> view
+  bindings for that object.
 
   Elements that end in colon define the names of views. Pre-defined views are
   capitalized by convention, but view names are case-insensitive. Pre-defined views
@@ -21,13 +21,18 @@
   <meta name=viewport content="width=device-width">
 
 <Header:>
-  <!-- Partials use Handlebars syntax -->
-  {{> alert}}
+  <!-- Other templates are referenced like custom HTML elements -->
+  <app:alert>
 
 <Body:>
   <div id=page>
-    <!-- An object can be passed into the partial to set its context -->
-    <div id=messages><ul id=messageList>{each _room.messages > message}</ul></div>
+    <div id=messages>
+      <ul id=messageList>
+        {#each _room.messages}
+          <app:message>
+        {/}
+      </ul>
+    </div>
     <div id=foot>
       <img id=inputPic src=/img/s.png class="pic {_user.picClass}" alt="">
       <div id=inputs>
@@ -64,8 +69,8 @@
   </div>
 
 <message:>
-  <!-- Square brackets perform interpolation within a model name -->
   <li>
+    <!-- Square brackets perform interpolation within a model name -->
     <img src=img/s.png class="pic {{users.[userId].picClass}}" alt="">
     <div class=message>
       <p class=time>{._displayTime}</p>

@@ -6,7 +6,7 @@ rawTextTag = /^(?:[^\s=\/>]+:|style|script)$/i
 rawTextEnd = (tagName) -> switch tagName.toLowerCase()
   when 'style' then /<\/style/i
   when 'script' then /<\/script/i
-  else /<\/?[^\s=\/>]+:/
+  else /<\/?[^\s=\/>]+:[\s>]/
 
 comment = /<!--[\s\S]*?-->/g
 exports.uncomment = uncomment = (html) -> html.replace comment, ''

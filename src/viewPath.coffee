@@ -54,7 +54,6 @@ placeholderContent = ///^
     (?: \s* \( [\s\S]* \) )?
   )
   (?:\s+as\s+:([^\s>]+))?  # Alias name
-  (?:\s*>\s*([^\s]+)\s*)?  # Partial name
 ///
 
 exports.extractPlaceholder = (text) ->
@@ -64,10 +63,10 @@ exports.extractPlaceholder = (text) ->
   remainder = match[3]
   openLen = open.length
   bound = openLen is 1
+  macro = openLen is 3
 
-  close = Array(openLen + 1).join "}"
-  return unless ~(endInner = remainder.indexOf close)
-  end = endInner + openLen
+  end = matchBraces remainder, openLen, 0, '{', '}'
+  endInner = end - openLen
 
   inner = remainder[0...endInner]
   post = remainder[end..]
@@ -87,19 +86,19 @@ exports.extractPlaceholder = (text) ->
     pre: trim pre
     post: trim post
     bound: bound
+    macro: macro
     hash: content[1]
     escaped: escaped
     type: type
     name: name
     alias: content[4]
-    partial: content[5]?.toLowerCase()
   }
 
-matchParens = (text, num, i) ->
+matchBraces = (text, num, i, openChar, closeChar) ->
   i++
   while num
-    close = text.indexOf ')', i
-    open = text.indexOf '(', i
+    close = text.indexOf closeChar, i
+    open = text.indexOf openChar, i
     hasClose = ~close
     hasOpen = ~open
     if hasClose && (!hasOpen || (close < open))
@@ -132,7 +131,7 @@ fnArgs = (inner) ->
   while match = argSeparator.exec inner
     # Find nested function calls
     if match[1] is '('
-      end = matchParens inner, 1, argSeparator.lastIndex
+      end = matchBraces inner, 1, argSeparator.lastIndex, '(', ')'
       args.push inner[lastIndex...end]
       notSeparator.lastIndex = end
       lastIndex = argSeparator.lastIndex =
