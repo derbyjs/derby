@@ -66,9 +66,11 @@ History = module.exports = (page, routes, dom) ->
 
 History:: =
 
-  push: (url, render, state, e) -> @_update 'pushState', url, render, state, e
+  push: (url, render, state, e) ->
+    @_update 'pushState', url, render, state, e
 
-  replace: (url, render, state, e) -> @_update 'replaceState', url, render, state, e
+  replace: (url, render, state, e) ->
+    @_update 'replaceState', url, render, state, e
 
   # Rerender the current url locally
   refresh: ->
@@ -81,7 +83,8 @@ History:: =
 
   go: (i) -> winHistory.go i
 
-  _update: (historyMethod, url, render = true, state = {}, e) ->
+  _update: (historyMethod, relativeUrl, render = true, state = {}, e) ->
+    url = resolveUri winLocation.href, relativeUrl
     return unless path = routePath url
 
     # If this is a form submission, extract the form data and
@@ -117,6 +120,64 @@ History:: =
 
 routePath = (url) ->
   # Get the pathname if it is on the same protocol and domain
-  match = /^(https?:)\/\/([^\/]+)(.*)/.exec url
-  return match && match[1] == winLocation.protocol &&
-    match[2] == winLocation.host && match[3]
+  return (match = parseUri url) &&
+    match.protocol == winLocation.protocol &&
+    match.host == winLocation.host &&
+    match.pathname + match.search
+
+
+# Adapted from: https://gist.github.com/1088850
+
+parseUri = (uri) ->
+  match = ///^\s*
+    ([^:/?\#]+:)?
+    (//
+      (?:[^:@]*(?::[^:@]*)?@)?
+      (
+        ([^:/?\#]*)
+        (?::(\d*))?
+      )
+    )?
+    ([^?\#]*)
+    (\?[^\#]*)?
+    (\#[\s\S]*)?
+  \s*$///.exec uri
+  # authority = '//' + user + ':' + pass '@' + hostname + ':' port
+  return match && {
+    href:      match[0] || ''
+    protocol:  match[1] || ''
+    authority: match[2] || ''
+    host:      match[3] || ''
+    hostname:  match[4] || ''
+    port:      match[5] || ''
+    pathname:  match[6] || ''
+    search:    match[7] || ''
+    hash:      match[8] || ''
+  }
+
+resolveDotSegments = (uri) ->
+  out = []
+  uri.replace(/^(\.\.?(\/|$))+/, '')
+   .replace(/\/(\.(\/|$))+/g, '/')
+   .replace(/\/\.\.$/, '/../')
+   .replace(/\/?[^\/]*/g, (segment) ->
+      if segment == '/..'
+        out.pop()
+      else
+        out.push(segment)
+      return
+    )
+  absoluteStart = if uri.charAt(0) == '/' then '/' else ''
+  return out.join('').replace /^\//, absoluteStart
+
+# RFC 3986
+resolveUri = (baseUri, hrefUri) ->
+  base = parseUri(baseUri || '')
+  href = parseUri(hrefUri || '')
+
+  # TODO: Make this code readable
+  return `!href || !base ? null : (href.protocol || base.protocol) +
+    (href.protocol || href.authority ? href.authority : base.authority) +
+    resolveDotSegments(href.protocol || href.authority || href.pathname.charAt(0) === '/' ? href.pathname : (href.pathname ? ((base.authority && !base.pathname ? '/' : '') + base.pathname.slice(0, base.pathname.lastIndexOf('/') + 1) + href.pathname) : base.pathname)) +
+    (href.protocol || href.authority || href.pathname ? href.search : (href.search || base.search)) +
+    href.hash;`
