@@ -3,7 +3,9 @@ markup = require './markup'
 {trim, wrapRemainder, modelPath, extractPlaceholder, dataValue, pathFnArgs} = require './viewPath'
 
 empty = -> ''
-notFound = (name) -> throw new Error "Can't find view: #{name}"
+notFound = (name, ns) ->
+  name = ns + ':' + name if ns
+  throw new Error "Can't find view: #{name}"
 defaultCtx =
   $depth: 0
   $aliases: {}
@@ -20,11 +22,8 @@ defaultSetFns =
 
 View = module.exports = ->
   @clear()
-  @getFns = getFns = Object.create defaultGetFns
+  @getFns = Object.create defaultGetFns
   @setFns = Object.create defaultSetFns
-
-  getFns.each = (fnName, items) ->
-    return items.map(getFns[fnName]).join('')
 
   @_componentNamespaces = {app: true}
   @_nonvoidComponents = {}
@@ -34,6 +33,7 @@ View:: =
 
   clear: ->
     @_views = Object.create @default
+    @_made = {}
     @_renders = {}
     @_inline = ''
     @_idCount = 0
@@ -53,25 +53,31 @@ View:: =
     scripts: empty
     tail: empty
 
-  make: (name, template, templatePath, isString) ->
-    stringTemplatePath = templatePath + '$s' if templatePath
-    @make name + '$s', template, stringTemplatePath, true  unless isString
+  make: (name, template, templatePath, boundMacro) ->
+    # Cache any templates that are made so that they can be
+    # re-parsed with different items bound when using macros
+    @_made[name] = [template, templatePath]
 
     if templatePath && render = @_renders[templatePath]
       @_views[name] = render
       return
 
     name = name.toLowerCase()
+
+    if name is 'title'
+      @make 'title$s', template, templatePath
+    else if name is 'title$s'
+      isString = true
+      onBind = (events, name) ->
+        bindEvents events, name, render, ['$_doc', 'prop', 'title']
+
     renderer = (ctx) =>
-      renderer = parse this, name, template, isString, onBind
+      renderer = parse this, name, template, isString, onBind, boundMacro
       renderer ctx
     render = (ctx) -> renderer ctx
 
     @_views[name] = render
     @_renders[templatePath] = render if templatePath
-
-    if name is 'title$s' then onBind = (events, name) ->
-      bindEvents events, name, render, ['$_doc', 'prop', 'title']
     return
 
   _makeAll: (templates, instances) ->
@@ -79,18 +85,27 @@ View:: =
       @make name, templates[templatePath], templatePath
     return
 
-  _find: (name, ns) ->
-    views = @_views
+  _findItem: (name, ns, fromMade) ->
+    items = if fromMade then @_made else @_views
     if ns
       ns = ns.toLowerCase()
-      return view if view = views["#{ns}:#{name}"]
+      return item if item = items["#{ns}:#{name}"]
       segments = ns.split ':'
       if (from = segments.length - 2) >= 0
         for i in [from..0]
           testNs = segments[0..i].join ':'
-          return view if view = views["#{testNs}:#{name}"]
-      return views[name] || notFound "#{ns}:#{name}"
-    return views[name] || notFound name
+          return item if item = items["#{testNs}:#{name}"]
+      return items[name]
+    return items[name]
+
+  _find: (name, ns, boundMacro) ->
+    if boundMacro && (hash = keyHash boundMacro)
+      hashedName = name + '$b:' + hash
+      return out if out = @_findItem hashedName, ns
+      [template, templatePath] = @_findItem(name, ns, true) || notFound name, ns
+      @make hashedName, template, templatePath, boundMacro
+      return @_find hashedName, ns
+    return @_findItem(name, ns) || notFound name, ns
 
   get: (name, ns, ctx) ->
     if typeof ns is 'object'
@@ -152,6 +167,12 @@ View:: =
   escapeAttr: escapeAttr
 
 View.trim = trim
+
+keyHash = (obj) ->
+  keys = []
+  for key of obj
+    keys.push key
+  return keys.sort().join(',')
 
 extend = (parent, obj) ->
   out = Object.create parent
@@ -310,11 +331,13 @@ parseMatch = (view, text, match, queues, {onStart, onEnd, onVar}) ->
     queue.sections.push lastQueue
 
   if startBlock
+    boundMacro = (queue && queue.boundMacro) || queues.last().boundMacro
     queues.push queue =
       stack: []
       events: []
       block: match
       sections: []
+      boundMacro: Object.create boundMacro
     onStart queue
   else
     if endBlock
@@ -452,13 +475,14 @@ pushVarFn = (view, stack, fn, name, escapeFn, macro) ->
   else
     pushChars stack, textFn(view, name, escapeFn, macro)
 
-pushVar = (view, ns, stack, events, remainder, match, fn) ->
+pushVar = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
   {name, partial} = match
   escapeFn = match.escaped && escapeHtml
   if partial
-    fn = partialFn view, name, 'partial', match.alias, view._find(partial, ns), match.macroCtx
+    fn = partialFn view, name, 'partial', match.alias, view._find(partial, ns, boundMacro), match.macroCtx
 
-  if match.bound
+  bound = if match.macro then boundMacro[name] else match.bound
+  if bound
     last = stack[stack.length - 1]
     wrap = match.pre ||
       !last ||
@@ -478,7 +502,7 @@ pushVar = (view, ns, stack, events, remainder, match, fn) ->
   pushVarFn view, stack, fn, name, escapeFn, match.macro
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
-pushVarString = (view, ns, stack, events, remainder, match, fn) ->
+pushVarString = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
   {name} = match
   escapeFn = !match.escaped && unescapeEntities
   bindOnce = (ctx) ->
@@ -523,22 +547,30 @@ parseAttr = (view, viewName, events, tagName, attrs, attr, value) ->
   return
 
 parsePartialAttr = (view, viewName, events, attrs, attr, value) ->
+  bound = false
   if match = extractPlaceholder value
-    {name} = match
+    {name, bound} = match
 
     if match.pre || match.post
       # Attributes must be a single string, so create a string partial
       render = parse view, viewName, value, true, (events, name) ->
-        bindEventsByIdString events, name, render, attrs, 'attr', attr
+        bound = true
+        # TODO: Does this still work?
+        # bindEventsByIdString events, name, render, attrs, 'attr', attr
 
       attrs[attr] = render
-      return
+      return bound
 
     attrs[attr] = textFn view, name, null, match.macro
-  return
+  return bound
 
-parse = (view, viewName, template, isString, onBind) ->
-  queues = [{stack: stack = [], events: events = [], sections: []}]
+parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
+  queues = [
+    stack: stack = []
+    events: events = []
+    sections: []
+    boundMacro: boundMacro
+  ]
   queues.last = -> queues[queues.length - 1]
 
   if isString
@@ -560,8 +592,9 @@ parse = (view, viewName, template, isString, onBind) ->
       if view._componentNamespaces[tagNs]
         partial = tagName.slice i + 1
         for attr, value of attrs
-          parsePartialAttr view, viewName, events, attrs, attr, value
-        push view, ns, stack, events, '', {partial, macroCtx: attrs}
+          bound = parsePartialAttr view, viewName, events, attrs, attr, value
+          boundMacro[attr] = true if bound
+        push view, ns, stack, events, boundMacro, '', {partial, macroCtx: attrs}
         return
 
     if parser = markup.element[tagName]
@@ -586,12 +619,12 @@ parse = (view, viewName, template, isString, onBind) ->
 
     parseMatch view, text, match, queues,
       onStart: (queue) ->
-        {stack, events, block} = queue
+        {stack, events, block, boundMacro} = queue
       onEnd: (sections) ->
         fn = blockFn view, sections
-        push view, ns, stack, events, remainder, sections[0].block, fn
+        push view, ns, stack, events, boundMacro, remainder, sections[0].block, fn
       onVar: (match) ->
-        push view, ns, stack, events, remainder, match
+        push view, ns, stack, events, boundMacro, remainder, match
 
     chars post  if post
 

@@ -56,7 +56,7 @@ placeholderContent = ///^
   (?:\s+as\s+:([^\s>]+))?  # Alias name
 ///
 
-exports.extractPlaceholder = (text) ->
+exports.extractPlaceholder = extractPlaceholder = (text) ->
   return unless match = openPlaceholder.exec text
   pre = match[1]
   open = match[2]
@@ -158,6 +158,11 @@ fnArgValue = (view, ctx, model, name, macro, arg) ->
   if arg is 'false'
     return false
 
+  if match = extractPlaceholder arg
+    unless match.macro
+      throw new Error 'only macro template tags are supported as arguments to view functions: ' + name
+    return dataValue view, ctx, model, match.name, true
+
   firstChar = arg.charAt 0
 
   if firstChar is "'"
@@ -233,13 +238,16 @@ exports.setBoundFn = setBoundFn = (view, ctx, model, name, value) ->
   unless (get = view.getFns[fnName]) && (set = view.setFns[fnName])
     throw new Error 'view function "' + fnName + '" not found for binding to: ' + name
 
+  # TODO: proper value of macro
+  macro = false
+
   # Get each of the input values
   numInputs = set.length - 1
   if numInputs
     inputs = [value]
     i = 0
     while i < numInputs
-      inputs.push fnArgValue view, ctx, model, name, args[i++]
+      inputs.push fnArgValue view, ctx, model, name, macro, args[i++]
     out = set inputs...
   else
     out = set value

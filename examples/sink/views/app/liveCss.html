@@ -37,7 +37,7 @@
   <div class="{#if _poppedOut}poppedOut{/} cssOutput">
     <p class=popupTitle><a href="/live-css">Close</a></p>
     <div class=popupContent>
-      <p style="{each('cssProperty', liveCss.styles)}" contenteditable>
+      <p style="{#each liveCss.styles}{cssProperty(this)}{/}" contenteditable>
         {unescaped liveCss.outputText}
       </p>
     </div>

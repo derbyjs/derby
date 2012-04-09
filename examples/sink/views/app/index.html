@@ -11,16 +11,7 @@
 <Header:>
   <body class={{currentPage}}>
   <app:alert>
-  <nav>
-    {{#each pages}}
-      {{#if current}}
-        <b>{{text}}</b>{{#unless isLast}} | {{/}}
-      {{else}}
-        <a href={{url}}>{{text}}</a>{{#unless isLast}} | {{/}}
-      {{/}}
-    {{/}}
-    <hr>
-  </nav>
+  <app:nav>
 
 <alert:>
   <div id=alert>
@@ -36,3 +27,16 @@
       </p>
     {/}
   </div>
+
+<nav:>
+  <nav>
+    {{#each pages}}
+      {{#if current}}
+        <b>{{text}}</b>
+      {{else}}
+        <a href={{url}}>{{text}}</a>
+      {{/}}
+      {{#unless isLast}} | {{/}}
+    {{/}}
+    <hr>
+  </nav>

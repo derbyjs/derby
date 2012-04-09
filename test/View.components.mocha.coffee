@@ -40,3 +40,19 @@ describe 'View components', ->
     '''
     expect(view.get 'test').to.equal 'say "Yo"'
     expect(view.get 'test', myMessage: 'Heyo').to.equal 'say "Heyo"'
+
+  it 'supports void html components with bound attributes', ->
+    view = new View
+    model = new Model
+    view._init model
+
+    view.make 'test', 'say "<app:test2 message="{myMessage}">"'
+    view.make 'test2', '''
+      {{{#if message}}}
+        {{{message}}}
+      {{{else}}}
+        Yo
+      {{{/}}}
+    '''
+    model.set 'myMessage', 'Heyo'
+    expect(view.get 'test').to.equal 'say "<!--$0--><!--$1-->Heyo<!--$$1--><!--$$0-->"'
