@@ -6,23 +6,34 @@
 
 <Body:>
   <div>
-    {#if _image}
-      <div id=lightbox>
-        <app:photo source="{{source}}" size="m">
-      </div>
-    {/}
+    <div id=lightbox>
+      {#if _image}
+        <app:photo source="{{source}}" size="m" data="{this}">
+      {/}
+      {#if _imagePrevious}
+        <app:photo source="{{source}}" size="m" data="{this}">
+      {/}
+    </div>
   </div>
   <div>
     {#each _pages}
       <div>
         {#each this}
           <a x-bind="click: select">
-            <app:photo source="{{source}}">
+            <app:photo source="{{source}}" data="{{this}}">
           </a>
         {/}
       </div>
     {/}
   </div>
+
+<photo:>
+  <img
+    alt="{{{data.title}}}"
+    src="{{{photoSrc(data, source, size)}}}"
+    width="{{{photoWidth(data, source, size)}}}"
+    height="{{{photoHeight(data, source, size)}}}"
+  >
 
 <alert:>
   <div id="alert">
@@ -37,11 +48,3 @@
       </p>
     {/}
   </div>
-
-<photo:>
-  <img
-    alt={{this.title}}
-    src="{{photoSrc(this, {{{source}}}, {{{size}}} )}}"
-    width="{{photoWidth(this, {{{source}}}, {{{size}}} )}}"
-    height="{{photoHeight(this, {{{source}}}, {{{size}}} )}}"
-  >

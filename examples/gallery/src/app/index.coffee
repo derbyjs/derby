@@ -21,17 +21,19 @@ photoDimension = (obj, source, size = 's', type) ->
   return
 
 view.fn 'photoWidth', (obj, source, size) ->
+  return unless obj
   photoDimension obj, source, size, 'width'
 
 view.fn 'photoHeight', (obj, source, size) ->
+  return unless obj
   photoDimension obj, source, size, 'height'
 
 view.fn 'photoSrc', (obj, source, size = 's') ->
+  return unless obj
   if source is 'flickr'
-    if obj then return "http://farm#{obj.farm}.staticflickr.com/" +
+    return "http://farm#{obj.farm}.staticflickr.com/" +
       "#{obj.server}/#{obj.id}_#{obj.secret}_#{size}.jpg"
-  return ''
-
+  return
 
 get '/:source/:type/:id/:image?', (page, model, params, next) ->
   {source, type, id, image, query} = params
@@ -40,18 +42,36 @@ get '/:source/:type/:id/:image?', (page, model, params, next) ->
   model.fetch "#{source}.#{type}.id_#{id}.photos.pages.#{pageIndex}", (err, photos) ->
     model.ref '_pages', photos.parent()
     model.ref '_page', '_pages', '_selectedPage'
+
+    model.setNull '_toggle', 0
+    model.fn '_toggleInverse', '_toggle', (value) -> +!value
+
+    model.ref '_selectedImage', '_selected', '_toggle'
+    model.ref '_previousImage', '_selected', '_toggleInverse'
     model.ref '_image', '_page', '_selectedImage'
+    model.ref '_imagePrevious', '_page', '_previousImage'
+
     model.set '_selectedPage', pageIndex
-    model.set '_selectedImage', image
+    model.set '_selected.' + model.get('_toggle'), image
+    console.log model.get('_selectedImage'), model.get('_image')
     page.render {source}
 
+get from: '/:source/:type/:id/:image?', to: '/:source/:type/:id/:image?',
+  (model, params, next) ->
+    {source, type, id, image, query} = params
+    next() unless source is 'flickr'
+    pageIndex = if query.page then query.page - 1 else 0
+    model.set '_selectedPage', pageIndex
+    model.set '_selected.' + model.get('_toggle'), image
 
 ready (model) ->
 
   app.select = (e, el) ->
-    image = model.at(el).leaf()
-    model.set '_selectedImage', image
-    view.history.push image, false
+    # model.set '_image._opacity', 0
+    model.set '_toggle', model.get('_toggleInverse')
+    # model.set '_image._opacity', 1
+    url = model.at(el).leaf() + window.location.search
+    view.history.push url
 
   model.set '_showReconnect', true
   app.connect = ->
