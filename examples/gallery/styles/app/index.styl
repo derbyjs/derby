@@ -1,33 +1,48 @@
 @import "../base";
 
 body {
+  padding-top: 0;
   background: #333;
 }
 
-#lightbox {
+.lightbox {
   position: relative;
   height: 300px;
-  width: 300px;
+  width: 500px;
   margin: 0 auto;
 }
-
-#lightbox > div {
-  position: absolute;
-  height: 300px;
-  width: 300px;
-  top: 0;
-  left: 0;
-  display: -webkit-box;
-  display: -moz-box;
-  display: box;
-  box-orient: horizontal;
-  box-pack: center;
-  box-align: center;
-}
-#lightbox img {
+.photobox {
   transition: opacity .5s ease-in-out;
-  border-radius: 12px;
-  box-shadow: 0 1px 1px #222, 0 2px 16px #222;
+  display: table-row;
+  > .photo {
+    position: absolute;
+    height: 300px;
+    width: 300px;
+    top: 0;
+    left: 0;
+  }
+  .photoOffset {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    > img {
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 1px 1px #222, 0 2px 16px #222;
+    }
+  }
+  > .caption {
+    position: absolute;
+    width: 200px;
+    left: 300px;
+    top: 0;
+    padding-left: 24px;
+    padding-top: 72px;
+    > h3 {
+      color: #ddd;
+      font: 200 20px/1.2 'Helvetica Neue';
+    }
+  }
 }
 
 .thumb {
