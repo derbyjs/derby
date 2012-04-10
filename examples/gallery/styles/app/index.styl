@@ -1,11 +1,33 @@
 @import "../base";
 
-#lightbox {
-  height: 240px;
-  width: 240px;
+body {
+  background: #333;
 }
-#lightbox > img {
-  transition: opacity 1s ease-in-out;
+
+#lightbox {
+  position: relative;
+  height: 300px;
+  width: 300px;
+  margin: 0 auto;
+}
+
+#lightbox > div {
+  position: absolute;
+  height: 300px;
+  width: 300px;
+  top: 0;
+  left: 0;
+  display: -webkit-box;
+  display: -moz-box;
+  display: box;
+  box-orient: horizontal;
+  box-pack: center;
+  box-align: center;
+}
+#lightbox img {
+  transition: opacity .5s ease-in-out;
+  border-radius: 12px;
+  box-shadow: 0 1px 1px #222, 0 2px 16px #222;
 }
 
 #alert {

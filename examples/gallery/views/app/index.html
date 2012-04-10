@@ -5,21 +5,19 @@
   <app:alert>
 
 <Body:>
-  <div>
-    <div id=lightbox>
-      {#if _image}
-        <app:photo source="{{source}}" size="m" data="{this}">
-      {/}
-      {#if _imagePrevious}
-        <app:photo source="{{source}}" size="m" data="{this}">
-      {/}
+  <div id=lightbox>
+    <div>
+      <app:photo source="{{source}}" size="m" data="{_image0}" opacity="{_fade0}">
+    </div>
+    <div>
+      <app:photo source="{{source}}" size="m" data="{_image1}" opacity="{_fade1}">
     </div>
   </div>
   <div>
     {#each _pages}
       <div>
         {#each this}
-          <a x-bind="click: select">
+          <a x-bind="mouseover: select">
             <app:photo source="{{source}}" data="{{this}}">
           </a>
         {/}
@@ -30,6 +28,7 @@
 <photo:>
   <img
     alt="{{{data.title}}}"
+    style="opacity:{{{opacity}}}"
     src="{{{photoSrc(data, source, size)}}}"
     width="{{{photoWidth(data, source, size)}}}"
     height="{{{photoHeight(data, source, size)}}}"

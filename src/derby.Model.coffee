@@ -95,7 +95,7 @@ exports.init = (model, dom) ->
             noRender = true
             property = arg
         unless noRender
-          value = partial listener.ctx, model, path, triggerId, value, index, true
+          value = partial listener.ctx, model, path, triggerId, value, index, listener
           return unless value?
 
       # Remove this listener if the DOM update fails

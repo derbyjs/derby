@@ -43,17 +43,15 @@ get '/:source/:type/:id/:image?', (page, model, params, next) ->
     model.ref '_pages', photos.parent()
     model.ref '_page', '_pages', '_selectedPage'
 
-    model.setNull '_toggle', 0
-    model.fn '_toggleInverse', '_toggle', (value) -> +!value
+    model.set '_toggle', 0
+    model.set '_fade0', 1
+    model.set '_fade1', 0
 
-    model.ref '_selectedImage', '_selected', '_toggle'
-    model.ref '_previousImage', '_selected', '_toggleInverse'
-    model.ref '_image', '_page', '_selectedImage'
-    model.ref '_imagePrevious', '_page', '_previousImage'
+    model.ref '_image0', '_page', '_selected0'
+    model.ref '_image1', '_page', '_selected1'
 
     model.set '_selectedPage', pageIndex
-    model.set '_selected.' + model.get('_toggle'), image
-    console.log model.get('_selectedImage'), model.get('_image')
+    model.set '_selected0', image
     page.render {source}
 
 get from: '/:source/:type/:id/:image?', to: '/:source/:type/:id/:image?',
@@ -62,14 +60,16 @@ get from: '/:source/:type/:id/:image?', to: '/:source/:type/:id/:image?',
     next() unless source is 'flickr'
     pageIndex = if query.page then query.page - 1 else 0
     model.set '_selectedPage', pageIndex
-    model.set '_selected.' + model.get('_toggle'), image
+    model.set '_selected' + model.get('_toggle'), image
 
 ready (model) ->
 
   app.select = (e, el) ->
-    # model.set '_image._opacity', 0
-    model.set '_toggle', model.get('_toggleInverse')
-    # model.set '_image._opacity', 1
+    toggleValue = model.get '_toggle'
+    model.set '_fade' + toggleValue, 0
+    toggleValue = +!toggleValue
+    model.set '_fade' + toggleValue, 1
+    model.set '_toggle', toggleValue
     url = model.at(el).leaf() + window.location.search
     view.history.push url
 

@@ -379,28 +379,24 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
   return ctx
 
-partialValue = (view, ctx, model, name, value, useValue, macro) ->
-  if useValue
+partialValue = (view, ctx, model, name, value, listener, macro) ->
+  if listener
     return value
   return if name then dataValue view, ctx, model, name, macro else true
 
 partialFn = (view, name, type, alias, render, macroCtx, macro) ->
-  conditionalRender = (ctx, model, triggerPath, value, index, useValue, condition) ->
-    unchanged = useValue && ctx.$lastCondition == condition
-    ctx.$lastCondition = condition
-    return if unchanged
-
+  conditionalRender = (ctx, model, triggerPath, value, index, condition) ->
     if condition
       renderCtx = extendCtx ctx, value, name, alias, index
       return render renderCtx, model, triggerPath
     return ''
 
-  withFn = (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-    value = partialValue view, ctx, model, name, value, useValue, macro
-    return conditionalRender ctx, model, triggerPath, value, index, useValue, true
+  withFn = (ctx, model, triggerPath, triggerId, value, index, listener) ->
+    value = partialValue view, ctx, model, name, value, listener, macro
+    return conditionalRender ctx, model, triggerPath, value, index, true
 
   if type is 'partial'
-    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+    return (ctx, model, triggerPath, triggerId, value, index, listener) ->
       renderCtx = Object.create ctx
       renderCtx.$macroCtx = if parentMacroCtx = ctx.$macroCtx
         extend parentMacroCtx, macroCtx
@@ -412,23 +408,26 @@ partialFn = (view, name, type, alias, render, macroCtx, macro) ->
     return withFn
 
   if type is 'if' || type is 'else if'
-    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue view, ctx, model, name, value, useValue, macro
+    return (ctx, model, triggerPath, triggerId, value, index, listener) ->
+      value = partialValue view, ctx, model, name, value, listener, macro
       condition = !!(if Array.isArray(value) then value.length else value)
-      return conditionalRender ctx, model, triggerPath, value, index, useValue, condition
+      return conditionalRender ctx, model, triggerPath, value, index, condition
 
   if type is 'unless'
-    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue view, ctx, model, name, value, useValue, macro
+    return (ctx, model, triggerPath, triggerId, value, index, listener) ->
+      value = partialValue view, ctx, model, name, value, listener, macro
       condition = !(if Array.isArray(value) then value.length else value)
-      return conditionalRender ctx, model, triggerPath, value, index, useValue, condition
+      return conditionalRender ctx, model, triggerPath, value, index, condition
 
   if type is 'each'
-    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
-      value = partialValue view, ctx, model, name, value, useValue, macro
+    return (ctx, model, triggerPath, triggerId, value, index, listener) ->
+      value = partialValue view, ctx, model, name, value, listener, macro
+      isArray = Array.isArray(value)
 
-      unless Array.isArray(value)
+      if listener && !isArray
         return withFn ctx, model, triggerPath, triggerId, value, index, true
+
+      return '' unless isArray
 
       ctx = extendCtx ctx, null, name, alias, null, true
 
@@ -467,9 +466,9 @@ blockFn = (view, sections) ->
     return sectionFn view, sections[0]
   else
     fns = (sectionFn view, section for section in sections)
-    return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
+    return (ctx, model, triggerPath, triggerId, value, index, listener) ->
       for fn in fns
-        out = fn ctx, model, triggerPath, triggerId, value, index, useValue
+        out = fn ctx, model, triggerPath, triggerId, value, index, listener
         return out if out
       return ''
 
@@ -537,7 +536,7 @@ pushVarString = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
   bindOnce = (ctx) ->
     ctx.$onBind events, name
     bindOnce = empty
-  if match.bound then events.push (ctx) -> bindOnce ctx
+  if isBound boundMacro, match, name then events.push (ctx) -> bindOnce ctx
   pushVarFn view, stack, fn, name, escapeFn, match.macro
 
 parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
@@ -550,6 +549,7 @@ parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
       addId view, attrs
       render = parse view, viewName, value, true, (events, name) ->
         bindEventsByIdString events, macro, name, render, attrs, 'attr', attr
+      , boundMacro
 
       attrs[attr] = if attr is 'id'
         (ctx, model) -> attrs._id = escapeAttr render(ctx, model)
