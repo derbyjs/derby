@@ -9,37 +9,6 @@ exports.wrapRemainder = (tagName, remainder) ->
   return false unless remainder
   return !(new RegExp '^<\/' + tagName, 'i').test(remainder)
 
-exports.modelPath = modelPath = (ctx, name, noReplace) ->
-  firstChar = name.charAt(0)
-
-  if firstChar is ':'
-    # Dereference alias name
-    if ~(i = name.indexOf '.')
-      aliasName = name[1...i]
-      name = name[i..]
-    else
-      aliasName = name.slice 1
-      name = ''
-    # Calculate depth difference between alias's definition and usage
-    i = ctx.$depth - ctx.$aliases[aliasName]
-    if i != i  # If NaN
-      throw new Error "Can't find alias for #{aliasName}"
-
-  else if firstChar is '.'
-    # Dereference relative path
-    i = 0
-    i++ while name.charAt(i) == '.'
-    name = if i == name.length then '' else name.slice i - 1
-
-  if i && (name = ctx.$paths[i - 1] + name) && !noReplace
-    # Replace array index placeholders with the proper index
-    i = 0
-    indices = ctx.$i
-    name = name.replace /\$#/g, -> indices[i++]
-
-  # Interpolate the value of names within square brackets
-  return name.replace /\[([^\]]+)\]/g, (match, name) -> lookup name, ctx
-
 openPlaceholder = ///^
   ([\s\S]*?)  # Before the placeholder
   (\{{1,3})  # Opening of placeholder
@@ -158,11 +127,6 @@ fnArgValue = (view, ctx, model, name, macro, arg) ->
   if arg is 'false'
     return false
 
-  if match = extractPlaceholder arg
-    unless match.macro
-      throw new Error 'only macro template tags are supported as arguments to view functions: ' + name
-    return dataValue view, ctx, model, match.name, true
-
   firstChar = arg.charAt 0
 
   if firstChar is "'"
@@ -200,10 +164,10 @@ fnValue = (view, ctx, model, name, macro) ->
   return fn args...
 
 notPathArg = ///
-  (?:^ ['"\d[{-] )|  # String, number, or object literal
-  (?:^ null $)|
-  (?:^ true $)|
-  (?:^ false $)
+  (?:^ ['"\d[{-] )  # String, number, or object literal
+| (?:^ null $)
+| (?:^ true $)
+| (?:^ false $)
 ///
 exports.pathFnArgs = pathFnArgs = (name, paths = []) ->
   fnCallError name unless match = fnCall.exec name
@@ -219,12 +183,68 @@ exports.pathFnArgs = pathFnArgs = (name, paths = []) ->
 
   return paths
 
+_ctxPath = (ctx, name, noReplace) ->
+  firstChar = name.charAt(0)
+
+  if firstChar is ':'
+    # Dereference alias name
+    if ~(i = name.indexOf '.')
+      aliasName = name[1...i]
+      name = name[i..]
+    else
+      aliasName = name.slice 1
+      name = ''
+    # Calculate depth difference between alias's definition and usage
+    i = ctx.$depth - ctx.$aliases[aliasName]
+    if i != i  # If NaN
+      throw new Error "Can't find alias for #{aliasName}"
+
+  else if firstChar is '.'
+    # Dereference relative path
+    i = 0
+    i++ while name.charAt(i) == '.'
+    name = if i == name.length then '' else name.slice i - 1
+
+  if i && (name = ctx.$paths[i - 1] + name) && !noReplace
+    # Replace array index placeholders with the proper index
+    i = 0
+    indices = ctx.$i
+    name = name.replace /\$#/g, -> indices[i++]
+
+  # Interpolate the value of names within square brackets
+  return name.replace /\[([^\]]+)\]/g, (match, name) -> lookup name, ctx
+
+exports.ctxPath = ctxPath = (ctx, name, macro, noReplace) ->
+  if macro
+    macroCtx = ctx.$macroCtx
+    path = _ctxPath macroCtx, name, noReplace
+    [base, remainder] = path.split '.'
+    value = lookup base, macroCtx
+    return path unless value && (macroVar = value.$macroVar)
+    name = if remainder
+      (if /\.+/.test macroVar then macroVar[1..] else macroVar) + '.' + remainder
+    else
+      macroVar
+  return _ctxPath ctx, name, noReplace
+
 exports.dataValue = dataValue = (view, ctx, model, name, macro) ->
-  dataCtx = if macro then ctx.$macroCtx else ctx
   if ~name.indexOf('(')
     return fnValue view, ctx, model, name, macro
-  path = modelPath dataCtx, name
-  value = lookup path, dataCtx
+  if macro
+    macroCtx = ctx.$macroCtx
+    path = _ctxPath macroCtx, name
+    [base, remainder] = path.split '.'
+    value = lookup base, macroCtx
+    if value && (macroVar = value.$macroVar)
+      name = if remainder
+        (if /\.+/.test macroVar then macroVar[1..] else macroVar) + '.' + remainder
+      else
+        macroVar
+      path = _ctxPath ctx, name
+      value = lookup path, ctx
+  else
+    path = _ctxPath ctx, name
+    value = lookup path, ctx
   if value isnt undefined
     return if typeof value is 'function' then value(ctx, model) else value
   value = model.get path
@@ -261,7 +281,7 @@ exports.setBoundFn = setBoundFn = (view, ctx, model, name, value) ->
       setBoundFn view, ctx, model, arg, value
       continue
     continue if value is undefined || notPathArg.test arg
-    path = modelPath ctx, arg
+    path = ctxPath ctx, arg
     continue if model.get(path) == value
     model.set path, value
   return

@@ -96,7 +96,7 @@ exports.init = (model, dom) ->
             property = arg
         unless noRender
           value = partial listener.ctx, model, path, triggerId, value, index, true
-          value = '' unless value?
+          return unless value?
 
       # Remove this listener if the DOM update fails
       # Happens when an id cannot be found

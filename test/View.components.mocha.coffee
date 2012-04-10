@@ -4,7 +4,7 @@ View = require '../src/View.server'
 
 describe 'View components', ->
 
-  it 'supports void html components', ->
+  it 'supports void components', ->
     view = new View
     view._init new Model
 
@@ -12,7 +12,7 @@ describe 'View components', ->
     view.make 'test2', 'hi'
     expect(view.get 'test').to.equal 'say "hi"'
 
-  it 'supports void html components with literal attributes', ->
+  it 'supports literal attributes', ->
     view = new View
     view._init new Model
 
@@ -26,7 +26,7 @@ describe 'View components', ->
     '''
     expect(view.get 'test').to.equal 'say "Howdy" or "Yo"'
 
-  it 'supports void html components with variable attributes', ->
+  it 'supports variable attributes', ->
     view = new View
     view._init new Model
 
@@ -41,7 +41,29 @@ describe 'View components', ->
     expect(view.get 'test').to.equal 'say "Yo"'
     expect(view.get 'test', myMessage: 'Heyo').to.equal 'say "Heyo"'
 
-  it 'supports void html components with bound attributes', ->
+  it 'supports variable object attributes', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', 'say "<app:test2 message="{{myMessage}}">"'
+    view.make 'test2', '''
+      {{{#with message}}}
+        {{text}}
+      {{{/}}}
+    '''
+    expect(view.get 'test', myMessage: {text: 'Heyo'}).to.equal 'say "Heyo"'
+
+  it 'supports dot syntax for properties of variable object attributes', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', 'say "<app:test2 message="{{myMessage}}">"'
+    view.make 'test2', '''
+      {{{message.text}}}
+    '''
+    expect(view.get 'test', myMessage: {text: 'Heyo'}).to.equal 'say "Heyo"'
+
+  it 'supports bound attributes', ->
     view = new View
     model = new Model
     view._init model
@@ -56,3 +78,15 @@ describe 'View components', ->
     '''
     model.set 'myMessage', 'Heyo'
     expect(view.get 'test').to.equal 'say "<!--$0--><!--$1-->Heyo<!--$$1--><!--$$0-->"'
+
+  it 'supports bound attributes as element attributes', ->
+    view = new View
+    model = new Model
+    view._init model
+
+    view.make 'test', 'say "<app:test2 message="{myMessage}">"'
+    view.make 'test2', '''
+      <div title={{{message}}}></div>
+    '''
+    model.set 'myMessage', 'Heyo'
+    expect(view.get 'test').to.equal 'say "<div id=$0 title=Heyo></div>"'

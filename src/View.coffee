@@ -1,6 +1,6 @@
 {parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr, isVoid} = require './html'
 markup = require './markup'
-{trim, wrapRemainder, modelPath, extractPlaceholder, dataValue, pathFnArgs} = require './viewPath'
+{trim, wrapRemainder, ctxPath, extractPlaceholder, dataValue, pathFnArgs} = require './viewPath'
 
 empty = -> ''
 notFound = (name, ns) ->
@@ -69,7 +69,8 @@ View:: =
     else if name is 'title$s'
       isString = true
       onBind = (events, name) ->
-        bindEvents events, name, render, ['$_doc', 'prop', 'title']
+        macro = false
+        bindEvents events, macro, name, render, ['$_doc', 'prop', 'title']
 
     renderer = (ctx) =>
       renderer = parse this, name, template, isString, onBind, boundMacro
@@ -100,9 +101,11 @@ View:: =
 
   _find: (name, ns, boundMacro) ->
     if boundMacro && (hash = keyHash boundMacro)
-      hashedName = name + '$b:' + hash
+      hash = '$b:' + hash
+      hashedName = name + hash
       return out if out = @_findItem hashedName, ns
       [template, templatePath] = @_findItem(name, ns, true) || notFound name, ns
+      templatePath += hash
       @make hashedName, template, templatePath, boundMacro
       return @_find hashedName, ns
     return @_findItem(name, ns) || notFound name, ns
@@ -188,35 +191,48 @@ modelListener = (params, triggerId, blockPaths, pathId, partial, ctx) ->
   listener.ctx = ctx.$stringCtx || ctx
   return listener
 
-bindEvents = (events, name, partial, params) ->
+bindEvents = (events, macro, name, partial, params) ->
   if ~name.indexOf('(')
     args = pathFnArgs name
     return unless args.length
     events.push (ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId) ->
       listener = modelListener params, triggerId, blockPaths, null, partial, ctx
       listener.getValue = (model) ->
-        dataValue view, ctx, model, name
+        dataValue view, ctx, model, name, macro
       for arg in args
-        path = modelPath ctx, arg
+        path = ctxPath ctx, arg, macro
         pathId = pathMap.id path + '*'
         modelEvents.bind pathId, listener
       return
     return
 
-  events.push (ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId) ->
-    return unless path = modelPath ctx, name
-    pathId = pathMap.id path
-    listener = modelListener params, triggerId, blockPaths, pathId, partial, ctx
-    modelEvents.bind pathId, listener
+  match = /(\.*)(.*)/.exec name
+  prefix = match[1] || ''
+  relativeName = match[2] || ''
+  segments = relativeName.split '.'
+  i = segments.length + 1
+  while --i
+    bindName = prefix + segments.slice(0, i).join('.')
+    do (bindName) ->
+      events.push (ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId) ->
+        return unless path = ctxPath ctx, name, macro
+        pathId = pathMap.id path
+        listener = modelListener params, triggerId, blockPaths, pathId, partial, ctx
+        if name != bindName
+          path = ctxPath ctx, bindName, macro
+          pathId = pathMap.id path
+          listener.getValue = (model) ->
+            dataValue view, ctx, model, name, macro
+        modelEvents.bind pathId, listener
 
-bindEventsById = (events, name, partial, attrs, method, prop, isBlock) ->
-  bindEvents events, name, partial, (triggerId, blockPaths, pathId) ->
+bindEventsById = (events, macro, name, partial, attrs, method, prop, isBlock) ->
+  bindEvents events, macro, name, partial, (triggerId, blockPaths, pathId) ->
     id = attrs._id || attrs.id
     blockPaths[id] = pathId  if isBlock && pathId
     return [id, method, prop]
 
-bindEventsByIdString = (events, name, partial, attrs, method, prop) ->
-  bindEvents events, name, partial, (triggerId) ->
+bindEventsByIdString = (events, macro, name, partial, attrs, method, prop) ->
+  bindEvents events, macro, name, partial, (triggerId) ->
     id = triggerId || attrs._id || attrs.id
     return [id, method, prop]
 
@@ -354,7 +370,7 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
   if alias
     aliases = ctx.$aliases = Object.create ctx.$aliases
     aliases[alias] = ctx.$depth
-  if path = modelPath ctx, name, true
+  if path = ctxPath ctx, name, null, true
     ctx.$paths = [path].concat ctx.$paths
   ctx.$depth++  if name
   if index?
@@ -364,17 +380,24 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
   return ctx
 
 partialValue = (view, ctx, model, name, value, useValue, macro) ->
-  if !macro && useValue
+  if useValue
     return value
   return if name then dataValue view, ctx, model, name, macro else true
 
 partialFn = (view, name, type, alias, render, macroCtx, macro) ->
+  conditionalRender = (ctx, model, triggerPath, value, index, useValue, condition) ->
+    unchanged = useValue && ctx.$lastCondition == condition
+    ctx.$lastCondition = condition
+    return if unchanged
+
+    if condition
+      renderCtx = extendCtx ctx, value, name, alias, index
+      return render renderCtx, model, triggerPath
+    return ''
 
   withFn = (ctx, model, triggerPath, triggerId, value, index, useValue) ->
     value = partialValue view, ctx, model, name, value, useValue, macro
-
-    renderCtx = extendCtx ctx, value, name, alias, index
-    return render renderCtx, model, triggerPath
+    return conditionalRender ctx, model, triggerPath, value, index, useValue, true
 
   if type is 'partial'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
@@ -391,20 +414,14 @@ partialFn = (view, name, type, alias, render, macroCtx, macro) ->
   if type is 'if' || type is 'else if'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
       value = partialValue view, ctx, model, name, value, useValue, macro
-
-      if (if Array.isArray(value) then value.length else value)
-        renderCtx = extendCtx ctx, value, name, alias, index
-        return render renderCtx, model, triggerPath
-      return
+      condition = !!(if Array.isArray(value) then value.length else value)
+      return conditionalRender ctx, model, triggerPath, value, index, useValue, condition
 
   if type is 'unless'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
       value = partialValue view, ctx, model, name, value, useValue, macro
-
-      if (Array.isArray(value) && !value.length) || !value
-        renderCtx = extendCtx ctx, value, name, alias, index
-        return render renderCtx, model, triggerPath
-      return
+      condition = !(if Array.isArray(value) then value.length else value)
+      return conditionalRender ctx, model, triggerPath, value, index, useValue, condition
 
   if type is 'each'
     return (ctx, model, triggerPath, triggerId, value, index, useValue) ->
@@ -475,14 +492,26 @@ pushVarFn = (view, stack, fn, name, escapeFn, macro) ->
   else
     pushChars stack, textFn(view, name, escapeFn, macro)
 
+boundMacroName = (boundMacro, name) ->
+  macroVar = name.split('.')[0]
+  return boundMacro[macroVar]
+
+isBound = (boundMacro, match, name) ->
+  return match.bound unless name && match.macro
+  if ~name.indexOf('(')
+    args = pathFnArgs name
+    for arg in args
+      return true if boundMacroName boundMacro, arg
+    return false
+  return boundMacroName boundMacro, name
+
 pushVar = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
-  {name, partial} = match
+  {name, partial, macro} = match
   escapeFn = match.escaped && escapeHtml
   if partial
     fn = partialFn view, name, 'partial', match.alias, view._find(partial, ns, boundMacro), match.macroCtx
 
-  bound = if match.macro then boundMacro[name] else match.bound
-  if bound
+  if isBound boundMacro, match, name
     last = stack[stack.length - 1]
     wrap = match.pre ||
       !last ||
@@ -497,9 +526,9 @@ pushVar = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
     addId view, attrs
 
-    bindEventsById events, name, fn, attrs, 'html', !fn && escapeFn, true
+    bindEventsById events, macro, name, fn, attrs, 'html', !fn && escapeFn, true
 
-  pushVarFn view, stack, fn, name, escapeFn, match.macro
+  pushVarFn view, stack, fn, name, escapeFn, macro
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap
 
 pushVarString = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
@@ -511,16 +540,16 @@ pushVarString = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
   if match.bound then events.push (ctx) -> bindOnce ctx
   pushVarFn view, stack, fn, name, escapeFn, match.macro
 
-parseAttr = (view, viewName, events, tagName, attrs, attr, value) ->
+parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
   return if typeof value is 'function'
   if match = extractPlaceholder value
-    {name} = match
+    {name, macro} = match
 
     if match.pre || match.post
       # Attributes must be a single string, so create a string partial
       addId view, attrs
       render = parse view, viewName, value, true, (events, name) ->
-        bindEventsByIdString events, name, render, attrs, 'attr', attr
+        bindEventsByIdString events, macro, name, render, attrs, 'attr', attr
 
       attrs[attr] = if attr is 'id'
         (ctx, model) -> attrs._id = escapeAttr render(ctx, model)
@@ -530,9 +559,9 @@ parseAttr = (view, viewName, events, tagName, attrs, attr, value) ->
 
     out = parseMarkup('bound', attr, tagName, events, attrs, name) || {}
 
-    if match.bound
+    if isBound boundMacro, match, name
       addId view, attrs
-      bindEventsById events, name, null, attrs, (out.method || 'attr'), (out.property || attr)
+      bindEventsById events, macro, name, null, attrs, (out.method || 'attr'), (out.property || attr)
 
     unless out.del
       {macro} = match
@@ -552,16 +581,18 @@ parsePartialAttr = (view, viewName, events, attrs, attr, value) ->
     {name, bound} = match
 
     if match.pre || match.post
-      # Attributes must be a single string, so create a string partial
-      render = parse view, viewName, value, true, (events, name) ->
-        bound = true
-        # TODO: Does this still work?
-        # bindEventsByIdString events, name, render, attrs, 'attr', attr
+      throw new Error 'Unimplemented: blocks in component attributes'
+      # # Attributes must be a single string, so create a string partial
+      # render = parse view, viewName, value, true, (events, name) ->
+      #   bound = true
+      #   # TODO: Does this still work?
+      #   # bindEventsByIdString events, name, render, attrs, 'attr', attr
 
-      attrs[attr] = render
-      return bound
+      # attrs[attr] = render
+      # return bound
 
-    attrs[attr] = textFn view, name, null, match.macro
+    attrs[attr] = $macroVar: name
+
   return bound
 
 parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
@@ -602,7 +633,7 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
       addId view, attrs  if out?.addId
 
     for attr, value of attrs
-      parseAttr view, viewName, events, tagName, attrs, attr, value
+      parseAttr view, viewName, events, boundMacro, tagName, attrs, attr, value
 
     stack.push ['start', tagName, attrs]
 

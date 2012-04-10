@@ -1,5 +1,5 @@
 {merge} = require 'racer/lib/util'
-{modelPath, pathFnArgs, setBoundFn} = require './viewPath'
+{ctxPath, pathFnArgs, setBoundFn} = require './viewPath'
 
 module.exports =
 
@@ -126,7 +126,7 @@ module.exports =
           options.setValue = (model, value) ->
             setBoundFn view, ctx, model, name, value
           for arg in args
-            path = modelPath ctx, arg
+            path = ctxPath ctx, arg
             paths.push path
             pathId = pathMap.id path
             for [eventName, delay] in eventList
@@ -136,7 +136,7 @@ module.exports =
 
       events.push (ctx, modelEvents, dom, pathMap) ->
         id = attrs._id || attrs.id
-        pathId = pathMap.id modelPath(ctx, name)
+        pathId = pathMap.id ctxPath(ctx, name)
         for [eventName, delay] in eventList
           dom.bind eventName, id, merge({pathId, delay}, options)
         return
