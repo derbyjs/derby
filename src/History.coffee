@@ -124,4 +124,4 @@ routePath = (url) ->
   return (match = parseUrl url) &&
     match.protocol == winLocation.protocol &&
     match.host == winLocation.host &&
-    match.pathname + match.search
+    match.pathname + (match.search || '')

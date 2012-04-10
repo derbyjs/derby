@@ -75,9 +75,6 @@ exports.init = (model, dom) ->
 
       method = 'prop' if method is 'propPolite' && local
 
-      if listener.getValue
-        value = listener.getValue model
-
       if partial
         triggerId = id
         if method is 'html' && type
@@ -90,17 +87,20 @@ exports.init = (model, dom) ->
             path += '.' + index
             triggerId = null
           else if type is 'remove'
-            noRender = true
+            partial = null
           else if type is 'move'
-            noRender = true
+            partial = null
             property = arg
-        unless noRender
-          value = partial listener.ctx, model, path, triggerId, value, index, listener
-          return unless value?
 
-      # Remove this listener if the DOM update fails
-      # Happens when an id cannot be found
+      if listener.getValue
+        value = listener.getValue model, path
+
+      if partial
+        value = partial listener.ctx, model, path, triggerId, value, index, listener
+        return unless value?
+
       dom.update el, method, options && options.ignore, value, property, index
+      return
 
   # Derby's mutator listeners are added via unshift instead of model.on, because
   # it needs to handle events in the same order that racer applies mutations.

@@ -214,7 +214,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
       templateName = relativePath + ':' + name
       instanceName = alias || name
       instanceName = currentNs + ':' + instanceName if currentNs
-      instances[instanceName] = templateName
+      instances[instanceName] = [templateName, {}]
 
       return if templates[templateName]
       unless name && literal

@@ -53,10 +53,10 @@ View:: =
     scripts: empty
     tail: empty
 
-  make: (name, template, templatePath, boundMacro) ->
+  make: (name, template, options, templatePath, boundMacro) ->
     # Cache any templates that are made so that they can be
     # re-parsed with different items bound when using macros
-    @_made[name] = [template, templatePath]
+    @_made[name] = [template, options, templatePath]
 
     if templatePath && render = @_renders[templatePath]
       @_views[name] = render
@@ -65,7 +65,7 @@ View:: =
     name = name.toLowerCase()
 
     if name is 'title'
-      @make 'title$s', template, templatePath
+      @make 'title$s', template, options, templatePath
     else if name is 'title$s'
       isString = true
       onBind = (events, name) ->
@@ -82,8 +82,8 @@ View:: =
     return
 
   _makeAll: (templates, instances) ->
-    for name, templatePath of instances
-      @make name, templates[templatePath], templatePath
+    for name, [templatePath, options] of instances
+      @make name, templates[templatePath], options, templatePath
     return
 
   _findItem: (name, ns, fromMade) ->
@@ -104,9 +104,9 @@ View:: =
       hash = '$b:' + hash
       hashedName = name + hash
       return out if out = @_findItem hashedName, ns
-      [template, templatePath] = @_findItem(name, ns, true) || notFound name, ns
+      [template, options, templatePath] = @_findItem(name, ns, true) || notFound name, ns
       templatePath += hash
-      @make hashedName, template, templatePath, boundMacro
+      @make hashedName, template, options, templatePath, boundMacro
       return @_find hashedName, ns
     return @_findItem(name, ns) || notFound name, ns
 
@@ -197,8 +197,9 @@ bindEvents = (events, macro, name, partial, params) ->
     return unless args.length
     events.push (ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId) ->
       listener = modelListener params, triggerId, blockPaths, null, partial, ctx
-      listener.getValue = (model) ->
-        dataValue view, ctx, model, name, macro
+      listener.getValue = (model, triggerPath) ->
+        patchCtx ctx, triggerPath
+        return dataValue view, ctx, model, name, macro
       for arg in args
         path = ctxPath ctx, arg, macro
         pathId = pathMap.id path + '*'
@@ -221,8 +222,9 @@ bindEvents = (events, macro, name, partial, params) ->
         if name != bindName
           path = ctxPath ctx, bindName, macro
           pathId = pathMap.id path
-          listener.getValue = (model) ->
-            dataValue view, ctx, model, name, macro
+          listener.getValue = (model, triggerPath) ->
+            patchCtx ctx, triggerPath
+            return dataValue view, ctx, model, name, macro
         modelEvents.bind pathId, listener
 
 bindEventsById = (events, macro, name, partial, attrs, method, prop, isBlock) ->
@@ -279,21 +281,24 @@ reduceStack = (stack) ->
         html[i] += '-->'
   return html
 
+patchCtx = (ctx, triggerPath) ->
+  return unless triggerPath && path = ctx.$paths[0]
+  segments = path.split '.'
+  triggerSegments = triggerPath.replace(/\*$/, '').split '.'
+  indices = ctx.$indices.slice()
+  index = indices.length
+  for segment, i in segments
+    triggerSegment = triggerSegments[i]
+    # `(n = +triggerSegment) == n` will be false if segment is NaN
+    if segment is '$#' && (n = +triggerSegment) == n
+      indices[--index] = n
+    else if segment != triggerSegment
+      break
+  ctx.$indices = indices
+
 renderer = (view, items, events, onRender) ->
   (ctx, model, triggerPath, triggerId) ->
-    if triggerPath && path = ctx.$paths[0]
-      _path = path.split '.'
-      _triggerPath = triggerPath.split '.'
-      indices = ctx.$indices.slice()
-      index = indices.length
-      for segment, i in _path
-        triggerSegment = _triggerPath[i]
-        # `(n = +triggerSegment) == n` will be false if segment is NaN
-        if segment is '$#' && (n = +triggerSegment) == n
-          indices[--index] = n
-        else if segment != triggerSegment
-          break
-      ctx.$indices = indices
+    patchCtx ctx, triggerPath
 
     model ||= view.model  # Needed, since model parameter is optional
     pathMap = model.__pathMap
@@ -303,7 +308,7 @@ renderer = (view, items, events, onRender) ->
     html = ''
     ctx = onRender ctx if onRender
     for item in items
-      html += if item.call then item(ctx, model, triggerPath) || '' else item
+      html += if item.call then item(ctx, model) || '' else item
     i = 0
     while event = events[i++]
       event ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId

@@ -20,7 +20,7 @@ PathMap:: =
     )
 
   _indexArray: (path, id) ->
-    while match = /^(.+)\.(\d+)(\..+|$)/.exec path
+    while match = /^(.+)\.(\d+)(\*?(?:\..+|$))/.exec path
       path = match[1]
       index = +match[2]
       remainder = match[3]

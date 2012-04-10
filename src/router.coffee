@@ -98,11 +98,10 @@ exports.render = (page, routes, previous, url, method, e, body, form) ->
       return cancelRender url, form  if err?
       renderNext previous, path, url, form, null, onMatch, map, queue, i
 
-    run = ->
-      if noPage
-        route.callbacks page.model, params, next
-      else
-        route.callbacks page, page.model, params, next, reroute
+    run = if noPage
+      -> route.callbacks page.model, params, next
+    else
+      -> route.callbacks page, page.model, params, next, reroute
 
     return run() if util.DEBUG
     try
