@@ -14,14 +14,22 @@
     </div>
   </div>
   <div>
+  {#each _pages}
+    <div>
+    {#each this}
+      <a x-bind="mouseover: select, click: select" class=thumb>
+        <app:photo source="{{source}}" data="{{this}}">
+      </a>
+    {/}
+    </div>
+  {/}
+  </div>
+  <!-- pre-cache the medium size images -->
+  <div style=display:none>
     {#each _pages}
-      <div>
-        {#each this}
-          <a x-bind="mouseover: select">
-            <app:photo source="{{source}}" data="{{this}}">
-          </a>
-        {/}
-      </div>
+      {#each this}
+        <app:photo source="{{source}}" size="m" data="{{this}}">
+      {/}
     {/}
   </div>
 
