@@ -10,7 +10,7 @@ defaultCtx =
   $depth: 0
   $aliases: {}
   $paths: []
-  $i: []
+  $indices: []
 
 defaultGetFns =
   equal: (a, b) -> a == b
@@ -284,16 +284,16 @@ renderer = (view, items, events, onRender) ->
     if triggerPath && path = ctx.$paths[0]
       _path = path.split '.'
       _triggerPath = triggerPath.split '.'
-      indices = ctx.$i.slice()
-      index = 0
+      indices = ctx.$indices.slice()
+      index = indices.length
       for segment, i in _path
         triggerSegment = _triggerPath[i]
         # `(n = +triggerSegment) == n` will be false if segment is NaN
         if segment is '$#' && (n = +triggerSegment) == n
-          indices[index++] = n
+          indices[--index] = n
         else if segment != triggerSegment
           break
-      ctx.$i = indices
+      ctx.$indices = indices
 
     model ||= view.model  # Needed, since model parameter is optional
     pathMap = model.__pathMap
@@ -374,7 +374,7 @@ extendCtx = (ctx, value, name, alias, index, isArray) ->
     ctx.$paths = [path].concat ctx.$paths
   ctx.$depth++  if name
   if index?
-    ctx.$i = ctx.$i.concat index
+    ctx.$indices = [index].concat ctx.$indices 
     isArray = true
   ctx.$paths[0] += '.$#'  if isArray && ctx.$paths[0]
   return ctx
@@ -432,11 +432,11 @@ partialFn = (view, name, type, alias, render, macroCtx, macro) ->
       ctx = extendCtx ctx, null, name, alias, null, true
 
       out = ''
-      indices = ctx.$i
+      indices = ctx.$indices
       for item, i in value
         renderCtx = extend ctx, item
         renderCtx.this = item
-        renderCtx.$i = indices.concat i
+        renderCtx.$indices = [i].concat indices
         out += render renderCtx, model, triggerPath
       return out
 

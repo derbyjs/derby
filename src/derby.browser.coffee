@@ -5,10 +5,13 @@ View = require './View'
 History = require './History'
 {autoRefresh} = require './refresh'
 {addHttpMethods, Page} = require './router'
+util = require './util'
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports
-  appModule.exports = (modelBundle, appHash, ns, ctx, appFilename) ->
+  appModule.exports = (modelBundle, appHash, ns, ctx, debug) ->
+    util.DEBUG = true if debug
+
     # The init event is fired after the model data is initialized but
     # before the socket object is set
     racer.on 'init', (model) ->
@@ -26,7 +29,7 @@ exports.createApp = (appModule) ->
     # The ready event is fired after the model data is initialized and
     # the socket object is set
     racer.on 'ready', (model) ->
-      autoRefresh view, model, appFilename, appHash
+      autoRefresh view, model, debug, appHash
 
     racer.init modelBundle
     return appExports

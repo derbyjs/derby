@@ -1,5 +1,6 @@
 qs = require 'qs'
 Route = require 'express/lib/router/route'
+util = require './util'
 
 exports.addHttpMethods = (appExports) ->
   routes = queue: {}, map: {}
@@ -97,11 +98,15 @@ exports.render = (page, routes, previous, url, method, e, body, form) ->
       return cancelRender url, form  if err?
       renderNext previous, path, url, form, null, onMatch, map, queue, i
 
-    try
+    run = ->
       if noPage
         route.callbacks page.model, params, next
       else
         route.callbacks page, page.model, params, next, reroute
+
+    return run() if util.DEBUG
+    try
+      run()
     catch err
       cancelRender url, form
     return

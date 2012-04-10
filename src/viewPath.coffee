@@ -137,10 +137,9 @@ fnArgValue = (view, ctx, model, name, macro, arg) ->
     fnCallError name unless match = /^"(.*)"$/.exec arg
     return match[1]
 
-  if /^[\d-]/.test firstChar
-    # JavaScript's isNaN will be false for any number or string
-    # that could be a number, such as '3'. Otherwise, it is true
-    fnCallError name if isNaN arg
+  # JavaScript's isNaN will be false for any number or string
+  # that could be a number, such as '3'. Otherwise, it is true
+  if /^[\d\-]/.test(firstChar) && !isNaN(arg)
     # Cast into a number
     return +arg
 
@@ -164,7 +163,7 @@ fnValue = (view, ctx, model, name, macro) ->
   return fn args...
 
 notPathArg = ///
-  (?:^ ['"\d[{-] )  # String, number, or object literal
+  (?:^ ['"\d\-[{] )  # String, number, or object literal
 | (?:^ null $)
 | (?:^ true $)
 | (?:^ false $)
@@ -207,9 +206,9 @@ _ctxPath = (ctx, name, noReplace) ->
 
   if i && (name = ctx.$paths[i - 1] + name) && !noReplace
     # Replace array index placeholders with the proper index
-    i = 0
-    indices = ctx.$i
-    name = name.replace /\$#/g, -> indices[i++]
+    indices = ctx.$indices
+    i = indices.length
+    name = name.replace /\$#/g, -> indices[--i]
 
   # Interpolate the value of names within square brackets
   return name.replace /\[([^\]]+)\]/g, (match, name) -> lookup name, ctx
