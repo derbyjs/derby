@@ -57,6 +57,7 @@ View:: =
     # Cache any templates that are made so that they can be
     # re-parsed with different items bound when using macros
     @_made[name] = [template, options, templatePath]
+    @_nonvoidComponents[name] = true if options && 'nonvoid' of options
 
     if templatePath && render = @_renders[templatePath]
       @_views[name] = render
@@ -86,8 +87,8 @@ View:: =
       @make name, templates[templatePath], options, templatePath
     return
 
-  _findItem: (name, ns, fromMade) ->
-    items = if fromMade then @_made else @_views
+  _findItem: (name, ns, prop) ->
+    items = @[prop]
     if ns
       ns = ns.toLowerCase()
       return item if item = items["#{ns}:#{name}"]
@@ -103,12 +104,12 @@ View:: =
     if boundMacro && (hash = keyHash boundMacro)
       hash = '$b:' + hash
       hashedName = name + hash
-      return out if out = @_findItem hashedName, ns
-      [template, options, templatePath] = @_findItem(name, ns, true) || notFound name, ns
+      return out if out = @_findItem hashedName, ns, '_views'
+      [template, options, templatePath] = @_findItem(name, ns, '_made') || notFound name, ns
       templatePath += hash
       @make hashedName, template, options, templatePath, boundMacro
       return @_find hashedName, ns
-    return @_findItem(name, ns) || notFound name, ns
+    return @_findItem(name, ns, '_views') || notFound name, ns
 
   get: (name, ns, ctx) ->
     if typeof ns is 'object'
@@ -314,61 +315,6 @@ renderer = (view, items, events, onRender) ->
       event ctx, modelEvents, dom, pathMap, view, blockPaths, triggerId
     return html
 
-parseMatchError = (text, message) ->
-  throw new Error message + '\n\n' + text + '\n'
-
-parseMatch = (view, text, match, queues, {onStart, onEnd, onVar}) ->
-  {hash, type, name} = match
-  {block} = queues.last()
-  blockType = block && block.type
-
-  if type is 'if' || type is 'unless' || type is 'each' || type is 'with'
-    if hash is '#'
-      startBlock = true
-    else if hash is '/'
-      endBlock = true
-    else
-      parseMatchError text, type + ' blocks must begin with a #'
-
-  else if type is 'else' || type is 'else if'
-    if hash
-      parseMatchError text, type + ' blocks may not start with ' + hash
-    if blockType isnt 'if' && blockType isnt 'else if' &&
-        blockType isnt 'unless' && blockType isnt 'each'
-      parseMatchError text, type + ' may only follow `if`, `else if`, `unless`, or `each`'
-    startBlock = true
-    endBlock = true
-
-  else if hash is '/'
-    endBlock = true
-
-  else if hash is '#'
-    parseMatchError text, '# must be followed by `if`, `unless`, `each`, or `with`'
-
-  if endBlock
-    parseMatchError text, 'Unmatched template end tag' unless block
-    lastQueue = queues.pop()
-    queue = queues.last()
-    queue.sections.push lastQueue
-
-  if startBlock
-    boundMacro = (queue && queue.boundMacro) || queues.last().boundMacro
-    queues.push queue =
-      stack: []
-      events: []
-      block: match
-      sections: []
-      boundMacro: Object.create boundMacro
-    onStart queue
-  else
-    if endBlock
-      onStart queue
-      onEnd queue.sections
-      queue.sections = []
-    else
-      onVar match
-  return
-
 extendCtx = (ctx, value, name, alias, index, isArray) ->
   ctx = extend ctx, value
   ctx.this = value
@@ -544,6 +490,68 @@ pushVarString = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
   if isBound boundMacro, match, name then events.push (ctx) -> bindOnce ctx
   pushVarFn view, stack, fn, name, escapeFn, match.macro
 
+parseMatchError = (text, message) ->
+  throw new Error message + '\n\n' + text + '\n'
+
+onBlock = (start, end, block, queues, callbacks) ->
+  if end
+    lastQueue = queues.pop()
+    queue = queues.last()
+    queue.sections.push lastQueue
+  else
+    queue = queues.last()
+
+  if start
+    boundMacro = Object.create queue.boundMacro
+    queues.push queue =
+      stack: []
+      events: []
+      block: block
+      sections: []
+      boundMacro: boundMacro
+    callbacks.onStart queue
+  else
+    if end
+      callbacks.onStart queue
+      callbacks.onEnd queue.sections
+      queue.sections = []
+    else
+      callbacks.onContent block
+  return
+
+parseMatch = (text, match, queues, callbacks) ->
+  {hash, type, name} = match
+  {block} = queues.last()
+  blockType = block && block.type
+
+  if type is 'if' || type is 'unless' || type is 'each' || type is 'with'
+    if hash is '#'
+      startBlock = true
+    else if hash is '/'
+      endBlock = true
+    else
+      parseMatchError text, type + ' blocks must begin with a #'
+
+  else if type is 'else' || type is 'else if'
+    if hash
+      parseMatchError text, type + ' blocks may not start with ' + hash
+    if blockType isnt 'if' && blockType isnt 'else if' &&
+        blockType isnt 'unless' && blockType isnt 'each'
+      parseMatchError text, type + ' may only follow `if`, `else if`, `unless`, or `each`'
+    startBlock = true
+    endBlock = true
+
+  else if hash is '/'
+    endBlock = true
+
+  else if hash is '#'
+    parseMatchError text, '# must be followed by `if`, `unless`, `each`, or `with`'
+
+  if endBlock && !block
+    parseMatchError text, 'Unmatched template end tag'
+
+  onBlock startBlock, endBlock, match, queues, callbacks
+
 parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
   return if typeof value is 'function'
   if match = extractPlaceholder value
@@ -581,24 +589,24 @@ parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
   return
 
 parsePartialAttr = (view, viewName, events, attrs, attr, value) ->
+  if attr is 'content'
+    throw new Error 'components may not have an attribute named "content"'
   bound = false
   if match = extractPlaceholder value
     {name, bound} = match
 
     if match.pre || match.post
-      throw new Error 'Unimplemented: blocks in component attributes'
-      # # Attributes must be a single string, so create a string partial
-      # render = parse view, viewName, value, true, (events, name) ->
-      #   bound = true
-      #   # TODO: Does this still work?
-      #   # bindEventsByIdString events, name, render, attrs, 'attr', attr
-
-      # attrs[attr] = render
-      # return bound
+      throw new Error 'unimplemented: blocks in component attributes'
 
     attrs[attr] = $macroVar: name
 
   return bound
+
+partialName = (view, tagName) ->
+  return unless ~(i = tagName.indexOf ':')
+  tagNs = tagName[0...i]
+  return unless view._componentNamespaces[tagNs]
+  return partial = tagName.slice i + 1
 
 parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
   queues = [
@@ -608,6 +616,8 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
     boundMacro: boundMacro
   ]
   queues.last = -> queues[queues.length - 1]
+  onStart = (queue) ->
+    {stack, events, boundMacro} = queue
 
   if isString
     push = pushVarString
@@ -623,15 +633,18 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
   ns = if ~(index = viewName.lastIndexOf ':') then viewName[0...index] else ''
 
   start = (tag, tagName, attrs) ->
-    if ~(i = tagName.indexOf ':')
-      tagNs = tagName[0...i]
-      if view._componentNamespaces[tagNs]
-        partial = tagName.slice i + 1
-        for attr, value of attrs
-          bound = parsePartialAttr view, viewName, events, attrs, attr, value
-          boundMacro[attr] = true if bound
-        push view, ns, stack, events, boundMacro, '', {partial, macroCtx: attrs}
-        return
+    if partial = partialName view, tagName
+      isNonvoid = view._findItem partial, ns, '_nonvoidComponents'
+      for attr, value of attrs
+        bound = parsePartialAttr view, viewName, events, attrs, attr, value
+        boundMacro[attr] = true if bound
+
+      block = {partial, macroCtx: attrs}
+      if isNonvoid
+        onBlock true, false, block, queues, {onStart}
+      else
+        push view, ns, stack, events, boundMacro, '', block
+      return
 
     if parser = markup.element[tagName]
       out = parser(events, attrs)
@@ -653,18 +666,26 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
     pushChars stack, pre
     remainder = post || remainder
 
-    parseMatch view, text, match, queues,
-      onStart: (queue) ->
-        {stack, events, block, boundMacro} = queue
+    parseMatch text, match, queues,
+      onStart: onStart
       onEnd: (sections) ->
         fn = blockFn view, sections
         push view, ns, stack, events, boundMacro, remainder, sections[0].block, fn
-      onVar: (match) ->
+      onContent: (match) ->
         push view, ns, stack, events, boundMacro, remainder, match
 
     chars post  if post
 
   end = (tag, tagName) ->
+    if partial = partialName view, tagName
+      onBlock false, true, null, queues,
+        onStart: onStart
+        onEnd: ([queue]) ->
+          block = queue.block
+          block.macroCtx.content = renderer view, reduceStack(queue.stack), queue.events
+          push view, ns, stack, events, boundMacro, '', block
+      return
+
     stack.push ['end', tagName]
 
   if isString

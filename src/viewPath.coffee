@@ -51,6 +51,9 @@ exports.extractPlaceholder = extractPlaceholder = (text) ->
   if bound
     name = name.replace /\bthis\b/, '.'
 
+  if macro && name is 'content'
+    escaped = false
+
   return {
     pre: trim pre
     post: trim post

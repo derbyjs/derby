@@ -90,3 +90,11 @@ describe 'View components', ->
     '''
     model.set 'myMessage', 'Heyo'
     expect(view.get 'test').to.equal 'say "<div id=$0 title=Heyo></div>"'
+
+  it 'supports nonvoid components', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', '<ul><app:test2><b>Hi!</b></app:test2></ul>'
+    view.make 'test2', '<li>{{{content}}}</li>', {nonvoid: null}
+    expect(view.get 'test').to.equal '<ul><li><b>Hi!</b></li></ul>'
