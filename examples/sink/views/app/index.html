@@ -10,8 +10,19 @@
 
 <Header:>
   <body class={{currentPage}}>
+  <!-- components are void by default, and should not have a closing tag -->
   <app:alert>
+  <!-- if a component is nonvoid, it must have a closing tag -->
   <app:nav>
+    {{#each pages}}
+      {{#if current}}
+        <b>{{text}}</b>
+      {{else}}
+        <a href={{url}}>{{text}}</a>
+      {{/}}
+      {{#unless isLast}} | {{/}}
+    {{/}}
+  </app:nav>
 
 <alert:>
   <div id=alert>
@@ -28,15 +39,9 @@
     {/}
   </div>
 
-<nav:>
+<nav: nonvoid>
   <nav>
-    {{#each pages}}
-      {{#if current}}
-        <b>{{text}}</b>
-      {{else}}
-        <a href={{url}}>{{text}}</a>
-      {{/}}
-      {{#unless isLast}} | {{/}}
-    {{/}}
+    <!-- nonvoid components support a special `content` macro -->
+    {{{content}}}
     <hr>
   </nav>

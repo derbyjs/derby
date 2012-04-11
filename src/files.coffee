@@ -168,7 +168,7 @@ compactHtml = (html) ->
   return compact
 
 parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias, currentNs, matchesGet, file) ->
-  name = src = ns = as = importTemplates = null
+  name = src = ns = as = importTemplates = templateOptions = null
   relativePath = relative root, path
   parseHtml file,
 
@@ -202,6 +202,9 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
           srcNs = src.replace /^[.\/]*/, ''
           if currentNs then currentNs + ':' + srcNs else srcNs
         ns = ns.toLowerCase()
+      else
+        templateOptions = attrs
+      return
 
     chars: (text, literal) ->
       return unless matchesGet name
@@ -214,7 +217,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
       templateName = relativePath + ':' + name
       instanceName = alias || name
       instanceName = currentNs + ':' + instanceName if currentNs
-      instances[instanceName] = [templateName, {}]
+      instances[instanceName] = [templateName, templateOptions]
 
       return if templates[templateName]
       unless name && literal
