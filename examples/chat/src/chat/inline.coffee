@@ -2,12 +2,9 @@
 # "inline.js". This file will be automatically inserted before the external
 # scripts are included.
 
-# For convenience, document.getElementById is aliased as $, but no other
-# special functions are provided by default.
-
-messages = $ 'messages'
-messageList = $ 'messageList'
-commentInput = $ 'commentInput'
+messages = document.getElementById 'messages'
+messageList = document.getElementById 'messageList'
+commentInput = document.getElementById 'commentInput'
 do window.onresize = ->
   # Scroll the message list to the bottom
   messages.scrollTop = messageList.offsetHeight

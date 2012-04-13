@@ -74,8 +74,8 @@ ready (model) ->
   exports.reload = -> window.location.reload()
 
 
-  messages = $ 'messages'
-  messageList = $ 'messageList'
+  messages = document.getElementById 'messages'
+  messageList = document.getElementById 'messageList'
   atBottom = true
 
   # Derby emits pre mutator events after the model has been updated, but
