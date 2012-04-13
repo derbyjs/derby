@@ -26,6 +26,22 @@ describe 'View components', ->
     '''
     expect(view.get 'test').to.equal 'say "Howdy" or "Yo"'
 
+  it 'supports boolean and numerical attributes', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', '<app:test2 show="true"> / <app:test2 num="-4.5"> / <app:test2 show="false">'
+    view.make 'test2', '''
+      {{{#if show}}}
+        Hi
+      {{{else if equal(num, -4.5)}}}
+        Got it
+      {{{else}}}
+        Nada
+      {{{/}}}
+    '''
+    expect(view.get 'test').to.equal 'Hi / Got it / Nada'
+
   it 'supports variable attributes', ->
     view = new View
     view._init new Model
