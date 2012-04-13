@@ -54,4 +54,8 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-chat.createStore listen: server
+derby.use(require 'racer-db-mongo')
+
+chat.createStore
+  listen: server
+  db: {type: 'Mongo', uri: 'mongodb://localhost/derby-chat'}

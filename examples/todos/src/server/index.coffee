@@ -59,4 +59,8 @@ server.all '*', (req) ->
 
 ## STORE SETUP ##
 
-todos.createStore listen: server
+derby.use(require 'racer-db-mongo')
+
+todos.createStore
+  listen: server
+  db: {type: 'Mongo', uri: 'mongodb://localhost/derby-todos'}
