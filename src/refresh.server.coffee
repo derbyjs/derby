@@ -10,19 +10,17 @@ refresh.templateError = templateError = (err) ->
   console.error '\nTEMPLATE ERROR\n' + err.stack
   return err.stack
 
-appHashes = {}
 refresh.autoRefresh = (store, options, view) ->
   return if isProduction || store._derbySocketsSetup
-  view._appHashes = appHashes
   store._derbySocketsSetup = true
   listeners = {}
   store.sockets.on 'connection', (socket) ->
-    socket.on 'derbyClient', (appFilename, callback) ->
-      return unless appFilename
+    socket.on 'derbyClient', (appHash, callback) ->
+      reload = appHash != view._appHash
+      callback reload
+      return if reload
 
-      # TODO: Wait for appHash to be set if it is undefined
-      callback appHashes[appFilename]
-
+      appFilename = view._appFilename
       if listeners[appFilename]
         return listeners[appFilename].push socket
 
