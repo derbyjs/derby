@@ -60,7 +60,7 @@ Model::at = (node, absolute) ->
   # Just return the model if a path can't be found
   return this
 
-exports.init = (model, dom) ->
+exports.init = (model, dom, view) ->
   pathMap = model.__pathMap = new PathMap
   events = model.__events = new EventDispatcher
     onTrigger: (pathId, listener, type, local, options, value, index, arg) ->
@@ -174,6 +174,9 @@ exports.init = (model, dom) ->
   for event in ['connected', 'canConnect']
     do (event) -> model.listeners(event).unshift (value) ->
       triggerEach events, pathMap, event, null, true, null, value
+
+  model.on 'reInit', ->
+    view.history.refresh()
 
   return model
 

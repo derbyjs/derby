@@ -17,7 +17,7 @@ exports.createApp = (appModule) ->
     racer.on 'init', (model) ->
       view.model = model
       view.dom = dom = new Dom model, appExports
-      derbyModel.init model, dom
+      derbyModel.init model, dom, view
       page = new Page view, model
       history = view.history = new History page, routes, dom
       # Ignore errors thrown when rendering; these will also be thrown
