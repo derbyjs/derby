@@ -1,3 +1,4 @@
+<import: src=shared>
 <import: src=home>
 <import: src=liveCss>
 <import: src=tableEditor>
@@ -11,7 +12,7 @@
 <Header:>
   <body class={{currentPage}}>
   <!-- components are void by default, and should not have a closing tag -->
-  <app:alert>
+  <app:shared:alert>
   <!-- if a component is nonvoid, it must have a closing tag -->
   <app:nav>
     {{#each pages}}
@@ -23,21 +24,6 @@
       {{#unless isLast}} | {{/}}
     {{/}}
   </app:nav>
-
-<alert:>
-  <div id=alert>
-    {#unless connected}
-      <p>
-        {#if canConnect}
-          <!-- Leading space is removed, and trailing space is maintained -->
-          Offline 
-          {#if _showReconnect}&ndash; <a x-bind=click:connect>Reconnect</a>{/}
-        {else}
-          Unable to reconnect &ndash; <a x-bind=click:reload>Reload</a>
-        {/}
-      </p>
-    {/}
-  </div>
 
 <nav: nonvoid>
   <nav>
