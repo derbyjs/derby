@@ -9,7 +9,7 @@ util = require './util'
 
 exports.createApp = (appModule) ->
   appExports = appModule.exports
-  appModule.exports = (modelBundle, appHash, ns, ctx, debug) ->
+  appModule.exports = (modelBundle, appHash, debug, ns, ctx) ->
     util.DEBUG = true if debug
 
     # The init event is fired after the model data is initialized but
@@ -28,8 +28,9 @@ exports.createApp = (appModule) ->
 
     # The ready event is fired after the model data is initialized and
     # the socket object is set
-    racer.on 'ready', (model) ->
-      autoRefresh view, model, debug, appHash
+    if debug
+      racer.on 'ready', (model) ->
+        autoRefresh view, model, appHash
 
     racer.init modelBundle
     return appExports

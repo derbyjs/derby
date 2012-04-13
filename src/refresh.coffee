@@ -1,15 +1,13 @@
 module.exports =
 
-  autoRefresh: (view, model, appFilename, appHash) ->
-    return unless appFilename
-
+  autoRefresh: (view, model, appHash) ->
     {socket} = model
     model.on 'connectionStatus', (connected, canConnect) ->
       window.location.reload true  unless canConnect
 
     socket.on 'connect', ->
-      socket.emit 'derbyClient', appFilename, (serverHash) ->
-        window.location.reload true  if appHash != serverHash
+      socket.emit 'derbyClient', appHash, (reload) ->
+        window.location.reload true  if reload
 
     socket.on 'refreshCss', (err, css) ->
       el = document.getElementById '$_css'

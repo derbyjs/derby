@@ -27,9 +27,6 @@ emptyDom =
 
 escapeInlineScript = (s) -> s.replace /<\//g, '<\\/'
 
-# This is overridden but is here for testing
-View::_appHashes = {}
-
 View::inline = (fn) -> @_inline += uglify("(#{fn})()") + ';'
 
 loadTemplatesScript = (requirePath, templates, instances) ->
@@ -43,6 +40,7 @@ loadTemplatesScript = (requirePath, templates, instances) ->
 
 View::_load = (isStatic, callback) ->
   if isProduction
+    @_watch = false
     @_load = (isStatic, callback) -> callback()
   else
     @_watch = true
@@ -90,7 +88,7 @@ View::_load = (isStatic, callback) ->
       files.writeJs root, js, options, (err, jsFile, appHash) =>
         throw err if err
         @_jsFile = jsFile
-        @_appHashes[appFilename] = @_appHash = appHash
+        @_appHash = appHash
         promise.resolve()
 
     if @_js
@@ -187,10 +185,9 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
 
   # Inline scripts and external scripts
   clientName = @_clientName
-  scripts = "<script>function $(i){return document.getElementById(i)}" +
-    escapeInlineScript(@_inline)
+  scripts = "<script>"
   scripts += "function #{clientName}(){#{clientName}=1}"  unless isStatic
-  scripts += "</script>" + @get('scripts', ns, ctx)
+  scripts += escapeInlineScript(@_inline) + "</script>" + @get('scripts', ns, ctx)
   scripts += "<script defer async onload=#{clientName}() src=#{@_jsFile}></script>"  unless isStatic
   res.write scripts
 
@@ -199,8 +196,7 @@ View::_render = (res, model, ns, ctx, isStatic, bundle) ->
   return res.end tail  if isStatic
 
   res.end "<script>(function(){function f(){setTimeout(function(){" +
-    "#{clientName}=require('#{@_require}')(" +
-    escapeInlineScript(bundle) + ",'#{@_appHash}','" + (ns || '') + "'," +
-    (if ctx then escapeInlineScript(JSON.stringify ctx) else '0') +
-    (if @_watch then ",'#{@_appFilename}'" else '' ) +
+    "#{clientName}=require('#{@_require}')(" + escapeInlineScript(bundle) +
+    ",'" + @_appHash + "'," + (+@_watch) + ",'" + (ns || '') + "'" +
+    (if ctx then ',' + escapeInlineScript(JSON.stringify ctx) else '') +
     ")},0)}#{clientName}===1?f():#{clientName}=f})()</script>#{tail}#{@_errors}"
