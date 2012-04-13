@@ -479,7 +479,7 @@ public/gen
 '''
 
 packageJson = (project, useCoffee) ->
-  package =
+  pkg =
     name: project
     description: ''
     version: '0.0.0'
@@ -491,10 +491,10 @@ packageJson = (project, useCoffee) ->
     private: true
 
   if useCoffee
-    package.devDependencies =
+    pkg.devDependencies =
       'coffee-script': '>=1.2'
 
-  return JSON.stringify package, null, '  '
+  return JSON.stringify pkg, null, '  '
 
 
 ## COMMANDS ##
@@ -527,7 +527,7 @@ ANSI_CODES =
   'cyan_bg': 46
   'white_bg': 47
 
-styleTag = (name) -> "\033[#{ANSI_CODES[name]}m"
+styleTag = (name) -> "\u001b[#{ANSI_CODES[name]}m"
 
 style = (styles, text) ->
   styles = styles.split ' '
@@ -547,7 +547,7 @@ makeCallback = (path, callback) ->
     callback() if callback
 
 mkdir = (path, callback) ->
-  mkdirp path, 0755, makeCallback(path, callback)
+  mkdirp path, '0755', makeCallback(path, callback)
 
 writeFile = (path, text, callback) ->
   fs.writeFile path, text, makeCallback(path, callback)

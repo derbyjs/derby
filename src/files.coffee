@@ -86,10 +86,10 @@ module.exports =
       return finish() if value
 
       exists staticRoot, (value) ->
-        if value then return fs.mkdir staticPath, 0777, (err) ->
+        if value then return fs.mkdir staticPath, '0777', (err) ->
           finish()
-        fs.mkdir staticRoot, 0777, (err) ->
-          fs.mkdir staticPath, 0777, (err) ->
+        fs.mkdir staticRoot, '0777', (err) ->
+          fs.mkdir staticPath, '0777', (err) ->
             finish()
 
   watch: (dir, type, onChange) ->
