@@ -82,6 +82,16 @@ derby = module.exports = mergeAll Object.create(racer),
     app._setStore store  for app in args
     return store
 
+  use: (plugin, opts) ->
+    switch plugin.decorate
+      when 'racer'
+        plugin racer, opts
+      when 'derby'
+        plugin this, opts
+      else
+        throw new Error 'plugin.decorate must be either "racer" or "derby"'
+    return this # chainable
+
 Object.defineProperty derby, 'version',
   get: -> JSON.parse(fs.readFileSync __dirname + '/../package.json', 'utf8').version
 

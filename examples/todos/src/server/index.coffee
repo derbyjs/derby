@@ -4,6 +4,8 @@ derby = require 'derby'
 gzip = require 'connect-gzip'
 todos = require '../todos'
 
+# derby.use require('racer-db-mongo'), racer: true
+
 
 ## SERVER CONFIGURATION ##
 
