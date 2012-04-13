@@ -600,6 +600,15 @@ parsePartialAttr = (view, viewName, events, attrs, attr, value) ->
 
     attrs[attr] = $macroVar: name
 
+  else if value == 'true'
+    attrs[attr] = true
+  else if value == 'false'
+    attrs[attr] = false
+  else if value == 'null'
+    attrs[attr] = null
+  else if !isNaN(value)
+    attrs[attr] = +value
+
   return bound
 
 partialName = (view, tagName) ->
