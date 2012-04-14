@@ -16,7 +16,7 @@ get '/:room?', (page, model, {room}) ->
     return getRoom page, model, room, userId
 
   # Otherwise, select a new userId and initialize user
-  model.async.incr 'nextUserId', (err, userId) ->
+  model.async.incr 'configs.1.nextUserId', (err, userId) ->
     model.set '_session.userId', userId
     model.set "users.#{userId}",
       name: 'User ' + userId
@@ -24,7 +24,7 @@ get '/:room?', (page, model, {room}) ->
     getRoom page, model, room, userId
 
 getRoom = (page, model, roomName, userId) ->
-  model.subscribe "rooms.#{roomName}", 'users', (err, room) ->
+  model.subscribe "rooms.#{roomName}", 'users', (err, room, users) ->
     model.ref '_room', room
 
     # setNull will set a value if the object is currently null or undefined

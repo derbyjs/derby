@@ -3,6 +3,7 @@ express = require 'express'
 derby = require 'derby'
 gzip = require 'connect-gzip'
 chat = require '../chat'
+MongoStore = require 'connect-mongo'
 
 
 ## SERVER CONFIGURATION ##
@@ -19,7 +20,11 @@ staticPages = derby.createStatic root
 
   # Derby session middleware creates req.model and subscribes to _session
   .use(express.cookieParser())
-  .use(express.session(secret: 'dont_tell', cookie: MAX_AGE_ONE_YEAR))
+  .use(express.session
+    secret: 'dont_tell'
+    cookie: MAX_AGE_ONE_YEAR
+    store: new MongoStore(db: 'derby-chat', collection: 'express_sessions')
+  )
   .use(chat.session())
 
   # Remove to disable dynamic gzipping
