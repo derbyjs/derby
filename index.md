@@ -1497,7 +1497,7 @@ model.set 'meta'
     title: 'Hi there'
     author: 'Erik Mathers'
 # Logs: {id: 'app', title: 'Hi there', author: 'Erik Mathers'}
-console.log model.get('meta.app'))
+console.log model.get('meta.app')
 {% endhighlight %}
 
 ## Creating models
