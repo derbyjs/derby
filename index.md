@@ -1417,7 +1417,88 @@ More information about configuring Racer to run with various PubSub, database, a
 
 Derby's models are powered by [Racer](http://racerjs.com/). By default, Racer stores data in memory, so nothing will be persisted between server restarts. This is an easy way to get started and prototype an app. Adding persistence merely requires including an adapter for a given database. This is configured when creating the store:
 
+{% highlight javascript %}
+derby.use(require('racer-db-mongo'))
 
+app.createStore({
+  listen:  server
+, db:      {type: 'Mongo', uri: 'mongodb://localhost/database'}
+})
+{% endhighlight %}
+{% highlight coffeescript %}
+derby.use(require 'racer-db-mongo')
+
+app.createStore
+  listen:  server
+  db:      {type: 'Mongo', uri: 'mongodb://localhost/database'}
+{% endhighlight %}
+
+Each of the db adapters are separate npm modules. As with all npm modules, each adapter should be added as a dependency within a project's `package.json` file. After adding a new dependency, be sure to re-run `$ npm install`.
+
+Racer paths are translated into database collections and documents using a natural mapping:
+
+    collection.documentId.document
+
+
+All synced paths (anything that doesn't start with an underscore) must follow this convention. In other words, all model data stored at the first two path segments should be an object and not a string, number, or other primitive type.
+
+{% highlight javascript %}
+// Examples:
+model.set('todos.id_0.completed', true)
+model.set('rooms.lobby.messages.5.text', 'Call me')
+model.set('meta', {
+  app: {
+    title: 'Hi there'
+  , author: 'Erik Mathers'
+  }
+})
+
+// The first and second segments in root paths must be objects
+model.set('title', 'Hi there')      // WARNING INVALID
+model.set('app.title', 'Hi there')  // WARNING INVALID
+
+// However, any type may be stored at any private path, which
+// starts with an underscore and is not synced back to the server
+model.set('_title', 'Hi there')     // OK
+{% endhighlight %}
+{% highlight coffeescript %}
+# Examples:
+model.set 'todos.id_0.completed', true
+model.set 'rooms.lobby.messages.5.text', 'Call me'
+model.set 'meta',
+  app:
+    title: 'Hi there'
+    author: 'Erik Mathers'
+
+# The first and second segments in root paths must be objects
+model.set 'title', 'Hi there'      # WARNING INVALID
+model.set 'app.title', 'Hi there'  # WARNING INVALID
+
+// However, any type may be stored at any private path, which
+// starts with an underscore and is not synced back to the server
+model.set '_title', 'Hi there'     # OK
+{% endhighlight %}
+
+The document's id (the second path segment) is automatically added as the `id` property of the document, so that it can be retrieved from the datastore.
+
+{% highlight javascript %}
+model.set('meta', {
+  app: {
+    title: 'Hi there'
+  , author: 'Erik Mathers'
+  }
+})
+// Logs: {id: 'app', title: 'Hi there', author: 'Erik Mathers'}
+console.log(model.get('meta.app'))
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'meta'
+  app:
+    title: 'Hi there'
+    author: 'Erik Mathers'
+# Logs: {id: 'app', title: 'Hi there', author: 'Erik Mathers'}
+console.log model.get('meta.app'))
+{% endhighlight %}
 
 ## Creating models
 
