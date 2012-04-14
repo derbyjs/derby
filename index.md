@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.1.10
+version: 0.3.0
 headers:
   - text: Introduction
     type: h1
@@ -42,11 +42,11 @@ headers:
     type: h3
   - text: Sections
     type: h3
-  - text: Partials
-    type: h3
   - text: Bindings
     type: h3
   - text: Relative model paths and aliases
+    type: h3
+  - text: Components
     type: h3
   - text: HTML extensions
     type: h2
@@ -80,12 +80,12 @@ headers:
     type: h1
   - text: Introduction to Racer
     type: h2
-  - text: STM and OT
+  - text: Conflict resolution
     type: h3
   - text: Creating stores
     type: h2
-  - text: Configuration options
-    type: h3
+  - text: Persistence
+    type: h2
   - text: Creating models
     type: h2
   - text: Model features
@@ -118,7 +118,7 @@ var hello = require('derby').createApp(module)
 
 // Templates define both HTML and model <- -> view bindings
 view.make('Body'
-, 'Holler: <input value="((message))"><h1>((message))</h1>'
+, 'Holler: <input value="{message}"><h1>{message}</h1>'
 )
 
 // Routes render on client as well as server
@@ -151,7 +151,7 @@ server.listen(3000)
 
 # Templates define both HTML and model <- -> view bindings
 view.make 'Body',
-  'Holler: <input value="((message))"><h1>((message))</h1>'
+  'Holler: <input value="{message}"><h1>{message}</h1>'
 
 # Routes render on client as well as server
 get '/', (page, model) ->
@@ -181,19 +181,7 @@ server.listen 3000
 
 # Introduction
 
-Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/). While it works differently, Racer is to Derby somewhat like ActiveRecord is to Rails. Racer automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications.
-
-Derby applications load immediately and can be indexed by search engines, because the same templates render on both server and client. In addition, templates define bindings, which instantly update the view when the model changes and vice versa. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
-
-## Why not use Rails and Backbone?
-
-Derby represents a new breed of application frameworks, which we believe will replace currently popular libraries like [Rails](http://rubyonrails.org/) and [Backbone](http://documentcloud.github.com/backbone/).
-
-Adding dynamic features to apps written with [Rails](http://rubyonrails.org/), [Django](https://www.djangoproject.com/), and other server-side frameworks tends to produce a tangled mess. Server code renders various initial states while jQuery selectors and callbacks desperately attempt to make sense of the DOM and user events. Adding new features typically involves changing both server and client code, often in different languages.
-
-Many developers now include a client MVC framework like [Backbone](http://documentcloud.github.com/backbone/) to better structure client code. A few have started to use declarative model-view binding libraries, such as [Knockout](http://knockoutjs.com/) and [Angular](http://angularjs.org/), to reduce boilerplate DOM manipulation and event bindings. These are great concepts, and adding some structure certainly improves client code. However, they still lead to duplicating rendering code and manually synchronizing changes in increasingly complex server and client code bases. Not only that, each of these components must be manually wired together and packaged for the client.
-
-Derby radically simplifies this process of adding dynamic interactions. It runs the same code in servers and browsers, and it syncs data automatically. Derby takes care of template rendering, packaging, and model-view bindings out of the box. Since all features are designed to work together, no code duplication and glue code are needed. Derby equips developers for a future when all data in all apps are realtime.
+Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/). While it works differently, Racer is to Derby somewhat like ActiveRecord is to Rails. Racer automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
 
 ## Features
 
@@ -205,15 +193,25 @@ Derby radically simplifies this process of adding dynamic interactions. It runs 
 
 * **Model syncing:** Model changes are automatically sychronized with the server and all clients subscribed to the same data over [Socket.IO](http://socket.io/).
 
+* **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, automatic persistence of data to one or more databases is simple to add.
+
 * **Conflict resolution:** The server detects conflicts, enabling clients to respond instantly and work offline. Multiple powerful techniques for conflict resolution are included.
 
-* **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, adding automatic persistence of data to one or more databases is simple to add.
+## Why not use Rails and Backbone?
+
+Derby represents a new breed of application frameworks, which we believe will replace currently popular libraries like [Rails](http://rubyonrails.org/) and [Backbone](http://documentcloud.github.com/backbone/).
+
+Adding dynamic features to apps written with [Rails](http://rubyonrails.org/), [Django](https://www.djangoproject.com/), and other server-side frameworks tends to produce a tangled mess. Server code renders various initial states while jQuery selectors and callbacks desperately attempt to make sense of the DOM and user events. Adding new features typically involves changing both server and client code, often in different languages.
+
+Many developers now include a client MVC framework like [Backbone](http://documentcloud.github.com/backbone/) to better structure client code. A few have started to use declarative model-view binding libraries, such as [Knockout](http://knockoutjs.com/) and [Angular](http://angularjs.org/), to reduce boilerplate DOM manipulation and event bindings. These are great concepts, and adding some structure certainly improves client code. However, they still lead to duplicating rendering code and manually synchronizing changes in increasingly complex server and client code bases. Not only that, each of these pieces must be manually wired together and packaged for the client.
+
+Derby radically simplifies this process of adding dynamic interactions. It runs the same code in servers and browsers, and it syncs data automatically. Derby takes care of template rendering, packaging, and model-view bindings out of the box. Since all features are designed to work together, no code duplication and glue code are needed. Derby equips developers for a future when all data in all apps are realtime.
 
 ## Flexibility without the glue code
 
 Derby eliminates the tedium of wiring together a server, server templating engine, CSS compiler, script packager, minifier, client MVC framework, client JavaScript library, client templating and/or bindings engine, client history library, realtime transport, ORM, and database. It elminates the complexity of keeping state synchronized among models and views, clients and servers, multiple windows, multiple users, and models and databases.
 
-At the same time, it plays well with others. Derby is built on top of popular components, including [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [Socket.IO](http://socket.io/), [Browserify](https://github.com/substack/node-browserify), [Stylus](http://learnboost.github.com/stylus/docs/iteration.html), [UglifyJS](https://github.com/mishoo/UglifyJS), [MongoDB](http://www.mongodb.org/), and soon other popular databases and datastores. These components can also be used directly. The data synchronization layer, [Racer](http://racerjs.com/), can be used separately. Other libraries, such as jQuery, work just as well along with Derby.
+At the same time, it plays well with others. Derby is built on top of popular libraries, including [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [Socket.IO](http://socket.io/), [Browserify](https://github.com/substack/node-browserify), [Stylus](http://learnboost.github.com/stylus/docs/iteration.html), [UglifyJS](https://github.com/mishoo/UglifyJS), [MongoDB](http://www.mongodb.org/), and soon other popular databases and datastores. These libraries can also be used directly. The data synchronization layer, [Racer](http://racerjs.com/), can be used separately. Other client libraries, such as jQuery, and other Node.js modules from npm work just as well along with Derby.
 
 When following the default file structure, templates, styles, and scripts are automatically packaged and included in the appropriate pages. In addition, Derby can be used via a dynamic API, as seen in the simple example above.
 
@@ -308,10 +306,6 @@ Derby uses a filename based convention similar to Node.js modules. A file named 
 Apps are associated with their respective styles and views by filename only. Derby automatically includes them when rendering. Both support importing, so shared styles and templates may be defined in separate files.
 
 Static files can be placed in the public folder. The default Express server created by the Derby project generator sets a cache time of one year for all static files. Therefore, new file versions must be given new filenames. Derby compiles scripts for the browser into the `public\gen` folder by default. Each script's filename is generated from a hash, so that it can be cached long term.
-
-## Persistence
-
-Derby's models are powered by [Racer](http://racerjs.com/). By default, Racer stores data in memory, so nothing will be persisted between server restarts. We are currently putting the final touches on the first database adapter, which will support MongoDB.
 
 # Apps and static pages
 
@@ -458,7 +452,7 @@ Templates can be imported from another file for making multiple page apps and sh
 
 Templates defined in a parent namespace are inherited unless they are overridden by a template with the same name in the child namespace. Thus, it often makes sense to place common page elements in a main file that imports a number of other files and override the part of the page that is different.
 
-Template partials are referenced relative to their current namespace. Namespaces are separated by colons, and a namespace can be passed to the `page.render()` method to render a specific page or application state.
+Template components are referenced relative to their current namespace. Namespaces are separated by colons, and a namespace can be passed to the `page.render()` method to render a specific page or application state.
 
 #### shared.html
 {% highlight html %}
@@ -474,8 +468,8 @@ Template partials are referenced relative to their current namespace. Namespaces
 
 <Body:>
   Welcome to the home page
-  <!-- include template partial from an imported namespace -->
-  {{"{{"}}> shared:profile}}
+  <!-- include component from an imported namespace -->
+  <app:shared:profile>
 {% endhighlight %}
 
 #### index.html
@@ -506,6 +500,8 @@ page.render 'home',
 ## Template syntax
 
 Derby's template syntax is largely based on [Handlebars](http://handlebarsjs.com/), a popular logic-less templating language similar to [Mustache](http://mustache.github.com/mustache.5.html).
+
+If you use Sublime Text 2 or TextMate, you can use [our fork of the HTML5 bundle](https://github.com/codeparty/html5.tmbundle/downloads) to get proper syntax highlighting of Derby templates. You might want to also try our [Clean color theme](https://github.com/codeparty/clean-textmate/downloads), which highlights each type of template tag appropriately.
 
 A simple Handlebars template:
 
@@ -612,9 +608,9 @@ page.render name: 'Parker', location: '<b>500 ft</b> away'
 
 ### Sections
 
-Sections set the scope of the context for their contents. In the case of `if`, `unless`, and `each`, they also  cause their contents to be conditionally rendered. `with` is used to only set the scope and always render. In Handlebars, sections begin and end with the same block type, but Derby requires only an ending slash.
+Sections set the scope of the context for their contents. In the case of `if`, `unless`, `else if`, `else`, and `each`, they also cause their contents to be conditionally rendered. `with` is used to only set the scope and always render. In Handlebars, sections begin and end with the same block type, but Derby requires only an ending slash.
 
-In Handlebars, falsey values include all falsey JavaScript values (`false`, `null`, `undefined`, `0`, `''`, and `NaN`) as well as empty arrays (`[]`). All other values are truthy.
+As in Handlebars, falsey values include all falsey JavaScript values (`false`, `null`, `undefined`, `0`, `''`, and `NaN`) as well as empty arrays (`[]`). All other values are truthy.
 
 #### Template
 
@@ -712,20 +708,86 @@ page.render
 I like <a href="http://derbyjs.com/">turtles</a>.
 {% endhighlight %}
 
-### Partials
+### Bindings
 
-Partials are used to include one template inside of another. The scope of the parent context is inherited inside of the partial. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use partials for each significant unit.
+Model-view binding is a relatively recent approach to adding dyanmic interaction to a page. Its use of declarative syntax dramatically lowers the amount of repetative, error-prone DOM manipulation code in an application. With Derby's bindings system, it should rarely be neccessary to write any DOM code at all.
 
-As in Handlebars, partials are included by name with the syntax `{{"{{"}}> profile}}`. Because it is common to use a partial to render each item in a list or otherwise use a section to set the context for a partial, Derby supports the additional `{{"{{"}}each users > profile}}` syntax. This is equivalent to `{{"{{"}}#each}}{{"{{"}}> profile}}{{"{{"}}/}}`. `if`, `unless`, and `with` are valid as well as `each`.
+Derby templates declare bindings by using double or triple parentheses instead of curly braces. Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for elements that change upon user interaction---such as form inputs---Derby will update the model automatically as their values change.
+
+Any template tag may be live bound, except for within an `id` attribute. The id must be set at render time and not change until the element is re-rendered, since it is used to figure out which element to update.
+
+Bindings only work for data in the model. Context data is passed in at render time, and it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model, since the path may be defined later.
 
 #### Template
 
 {% highlight html %}
 <Body:>
-  {{"{{"}}> nav}}
+  Holler: <input value="{message}"><h1>{message}</h1>
+{% endhighlight %}
+
+#### Context
+  
+{% highlight javascript %}
+model.set('message', 'Yo, dude.')
+page.render()
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'message', 'Yo, dude.'
+page.render()
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+Holler: <input value="Yo, dude." id="$0"><h1 id="$1">Yo, dude.</h1>
+{% endhighlight %}
+
+Note that the value in the model at render time is inserted into the HTML, as with a non-bound template tag. In addition, Derby establishes an event listener for the input element that sets the value of `message` whenever the user modifies the text of the input element. It also sets up a listeners for both the input and the h1 element to update their displayed values whenever `message` changes.
+
+Rather than re-rendering the entire template when a value changes, only the individual elements are updated. In the case of the input, its `value` property is set; in the case of the h1, its `innerHTML` is set. Since neither of these elements have an `id` attribute specified in the template, Derby automatically creates ids for them. All DOM ids created by Derby begin with a dollar sign ($). If an element already has an id, Derby will use that instead.
+
+Derby associates all DOM event listeners with an `id`, because getting objects by id is a fast DOM operation, it makes dealing with DOM events more efficient, and event listeners continue working even if other scripts modify the DOM unexpectedly. Derby internally tracks events via ids, allowing it to render pages on the server and then re-establish the same event listeners on the client efficiently.
+
+If a bound template tag or section is not fully contained by an HTML element, Derby will wrap the template by placing comment markers before and after the location of the template. Comments are used, because they are valid in any location. A number of HTML elements have restrictions that make it impossible to wrap a template in an additional element. For example, `<tr>` elements may only contain `<td>` and `<th>` elements.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  Welcome to our {adjective} city!
+{% endhighlight %}
+
+#### Context
+  
+{% highlight javascript %}
+model.set('adjective', 'funny')
+page.render()
+{% endhighlight %}
+{% highlight coffeescript %}
+model.set 'adjective', 'funny'
+page.render()
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+Welcome to our <!--$0-->funny<!--$$0--> city!
+{% endhighlight %}
+
+### Components
+
+Components are similar to Handlebars partials, but they are much more powerful. Like partials, they inherit the scope of the parent context where they are used. In addition, Derby's components let you supply additional arguments as attributes and HTML content. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use components for each significant unit.
+
+Any Derby template can be used as a component. They are included like custom HTML tags with a special namespace. Components defined within an app are all accessed from the `app` namespace. In the future, it will be possible to create component libraries with their own namespaces.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  <app:nav>
 
 <nav:>
-  <ul>{{"{{"}}each navItems > navItem}}</ul>
+  <ul>{{"{{"}}each navItems}}<app:navItem>{{"{{"}}/}}</ul>
 
 <navItem:>
   <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a></li>
@@ -761,70 +823,56 @@ page.render
 </ul>
 {% endhighlight %}
 
-### Bindings
-
-Model-view binding is a relatively recent approach to adding dyanmic interaction to a page. Its use of declarative syntax dramatically lowers the amount of repetative, error-prone DOM manipulation code in an application. With Derby's bindings system, it should rarely be neccessary to write any DOM code at all.
-
-Derby templates declare bindings by using double or triple parentheses instead of curly braces. Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for elements that change upon user interaction---such as form inputs---Derby will update the model automatically as their values change.
-
-Any template tag may be live bound, except for within an `id` attribute. The id must be set at render time and not change until the element is re-rendered, since it is used to figure out which element to update.
-
-Bindings only work for data in the model. Context data is passed in at render time, and it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model, since the path may be defined later.
-
-#### Template
+Literal values or variable values can be passed to components. These component attributes are available through "macro" template tags, which have triple curly braces. Macro template tags only reference component attribute names, and regular template tags (with one or two curly braces) only reference names from the model or context object. It is possible to use macro template tags to conditionally render any HTML content or other template tags. 
 
 {% highlight html %}
 <Body:>
-  Holler: <input value="((message))"><h1>((message))</h1>
+  <h1><app:greeting message="Hello" to="{_user.name}"></h1>
+
+<greeting:>
+  {{{#if to}}}
+    {{{message}}}, {{{to}}}!
+  {{{else}}}
+    {{{message}}}!
+  {{{/}}}
 {% endhighlight %}
 
-#### Context
-  
-{% highlight javascript %}
-model.set('message', 'Yo, dude.')
-page.render()
-{% endhighlight %}
-{% highlight coffeescript %}
-model.set 'message', 'Yo, dude.'
-page.render()
-{% endhighlight %}
-
-#### Output
-
-{% highlight html %}
-Holler: <input value="Yo, dude." id="$0"><h1 id="$1">Yo, dude.</h1>
-{% endhighlight %}
-
-Note that the value in the model at render time is inserted into the HTML, as with a non-bound template tag. In addition, Derby establishes an event listener for the input element that sets the value of `message` whenever the user modifies the text of the input element. It also sets up a listeners for both the input and the h1 element to update their displayed values whenever `message` changes.
-
-Rather than re-rendering the entire template when a value changes, only the individual elements are updated. In the case of the input, its `value` property is set; in the case of the h1, its `innerHTML` is set. Since neither of these elements have an `id` attribute specified in the template, Derby automatically creates ids for them. All DOM ids created by Derby begin with a dollar sign ($). If an element already has an id, Derby will use that instead.
-
-Derby associates all DOM event listeners with an `id`, because getting objects by id is a fast DOM operation, it makes dealing with DOM events more efficient, and event listeners continue working even if other scripts modify the DOM unexpectedly. Derby internally tracks events via ids, allowing it to render pages on the server and then re-establish the same event listeners on the client efficiently.
-
-If a bound template tag or section is not fully contained by an HTML element, Derby will wrap the template by placing comment markers before and after the location of the template. Comments are used, because they are valid in any location. A number of HTML elements have restrictions that make it impossible to wrap a template in an additional element. For example, `<tr>` elements may only contain `<td>` and `<th>` elements.
-
-#### Template
+produces the same output as:
 
 {% highlight html %}
 <Body:>
-  Welcome to our ((adjective)) city!
+  <h1>
+    {#if _user.name}
+      Hello, {_user.name}!
+    {else}
+      Hello!
+    {/}
+  </h1>
 {% endhighlight %}
 
-#### Context
-  
-{% highlight javascript %}
-model.set('adjective', 'funny')
-page.render()
-{% endhighlight %}
-{% highlight coffeescript %}
-model.set 'adjective', 'funny'
-page.render()
-{% endhighlight %}
-
-#### Output
+By default, all components are void HTML elements. This means that they must only have an opening tag and no closing tag, just like the `<img>` and `<br>` elements. A component can be defined as nonvoid, which means that it must have both a starting and a closing tag. Nonvoid components have access to a special `content` macro that makes it possible to pass HTML content to the component. For example:
 
 {% highlight html %}
-Welcome to our <!--$0-->funny<!--$$0--> city!
+<Body:>
+  Welcome!
+  <app:fancyButton>
+    <b>Click me {{#if isUrgent}}now!{{/}}</b>
+  </app:fancyButton>
+
+<fancyButton: nonvoid>
+  <button class="fancy">
+    {{{content}}}
+  </button>
+{% endhighlight %}
+
+produces the same output as:
+
+{% highlight html %}
+<Body:>
+  Welcome!
+  <button class="fancy">
+    <b>Click me {{#if isUrgent}}now!{{/}}</b>
+  </button>
 {% endhighlight %}
 
 ### Relative model paths and aliases
@@ -837,10 +885,10 @@ Yet, a template might need to define how each item in an array should be rendere
 
 {% highlight html %}
 <Body:>
-  <ul>((each items > item))</ul>
+  <ul>{#each items}<app:item>{/}</ul>
 
 <item:>
-  <li><a href="{{"{{"}}url}}">((.name))</a>: $((.price))
+  <li><a href="{{"{{"}}url}}">{.name}</a>: ${.price}
 {% endhighlight %}
 
 #### Context
@@ -872,25 +920,27 @@ page.render()
 </ul>
 {% endhighlight %}
 
-In the above example, note that the `url` is not bound, and it does not start with a dot. Since the context of the partial will be set to the array item at render time, this will render the value correctly, but it will not update if the value changes. `.name` and `.price` start with a dot, because they are bound to paths in the model relative to the item being rendered. Whenever the name or the price of an item changes, the appropriate fields will be updated in realtime. In addition, the entire list is bound. If a new item is added, an item is removed, or the items are reordered, the list will be updated in realtime.
+In the above example, note that the `url` is not bound, and it does not start with a dot. Since the context will be set to the array item at render time, this will render the value correctly, but it will not update if the value changes. `.name` and `.price` start with a dot, because they are bound to paths in the model relative to the item being rendered. Whenever the name or the price of an item changes, the appropriate fields will be updated in realtime. In addition, the entire list is bound. If a new item is added, an item is removed, or the items are reordered, the list will be updated in realtime.
 
-Aliases to a specific scope may be defined, enabling relative model path references within nested sections. Aliases begin with a colon (`:`), and can be defined within a section tag or a partial tag that sets the scope.
+Aliases to a specific scope may be defined, enabling relative model path references within nested sections. Aliases begin with a colon (`:`), and can be defined at the end of a section tag with the `as` keyword.
 
 #### Template
 
 {% highlight html %}
 <Body:>
   <h2>Toys in use:</h2>
-  ((#each toys :toy))
-    ((#if :toy.inUse))
-      {{"{{"}}> toyStatus}}
-    ((/))
-  ((/))
+  {#each toys as :toy}
+    {#if :toy.inUse}
+      <app:toyStatus>
+    {/}
+  {/}
   <h2>All toys:</h2>
-  ((each toys :toy > toyStatus))
+  {each toys as :toy}
+    <app:toyStatus>
+  {/}
 
 <toyStatus:>
-  <p>{{"{{"}}name}} on the ((:toy.location))</p>
+  <p>{{"{{"}}name}} on the {:toy.location}</p>
 {% endhighlight %}
 
 #### Context
@@ -979,9 +1029,9 @@ It is often useful to relate back a DOM element to the model path that was used 
 {% highlight html %}
 <Body:>
   <ul>
-    ((#each _users))
-      <li x-bind="click: upcase">((.name))</li>
-    ((/))
+    {#each _users}
+      <li x-bind="click: upcase">{.name}</li>
+    {/}
   </ul>
 {% endhighlight %}
 
@@ -1011,7 +1061,7 @@ exports.upcase = (e, el, next) ->
 
 In HTML, boolean attributes are true when they are included and false when they are excluded. Since Derby only allows template tags inside attribute values, this makes it difficult to bind such attributes to model objects. Therefore, Derby uses a slightly modified syntax that works more naturally with the templating syntax for the attributes `checked`, `selected`, and `disabled`, which are likely to be bound to data.
 
-There is also a special syntax for boolean attributes only where a data value can be inverted by putting a `!` before the template tag. This is especially useful with the disabled attribute.
+Boolean attribute values can be inverted via the built-in view helper function `not()`.
 
 {% highlight html %}
 <Body:>
@@ -1023,10 +1073,10 @@ There is also a special syntax for boolean attributes only where a data value ca
   <input type="checkbox" checked="{{active}}">
 
   <!-- Bound to model -->
-  <input type="checkbox" checked="((active))">
+  <input type="checkbox" checked="{active}">
 
   <!-- Inverted value -->
-  <input type="checkbox" disabled="!((active))">
+  <input type="checkbox" disabled="{not(active)}">
 {% endhighlight %}
 
 ### Form elements
@@ -1362,6 +1412,12 @@ Typically a `listen` option is specified, which is used to setup Socket.IO. This
 Alternatively, options may specify `sockets` and `socketUri` if the Socket.IO sockets object is already created. The `sockets` option should be the object returned from Socket.IO's `io.listen().sockets` or `io.listen().of()`.
 
 More information about configuring Racer to run with various PubSub, database, and journal adapters is coming soon.
+
+## Persistence
+
+Derby's models are powered by [Racer](http://racerjs.com/). By default, Racer stores data in memory, so nothing will be persisted between server restarts. This is an easy way to get started and prototype an app. Adding persistence merely requires including an adapter for a given database. This is configured when creating the store:
+
+
 
 ## Creating models
 
