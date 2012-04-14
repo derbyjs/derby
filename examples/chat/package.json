@@ -8,7 +8,7 @@
     "racer-db-mongo": "*",
     "express": ">=2 <3",
     "connect-gzip": ">=0.1.5",
-    "connect-mongo": ">=0.1.6"
+    "connect-mongo": "git://github.com/kcbanner/connect-mongo.git"
   },
   "private": true,
   "devDependencies": {
