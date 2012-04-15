@@ -117,20 +117,20 @@ applications that run in both Node.js and browsers.</p>
 {% highlight javascript %}
 var hello = require('derby').createApp(module)
   , view = hello.view
-  , get = hello.get
+  , get = hello.get;
 
 // Templates define both HTML and model <- -> view bindings
 view.make('Body'
 , 'Holler: <input value="{message}"><h1>{message}</h1>'
-)
+);
 
 // Routes render on client as well as server
-get('/', function(page, model) {
+get('/', function (page, model) {
   // Subscribe specifies the data to sync
-  model.subscribe('message', function() {
-    page.render()
-  })
-})
+  model.subscribe('message', function () {
+    page.render();
+  });
+});
 {% endhighlight %}
 
 <h3 class="javascript">server.js</h3>
@@ -140,12 +140,12 @@ var express = require('express')
   , server = express.createServer()
       .use(express.static(__dirname + '/public'))
       // Apps create an Express middleware
-      .use(hello.router())
+      .use(hello.router());
 
 // Apps also provide a server-side store for syncing data
-hello.createStore({ listen: server })
+hello.createStore({ listen: server });
 
-server.listen(3000)
+server.listen(3000);
 {% endhighlight %}
 
 <h3 class="coffeescript">hello.coffee</h3>
@@ -655,7 +655,7 @@ Namespaces are separated by colons, and a namespace can be passed to the
 {% highlight javascript %}
 page.render('home', {
   year: 2012
-})
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 page.render 'home',
@@ -800,7 +800,7 @@ The `unescaped` keyword may be used to insert a value without escaping.
 #### Context
 
 {% highlight javascript %}
-page.render({ name: 'Parker', location: '<b>500 ft</b> away' })
+page.render({ name: 'Parker', location: '<b>500 ft</b> away' });
 {% endhighlight %}
 {% highlight coffeescript %}
 page.render name: 'Parker', location: '<b>500 ft</b> away'
@@ -862,7 +862,7 @@ page.render({
 , meta: {
     year: 1999
   }
-})
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 page.render
@@ -963,8 +963,8 @@ since the path may be defined later.
 #### Context
   
 {% highlight javascript %}
-model.set('message', 'Yo, dude.')
-page.render()
+model.set('message', 'Yo, dude.');
+page.render();
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'message', 'Yo, dude.'
@@ -995,8 +995,8 @@ If a bound template tag or section is not fully contained by an HTML element, De
 #### Context
   
 {% highlight javascript %}
-model.set('adjective', 'funny')
-page.render()
+model.set('adjective', 'funny');
+page.render();
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'adjective', 'funny'
@@ -1133,8 +1133,8 @@ model.set('items', [
   { name: 'Cool can', price: 5.99, url: '/p/0' }
 , { name: 'Fun fin', price: 10.99, url: '/p/1' }
 , { name: 'Bam bot', price: 24.95, url: '/p/2' }
-])
-page.render()
+]);
+page.render();
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'items', [
@@ -1185,7 +1185,7 @@ model.set('toys', [
   { name: 'Ball', location: 'floor', inUse: true }
 , { name: 'Blocks', location: 'shelf' }
 , { name: 'Truck', location: 'shelf' }
-])
+]);
 page.render();
 {% endhighlight %}
 {% highlight coffeescript %}
@@ -1273,13 +1273,13 @@ It is often useful to relate back a DOM element to the model path that was used 
 #### App
 
 {% highlight javascript %}
-exports.upcase = function(e, el, next) {
-  user = model.at(el)
+exports.upcase = function (e, el, next) {
+  user = model.at(el);
 
   // Logs something like "_users.3"
-  console.log(user.path())
+  console.log(user.path());
 
-  user.set('name', user.get('name').toUpperCase())
+  user.set('name', user.get('name').toUpperCase());
 }
 {% endhighlight %}
 {% highlight coffeescript %}
@@ -1464,28 +1464,28 @@ Transitional routes make it possible to use CSS animations, since only the relev
 Transitional routes use the same `get`, `post`, `put`, and `del` methods, but they take both a from and to pattern as well as a forward and back callback. Since transitional routes cannot render the entire page but only update data in the model, their callbacks do not have a `page` argument.
 
 {% highlight javascript %}
-get('/photo/:id', function(page, model, params, next) {
+get('/photo/:id', function (page, model, params, next) {
   // Normal page rendering code goes here
   ...
 
   // Any state set in the `forward` route callback should be
   // reset in the main route, in case the user navigates to
   // a different page and then back to this page directly
-  model.del('_showLightbox')
+  model.del('_showLightbox');
 
   // The transitional route callback will execute right before
   // the render method is called
-  page.render()
+  page.render();
 })
 
 get({from: '/photo/:id', to: '/photo/:id/lightbox'}, {
-  forward: function(model, params, next) {
-    model.set('_showLightbox', true)
-  })
-, back: function(model, params, next) {
-    model.del('_showLightbox')
-  })
-})
+  forward: function (model, params, next) {
+    model.set('_showLightbox', true);
+  }
+, back: function (model, params, next) {
+    model.del('_showLightbox');
+  }
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 get '/photo/:id', (page, model, params, next) ->
@@ -1661,12 +1661,12 @@ More information about configuring Racer to run with various PubSub, database, a
 Derby's models are powered by [Racer](http://racerjs.com/). By default, Racer stores data in memory, so nothing will be persisted between server restarts. This is an easy way to get started and prototype an app. Adding persistence merely requires including an adapter for a given database. This is configured when creating the store:
 
 {% highlight javascript %}
-derby.use(require('racer-db-mongo'))
+derby.use(require('racer-db-mongo'));
 
 app.createStore({
   listen:  server
 , db:      {type: 'Mongo', uri: 'mongodb://localhost/database'}
-})
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 derby.use(require 'racer-db-mongo')
@@ -1687,22 +1687,22 @@ All synced paths (anything that doesn't start with an underscore) must follow th
 
 {% highlight javascript %}
 // Examples:
-model.set('todos.id_0.completed', true)
-model.set('rooms.lobby.messages.5.text', 'Call me')
+model.set('todos.id_0.completed', true);
+model.set('rooms.lobby.messages.5.text', 'Call me');
 model.set('meta', {
   app: {
     title: 'Hi there'
   , author: 'Erik Mathers'
   }
-})
+});
 
 // The first and second segments in root paths must be objects
-model.set('title', 'Hi there')      // WARNING INVALID
-model.set('app.title', 'Hi there')  // WARNING INVALID
+model.set('title', 'Hi there');      // WARNING INVALID
+model.set('app.title', 'Hi there');  // WARNING INVALID
 
 // However, any type may be stored at any private path, which
 // starts with an underscore and is not synced back to the server
-model.set('_title', 'Hi there')     // OK
+model.set('_title', 'Hi there');     // OK
 {% endhighlight %}
 {% highlight coffeescript %}
 # Examples:
@@ -1730,9 +1730,9 @@ model.set('meta', {
     title: 'Hi there'
   , author: 'Erik Mathers'
   }
-})
+});
 // Logs: {id: 'app', title: 'Hi there', author: 'Erik Mathers'}
-console.log(model.get('meta.app'))
+console.log(model.get('meta.app'));
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'meta'
@@ -1842,7 +1842,7 @@ model.query('users')
   // With shoe as either 'nike' or 'adidas'
   .where('shoe').within(['nike', 'adidas'])
   // Pagination ftw!
-  .skip(10).limit(5)
+  .skip(10).limit(5);
 {% endhighlight %}
 {% highlight coffeescript %}
 # Find users
@@ -2010,7 +2010,7 @@ character. For this example, the model would be scoped to `rooms`. More complex
 subscriptions may be specified via [queries](#queries).
 
 {% highlight javascript %}
-var roomName = 'lobby'
+var roomName = 'lobby';
 model.subscribe('rooms.' + roomName, function (err, room) {
   // Logs: 'rooms.lobby'
   console.log(room.path());
@@ -2074,23 +2074,23 @@ accessors, mutators, and event subscribers.
 > **segment:** Returns the last segment for the reference path. This may be useful for getting indicies or other properties set at the end of a path
 
 {% highlight javascript %}
-room = model.at('_room')
+room = model.at('_room');
 
 // These are equivalent:
-room.at('name').set('Fun room')
-room.set('name', 'Fun room')
+room.at('name').set('Fun room');
+room.set('name', 'Fun room');
 
 // Logs: {name: 'Fun room'}
-console.log(room.get())
+console.log(room.get());
 // Logs: 'Fun room'
-console.log(room.get('name'))
+console.log(room.get('name'));
 
 // Array methods can take a subpath as a first argument
 // when the scoped model points to an object
-room.push('toys', 'blocks', 'puzzles')
+room.push('toys', 'blocks', 'puzzles');
 // When the scoped model points to an array, no subpath
 // argument should be supplied
-room.at('toys').push('cards', 'dominoes')
+room.at('toys').push('cards', 'dominoes');
 {% endhighlight %}
 {% highlight coffeescript %}
 room = model.at '_room'
@@ -2149,10 +2149,10 @@ All model mutators have an optional callback with the arguments `callback(err, m
 Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
 
 {% highlight javascript %}
-var model = store.createModel()
-model.set('cars.DeLorean.DMC12.color', 'silver')
+var model = store.createModel();
+model.set('cars.DeLorean.DMC12.color', 'silver');
 // Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
-console.log(model.get())
+console.log(model.get());
 {% endhighlight %}
 {% highlight coffeescript %}
 model = store.createModel()
@@ -2319,17 +2319,17 @@ In path patterns, wildcards (`*`) will only match a single segment in the middle
 // Matches only model.push('messages', message)
 model.on('push', 'messages', function (message, messagesLength) {
   ...
-})
+});
 
 // Matches model.set('todos.4.completed', true), etc.
 model.on('set', 'todos.*.completed', function (todoId, isComplete) {
   ...
-})
+});
 
 // Matches all set operations
 model.on('set', '*', function (path, value) {
   ...
-})
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 # Matches only model.push('messages', message)
@@ -2355,10 +2355,10 @@ This method can be chained before calling a mutator method to pass an argument t
 //   'green', 'hi'
 
 model.on('set', 'color', function (value, out, isLocal, passed) {
-  console.log(value, passed)
-})
-model.set('color', 'red')
-model.pass('hi').set('color', 'green')
+  console.log(value, passed);
+});
+model.set('color', 'red');
+model.pass('hi').set('color', 'green');
 {% endhighlight %}
 {% highlight coffeescript %}
 # Logs:
@@ -2396,20 +2396,20 @@ model.set('players', [
 , {name: 'Kim', score: 9000}
 , {name: 'Megan', score: 3000}
 , {name: 'Sam', score: 2000}
-])
-model.set('cutoff', 3)
+]);
+model.set('cutoff', 3);
 
 // Sort the players by score and return the top X players. The
 // function will automatically update the value of '_leaders' as
 // players are added and removed, their scores change, and the
 // cutoff value changes.
-model.fn('_leaders', 'players', 'cutoff', function(players, cutoff) {
+model.fn('_leaders', 'players', 'cutoff', function (players, cutoff) {
   // Note that the input array is copied with splice before sorting
   // it. The function should not modify the values of its inputs.
-  return players.splice().sort(function(a, b) {
-    return a.score - b.score
-  }).splice(0, cutoff - 1)
-})
+  return players.splice().sort(function (a, b) {
+    return a.score - b.score;
+  }).splice(0, cutoff - 1);
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'players', [
@@ -2456,32 +2456,32 @@ model.set('colors', {
 });
 
 // Getting a reference returns the referenced data
-model.ref('_green', 'colors.green')
+model.ref('_green', 'colors.green');
 // Logs {hex: '#0f0'}
-console.log(model.get('_green'))
+console.log(model.get('_green'));
 
 // Setting a property of the reference path modifies
 // the underlying data
-model.set('_green.rgb', [0, 255, 0])
+model.set('_green.rgb', [0, 255, 0]);
 // Logs {hex: '#0f0', rgb: [0, 255, 0]}
-console.log(model.get('colors.green'))
+console.log(model.get('colors.green'));
 
 // Setting or deleting the reference path modifies
 // the reference and not the underlying data
-model.del('_green')
+model.del('_green');
 // Logs undefined
-console.log(model.get('_green'))
+console.log(model.get('_green'));
 // Logs {hex: '#0f0', rgb: [0, 255, 0]}
-console.log(model.get('colors.green'))
+console.log(model.get('colors.green'));
 
 // Changing a reference key updates the reference
-model.set('selected', 'red')
-model.ref('_selectedColor', 'colors', 'selected')
+model.set('selected', 'red');
+model.ref('_selectedColor', 'colors', 'selected');
 // Logs '#f00'
-console.log(model.get('_selectedColor.hex'))
-model.set('selected', 'blue')
+console.log(model.get('_selectedColor.hex'));
+model.set('selected', 'blue');
 // Logs '#00f'
-console.log(model.get('_selectedColor.hex'))
+console.log(model.get('_selectedColor.hex'));
 {% endhighlight %}
 {% highlight coffeescript %}
 model.set 'colors'
@@ -2537,18 +2537,18 @@ model.set('colors', {
   red: {hex: '#f00', id: 'red'}
 , green: {hex: '#0f0', id: 'green'}
 , blue: {hex: '#00f', id: 'blue'}
-})
-model.set('_colorIds', ['blue', 'red'])
-model.ref('_myColors', 'colors', '_colorIds')
+});
+model.set('_colorIds', ['blue', 'red']);
+model.ref('_myColors', 'colors', '_colorIds');
 
-model.push('_myColors', {hex: '#ff0', id: 'yellow'})
+model.push('_myColors', {hex: '#ff0', id: 'yellow'});
 
 // Logs: [
 //   {hex: '#00f', id: 'blue'},
 //   {hex: '#f00', id: 'red'},
 //   {hex: '#ff0', id: 'yellow'}
 // ]
-console.log(model.get('_myColors'))
+console.log(model.get('_myColors'));
 {% endhighlight %}
 {% highlight coffeescript %}
 # refLists may only consist of objects with an id that matches
