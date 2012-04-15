@@ -1305,7 +1305,7 @@ Boolean attribute values can be inverted via the built-in view helper function `
     - or -
     <input type="checkbox">
   -->
-  <input type="checkbox" checked="{{active}}">
+  <input type="checkbox" checked="{{"{{"}}active}}">
 
   <!-- Bound to model -->
   <input type="checkbox" checked="{active}">
