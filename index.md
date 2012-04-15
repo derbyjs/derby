@@ -576,7 +576,9 @@ sends pages a number of chunks:
 
 #### Fourth chunk
 
-13. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads
+13. JSON bundle of the model data, event bindings, and other data resulting
+from rendering the page. This bundle initializes the application once the
+external client script loads.
 14. **`Tail:`** Optional location for additional scripts to be included at the very end of the page
 
 <style>
@@ -590,7 +592,10 @@ ol>li:before{content: counter(item) ". "; counter-increment: item}
 
 ### Importing templates
 
-Templates can be imported from another file for making multiple page apps and sharing templates among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. Like in Node.js modules, either `pageName.html` or `pageName/index.html` can be imported as `pageName`.
+Templates can be imported from another file for making multiple page apps and
+sharing templates among multiple pages. File paths are expessed relatively,
+similar to how Node.js modules are loaded. Like in Node.js modules, either
+`pageName.html` or `pageName/index.html` can be imported as `pageName`.
 
 {% highlight html %}
 <!-- all templates from "./home.html" with the namespace "home" -->
@@ -606,9 +611,14 @@ Templates can be imported from another file for making multiple page apps and sh
 <import: src="home" template="message" as="myMessage">
 {% endhighlight %}
 
-Templates defined in a parent namespace are inherited unless they are overridden by a template with the same name in the child namespace. Thus, it often makes sense to place common page elements in a main file that imports a number of other files and override the part of the page that is different.
+Templates defined in a parent namespace are inherited unless they are
+overridden by a template with the same name in the child namespace. Thus, it
+often makes sense to place common page elements in a main file that imports a
+number of other files and override the part of the page that is different.
 
-Template components are referenced relative to their current namespace. Namespaces are separated by colons, and a namespace can be passed to the `page.render()` method to render a specific page or application state.
+Template components are referenced relative to their current namespace.
+Namespaces are separated by colons, and a namespace can be passed to the
+`page.render()` method to render a specific page or application state.
 
 #### shared.html
 {% highlight html %}
@@ -655,9 +665,15 @@ page.render 'home',
 
 ## Template syntax
 
-Derby's template syntax is largely based on [Handlebars](http://handlebarsjs.com/), a popular logic-less templating language similar to [Mustache](http://mustache.github.com/mustache.5.html).
+Derby's template syntax is largely based on
+[Handlebars](http://handlebarsjs.com/), a popular logic-less templating
+language similar to [Mustache](http://mustache.github.com/mustache.5.html).
 
-If you use Sublime Text 2 or TextMate, you can use [our fork of the HTML5 bundle](https://github.com/codeparty/html5.tmbundle/downloads) to get proper syntax highlighting of Derby templates. You might want to also try our [Clean color theme](https://github.com/codeparty/clean-textmate/downloads), which highlights each type of template tag appropriately.
+If you use Sublime Text 2 or TextMate, you can use [our fork of the HTML5
+bundle](https://github.com/codeparty/html5.tmbundle/downloads) to get proper
+syntax highlighting of Derby templates. You might want to also try our [Clean
+color theme](https://github.com/codeparty/clean-textmate/downloads), which
+highlights each type of template tag appropriately.
 
 A simple Handlebars template:
 
@@ -682,11 +698,26 @@ Will produce the following:
     You have just won $10000!
     Well, $6000.0, after taxes.
 
-Logic-less templates better enforce separation of logic from presentation by making it impossible to embed logic within views. Instead of conditional statements and loops, logic-less templates use a restricted set of template tags. These tags are replaced with data passed in when the template is rendered. This data is often referred to as the "context."
+Logic-less templates better enforce separation of logic from presentation by
+making it impossible to embed logic within views. Instead of conditional
+statements and loops, logic-less templates use a restricted set of template
+tags. These tags are replaced with data passed in when the template is
+rendered. This data is often referred to as the "context."
 
-With Handlebars, application code generates a context object before rendering the view. It then passes that object along with the template at render time. Derby templates can be used this way as well. However, in addition to looking for objects in a context object, Derby assumes that the model is part of the context. Even better, Derby is able to automatically establish live bindings between the view and objects in the model. Derby slightly extends the Handlebars syntax in order to support these featueres.
+With Handlebars, application code generates a context object before rendering
+the view. It then passes that object along with the template at render time.
+Derby templates can be used this way as well. However, in addition to looking
+for objects in a context object, Derby assumes that the model is part of the
+context. Even better, Derby is able to automatically establish live bindings
+between the view and objects in the model. Derby slightly extends the
+Handlebars syntax in order to support these featueres.
 
-The other major difference between Handlebars and Derby templates is that Derby templates must be valid HTML first. Handlebars is language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within elements or text, within attribute values, and surrounding elements.
+The other major difference between Handlebars and Derby templates is that Derby
+templates must be valid HTML first. Handlebars is language agnostic---it can be
+used to compile anything from HTML to source code to a document. However, Derby
+templates are first parsed as HTML so that the parser can understand how to
+bind data to the surrounding DOM objects. Template tags are only allowed within
+elements or text, within attribute values, and surrounding elements.
 
 #### Invalid template tag placements
 {% highlight html %}
@@ -720,19 +751,41 @@ Let's go <b>{{"{{"}}activity}}</b>!
 
 ### Whitespace and HTML conformance
 
-Before parsing, all HTML comments, leading whitespace, and new lines are removed from templates. Whitespace at the end of lines is maintained, in case a space is desired in the HTML output. The contents of `<script>` and `<style>` tags are passed through literally.
+Before parsing, all HTML comments, leading whitespace, and new lines are
+removed from templates. Whitespace at the end of lines is maintained, in case a
+space is desired in the HTML output. The contents of `<script>` and `<style>`
+tags are passed through literally.
 
-Derby's HTML parser should be able to parse any valid HTML, including elements that don't require closing tags and unquoted attributes. However, it is recommended that you always include closing tags for elements like `<p>` and `<li>` that might not require a closing tag. The rules around how tags are automatically closed are complex, and there are certain cases where template sections may be included within an unexpected element. 
+Derby's HTML parser should be able to parse any valid HTML, including elements
+that don't require closing tags and unquoted attributes. However, it is
+recommended that you always include closing tags for elements like `<p>` and
+`<li>` that might not require a closing tag. The rules around how tags are
+automatically closed are complex, and there are certain cases where template
+sections may be included within an unexpected element.
 
-HTML attribute values only need to be quoted if they are the empty string or if they contain a space, equals sign, or greater than sign. Since Derby templates are parsed as HTML first, any of these characters within a template tag require an attribute to be escaped. Using quotes around all attribute values is recommended.
+HTML attribute values only need to be quoted if they are the empty string or if
+they contain a space, equals sign, or greater than sign. Since Derby templates
+are parsed as HTML first, any of these characters within a template tag require
+an attribute to be escaped. Using quotes around all attribute values is
+recommended.
 
-Because it understands the HTML context, Derby's HTML escaping is much more minimal than that of most templating libraries. You may be surprised to see unescaped `>` and `&` characters. These only need to be escaped in certain contexts, and Derby only escapes them when needed. If you are skeptical, an [HTML5 validator](http://html5.validator.nu/) will detect most escaping bugs.
+Because it understands the HTML context, Derby's HTML escaping is much more
+minimal than that of most templating libraries. You may be surprised to see
+unescaped `>` and `&` characters. These only need to be escaped in certain
+contexts, and Derby only escapes them when needed. If you are skeptical, an
+[HTML5 validator](http://html5.validator.nu/) will detect most escaping bugs.
 
-Throughout these docs, the output of templates is shown indented and on multiple lines for the sake of readability. However, Derby's renderer would not output any indentation or line breaks. In addition, output attribute values are quoted, but Derby only includes quotes around attribute values if they are needed.
+Throughout these docs, the output of templates is shown indented and on
+multiple lines for the sake of readability. However, Derby's renderer would not
+output any indentation or line breaks. In addition, output attribute values are
+quoted, but Derby only includes quotes around attribute values if they are
+needed.
 
 ### Variables
 
-Variables insert a value from the context or model with a given name. If the name isn't found, nothing will be inserted. Values are HTML escaped by default. Triple braces may be used to insert a value without escaping.
+Variables insert a value from the context or model with a given name. If the
+name isn't found, nothing will be inserted. Values are HTML escaped by default.
+Triple braces may be used to insert a value without escaping.
 
 #### Template
 
@@ -764,9 +817,15 @@ page.render name: 'Parker', location: '<b>500 ft</b> away'
 
 ### Sections
 
-Sections set the scope of the context for their contents. In the case of `if`, `unless`, `else if`, `else`, and `each`, they also cause their contents to be conditionally rendered. `with` is used to only set the scope and always render. In Handlebars, sections begin and end with the same block type, but Derby requires only an ending slash.
+Sections set the scope of the context for their contents. In the case of `if`,
+`unless`, `else if`, `else`, and `each`, they also cause their contents to be
+conditionally rendered. `with` is used to only set the scope and always render.
+In Handlebars, sections begin and end with the same block type, but Derby
+requires only an ending slash.
 
-As in Handlebars, falsey values include all falsey JavaScript values (`false`, `null`, `undefined`, `0`, `''`, and `NaN`) as well as empty arrays (`[]`). All other values are truthy.
+As in Handlebars, falsey values include all falsey JavaScript values (`false`,
+`null`, `undefined`, `0`, `''`, and `NaN`) as well as empty arrays (`[]`). All
+other values are truthy.
 
 #### Template
 
@@ -827,7 +886,10 @@ page.render
 <small>Copyright &copy; 1999 Party Like It's.</small>
 {% endhighlight %}
 
-Note how in the above example, the context becomes each array item inside of the `#each users` section. Similarly, sections set scope when reffering to the name of an object. In addition to the local scope, template tags may refer to anything in the parent scope.
+Note how in the above example, the context becomes each array item inside of
+the `#each users` section. Similarly, sections set scope when reffering to the
+name of an object. In addition to the local scope, template tags may refer to
+anything in the parent scope.
 
 #### Template
 
@@ -866,15 +928,30 @@ I like <a href="http://derbyjs.com/">turtles</a>.
 
 ### Bindings
 
-Model-view binding is a relatively recent approach to adding dyanmic interaction to a page. Its use of declarative syntax dramatically lowers the amount of repetative, error-prone DOM manipulation code in an application. With Derby's bindings system, it should rarely be neccessary to write any DOM code at all.
+Model-view binding is a relatively recent approach to adding dynamic
+interaction to a page. Its use of declarative syntax dramatically lowers the
+amount of repetative, error-prone DOM manipulation code in an application. With
+Derby's bindings system, it should rarely be neccessary to write any DOM code
+at all.
 
-Derby templates declare bindings by using single curly braces instead of double curly braces. If a left curly brace (`{`) character is desired in HTML output, use the HTML entity `&#123;`.
+Derby templates declare bindings by using single curly braces instead of double
+curly braces. If a left curly brace (`{`) character is desired in HTML output,
+use the HTML entity `&#123;`.
 
-Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for elements that change upon user interaction---such as form inputs---Derby will update the model automatically as their values change.
+Bound template tags output their values in the initally rendered HTML just like
+unbound tags. In addition, they create bindings that update the view
+immediately whenever the model changes. If bindings are used for elements that
+change upon user interaction---such as form inputs---Derby will update the
+model automatically as their values change.
 
-Any template tag may be live bound, except for within an `id` attribute. The id must be set at render time and not change until the element is re-rendered, since it is used to figure out which element to update.
+Any template tag may be live bound, except for within an `id` attribute. The id
+must be set at render time and not change until the element is re-rendered,
+since it is used to figure out which element to update.
 
-Bindings only work for data in the model. Context data is passed in at render time, and it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model, since the path may be defined later.
+Bindings only work for data in the model. Context data is passed in at render
+time, and it doesn't change dynamically. If a binding tag uses a name not in
+the context object or the model at render time, it is still bound to the model,
+since the path may be defined later.
 
 #### Template
 
