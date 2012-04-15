@@ -576,7 +576,7 @@ Throughout these docs, the output of templates is shown indented and on multiple
 
 ### Variables
 
-Variables insert a value from the context or model with a given name. If the name isn't found, nothing will be inserted. Values are HTML escaped by default. Triple braces may be used to insert a value without escaping.
+Variables insert a value from the context or model with a given name. If the name isn't found, nothing will be inserted. Values are HTML escaped by default. The `unescaped` keyword may be used to insert a value without escaping.
 
 #### Template
 
@@ -585,7 +585,7 @@ Variables insert a value from the context or model with a given name. If the nam
   <p>{{"{{"}}name}}
   <p>{{"{{"}}age}}
   <p>{{"{{"}}location}}
-  <p>{{"{{"}}{location}}}
+  <p>{{"{{"}}unescaped location}}
 {% endhighlight %}
 
 #### Context
