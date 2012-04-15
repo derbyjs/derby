@@ -110,7 +110,8 @@ headers:
 
 # Derby
 
-<p class="promo">MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.</p>
+<p class="promo">MVC framework making it easy to write realtime, collaborative
+applications that run in both Node.js and browsers.</p>
 
 <h3 class="javascript">hello.js</h3>
 {% highlight javascript %}
@@ -187,11 +188,11 @@ Derby includes a powerful data synchronization engine called
 [Racer](http://racerjs.com/). While it works differently, Racer is to Derby
 somewhat like ActiveRecord is to Rails. Racer automatically syncs data between
 browsers, servers, and a database. Models subscribe to changes on specific
-objects, enabling granular control of data propagation without defining
-channels. Racer supports offline usage and conflict resolution out of the box,
-which greatly simplifies writing multi-user applications. Derby makes it simple
-to write applications that load as fast as a search engine, are as interactive
-as a document editor, and work offline.
+objects and queries, enabling granular control of data propagation without
+defining channels. Racer supports offline usage and conflict resolution out of
+the box, which greatly simplifies writing multi-user applications. Derby makes
+it simple to write applications that load as fast as a search engine, are as
+interactive as a document editor, and work offline.
 
 ## Features
 
@@ -204,7 +205,7 @@ as a document editor, and work offline.
   bindings between the view and model. When model data change, the view updates
   the properties, text, or HTML neccessary to reflect the new data. When the
   user interacts with the page---such as editing the value of a text
-  input---the model data are updated.
+  input---the model data updates.
 
 * **Client and server routing:** The same routes produce a single-page browser
   app and an [Express](http://expressjs.com/) server app. Links render
@@ -216,8 +217,11 @@ as a document editor, and work offline.
   [Socket.IO](http://socket.io/).
 
 * **Customizable persistence:** Apps function fully with in-memory, dynamic
-  models. After the design crystallizes and the logic is written, automatic
-  persistence of data to one or more databases is simple to add.
+  models by default. Apps can also use the
+  [racer-db-mongo](https://github.com/codeparty/racer-db-mongo) plugin to add
+  MongoDB support with no change to the application code. Any changes to data
+  made within the app are automatically persisted. Adding support for other
+  databases is simple.
 
 * **Conflict resolution:** The server detects conflicts, enabling clients to
   respond instantly and work offline. Multiple powerful techniques for conflict
@@ -427,9 +431,10 @@ Apps are created in the file that defines the app's controller code. They are
 then associated with a server by requiring the app within the server file.
 
 > ### `app = `derby.createApp` ( module )`
-> 
-> **module:** Derby uses the module object to create an app. The app's name is taken from its filename, and Derby exports a number of methods on the app.
-> 
+>
+> **module:** Derby uses the module object to create an app. The app's name is
+> taken from its filename, and Derby exports a number of methods on the app.
+>
 > **app:** Returns an app object, which is equivalent to `module.exports`.
 
 The app's filename is used to determine the name of the app. App names are used
@@ -473,7 +478,10 @@ dynamic content.
 > 
 > **root:** The root path that contains the "views" and "styles" directories.
 > 
-> **staticPages:** Returns a staticPages object, which has a render method. (While unused, static is a [reserved JavaScript keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words), and it cannot be a variable name.)
+> **staticPages:** Returns a staticPages object, which has a render method.
+> (While unused, static is a [reserved JavaScript
+> keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words),
+> and it cannot be a variable name.)
 
 The staticPages object keeps a reference to the directory root and provides a
 `staticPages.render()` method. It is intended for use in server-only Express
@@ -1542,7 +1550,9 @@ To perform these algorithms, Racer stores a journal of all transactions. When ne
 
 ## Creating stores
 
-The default server produced by the Derby project generator will create a store asoociated with an app. Derby will then use that store to create models when invoking app routes.
+The default server produced by the Derby project generator will create a store
+associated with an app. Derby will then use that store to create models when
+invoking app routes.A
 
 > ### `store = `app.createStore` ( options )`
 > ### `store = `derby.createStore` ( apps..., options )`
