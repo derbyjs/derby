@@ -8,7 +8,7 @@
     "racer-db-mongo": "*",
     "express": ">=2 <3",
     "connect-gzip": ">=0.1.5",
-    "connect-session-mongo": "git://github.com/bnoguchi/connect-session-mongo.git"
+    "connect-mongo": ">=0.1.9"
   },
   "private": true,
   "devDependencies": {

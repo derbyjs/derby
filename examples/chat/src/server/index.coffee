@@ -3,7 +3,7 @@ express = require 'express'
 derby = require 'derby'
 gzip = require 'connect-gzip'
 chat = require '../chat'
-MongoStore = require 'connect-session-mongo'
+MongoStore = require('connect-mongo')(express)
 
 
 ## SERVER CONFIGURATION ##
