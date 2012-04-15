@@ -1543,6 +1543,151 @@ Models provide a method to create globablly unique ids. These can be used as par
 >
 > **guid:** Returns a globally unique identifier that can be used for model operations
 
+### Queries
+
+Models have access to a rich, chainable query interface. Queries enable a more
+versatile approach than Paths (see above) to subscribe to a group of data. For
+example, with paths, it is not possible to specify a subscription to all users
+who are older than 25. Queries enable subscribing to a group of documents that
+satisfy some set of conditions.
+
+> ### model.query` (namespace)`
+>
+> **namespace:** The namespace containing the docs you want to query.
+
+The `model.query` method returns a `Query` instance that can be used to build
+up any number of queries on documents in `namespace`. For, example, suppose you
+have documents at the following paths:
+
+- 'users.1':  `{id: '1', name: 'Lars'}`
+- 'users.2':  `{id: '2', name: 'Gnarls'}`
+- 'groups.1': `{id: '3', name: 'Evil Global Corp'}`
+
+Then `model.query('users')` will return a `Query` that has the ability to
+find the docs at 'users.1' and/or 'users.2'. Such a `Query` would never find
+the doc at 'groups.1', which has a namespace of 'groups'.
+
+After generating a `Query` instance with `model.query(namespace)`, the query
+instance can begin to add conditions and options via a set of chainable methods.
+
+{% highlight javascript %}
+var query = model.query('users').where('name').equals('Lars');
+{% endhighlight %}
+{% highlight coffeescript %}
+query = model.query 'users', where: {name: 'Lars'}
+{% endhighlight %}
+
+This will generate a query that finds any documents under the 'users' namespace
+whose 'name' property is equal to 'Lars'. In our example data set of size 3
+above, it would find `{id: '1', name: 'Lars'}`.
+
+Here are examples using the other query methods:
+
+{% highlight javascript %}
+model.query('users')                          // Search users
+  .where('name').equals('Gnarls')             // With name 'Gnarls'
+  .where('gender').notEquals('female')        // With gender != 'female'
+  .where('age').gt(21).lte(30)                // With 21 < age <=30
+  .where('numFriends').gte(100).lt(200)       // With 100 <= numFriends < 200
+  .where('tags').contains(['super', 'derby']) // With tags that include both 'super' and 'derby'
+  .where('shoe').within(['nike', 'adidas'])   // With shoe as either 'nike' or 'adidas'
+  .skip(10).limit(5)                          // Pagination ftw!
+{% endhighlight %}
+{% highlight coffeescript %}
+model.query 'users',
+  where:
+    name: 'Gnarls'                 # With name 'Gnarls'
+    gender: {notEquals: 'female'}  # With gender != female
+    age:                           # With 21 < age <= 30
+      gt: 21
+      lte: 30
+    numFriends:                    # With 100 <= numFriends < 200
+      gte: 100
+      lt: 200
+    tags:
+      contains: ['super', 'derby'] # With tags that include both 'super' and 'derby'
+    shoe:
+      within: ['nike', 'adidas']   # With shoe as either 'nike' or 'adidas'
+  skip: 10                         # Pagination ftw!
+  limit: 5
+{% endhighlight %}
+
+Notice how we can chain query descriptors together to build up our query.
+
+If you happen to know the `id` of the document you want to find, then you can
+use the query method, `byKey`. So for example,
+
+{% highlight javascript %}
+model.query('users').byKey('1');
+{% endhighlight %}
+{% highlight coffeescript %}
+model.query 'users', byKey: '1'
+{% endhighlight %}
+
+This will find the single document `{id: '1', name: 'Lars'}`.
+
+Queries also support pagination. If we want the 11th to 15th users older than
+21, then we could write that as:
+
+{% highlight javascript %}
+model.query('users').where('age').gt(21).skip(10).limit(5);
+{% endhighlight %}
+{% highlight coffeescript %}
+model.query 'users',
+  where:
+    age:
+      gt: 21
+  skip: 10
+  limit: 5
+{% endhighlight %}
+
+Queries can limit what properties of a document it wants to include or exclude:
+
+{% highlight javascript %}
+// This will find documents but strip out all properties except 'id',
+// 'name', and 'age' before passing the results back to the application.
+model.query('users').where('age').gte(30).only('id', 'name', 'age');
+
+// This will find documents and strip our the given property 'name' before
+// passing the results back to the application.
+model.query('users').where('age').gte(30).except('name');
+{% endhighlight %}
+{% highlight coffeescript %}
+# This will find documents but strip out all properties except 'id',
+# 'name', and 'age' before passing the results back to the application.
+model.query 'users',
+  where:
+    age:
+      gte: 30
+  only: ['id', 'name', 'age']
+
+# This will find documents and strip our the given property 'name' before
+# passing the results back to the application.
+model.query 'users',
+  where:
+    age:
+      gte: 30
+  except: 'name'
+{% endhighlight %}
+
+Queries can also sort the results it gets:
+
+{% highlight javascript %}
+// This will sort the results first in age-ascending, name-descending order
+model.query('users').where('age').gte(25).sort('age', 'asc', 'name','desc');
+{% endhighlight %}
+{% highlight coffeescript %}
+# This will sort the results first in age-ascending, name-descending order
+model.query 'users'
+  where:
+    age:
+      gte: 25
+  sort: ['age', 'asc', 'name', 'desc']
+{% endhighlight %}
+
+Queries at the moment can only be used for subscribing to and fetching new data but in the
+future will also be available to filter data that is already loaded into the model.
+
 ### Subscription
 
 The `model.subscribe` method populates a model with data from its associated store and declares that this data should be kept up to date as it changes. It is possible to define subscriptions in terms of path patterns or queries.
