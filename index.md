@@ -1549,7 +1549,7 @@ Models provide a method to create globablly unique ids. These can be used as par
 
 ### Queries
 
-Models have access to a rich, chainable query interface. Queries enable a more
+Models have access to an expressive, chainable query API. Queries enable a more
 versatile approach than Paths (see above) to subscribe to a set of data. For
 example, with paths, it is not possible to specify a subscription to all users
 who are older than 25. Queries enable subscribing to a set of documents that
@@ -1778,10 +1778,6 @@ In addition to `subscribe`, models have a `fetch` method with the same format. L
 > **callback:** Called after a fetch succeeds and the data is set in the model or upon an error
 
 The fetch callback has the same arguments as subscribe's: `callback(err, scopedModels...)`
-
-### Queries
-
-Queries provide an expressive API for specifying subscriptions and getting data asynchronously. More info coming soon.
 
 ### Scoped models
 
