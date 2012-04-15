@@ -1060,7 +1060,7 @@ page.render
 
 Literal values or variable values can be passed to components. These component attributes are available through "macro" template tags, which have triple curly braces. Macro template tags only reference component attribute names, and regular template tags (with one or two curly braces) only reference names from the model or context object. It is possible to use macro template tags to conditionally render any HTML content or other template tags. 
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <h1><app:greeting message="Hello" to="{_user.name}"></h1>
 
@@ -1070,11 +1070,11 @@ Literal values or variable values can be passed to components. These component a
   {{{else}}}
     {{{message}}}!
   {{{/}}}
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 produces the same output as:
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <h1>
     {#if _user.name}
@@ -1083,11 +1083,11 @@ produces the same output as:
       Hello!
     {/}
   </h1>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 By default, all components are void HTML elements. This means that they must only have an opening tag and no closing tag, just like the `<img>` and `<br>` elements. A component can be defined as nonvoid, which means that it must have both a starting and a closing tag. Nonvoid components have access to a special `content` macro that makes it possible to pass HTML content to the component. For example:
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   Welcome!
   <app:fancyButton>
@@ -1098,17 +1098,17 @@ By default, all components are void HTML elements. This means that they must onl
   <button class="fancy">
     {{{content}}}
   </button>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 produces the same output as:
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   Welcome!
   <button class="fancy">
     <b>Click me {{#if isUrgent}}now!{{/}}</b>
   </button>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Relative model paths and aliases
 
