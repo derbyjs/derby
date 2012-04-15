@@ -1066,7 +1066,7 @@ Literal values or variable values can be passed to components. These component a
 
 <greeting:>
   {{"{{"}}{#if to}}}
-    {{"{{"}}{message}}}, {{{to}}}!
+    {{"{{"}}{message}}}, {{"{{"}}{to}}}!
   {{"{{"}}{else}}}
     {{"{{"}}{message}}}!
   {{"{{"}}{/}}}
@@ -1091,7 +1091,7 @@ By default, all components are void HTML elements. This means that they must onl
 <Body:>
   Welcome!
   <app:fancyButton>
-    <b>Click me {{"{{"}}#if isUrgent}}now!{{/}}</b>
+    <b>Click me {{"{{"}}#if isUrgent}}now!{{"{{"}}/}}</b>
   </app:fancyButton>
 
 <fancyButton: nonvoid>
@@ -1106,7 +1106,7 @@ produces the same output as:
 <Body:>
   Welcome!
   <button class="fancy">
-    <b>Click me {{"{{"}}#if isUrgent}}now!{{/}}</b>
+    <b>Click me {{"{{"}}#if isUrgent}}now!{{"{{"}}/}}</b>
   </button>
 {% endhighlight %}
 
