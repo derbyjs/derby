@@ -1588,31 +1588,53 @@ above, it would find `{id: '1', name: 'Lars'}`.
 Here are examples using the other query methods:
 
 {% highlight javascript %}
-model.query('users')                          // Search users
-  .where('name').equals('Gnarls')             // With name 'Gnarls'
-  .where('gender').notEquals('female')        // With gender != 'female'
-  .where('age').gt(21).lte(30)                // With 21 < age <=30
-  .where('numFriends').gte(100).lt(200)       // With 100 <= numFriends < 200
-  .where('tags').contains(['super', 'derby']) // With tags that include both 'super' and 'derby'
-  .where('shoe').within(['nike', 'adidas'])   // With shoe as either 'nike' or 'adidas'
-  .skip(10).limit(5)                          // Pagination ftw!
+// Search users
+model.query('users')
+  // With name 'Gnarls'
+  .where('name').equals('Gnarls')
+  // With gender != 'female'
+  .where('gender').notEquals('female')
+  // With 21 < age <=30
+  .where('age').gt(21).lte(30)
+  // With 100 <= numFriends < 200
+  .where('numFriends').gte(100).lt(200)
+  // With tags that include both 'super' and 'derby'
+  .where('tags').contains(['super', 'derby'])
+  // With shoe as either 'nike' or 'adidas'
+  .where('shoe').within(['nike', 'adidas'])
+  // Pagination ftw!
+  .skip(10).limit(5)
 {% endhighlight %}
 {% highlight coffeescript %}
 model.query 'users',
   where:
-    name: 'Gnarls'                 # With name 'Gnarls'
-    gender: {notEquals: 'female'}  # With gender != female
-    age:                           # With 21 < age <= 30
+
+    # With name 'Gnarls'
+    name: 'Gnarls'
+
+    # With gender != female
+    gender: {notEquals: 'female'}
+
+    # With 21 < age <= 30
+    age:
       gt: 21
       lte: 30
-    numFriends:                    # With 100 <= numFriends < 200
+
+    # With 100 <= numFriends < 200
+    numFriends:
       gte: 100
       lt: 200
+
+    # With tags that include both 'super' and 'derby'
     tags:
-      contains: ['super', 'derby'] # With tags that include both 'super' and 'derby'
+      contains: ['super', 'derby']
+
+    # With shoe as either 'nike' or 'adidas'
     shoe:
-      within: ['nike', 'adidas']   # With shoe as either 'nike' or 'adidas'
-  skip: 10                         # Pagination ftw!
+      within: ['nike', 'adidas']   
+
+  # Pagination ftw!
+  skip: 10
   limit: 5
 {% endhighlight %}
 
