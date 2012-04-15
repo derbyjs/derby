@@ -1588,7 +1588,7 @@ above, it would find `{id: '1', name: 'Lars'}`.
 Here are examples using the other query methods:
 
 {% highlight javascript %}
-// Search users
+// Find users
 model.query('users')
   // With name 'Gnarls'
   .where('name').equals('Gnarls')
@@ -1606,6 +1606,7 @@ model.query('users')
   .skip(10).limit(5)
 {% endhighlight %}
 {% highlight coffeescript %}
+# Find users
 model.query 'users',
   where:
 
@@ -1670,8 +1671,8 @@ model.query 'users',
 Queries can limit what properties of a document it wants to include or exclude:
 
 {% highlight javascript %}
-// This will find documents but strip out all properties except 'id',
-// 'name', and 'age' before passing the results back to the app.
+// This will find documents but strip out all properties except
+// 'id', 'name', and 'age' before passing the results back to the app.
 model.query('users').where('age').gte(30).only('id', 'name', 'age');
 
 // This will find documents and strip our the given property 'name'
@@ -1679,8 +1680,8 @@ model.query('users').where('age').gte(30).only('id', 'name', 'age');
 model.query('users').where('age').gte(30).except('name');
 {% endhighlight %}
 {% highlight coffeescript %}
-# This will find documents but strip out all properties except 'id',
-# 'name', and 'age' before passing the results back to the app.
+# This will find documents but strip out all properties except
+# 'id', 'name', and 'age' before passing the results back to the app.
 model.query 'users',
   where:
     age:
@@ -1700,10 +1701,12 @@ Queries can also sort the results it gets:
 
 {% highlight javascript %}
 // This will sort the results in age-ascending, name-descending order
-model.query('users').where('age').gte(25).sort('age', 'asc', 'name','desc');
+model.query('users')
+  .where('age').gte(25)
+  .sort('age', 'asc', 'name','desc');
 {% endhighlight %}
 {% highlight coffeescript %}
-# This will sort the results first in age-ascending, name-descending order
+# This will sort the results in age-ascending, name-descending order
 model.query 'users'
   where:
     age:
