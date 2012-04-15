@@ -92,6 +92,8 @@ headers:
     type: h2
   - text: Paths
     type: h3
+  - text: Queries
+    type: h3
   - text: Subscription
     type: h3
   - text: Scoped models
