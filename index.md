@@ -1344,10 +1344,12 @@ Derby includes compiled CSS at the top of each page. Inlining CSS almost always 
 
 Views are rendered in response to [routes](#routes). Most routes should be defined inside of an app so that they can be handled both on the client and the server. Views can also be rendered in response to server only routes.
 
-In each render method, `model`, `context`, and `status` arguments may be in any order or omitted.
+In each render method, `namespace`, `model`, `context`, and `status` arguments may be in any order or omitted.
 
-> ### page.render` ( [context], [status] )`
+> ### page.render` ( [namespace], [context], [status] )`
 > 
+> **namespace:** *(optional)* A namespace within which to render. Typically is the name of a page or type of page.
+>
 > **context:** *(optional)* Object specifying additional context objects to use in rendering templates.
 > 
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default. Has no effect when rendering on the client.
@@ -1356,26 +1358,30 @@ App routes supply a page object, which provides a consistent interface for rende
 
 The page's render function implicitly renders in the context of the app's model. An additional context object may be supplied for items that are only needed at render time.
 
-> ### app.render` ( res, model, [context], [status] )`
+> ### app.render` ( res, model, [namespace], [context], [status] )`
 > 
 > **res:** Response object passed to the Express routing callback
 > 
 > **model:** A Derby model object used for rendering. The contents of the model will be serialized and initialized into the same state in the browser once the page loads.
 > 
+> **namespace:** *(optional)* A namespace within which to render. Typically is the name of a page or type of page.
+>
 > **context:** *(optional)* Additional context objects to use in rendering templates.
 > 
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
 
 Apps may also be rendered within server only Express routes. In this case, it is neccessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
 
-> ### staticPages.render` ( name, res, [model], [context], [status] )`
+> ### staticPages.render` ( name, res, [model], [namespace], [context], [status] )`
 > 
 > **name:** Name of the view and style files to render
 > 
 > **res:** Response object passed to the Express routing callback
 > 
 > **model:** *(optional)* A Derby model object. A model object may be used for rendering, but it will not be serialized and included with a static page. Static pages don't have an associated app, and they don't include scripts by default.
-> 
+>
+> **namespace:** *(optional)* A namespace within which to render. Typically is the name of a page or type of page.
+>
 > **context:** *(optional)* Additional context objects to use in rendering templates.
 > 
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
