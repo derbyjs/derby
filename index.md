@@ -1719,9 +1719,14 @@ future will also be available to filter data that is already loaded into the mod
 
 ### Subscription
 
-The `model.subscribe` method populates a model with data from its associated store and declares that this data should be kept up to date as it changes. It is possible to define subscriptions in terms of path patterns or queries.
+The `model.subscribe` method populates a model with data from its associated
+store and declares that this data should be kept up to date as it changes. It
+is possible to define subscriptions in terms of path patterns or queries.
 
-Typically, subscriptions are set up in response to routes before rendering a page. However, the subscribe method may be called in any context on the server or in the browser. All subscriptions established before rendering the page on the server will be re-established once the page loads in the browser.
+Typically, subscriptions are set up in response to routes before rendering a
+page. However, the subscribe method may be called in any context on the server
+or in the browser. All subscriptions established before rendering the page on
+the server will be re-established once the page loads in the browser.
 
 > ### model.subscribe` ( targets..., [callback] )`
 >
@@ -1729,9 +1734,15 @@ Typically, subscriptions are set up in response to routes before rendering a pag
 >
 > **callback:** *(optional)* Called after subscription succeeds and the data is set in the model or upon an error
 
-The subscribe callback takes the arguments `callback(err, scopedModels...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'disconnected'` if Socket.IO is not currently connected. The remaining arguments are [scoped models](#scoped_models) that correspond to each subscribe target's path respectively.
+The subscribe callback takes the arguments `callback(err, scopedModels...)`. If
+the transaction succeeds, `err` is `null`. Otherwise, it is a string with an
+error message. This message is `'disconnected'` if Socket.IO is not currently
+connected. The remaining arguments are [scoped models](#scoped_models) that
+correspond to each subscribe target's path respectively.
 
-If a model is already subscribed to a target, calling subscribe again for the same target will have no effect. If all targets are already subscribed, the callback will be invoked immediately.
+If a model is already subscribed to a target, calling subscribe again for the
+same target will have no effect. If all targets are already subscribed, the
+callback will be invoked immediately.
 
 > ### model.unsubscribe` ( [targets...], [callback] )`
 >
@@ -1739,24 +1750,36 @@ If a model is already subscribed to a target, calling subscribe again for the sa
 >
 > **callback:** *(optional)* Called after unsubscription succeeds or upon an error
 
-The unsubscribe callback takes the argument `callback(err)`. Like subscribe, `err` is `null` when unsubscribe succeeds, and it is `'disconnected'` if Socket.IO is not currently connected.
+The unsubscribe callback takes the argument `callback(err)`. Like subscribe,
+`err` is `null` when unsubscribe succeeds, and it is `'disconnected'` if
+Socket.IO is not currently connected.
 
-Calling unsubscribe with no specified targets removes all subscriptions for a model. Unsubscribe removes the subscriptions, but it does not remove any data from the model.
+Calling unsubscribe with no specified targets removes all subscriptions for a
+model. Unsubscribe removes the subscriptions, but it does not remove any data
+from the model.
 
-Path patterns are specified as strings that correspond to model paths. A path pattern subscribe to the entire object, including all of its sub-paths. For example, subscribing to `rooms.lobby` subscribes to all data set under that path, such as `rooms.lobby.name` or `rooms.lobby.items.3.location`.
+Path patterns are specified as strings that correspond to model paths. A path
+pattern subscribes to the entire object, including all of its sub-paths. For
+example, subscribing to `rooms.lobby` subscribes to all data set under that
+path, such as `rooms.lobby.name` or `rooms.lobby.items.3.location`.
 
-It is also possible to use an asterisk as a wildcard character in place of a path segment. For example, `rooms.*.playerCount` subscribes a model to the playerCount for all rooms but no other properties. The scoped model passed to a subscribe callback is scoped to the segments up to the first wildcard character. For this example, the model would be scoped to `rooms`. More complex subscriptions may be specified via [queries](#queries).
+It is also possible to use an asterisk as a wildcard character in place of a
+path segment. For example, `rooms.*.playerCount` subscribes a model to the
+playerCount for all rooms but no other properties. The scoped model passed to a
+subscribe callback is scoped to the segments up to the first wildcard
+character. For this example, the model would be scoped to `rooms`. More complex
+subscriptions may be specified via [queries](#queries).
 
 {% highlight javascript %}
 var roomName = 'lobby'
-model.subscribe('rooms.' + roomName, (err, room) {
+model.subscribe('rooms.' + roomName, function (err, room) {
   // Logs: 'rooms.lobby'
-  console.log(room.path())
+  console.log(room.path());
   // A reference is frequently created from a parameterized
   // path pattern for use later. Refs may be created directly
   // from a scoped model
-  model.ref('_room', room)
-})
+  model.ref('_room', room);
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 roomName = 'lobby'
@@ -1769,7 +1792,11 @@ model.subscribe "rooms.#{roomName}", (err, room) ->
   model.ref '_room', room
 {% endhighlight %}
 
-In addition to `subscribe`, models have a `fetch` method with the same format. Like subscribe, fetch populates a model with data from a store based on path patterns and queries. However, fetch only retrieves the data once, and it does not establish any ongoing subscriptions. Fetch may be used for any data that need not be updated in realtime and avoids use of the PubSub system.
+In addition to `subscribe`, models have a `fetch` method with the same format.
+Like subscribe, fetch populates a model with data from a store based on path
+patterns and queries. However, fetch only retrieves the data once, and it does
+not establish any ongoing subscriptions. Fetch may be used for any data that
+need not be updated in realtime and avoids use of the PubSub system.
 
 > ### model.fetch` ( targets..., callback )`
 >
@@ -1781,7 +1808,9 @@ The fetch callback has the same arguments as subscribe's: `callback(err, scopedM
 
 ### Scoped models
 
-Scoped models provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
+Scoped models provide a more convenient way to interact with commonly used
+paths. They support the same methods, and they provide the path argument to
+accessors, mutators, and event subscribers.
 
 > ### `scoped = `model.at` ( path, [absolute] )`
 >
