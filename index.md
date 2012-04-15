@@ -183,39 +183,101 @@ server.listen 3000
 
 # Introduction
 
-Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/). While it works differently, Racer is to Derby somewhat like ActiveRecord is to Rails. Racer automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
+Derby includes a powerful data synchronization engine called
+[Racer](http://racerjs.com/). While it works differently, Racer is to Derby
+somewhat like ActiveRecord is to Rails. Racer automatically syncs data between
+browsers, servers, and a database. Models subscribe to changes on specific
+objects, enabling granular control of data propagation without defining
+channels. Racer supports offline usage and conflict resolution out of the box,
+which greatly simplifies writing multi-user applications. Derby makes it simple
+to write applications that load as fast as a search engine, are as interactive
+as a document editor, and work offline.
 
 ## Features
 
-* **HTML templates:** [Handlebars](http://handlebarsjs.com/)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
+* **HTML templates:** [Handlebars](http://handlebarsjs.com/)-like templates are
+  rendered into HTML on both the server and client. Because they render on the
+  server, pages display immediately---even before any scripts are downloaded.
+  Templates are mostly just HTML, so designers can understand and modify them.
 
-* **View bindings:** In addition to HTML rendering, templates specify live bindings between the view and model. When model data change, the view updates the properties, text, or HTML neccessary to reflect the new data. When the user interacts with the page---such as editing the value of a text input---the model data are updated.
+* **View bindings:** In addition to HTML rendering, templates specify live
+  bindings between the view and model. When model data change, the view updates
+  the properties, text, or HTML neccessary to reflect the new data. When the
+  user interacts with the page---such as editing the value of a text
+  input---the model data are updated.
 
-* **Client and server routing:** The same routes produce a single-page browser app and an [Express](http://expressjs.com/) server app. Links render instantly with push/pop state changes in modern browsers, while server rendering provides access to search engines and browsers without JavaScript.
+* **Client and server routing:** The same routes produce a single-page browser
+  app and an [Express](http://expressjs.com/) server app. Links render
+  instantly with push/pop state changes in modern browsers, while server
+  rendering provides access to search engines and browsers without JavaScript.
 
-* **Model syncing:** Model changes are automatically sychronized with the server and all clients subscribed to the same data over [Socket.IO](http://socket.io/).
+* **Model syncing:** Model changes are automatically sychronized with the
+  server and all clients subscribed to the same data over
+  [Socket.IO](http://socket.io/).
 
-* **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, automatic persistence of data to one or more databases is simple to add.
+* **Customizable persistence:** Apps function fully with in-memory, dynamic
+  models. After the design crystallizes and the logic is written, automatic
+  persistence of data to one or more databases is simple to add.
 
-* **Conflict resolution:** The server detects conflicts, enabling clients to respond instantly and work offline. Multiple powerful techniques for conflict resolution are included.
+* **Conflict resolution:** The server detects conflicts, enabling clients to
+  respond instantly and work offline. Multiple powerful techniques for conflict
+  resolution are included.
 
 ## Why not use Rails and Backbone?
 
-Derby represents a new breed of application frameworks, which we believe will replace currently popular libraries like [Rails](http://rubyonrails.org/) and [Backbone](http://documentcloud.github.com/backbone/).
+Derby represents a new breed of application frameworks, which we believe will
+replace currently popular libraries like [Rails](http://rubyonrails.org/) and
+[Backbone](http://documentcloud.github.com/backbone/).
 
-Adding dynamic features to apps written with [Rails](http://rubyonrails.org/), [Django](https://www.djangoproject.com/), and other server-side frameworks tends to produce a tangled mess. Server code renders various initial states while jQuery selectors and callbacks desperately attempt to make sense of the DOM and user events. Adding new features typically involves changing both server and client code, often in different languages.
+Adding dynamic features to apps written with [Rails](http://rubyonrails.org/),
+[Django](https://www.djangoproject.com/), and other server-side frameworks
+tends to produce a tangled mess. Server code renders various initial states
+while jQuery selectors and callbacks desperately attempt to make sense of the
+DOM and user events. Adding new features typically involves changing both
+server and client code, often in different languages.
 
-Many developers now include a client MVC framework like [Backbone](http://documentcloud.github.com/backbone/) to better structure client code. A few have started to use declarative model-view binding libraries, such as [Knockout](http://knockoutjs.com/) and [Angular](http://angularjs.org/), to reduce boilerplate DOM manipulation and event bindings. These are great concepts, and adding some structure certainly improves client code. However, they still lead to duplicating rendering code and manually synchronizing changes in increasingly complex server and client code bases. Not only that, each of these pieces must be manually wired together and packaged for the client.
+Many developers now include a client MVC framework like
+[Backbone](http://documentcloud.github.com/backbone/) to better structure
+client code. A few have started to use declarative model-view binding
+libraries, such as [Knockout](http://knockoutjs.com/) and
+[Angular](http://angularjs.org/), to reduce boilerplate DOM manipulation and
+event bindings. These are great concepts, and adding some structure certainly
+improves client code. However, they still lead to duplicating rendering code
+and manually synchronizing changes in increasingly complex server and client
+code bases. Not only that, each of these pieces must be manually wired together
+and packaged for the client.
 
-Derby radically simplifies this process of adding dynamic interactions. It runs the same code in servers and browsers, and it syncs data automatically. Derby takes care of template rendering, packaging, and model-view bindings out of the box. Since all features are designed to work together, no code duplication and glue code are needed. Derby equips developers for a future when all data in all apps are realtime.
+Derby radically simplifies this process of adding dynamic interactions. It runs
+the same code in servers and browsers, and it syncs data automatically. Derby
+takes care of template rendering, packaging, and model-view bindings out of the
+box. Since all features are designed to work together, no code duplication and
+glue code are needed. Derby equips developers for a future when all data in all
+apps are realtime.
 
 ## Flexibility without the glue code
 
-Derby eliminates the tedium of wiring together a server, server templating engine, CSS compiler, script packager, minifier, client MVC framework, client JavaScript library, client templating and/or bindings engine, client history library, realtime transport, ORM, and database. It elminates the complexity of keeping state synchronized among models and views, clients and servers, multiple windows, multiple users, and models and databases.
+Derby eliminates the tedium of wiring together a server, server templating
+engine, CSS compiler, script packager, minifier, client MVC framework, client
+JavaScript library, client templating and/or bindings engine, client history
+library, realtime transport, ORM, and database. It elminates the complexity of
+keeping state synchronized among models and views, clients and servers,
+multiple windows, multiple users, and models and databases.
 
-At the same time, it plays well with others. Derby is built on top of popular libraries, including [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [Socket.IO](http://socket.io/), [Browserify](https://github.com/substack/node-browserify), [Stylus](http://learnboost.github.com/stylus/docs/iteration.html), [UglifyJS](https://github.com/mishoo/UglifyJS), [MongoDB](http://www.mongodb.org/), and soon other popular databases and datastores. These libraries can also be used directly. The data synchronization layer, [Racer](http://racerjs.com/), can be used separately. Other client libraries, such as jQuery, and other Node.js modules from npm work just as well along with Derby.
+At the same time, it plays well with others. Derby is built on top of popular
+libraries, including [Node.js](http://nodejs.org/),
+[Express](http://expressjs.com/), [Socket.IO](http://socket.io/),
+[Browserify](https://github.com/substack/node-browserify),
+[Stylus](http://learnboost.github.com/stylus/docs/iteration.html),
+[UglifyJS](https://github.com/mishoo/UglifyJS),
+[MongoDB](http://www.mongodb.org/), and soon other popular databases and
+datastores. These libraries can also be used directly. The data synchronization
+layer, [Racer](http://racerjs.com/), can be used separately. Other client
+libraries, such as jQuery, and other Node.js modules from npm work just as well
+along with Derby.
 
-When following the default file structure, templates, styles, and scripts are automatically packaged and included in the appropriate pages. In addition, Derby can be used via a dynamic API, as seen in the simple example above.
+When following the default file structure, templates, styles, and scripts are
+automatically packaged and included in the appropriate pages. In addition,
+Derby can be used via a dynamic API, as seen in the simple example above.
 
 ## Demos
 
@@ -225,13 +287,17 @@ When following the default file structure, templates, styles, and scripts are au
 
 [http://chat.derbyjs.com/lobby](http://chat.derbyjs.com/lobby)
 
-A simple chat demo. Note that as you edit your name, it updates in realtime. Name changes also show up in the page title and other rooms. Check out the source in the examples directory to see how these bindings are created automatically.
+A simple chat demo. Note that as you edit your name, it updates in realtime.
+Name changes also show up in the page title and other rooms. Check out the
+source in the examples directory to see how these bindings are created
+automatically.
 
 ### Todos
 
 [http://todos.derbyjs.com/derby](http://todos.derbyjs.com/derby)
 
-The requisite MVC demo, but collaborative and realtime! Todo items are contenteditable fields with support for bold and italics.
+The requisite MVC demo, but collaborative and realtime! Todo items are
+contenteditable fields with support for bold and italics.
 
 ### Sink
 
@@ -241,13 +307,19 @@ A kitchen-sink style example with random features. Largely used for testing.
 
 ## Disclaimer
 
-Derby and Racer are alpha software. While Derby should work well enough for prototyping and weekend projects, it is still undergoing major development. APIs are subject to change.
+Derby and Racer are alpha software. While Derby should work well enough for
+prototyping and weekend projects, it is still undergoing major development.
+APIs are subject to change.
 
-If you have feedback, ideas, or suggestions, please email the [Google Group](http://groups.google.com/group/derbyjs). If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps).
+If you have feedback, ideas, or suggestions, please email the [Google
+Group](http://groups.google.com/group/derbyjs). If you are interested in
+contributing, please reach out to [Brian](https://github.com/bnoguchi) and
+[Nate](https://github.com/nateps).
 
 # Getting started
 
-As with all Node.js modules, first install [Node](http://nodejs.org/#download). The Node installer will also install [npm](http://npmjs.org/).
+As with all Node.js modules, first install [Node](http://nodejs.org/#download).
+The Node installer will also install [npm](http://npmjs.org/).
 
 Install Derby with:
 
@@ -268,7 +340,8 @@ or, for [CoffeeScript](http://jashkenas.github.com/coffee-script/):
     $ cd first-project
     $ make
 
-`make` will execute the coffee compiler with the watch option, so leave it running in a separate terminal.
+`make` will execute the coffee compiler with the watch option, so leave it
+running in a separate terminal.
 
 Then, simply fire up Node:
 
@@ -301,27 +374,57 @@ The default file structure is:
     README.md
     server.js
 
-In [CoffeeScript](http://jashkenas.github.com/coffee-script/) projects, the `lib` directory is generated by the compiler, and script files should be edited in the `src` directory instead. The project generator will create a `Makefile` for compiling CoffeeScript projects.
+In [CoffeeScript](http://jashkenas.github.com/coffee-script/) projects, the
+`lib` directory is generated by the compiler, and script files should be edited
+in the `src` directory instead. The project generator will create a `Makefile`
+for compiling CoffeeScript projects.
 
-Derby uses a filename based convention similar to Node.js modules. A file named `demo.js` and a directory `demo` containing a file `index.js` both define an app with the name "demo." The same applies for styles and views, which can either be `demo.styl` or `demo\index.styl` and `demo.html` or `demo\index.html`.
+Derby uses a filename based convention similar to Node.js modules. A file named
+`demo.js` and a directory `demo` containing a file `index.js` both define an
+app with the name "demo." The same applies for styles and views, which can
+either be `demo.styl` or `demo\index.styl` and `demo.html` or
+`demo\index.html`.
 
-Apps are associated with their respective styles and views by filename only. Derby automatically includes them when rendering. Both support importing, so shared styles and templates may be defined in separate files.
+Apps are associated with their respective styles and views by filename only.
+Derby automatically includes them when rendering. Both support importing, so
+shared styles and templates may be defined in separate files.
 
-Static files can be placed in the public folder. The default Express server created by the Derby project generator sets a cache time of one year for all static files. Therefore, new file versions must be given new filenames. Derby compiles scripts for the browser into the `public\gen` folder by default. Each script's filename is generated from a hash, so that it can be cached long term.
+Static files can be placed in the public folder. The default Express server
+created by the Derby project generator sets a cache time of one year for all
+static files. Therefore, new file versions must be given new filenames. Derby
+compiles scripts for the browser into the `public\gen` folder by default. Each
+script's filename is generated from a hash, so that it can be cached long
+term.
 
 # Apps and static pages
 
-Derby projects support one or more single-page apps as well as static pages. Apps have a full MVC structure, including a model provided by [Racer](http://racerjs.com/), a template and styles based view, and controller code with application logic and routes (which map URLs to actions). Static pages consist of only templates and styles.
+Derby projects support one or more single-page apps as well as static pages.
+Apps have a full MVC structure, including a model provided by
+[Racer](http://racerjs.com/), a template and styles based view, and controller
+code with application logic and routes (which map URLs to actions). Static
+pages consist of only templates and styles.
 
-On the server, apps provide a router middleware for Express. One or more app routers as well as server only routes can be included in the same Express server. 
+On the server, apps provide a router middleware for Express. One or more app
+routers as well as server only routes can be included in the same Express
+server.
 
-Derby packages up all of an app's templates, routes, and application code when rendering. Regardless of which app URL the browser requests initially, the app is able to render any other state within the same application client-side. If the app cannot handle a URL, it will fall through and request from the server. Errors thrown during route handling also cause requests to fall through to the server.
+Derby packages up all of an app's templates, routes, and application code when
+rendering. Regardless of which app URL the browser requests initially, the app
+is able to render any other state within the same application client-side. If
+the app cannot handle a URL, it will fall through and request from the server.
+Errors thrown during route handling also cause requests to fall through to the
+server.
 
-Derby works great with only a single app, though developers may wish to create separate apps if only certain sets of pages are likely to be used together. For example, a project might have a separate desktop web app and mobile web app. Or a project might have an internal administration panel app and a public content app.
+Derby works great with only a single app, though developers may wish to create
+separate apps if only certain sets of pages are likely to be used together. For
+example, a project might have a separate desktop web app and mobile web app. Or
+a project might have an internal administration panel app and a public content
+app.
 
 ## Creating apps
 
-Apps are created in the file that defines the app's controller code. They are then associated with a server by requiring the app within the server file.
+Apps are created in the file that defines the app's controller code. They are
+then associated with a server by requiring the app within the server file.
 
 > ### `app = `derby.createApp` ( module )`
 > 
@@ -329,23 +432,42 @@ Apps are created in the file that defines the app's controller code. They are th
 > 
 > **app:** Returns an app object, which is equivalent to `module.exports`.
 
-The app's filename is used to determine the name of the app. App names are used to automatically associate an app with template and styles files of the same name.
+The app's filename is used to determine the name of the app. App names are used
+to automatically associate an app with template and styles files of the same
+name.
 
-The app name is also used as the name of the global variable that the application exposes in the browser. Therefore, app names should be valid JavaScript variable names, starting with a letter and containing only alphanumeric characters and underscores.
+The app name is also used as the name of the global variable that the
+application exposes in the browser. Therefore, app names should be valid
+JavaScript variable names, starting with a letter and containing only
+alphanumeric characters and underscores.
 
-The `createApp` method adds a number of methods to the app. On both the client and the server, these are `view`, `render`, `ready`, `get`, `post`, `put`, `del`, and `hook`. On the server only, Derby also adds `router`, `createStore`, and `session`.
+The `createApp` method adds a number of methods to the app. On both the client
+and the server, these are `view`, `render`, `ready`, `get`, `post`, `put`,
+`del`, and `hook`. On the server only, Derby also adds `router`, `createStore`,
+and `session`.
 
 ## Connecting servers to apps
 
-The Derby project generator outputs an Express server for a typical setup. Because Derby shares most code between server and client, Derby server files can be very minimal.
+The Derby project generator outputs an Express server for a typical setup.
+Because Derby shares most code between server and client, Derby server files
+can be very minimal.
 
-The server includes an app with a standard Node.js require statement. It can then use the `app.router()` method to create a router middleware for Express that handles all of the app's routes.
+The server includes an app with a standard Node.js require statement. It can
+then use the `app.router()` method to create a router middleware for Express
+that handles all of the app's routes.
 
-The server also needs to create a `store` object, which is what sets up Socket.IO, creates models, coordinates data syncing, and interfaces with databases. A store associated with one app can be created using that app's `app.createStore()` method. If a store is shared among multiple apps, it should be created using the `derby.createStore()` method, which is passed each of the apps as aruguments. See [Creating stores](#creating_stores).
+The server also needs to create a `store` object, which is what sets up
+Socket.IO, creates models, coordinates data syncing, and interfaces with
+databases. A store associated with one app can be created using that app's
+`app.createStore()` method. If a store is shared among multiple apps, it should
+be created using the `derby.createStore()` method, which is passed each of the
+apps as aruguments. See [Creating stores](#creating_stores).
 
 ## Static pages
 
-Derby can also render static pages from templates and styles not associated with an app. This is useful for error pages and other pages that don't need dynamic content.
+Derby can also render static pages from templates and styles not associated
+with an app. This is useful for error pages and other pages that don't need
+dynamic content.
 
 > ### `staticPages = `derby.createStatic` ( root )`
 > 
@@ -353,7 +475,9 @@ Derby can also render static pages from templates and styles not associated with
 > 
 > **staticPages:** Returns a staticPages object, which has a render method. (While unused, static is a [reserved JavaScript keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words), and it cannot be a variable name.)
 
-The staticPages object keeps a reference to the directory root and provides a `staticPages.render()` method. It is intended for use in server-only Express routes. See [Rendering](#rendering).
+The staticPages object keeps a reference to the directory root and provides a
+`staticPages.render()` method. It is intended for use in server-only Express
+routes. See [Rendering](#rendering).
 
 # Views
 
@@ -361,12 +485,15 @@ Typically, writing Derby apps begins with HTML templates. These templates define
 
 ## Creating templates
 
-Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Pages usually define at least a `Title` and `Body` template. Templates may be created programatically via the `view.make()` method:
+Derby compiles a collection of HTML-based templates into a page based on a
+number of pre-defined names. Pages usually define at least a `Title` and `Body`
+template. Templates may be created programatically via the `view.make()`
+method:
 
 {% highlight javascript %}
-var view = require('derby').createApp(module).view
+var view = require('derby').createApp(module).view;
 
-view.make('Body', '<h1>Howdy!</h1>')
+view.make('Body', '<h1>Howdy!</h1>');
 {% endhighlight %}
 
 {% highlight coffeescript %}
@@ -375,9 +502,15 @@ view.make('Body', '<h1>Howdy!</h1>')
 view.make 'Body', '<h1>Howdy!</h1>'
 {% endhighlight %}
 
-However, they are generally placed in template files within the `views` directory. Each app automatically looks for a template file that shares the same name and calls view.make for each template. Templates placed in a template file are also automatically bundled with the application scripts so that they can be rendered on the client.
+However, they are generally placed in template files within the `views`
+directory. Each app automatically looks for a template file that shares the
+same name and calls view.make for each template. Templates placed in a template
+file are also automatically bundled with the application scripts so that they
+can be rendered on the client.A
 
-Template files are also HTML, but each template is wrapped in a tag that names the template. This name must end in a colon to differentiate it from a normal HTML tag. These tags need not be closed. For example:
+Template files are also HTML, but each template is wrapped in a tag that names
+the template. This name must end in a colon to differentiate it from a normal
+HTML tag. These tags need not be closed. For example:
 
 {% highlight html %}
 <Title:>
@@ -389,15 +522,28 @@ Template files are also HTML, but each template is wrapped in a tag that names t
 
 ### Pre-defined templates
 
-By default, Derby includes templates with the names `Doctype`, `Root`, `Charset`, `Title`, `Head`, `Header`, `Body`, `Footer`, `Scripts`, and `Tail` when it renders a page on the server.
+By default, Derby includes templates with the names `Doctype`, `Root`,
+`Charset`, `Title`, `Head`, `Header`, `Body`, `Footer`, `Scripts`, and `Tail`
+when it renders a page on the server.
 
-In the browser, only the `Root`, `Title`, `Header`, `Body`, and `Footer` templates are re-rendered. Thus, model-view bindings may only be defined within these templates.
+In the browser, only the `Root`, `Title`, `Header`, `Body`, and `Footer`
+templates are re-rendered. Thus, model-view bindings may only be defined within
+these templates.
 
-Some of pre-defined templates have names that also are the names of HTML tags, but only `Title` wraps the template inside of a `<title>` tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>` by default.
+Some of pre-defined templates have names that also are the names of HTML tags,
+but only `Title` wraps the template inside of a `<title>` tag. Derby does *not*
+include any non-required HTML elements, such as `<html>`, `<head>`, and
+`<body>` by default.
 
-By convention, Pre-defined template names are capitalized to indicate that the page renderer will include them automatically. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
+By convention, Pre-defined template names are capitalized to indicate that the
+page renderer will include them automatically. However, since HTML tags are
+case-insensitive, Derby template names are also case insensitive. Thus, `Body`,
+`BODY`, and `body` all represent the same template.
 
-Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times. Also to optimize load time, it sends pages a number of chunks:
+Note that template files don't contain boilerplate HTML, such as doctype
+definitions, stylesheets, and script includes. By default, Derby includes these
+items in an order optimized for fast load times. Also to optimize load time, it
+sends pages a number of chunks:
 
 #### First chunk
 
