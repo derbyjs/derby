@@ -1550,9 +1550,9 @@ Models provide a method to create globablly unique ids. These can be used as par
 ### Queries
 
 Models have access to a rich, chainable query interface. Queries enable a more
-versatile approach than Paths (see above) to subscribe to a group of data. For
+versatile approach than Paths (see above) to subscribe to a set of data. For
 example, with paths, it is not possible to specify a subscription to all users
-who are older than 25. Queries enable subscribing to a group of documents that
+who are older than 25. Queries enable subscribing to a set of documents that
 satisfy some set of conditions.
 
 > ### model.query` (namespace)`
@@ -1671,24 +1671,24 @@ Queries can limit what properties of a document it wants to include or exclude:
 
 {% highlight javascript %}
 // This will find documents but strip out all properties except 'id',
-// 'name', and 'age' before passing the results back to the application.
+// 'name', and 'age' before passing the results back to the app.
 model.query('users').where('age').gte(30).only('id', 'name', 'age');
 
-// This will find documents and strip our the given property 'name' before
-// passing the results back to the application.
+// This will find documents and strip our the given property 'name'
+// before passing the results back to the application.
 model.query('users').where('age').gte(30).except('name');
 {% endhighlight %}
 {% highlight coffeescript %}
 # This will find documents but strip out all properties except 'id',
-# 'name', and 'age' before passing the results back to the application.
+# 'name', and 'age' before passing the results back to the app.
 model.query 'users',
   where:
     age:
       gte: 30
   only: ['id', 'name', 'age']
 
-# This will find documents and strip our the given property 'name' before
-# passing the results back to the application.
+# This will find documents and strip our the given property 'name'
+# before passing the results back to the application.
 model.query 'users',
   where:
     age:
@@ -1699,7 +1699,7 @@ model.query 'users',
 Queries can also sort the results it gets:
 
 {% highlight javascript %}
-// This will sort the results first in age-ascending, name-descending order
+// This will sort the results in age-ascending, name-descending order
 model.query('users').where('age').gte(25).sort('age', 'asc', 'name','desc');
 {% endhighlight %}
 {% highlight coffeescript %}
