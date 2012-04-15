@@ -92,6 +92,8 @@ headers:
     type: h2
   - text: Paths
     type: h3
+  - text: Queries
+    type: h3
   - text: Subscription
     type: h3
   - text: Scoped models
@@ -108,7 +110,8 @@ headers:
 
 # Derby
 
-<p class="promo">MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.</p>
+<p class="promo">MVC framework making it easy to write realtime, collaborative
+applications that run in both Node.js and browsers.</p>
 
 <h3 class="javascript">hello.js</h3>
 {% highlight javascript %}
@@ -181,39 +184,104 @@ server.listen 3000
 
 # Introduction
 
-Derby includes a powerful data synchronization engine called [Racer](http://racerjs.com/). While it works differently, Racer is to Derby somewhat like ActiveRecord is to Rails. Racer automatically syncs data between browsers, servers, and a database. Models subscribe to changes on specific objects, enabling granular control of data propagation without defining channels. Racer supports offline usage and conflict resolution out of the box, which greatly simplifies writing multi-user applications. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
+Derby includes a powerful data synchronization engine called
+[Racer](http://racerjs.com/). While it works differently, Racer is to Derby
+somewhat like ActiveRecord is to Rails. Racer automatically syncs data between
+browsers, servers, and a database. Models subscribe to changes on specific
+objects and queries, enabling granular control of data propagation without
+defining channels. Racer supports offline usage and conflict resolution out of
+the box, which greatly simplifies writing multi-user applications. Derby makes
+it simple to write applications that load as fast as a search engine, are as
+interactive as a document editor, and work offline.
 
 ## Features
 
-* **HTML templates:** [Handlebars](http://handlebarsjs.com/)-like templates are rendered into HTML on both the server and client. Because they render on the server, pages display immediately---even before any scripts are downloaded. Templates are mostly just HTML, so designers can understand and modify them.
+* **HTML templates:** [Handlebars](http://handlebarsjs.com/)-like templates are
+  rendered into HTML on both the server and client. Because they render on the
+  server, pages display immediately---even before any scripts are downloaded.
+  Templates are mostly just HTML, so designers can understand and modify them.
 
-* **View bindings:** In addition to HTML rendering, templates specify live bindings between the view and model. When model data change, the view updates the properties, text, or HTML neccessary to reflect the new data. When the user interacts with the page---such as editing the value of a text input---the model data are updated.
+* **View bindings:** In addition to HTML rendering, templates specify live
+  bindings between the view and model. When model data change, the view updates
+  the properties, text, or HTML neccessary to reflect the new data. When the
+  user interacts with the page---such as editing the value of a text
+  input---the model data updates.
 
-* **Client and server routing:** The same routes produce a single-page browser app and an [Express](http://expressjs.com/) server app. Links render instantly with push/pop state changes in modern browsers, while server rendering provides access to search engines and browsers without JavaScript.
+* **Client and server routing:** The same routes produce a single-page browser
+  app and an [Express](http://expressjs.com/) server app. Links render
+  instantly with push/pop state changes in modern browsers, while server
+  rendering provides access to search engines and browsers without JavaScript.
 
-* **Model syncing:** Model changes are automatically sychronized with the server and all clients subscribed to the same data over [Socket.IO](http://socket.io/).
+* **Model syncing:** Model changes are automatically sychronized with the
+  server and all clients subscribed to the same data over
+  [Socket.IO](http://socket.io/).
 
-* **Customizable persistence:** Apps function fully with in-memory, dynamic models. After the design crystallizes and the logic is written, automatic persistence of data to one or more databases is simple to add.
+* **Customizable persistence:** Apps function fully with in-memory, dynamic
+  models by default. Apps can also use the
+  [racer-db-mongo](https://github.com/codeparty/racer-db-mongo) plugin to add
+  MongoDB support with no change to the application code. Any changes to data
+  made within the app are automatically persisted. Adding support for other
+  databases is simple.
 
-* **Conflict resolution:** The server detects conflicts, enabling clients to respond instantly and work offline. Multiple powerful techniques for conflict resolution are included.
+* **Conflict resolution:** The server detects conflicts, enabling clients to
+  respond instantly and work offline. Multiple powerful techniques for conflict
+  resolution are included.
 
 ## Why not use Rails and Backbone?
 
-Derby represents a new breed of application frameworks, which we believe will replace currently popular libraries like [Rails](http://rubyonrails.org/) and [Backbone](http://documentcloud.github.com/backbone/).
+Derby represents a new breed of application frameworks, which we believe will
+replace currently popular libraries like [Rails](http://rubyonrails.org/) and
+[Backbone](http://documentcloud.github.com/backbone/).
 
-Adding dynamic features to apps written with [Rails](http://rubyonrails.org/), [Django](https://www.djangoproject.com/), and other server-side frameworks tends to produce a tangled mess. Server code renders various initial states while jQuery selectors and callbacks desperately attempt to make sense of the DOM and user events. Adding new features typically involves changing both server and client code, often in different languages.
+Adding dynamic features to apps written with [Rails](http://rubyonrails.org/),
+[Django](https://www.djangoproject.com/), and other server-side frameworks
+tends to produce a tangled mess. Server code renders various initial states
+while jQuery selectors and callbacks desperately attempt to make sense of the
+DOM and user events. Adding new features typically involves changing both
+server and client code, often in different languages.
 
-Many developers now include a client MVC framework like [Backbone](http://documentcloud.github.com/backbone/) to better structure client code. A few have started to use declarative model-view binding libraries, such as [Knockout](http://knockoutjs.com/) and [Angular](http://angularjs.org/), to reduce boilerplate DOM manipulation and event bindings. These are great concepts, and adding some structure certainly improves client code. However, they still lead to duplicating rendering code and manually synchronizing changes in increasingly complex server and client code bases. Not only that, each of these pieces must be manually wired together and packaged for the client.
+Many developers now include a client MVC framework like
+[Backbone](http://documentcloud.github.com/backbone/) to better structure
+client code. A few have started to use declarative model-view binding
+libraries, such as [Knockout](http://knockoutjs.com/) and
+[Angular](http://angularjs.org/), to reduce boilerplate DOM manipulation and
+event bindings. These are great concepts, and adding some structure certainly
+improves client code. However, they still lead to duplicating rendering code
+and manually synchronizing changes in increasingly complex server and client
+code bases. Not only that, each of these pieces must be manually wired together
+and packaged for the client.
 
-Derby radically simplifies this process of adding dynamic interactions. It runs the same code in servers and browsers, and it syncs data automatically. Derby takes care of template rendering, packaging, and model-view bindings out of the box. Since all features are designed to work together, no code duplication and glue code are needed. Derby equips developers for a future when all data in all apps are realtime.
+Derby radically simplifies this process of adding dynamic interactions. It runs
+the same code in servers and browsers, and it syncs data automatically. Derby
+takes care of template rendering, packaging, and model-view bindings out of the
+box. Since all features are designed to work together, no code duplication and
+glue code are needed. Derby equips developers for a future when all data in all
+apps are realtime.
 
 ## Flexibility without the glue code
 
-Derby eliminates the tedium of wiring together a server, server templating engine, CSS compiler, script packager, minifier, client MVC framework, client JavaScript library, client templating and/or bindings engine, client history library, realtime transport, ORM, and database. It elminates the complexity of keeping state synchronized among models and views, clients and servers, multiple windows, multiple users, and models and databases.
+Derby eliminates the tedium of wiring together a server, server templating
+engine, CSS compiler, script packager, minifier, client MVC framework, client
+JavaScript library, client templating and/or bindings engine, client history
+library, realtime transport, ORM, and database. It elminates the complexity of
+keeping state synchronized among models and views, clients and servers,
+multiple windows, multiple users, and models and databases.
 
-At the same time, it plays well with others. Derby is built on top of popular libraries, including [Node.js](http://nodejs.org/), [Express](http://expressjs.com/), [Socket.IO](http://socket.io/), [Browserify](https://github.com/substack/node-browserify), [Stylus](http://learnboost.github.com/stylus/docs/iteration.html), [UglifyJS](https://github.com/mishoo/UglifyJS), [MongoDB](http://www.mongodb.org/), and soon other popular databases and datastores. These libraries can also be used directly. The data synchronization layer, [Racer](http://racerjs.com/), can be used separately. Other client libraries, such as jQuery, and other Node.js modules from npm work just as well along with Derby.
+At the same time, it plays well with others. Derby is built on top of popular
+libraries, including [Node.js](http://nodejs.org/),
+[Express](http://expressjs.com/), [Socket.IO](http://socket.io/),
+[Browserify](https://github.com/substack/node-browserify),
+[Stylus](http://learnboost.github.com/stylus/docs/iteration.html),
+[UglifyJS](https://github.com/mishoo/UglifyJS),
+[MongoDB](http://www.mongodb.org/), and soon other popular databases and
+datastores. These libraries can also be used directly. The data synchronization
+layer, [Racer](http://racerjs.com/), can be used separately. Other client
+libraries, such as jQuery, and other Node.js modules from npm work just as well
+along with Derby.
 
-When following the default file structure, templates, styles, and scripts are automatically packaged and included in the appropriate pages. In addition, Derby can be used via a dynamic API, as seen in the simple example above.
+When following the default file structure, templates, styles, and scripts are
+automatically packaged and included in the appropriate pages. In addition,
+Derby can be used via a dynamic API, as seen in the simple example above.
 
 ## Demos
 
@@ -223,13 +291,17 @@ When following the default file structure, templates, styles, and scripts are au
 
 [http://chat.derbyjs.com/lobby](http://chat.derbyjs.com/lobby)
 
-A simple chat demo. Note that as you edit your name, it updates in realtime. Name changes also show up in the page title and other rooms. Check out the source in the examples directory to see how these bindings are created automatically.
+A simple chat demo. Note that as you edit your name, it updates in realtime.
+Name changes also show up in the page title and other rooms. Check out the
+source in the examples directory to see how these bindings are created
+automatically.
 
 ### Todos
 
 [http://todos.derbyjs.com/derby](http://todos.derbyjs.com/derby)
 
-The requisite MVC demo, but collaborative and realtime! Todo items are contenteditable fields with support for bold and italics.
+The requisite MVC demo, but collaborative and realtime! Todo items are
+contenteditable fields with support for bold and italics.
 
 ### Sink
 
@@ -239,13 +311,19 @@ A kitchen-sink style example with random features. Largely used for testing.
 
 ## Disclaimer
 
-Derby and Racer are alpha software. While Derby should work well enough for prototyping and weekend projects, it is still undergoing major development. APIs are subject to change.
+Derby and Racer are alpha software. While Derby should work well enough for
+prototyping and weekend projects, it is still undergoing major development.
+APIs are subject to change.
 
-If you have feedback, ideas, or suggestions, please email the [Google Group](http://groups.google.com/group/derbyjs). If you are interested in contributing, please reach out to [Brian](https://github.com/bnoguchi) and [Nate](https://github.com/nateps).
+If you have feedback, ideas, or suggestions, please email the [Google
+Group](http://groups.google.com/group/derbyjs). If you are interested in
+contributing, please reach out to [Brian](https://github.com/bnoguchi) and
+[Nate](https://github.com/nateps).
 
 # Getting started
 
-As with all Node.js modules, first install [Node](http://nodejs.org/#download). The Node installer will also install [npm](http://npmjs.org/).
+As with all Node.js modules, first install [Node](http://nodejs.org/#download).
+The Node installer will also install [npm](http://npmjs.org/).
 
 Install Derby with:
 
@@ -266,7 +344,8 @@ or, for [CoffeeScript](http://jashkenas.github.com/coffee-script/):
     $ cd first-project
     $ make
 
-`make` will execute the coffee compiler with the watch option, so leave it running in a separate terminal.
+`make` will execute the coffee compiler with the watch option, so leave it
+running in a separate terminal.
 
 Then, simply fire up Node:
 
@@ -299,59 +378,114 @@ The default file structure is:
     README.md
     server.js
 
-In [CoffeeScript](http://jashkenas.github.com/coffee-script/) projects, the `lib` directory is generated by the compiler, and script files should be edited in the `src` directory instead. The project generator will create a `Makefile` for compiling CoffeeScript projects.
+In [CoffeeScript](http://jashkenas.github.com/coffee-script/) projects, the
+`lib` directory is generated by the compiler, and script files should be edited
+in the `src` directory instead. The project generator will create a `Makefile`
+for compiling CoffeeScript projects.
 
-Derby uses a filename based convention similar to Node.js modules. A file named `demo.js` and a directory `demo` containing a file `index.js` both define an app with the name "demo." The same applies for styles and views, which can either be `demo.styl` or `demo\index.styl` and `demo.html` or `demo\index.html`.
+Derby uses a filename based convention similar to Node.js modules. A file named
+`demo.js` and a directory `demo` containing a file `index.js` both define an
+app with the name "demo." The same applies for styles and views, which can
+either be `demo.styl` or `demo\index.styl` and `demo.html` or
+`demo\index.html`.
 
-Apps are associated with their respective styles and views by filename only. Derby automatically includes them when rendering. Both support importing, so shared styles and templates may be defined in separate files.
+Apps are associated with their respective styles and views by filename only.
+Derby automatically includes them when rendering. Both support importing, so
+shared styles and templates may be defined in separate files.
 
-Static files can be placed in the public folder. The default Express server created by the Derby project generator sets a cache time of one year for all static files. Therefore, new file versions must be given new filenames. Derby compiles scripts for the browser into the `public\gen` folder by default. Each script's filename is generated from a hash, so that it can be cached long term.
+Static files can be placed in the public folder. The default Express server
+created by the Derby project generator sets a cache time of one year for all
+static files. Therefore, new file versions must be given new filenames. Derby
+compiles scripts for the browser into the `public\gen` folder by default. Each
+script's filename is generated from a hash, so that it can be cached long
+term.
 
 # Apps and static pages
 
-Derby projects support one or more single-page apps as well as static pages. Apps have a full MVC structure, including a model provided by [Racer](http://racerjs.com/), a template and styles based view, and controller code with application logic and routes (which map URLs to actions). Static pages consist of only templates and styles.
+Derby projects support one or more single-page apps as well as static pages.
+Apps have a full MVC structure, including a model provided by
+[Racer](http://racerjs.com/), a template and styles based view, and controller
+code with application logic and routes (which map URLs to actions). Static
+pages consist of only templates and styles.
 
-On the server, apps provide a router middleware for Express. One or more app routers as well as server only routes can be included in the same Express server. 
+On the server, apps provide a router middleware for Express. One or more app
+routers as well as server only routes can be included in the same Express
+server.
 
-Derby packages up all of an app's templates, routes, and application code when rendering. Regardless of which app URL the browser requests initially, the app is able to render any other state within the same application client-side. If the app cannot handle a URL, it will fall through and request from the server. Errors thrown during route handling also cause requests to fall through to the server.
+Derby packages up all of an app's templates, routes, and application code when
+rendering. Regardless of which app URL the browser requests initially, the app
+is able to render any other state within the same application client-side. If
+the app cannot handle a URL, it will fall through and request from the server.
+Errors thrown during route handling also cause requests to fall through to the
+server.
 
-Derby works great with only a single app, though developers may wish to create separate apps if only certain sets of pages are likely to be used together. For example, a project might have a separate desktop web app and mobile web app. Or a project might have an internal administration panel app and a public content app.
+Derby works great with only a single app, though developers may wish to create
+separate apps if only certain sets of pages are likely to be used together. For
+example, a project might have a separate desktop web app and mobile web app. Or
+a project might have an internal administration panel app and a public content
+app.
 
 ## Creating apps
 
-Apps are created in the file that defines the app's controller code. They are then associated with a server by requiring the app within the server file.
+Apps are created in the file that defines the app's controller code. They are
+then associated with a server by requiring the app within the server file.
 
 > ### `app = `derby.createApp` ( module )`
-> 
-> **module:** Derby uses the module object to create an app. The app's name is taken from its filename, and Derby exports a number of methods on the app.
-> 
+>
+> **module:** Derby uses the module object to create an app. The app's name is
+> taken from its filename, and Derby exports a number of methods on the app.
+>
 > **app:** Returns an app object, which is equivalent to `module.exports`.
 
-The app's filename is used to determine the name of the app. App names are used to automatically associate an app with template and styles files of the same name.
+The app's filename is used to determine the name of the app. App names are used
+to automatically associate an app with template and styles files of the same
+name.
 
-The app name is also used as the name of the global variable that the application exposes in the browser. Therefore, app names should be valid JavaScript variable names, starting with a letter and containing only alphanumeric characters and underscores.
+The app name is also used as the name of the global variable that the
+application exposes in the browser. Therefore, app names should be valid
+JavaScript variable names, starting with a letter and containing only
+alphanumeric characters and underscores.
 
-The `createApp` method adds a number of methods to the app. On both the client and the server, these are `view`, `render`, `ready`, `get`, `post`, `put`, `del`, and `hook`. On the server only, Derby also adds `router`, `createStore`, and `session`.
+The `createApp` method adds a number of methods to the app. On both the client
+and the server, these are `view`, `render`, `ready`, `get`, `post`, `put`,
+`del`, and `hook`. On the server only, Derby also adds `router`, `createStore`,
+and `session`.
 
 ## Connecting servers to apps
 
-The Derby project generator outputs an Express server for a typical setup. Because Derby shares most code between server and client, Derby server files can be very minimal.
+The Derby project generator outputs an Express server for a typical setup.
+Because Derby shares most code between server and client, Derby server files
+can be very minimal.
 
-The server includes an app with a standard Node.js require statement. It can then use the `app.router()` method to create a router middleware for Express that handles all of the app's routes.
+The server includes an app with a standard Node.js require statement. It can
+then use the `app.router()` method to create a router middleware for Express
+that handles all of the app's routes.
 
-The server also needs to create a `store` object, which is what sets up Socket.IO, creates models, coordinates data syncing, and interfaces with databases. A store associated with one app can be created using that app's `app.createStore()` method. If a store is shared among multiple apps, it should be created using the `derby.createStore()` method, which is passed each of the apps as aruguments. See [Creating stores](#creating_stores).
+The server also needs to create a `store` object, which is what sets up
+Socket.IO, creates models, coordinates data syncing, and interfaces with
+databases. A store associated with one app can be created using that app's
+`app.createStore()` method. If a store is shared among multiple apps, it should
+be created using the `derby.createStore()` method, which is passed each of the
+apps as aruguments. See [Creating stores](#creating_stores).
 
 ## Static pages
 
-Derby can also render static pages from templates and styles not associated with an app. This is useful for error pages and other pages that don't need dynamic content.
+Derby can also render static pages from templates and styles not associated
+with an app. This is useful for error pages and other pages that don't need
+dynamic content.
 
 > ### `staticPages = `derby.createStatic` ( root )`
 > 
 > **root:** The root path that contains the "views" and "styles" directories.
 > 
-> **staticPages:** Returns a staticPages object, which has a render method. (While unused, static is a [reserved JavaScript keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words), and it cannot be a variable name.)
+> **staticPages:** Returns a staticPages object, which has a render method.
+> (While unused, static is a [reserved JavaScript
+> keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words),
+> and it cannot be a variable name.)
 
-The staticPages object keeps a reference to the directory root and provides a `staticPages.render()` method. It is intended for use in server-only Express routes. See [Rendering](#rendering).
+The staticPages object keeps a reference to the directory root and provides a
+`staticPages.render()` method. It is intended for use in server-only Express
+routes. See [Rendering](#rendering).
 
 # Views
 
@@ -359,12 +493,15 @@ Typically, writing Derby apps begins with HTML templates. These templates define
 
 ## Creating templates
 
-Derby compiles a collection of HTML-based templates into a page based on a number of pre-defined names. Pages usually define at least a `Title` and `Body` template. Templates may be created programatically via the `view.make()` method:
+Derby compiles a collection of HTML-based templates into a page based on a
+number of pre-defined names. Pages usually define at least a `Title` and `Body`
+template. Templates may be created programatically via the `view.make()`
+method:
 
 {% highlight javascript %}
-var view = require('derby').createApp(module).view
+var view = require('derby').createApp(module).view;
 
-view.make('Body', '<h1>Howdy!</h1>')
+view.make('Body', '<h1>Howdy!</h1>');
 {% endhighlight %}
 
 {% highlight coffeescript %}
@@ -373,9 +510,15 @@ view.make('Body', '<h1>Howdy!</h1>')
 view.make 'Body', '<h1>Howdy!</h1>'
 {% endhighlight %}
 
-However, they are generally placed in template files within the `views` directory. Each app automatically looks for a template file that shares the same name and calls view.make for each template. Templates placed in a template file are also automatically bundled with the application scripts so that they can be rendered on the client.
+However, they are generally placed in template files within the `views`
+directory. Each app automatically looks for a template file that shares the
+same name and calls view.make for each template. Templates placed in a template
+file are also automatically bundled with the application scripts so that they
+can be rendered on the client.A
 
-Template files are also HTML, but each template is wrapped in a tag that names the template. This name must end in a colon to differentiate it from a normal HTML tag. These tags need not be closed. For example:
+Template files are also HTML, but each template is wrapped in a tag that names
+the template. This name must end in a colon to differentiate it from a normal
+HTML tag. These tags need not be closed. For example:
 
 {% highlight html %}
 <Title:>
@@ -387,15 +530,28 @@ Template files are also HTML, but each template is wrapped in a tag that names t
 
 ### Pre-defined templates
 
-By default, Derby includes templates with the names `Doctype`, `Root`, `Charset`, `Title`, `Head`, `Header`, `Body`, `Footer`, `Scripts`, and `Tail` when it renders a page on the server.
+By default, Derby includes templates with the names `Doctype`, `Root`,
+`Charset`, `Title`, `Head`, `Header`, `Body`, `Footer`, `Scripts`, and `Tail`
+when it renders a page on the server.
 
-In the browser, only the `Root`, `Title`, `Header`, `Body`, and `Footer` templates are re-rendered. Thus, model-view bindings may only be defined within these templates.
+In the browser, only the `Root`, `Title`, `Header`, `Body`, and `Footer`
+templates are re-rendered. Thus, model-view bindings may only be defined within
+these templates.
 
-Some of pre-defined templates have names that also are the names of HTML tags, but only `Title` wraps the template inside of a `<title>` tag. Derby does *not* include any non-required HTML elements, such as `<html>`, `<head>`, and `<body>` by default.
+Some of pre-defined templates have names that also are the names of HTML tags,
+but only `Title` wraps the template inside of a `<title>` tag. Derby does *not*
+include any non-required HTML elements, such as `<html>`, `<head>`, and
+`<body>` by default.
 
-By convention, Pre-defined template names are capitalized to indicate that the page renderer will include them automatically. However, since HTML tags are case-insensitive, Derby template names are also case insensitive. Thus, `Body`, `BODY`, and `body` all represent the same template.
+By convention, Pre-defined template names are capitalized to indicate that the
+page renderer will include them automatically. However, since HTML tags are
+case-insensitive, Derby template names are also case insensitive. Thus, `Body`,
+`BODY`, and `body` all represent the same template.
 
-Note that template files don't contain boilerplate HTML, such as doctype definitions, stylesheets, and script includes. By default, Derby includes these items in an order optimized for fast load times. Also to optimize load time, it sends pages a number of chunks:
+Note that template files don't contain boilerplate HTML, such as doctype
+definitions, stylesheets, and script includes. By default, Derby includes these
+items in an order optimized for fast load times. Also to optimize load time, it
+sends pages a number of chunks:
 
 #### First chunk
 
@@ -420,7 +576,9 @@ Note that template files don't contain boilerplate HTML, such as doctype definit
 
 #### Fourth chunk
 
-13. JSON bundle of the model data, event bindings, and other data resulting from rendering the page. This bundle initializes the application once the external client script loads
+13. JSON bundle of the model data, event bindings, and other data resulting
+from rendering the page. This bundle initializes the application once the
+external client script loads.
 14. **`Tail:`** Optional location for additional scripts to be included at the very end of the page
 
 <style>
@@ -434,7 +592,10 @@ ol>li:before{content: counter(item) ". "; counter-increment: item}
 
 ### Importing templates
 
-Templates can be imported from another file for making multiple page apps and sharing templates among multiple pages. File paths are expessed relatively, similar to how Node.js modules are loaded. Like in Node.js modules, either `pageName.html` or `pageName/index.html` can be imported as `pageName`.
+Templates can be imported from another file for making multiple page apps and
+sharing templates among multiple pages. File paths are expessed relatively,
+similar to how Node.js modules are loaded. Like in Node.js modules, either
+`pageName.html` or `pageName/index.html` can be imported as `pageName`.
 
 {% highlight html %}
 <!-- all templates from "./home.html" with the namespace "home" -->
@@ -450,9 +611,14 @@ Templates can be imported from another file for making multiple page apps and sh
 <import: src="home" template="message" as="myMessage">
 {% endhighlight %}
 
-Templates defined in a parent namespace are inherited unless they are overridden by a template with the same name in the child namespace. Thus, it often makes sense to place common page elements in a main file that imports a number of other files and override the part of the page that is different.
+Templates defined in a parent namespace are inherited unless they are
+overridden by a template with the same name in the child namespace. Thus, it
+often makes sense to place common page elements in a main file that imports a
+number of other files and override the part of the page that is different.
 
-Template components are referenced relative to their current namespace. Namespaces are separated by colons, and a namespace can be passed to the `page.render()` method to render a specific page or application state.
+Template components are referenced relative to their current namespace.
+Namespaces are separated by colons, and a namespace can be passed to the
+`page.render()` method to render a specific page or application state.
 
 #### shared.html
 {% highlight html %}
@@ -499,9 +665,15 @@ page.render 'home',
 
 ## Template syntax
 
-Derby's template syntax is largely based on [Handlebars](http://handlebarsjs.com/), a popular logic-less templating language similar to [Mustache](http://mustache.github.com/mustache.5.html).
+Derby's template syntax is largely based on
+[Handlebars](http://handlebarsjs.com/), a popular logic-less templating
+language similar to [Mustache](http://mustache.github.com/mustache.5.html).
 
-If you use Sublime Text 2 or TextMate, you can use [our fork of the HTML5 bundle](https://github.com/codeparty/html5.tmbundle/downloads) to get proper syntax highlighting of Derby templates. You might want to also try our [Clean color theme](https://github.com/codeparty/clean-textmate/downloads), which highlights each type of template tag appropriately.
+If you use Sublime Text 2 or TextMate, you can use [our fork of the HTML5
+bundle](https://github.com/codeparty/html5.tmbundle/downloads) to get proper
+syntax highlighting of Derby templates. You might want to also try our [Clean
+color theme](https://github.com/codeparty/clean-textmate/downloads), which
+highlights each type of template tag appropriately.
 
 A simple Handlebars template:
 
@@ -526,11 +698,26 @@ Will produce the following:
     You have just won $10000!
     Well, $6000.0, after taxes.
 
-Logic-less templates better enforce separation of logic from presentation by making it impossible to embed logic within views. Instead of conditional statements and loops, logic-less templates use a restricted set of template tags. These tags are replaced with data passed in when the template is rendered. This data is often referred to as the "context."
+Logic-less templates better enforce separation of logic from presentation by
+making it impossible to embed logic within views. Instead of conditional
+statements and loops, logic-less templates use a restricted set of template
+tags. These tags are replaced with data passed in when the template is
+rendered. This data is often referred to as the "context."
 
-With Handlebars, application code generates a context object before rendering the view. It then passes that object along with the template at render time. Derby templates can be used this way as well. However, in addition to looking for objects in a context object, Derby assumes that the model is part of the context. Even better, Derby is able to automatically establish live bindings between the view and objects in the model. Derby slightly extends the Handlebars syntax in order to support these featueres.
+With Handlebars, application code generates a context object before rendering
+the view. It then passes that object along with the template at render time.
+Derby templates can be used this way as well. However, in addition to looking
+for objects in a context object, Derby assumes that the model is part of the
+context. Even better, Derby is able to automatically establish live bindings
+between the view and objects in the model. Derby slightly extends the
+Handlebars syntax in order to support these featueres.
 
-The other major difference between Handlebars and Derby templates is that Derby templates must be valid HTML first. Handlebars is language agnostic---it can be used to compile anything from HTML to source code to a document. However, Derby templates are first parsed as HTML so that the parser can understand how to bind data to the surrounding DOM objects. Template tags are only allowed within elements or text, within attribute values, and surrounding elements.
+The other major difference between Handlebars and Derby templates is that Derby
+templates must be valid HTML first. Handlebars is language agnostic---it can be
+used to compile anything from HTML to source code to a document. However, Derby
+templates are first parsed as HTML so that the parser can understand how to
+bind data to the surrounding DOM objects. Template tags are only allowed within
+elements or text, within attribute values, and surrounding elements.
 
 #### Invalid template tag placements
 {% highlight html %}
@@ -564,19 +751,41 @@ Let's go <b>{{"{{"}}activity}}</b>!
 
 ### Whitespace and HTML conformance
 
-Before parsing, all HTML comments, leading whitespace, and new lines are removed from templates. Whitespace at the end of lines is maintained, in case a space is desired in the HTML output. The contents of `<script>` and `<style>` tags are passed through literally.
+Before parsing, all HTML comments, leading whitespace, and new lines are
+removed from templates. Whitespace at the end of lines is maintained, in case a
+space is desired in the HTML output. The contents of `<script>` and `<style>`
+tags are passed through literally.
 
-Derby's HTML parser should be able to parse any valid HTML, including elements that don't require closing tags and unquoted attributes. However, it is recommended that you always include closing tags for elements like `<p>` and `<li>` that might not require a closing tag. The rules around how tags are automatically closed are complex, and there are certain cases where template sections may be included within an unexpected element. 
+Derby's HTML parser should be able to parse any valid HTML, including elements
+that don't require closing tags and unquoted attributes. However, it is
+recommended that you always include closing tags for elements like `<p>` and
+`<li>` that might not require a closing tag. The rules around how tags are
+automatically closed are complex, and there are certain cases where template
+sections may be included within an unexpected element.
 
-HTML attribute values only need to be quoted if they are the empty string or if they contain a space, equals sign, or greater than sign. Since Derby templates are parsed as HTML first, any of these characters within a template tag require an attribute to be escaped. Using quotes around all attribute values is recommended.
+HTML attribute values only need to be quoted if they are the empty string or if
+they contain a space, equals sign, or greater than sign. Since Derby templates
+are parsed as HTML first, any of these characters within a template tag require
+an attribute to be escaped. Using quotes around all attribute values is
+recommended.
 
-Because it understands the HTML context, Derby's HTML escaping is much more minimal than that of most templating libraries. You may be surprised to see unescaped `>` and `&` characters. These only need to be escaped in certain contexts, and Derby only escapes them when needed. If you are skeptical, an [HTML5 validator](http://html5.validator.nu/) will detect most escaping bugs.
+Because it understands the HTML context, Derby's HTML escaping is much more
+minimal than that of most templating libraries. You may be surprised to see
+unescaped `>` and `&` characters. These only need to be escaped in certain
+contexts, and Derby only escapes them when needed. If you are skeptical, an
+[HTML5 validator](http://html5.validator.nu/) will detect most escaping bugs.
 
-Throughout these docs, the output of templates is shown indented and on multiple lines for the sake of readability. However, Derby's renderer would not output any indentation or line breaks. In addition, output attribute values are quoted, but Derby only includes quotes around attribute values if they are needed.
+Throughout these docs, the output of templates is shown indented and on
+multiple lines for the sake of readability. However, Derby's renderer would not
+output any indentation or line breaks. In addition, output attribute values are
+quoted, but Derby only includes quotes around attribute values if they are
+needed.
 
 ### Variables
 
-Variables insert a value from the context or model with a given name. If the name isn't found, nothing will be inserted. Values are HTML escaped by default. The `unescaped` keyword may be used to insert a value without escaping.
+Variables insert a value from the context or model with a given name. If the
+name isn't found, nothing will be inserted. Values are HTML escaped by default.
+The `unescaped` keyword may be used to insert a value without escaping.
 
 #### Template
 
@@ -608,9 +817,15 @@ page.render name: 'Parker', location: '<b>500 ft</b> away'
 
 ### Sections
 
-Sections set the scope of the context for their contents. In the case of `if`, `unless`, `else if`, `else`, and `each`, they also cause their contents to be conditionally rendered. `with` is used to only set the scope and always render. In Handlebars, sections begin and end with the same block type, but Derby requires only an ending slash.
+Sections set the scope of the context for their contents. In the case of `if`,
+`unless`, `else if`, `else`, and `each`, they also cause their contents to be
+conditionally rendered. `with` is used to only set the scope and always render.
+In Handlebars, sections begin and end with the same block type, but Derby
+requires only an ending slash.
 
-As in Handlebars, falsey values include all falsey JavaScript values (`false`, `null`, `undefined`, `0`, `''`, and `NaN`) as well as empty arrays (`[]`). All other values are truthy.
+As in Handlebars, falsey values include all falsey JavaScript values (`false`,
+`null`, `undefined`, `0`, `''`, and `NaN`) as well as empty arrays (`[]`). All
+other values are truthy.
 
 #### Template
 
@@ -671,7 +886,10 @@ page.render
 <small>Copyright &copy; 1999 Party Like It's.</small>
 {% endhighlight %}
 
-Note how in the above example, the context becomes each array item inside of the `#each users` section. Similarly, sections set scope when reffering to the name of an object. In addition to the local scope, template tags may refer to anything in the parent scope.
+Note how in the above example, the context becomes each array item inside of
+the `#each users` section. Similarly, sections set scope when reffering to the
+name of an object. In addition to the local scope, template tags may refer to
+anything in the parent scope.
 
 #### Template
 
@@ -710,15 +928,30 @@ I like <a href="http://derbyjs.com/">turtles</a>.
 
 ### Bindings
 
-Model-view binding is a relatively recent approach to adding dyanmic interaction to a page. Its use of declarative syntax dramatically lowers the amount of repetative, error-prone DOM manipulation code in an application. With Derby's bindings system, it should rarely be neccessary to write any DOM code at all.
+Model-view binding is a relatively recent approach to adding dynamic
+interaction to a page. Its use of declarative syntax dramatically lowers the
+amount of repetative, error-prone DOM manipulation code in an application. With
+Derby's bindings system, it should rarely be neccessary to write any DOM code
+at all.
 
-Derby templates declare bindings by using single curly braces instead of double curly braces. If a left curly brace (`{`) character is desired in HTML output, use the HTML entity `&#123;`.
+Derby templates declare bindings by using single curly braces instead of double
+curly braces. If a left curly brace (`{`) character is desired in HTML output,
+use the HTML entity `&#123;`.
 
-Bound template tags output their values in the initally rendered HTML just like unbound tags. In addition, they create bindings that update the view immediately whenever the model changes. If bindings are used for elements that change upon user interaction---such as form inputs---Derby will update the model automatically as their values change.
+Bound template tags output their values in the initally rendered HTML just like
+unbound tags. In addition, they create bindings that update the view
+immediately whenever the model changes. If bindings are used for elements that
+change upon user interaction---such as form inputs---Derby will update the
+model automatically as their values change.
 
-Any template tag may be live bound, except for within an `id` attribute. The id must be set at render time and not change until the element is re-rendered, since it is used to figure out which element to update.
+Any template tag may be live bound, except for within an `id` attribute. The id
+must be set at render time and not change until the element is re-rendered,
+since it is used to figure out which element to update.
 
-Bindings only work for data in the model. Context data is passed in at render time, and it doesn't change dynamically. If a binding tag uses a name not in the context object or the model at render time, it is still bound to the model, since the path may be defined later.
+Bindings only work for data in the model. Context data is passed in at render
+time, and it doesn't change dynamically. If a binding tag uses a name not in
+the context object or the model at render time, it is still bound to the model,
+since the path may be defined later.
 
 #### Template
 
@@ -1394,7 +1627,9 @@ To perform these algorithms, Racer stores a journal of all transactions. When ne
 
 ## Creating stores
 
-The default server produced by the Derby project generator will create a store asoociated with an app. Derby will then use that store to create models when invoking app routes.
+The default server produced by the Derby project generator will create a store
+associated with an app. Derby will then use that store to create models when
+invoking app routes.A
 
 > ### `store = `app.createStore` ( options )`
 > ### `store = `derby.createStore` ( apps..., options )`
@@ -1545,11 +1780,186 @@ Models provide a method to create globablly unique ids. These can be used as par
 >
 > **guid:** Returns a globally unique identifier that can be used for model operations
 
+### Queries
+
+Models have access to an expressive, chainable query API. Queries enable a more
+versatile approach than Paths (see above) to subscribe to a set of data. For
+example, with paths, it is not possible to specify a subscription to all users
+who are older than 25. Queries enable subscribing to a set of documents that
+satisfy some set of conditions.
+
+> ### model.query` (namespace)`
+>
+> **namespace:** The namespace containing the docs you want to query.
+
+The `model.query` method returns a `Query` instance that can be used to build
+up any number of queries on documents in `namespace`. For, example, suppose you
+have documents at the following paths:
+
+- 'users.1':  `{id: '1', name: 'Lars'}`
+- 'users.2':  `{id: '2', name: 'Gnarls'}`
+- 'groups.1': `{id: '3', name: 'Evil Global Corp'}`
+
+Then `model.query('users')` will return a `Query` that has the ability to
+find the docs at 'users.1' and/or 'users.2'. Such a `Query` would never find
+the doc at 'groups.1', which has a namespace of 'groups'.
+
+After generating a `Query` instance with `model.query(namespace)`, the query
+instance can begin to add conditions and options via a set of chainable methods.
+
+{% highlight javascript %}
+var query = model.query('users').where('name').equals('Lars');
+{% endhighlight %}
+{% highlight coffeescript %}
+query = model.query 'users', where: {name: 'Lars'}
+{% endhighlight %}
+
+This will generate a query that finds any documents under the 'users' namespace
+whose 'name' property is equal to 'Lars'. In our example data set of size 3
+above, it would find `{id: '1', name: 'Lars'}`.
+
+Here are examples using the other query methods:
+
+{% highlight javascript %}
+// Find users
+model.query('users')
+  // With name 'Gnarls'
+  .where('name').equals('Gnarls')
+  // With gender != 'female'
+  .where('gender').notEquals('female')
+  // With 21 < age <=30
+  .where('age').gt(21).lte(30)
+  // With 100 <= numFriends < 200
+  .where('numFriends').gte(100).lt(200)
+  // With tags that include both 'super' and 'derby'
+  .where('tags').contains(['super', 'derby'])
+  // With shoe as either 'nike' or 'adidas'
+  .where('shoe').within(['nike', 'adidas'])
+  // Pagination ftw!
+  .skip(10).limit(5)
+{% endhighlight %}
+{% highlight coffeescript %}
+# Find users
+model.query 'users',
+  where:
+
+    # With name 'Gnarls'
+    name: 'Gnarls'
+
+    # With gender != female
+    gender: {notEquals: 'female'}
+
+    # With 21 < age <= 30
+    age:
+      gt: 21
+      lte: 30
+
+    # With 100 <= numFriends < 200
+    numFriends:
+      gte: 100
+      lt: 200
+
+    # With tags that include both 'super' and 'derby'
+    tags:
+      contains: ['super', 'derby']
+
+    # With shoe as either 'nike' or 'adidas'
+    shoe:
+      within: ['nike', 'adidas']   
+
+  # Pagination ftw!
+  skip: 10
+  limit: 5
+{% endhighlight %}
+
+Notice how we can chain query descriptors together to build up our query.
+
+If you happen to know the `id` of the document you want to find, then you can
+use the query method, `byKey`. So for example,
+
+{% highlight javascript %}
+model.query('users').byKey('1');
+{% endhighlight %}
+{% highlight coffeescript %}
+model.query 'users', byKey: '1'
+{% endhighlight %}
+
+This will find the single document `{id: '1', name: 'Lars'}`.
+
+Queries also support pagination. If we want the 11th to 15th users older than
+21, then we could write that as:
+
+{% highlight javascript %}
+model.query('users').where('age').gt(21).skip(10).limit(5);
+{% endhighlight %}
+{% highlight coffeescript %}
+model.query 'users',
+  where:
+    age:
+      gt: 21
+  skip: 10
+  limit: 5
+{% endhighlight %}
+
+Queries can limit what properties of a document it wants to include or exclude:
+
+{% highlight javascript %}
+// This will find documents but strip out all properties except
+// 'id', 'name', and 'age' before passing the results back to the app.
+model.query('users').where('age').gte(30).only('id', 'name', 'age');
+
+// This will find documents and strip our the given property 'name'
+// before passing the results back to the application.
+model.query('users').where('age').gte(30).except('name');
+{% endhighlight %}
+{% highlight coffeescript %}
+# This will find documents but strip out all properties except
+# 'id', 'name', and 'age' before passing the results back to the app.
+model.query 'users',
+  where:
+    age:
+      gte: 30
+  only: ['id', 'name', 'age']
+
+# This will find documents and strip our the given property 'name'
+# before passing the results back to the application.
+model.query 'users',
+  where:
+    age:
+      gte: 30
+  except: 'name'
+{% endhighlight %}
+
+Queries can also sort the results it gets:
+
+{% highlight javascript %}
+// This will sort the results in age-ascending, name-descending order
+model.query('users')
+  .where('age').gte(25)
+  .sort('age', 'asc', 'name','desc');
+{% endhighlight %}
+{% highlight coffeescript %}
+# This will sort the results in age-ascending, name-descending order
+model.query 'users'
+  where:
+    age:
+      gte: 25
+  sort: ['age', 'asc', 'name', 'desc']
+{% endhighlight %}
+
+Queries at the moment can only be used for subscribing to and fetching new data but in the
+future will also be available to filter data that is already loaded into the model.
+
 ### Subscription
 
-The `model.subscribe` method populates a model with data from its associated store and declares that this data should be kept up to date as it changes. It is possible to define subscriptions in terms of path patterns or queries.
+The `model.subscribe` method populates a model with data from its associated
+store and declares that this data should be kept up to date as it changes. It
+is possible to define subscriptions in terms of path patterns or queries.
 
-Typically, subscriptions are set up in response to routes before rendering a page. However, the subscribe method may be called in any context on the server or in the browser. All subscriptions established before rendering the page on the server will be re-established once the page loads in the browser.
+Typically, subscriptions are set up in response to routes before rendering a
+page. However, the subscribe method may be called in any context on the server
+or in the browser. All subscriptions established before rendering the page on
+the server will be re-established once the page loads in the browser.
 
 > ### model.subscribe` ( targets..., [callback] )`
 >
@@ -1557,9 +1967,15 @@ Typically, subscriptions are set up in response to routes before rendering a pag
 >
 > **callback:** *(optional)* Called after subscription succeeds and the data is set in the model or upon an error
 
-The subscribe callback takes the arguments `callback(err, scopedModels...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'disconnected'` if Socket.IO is not currently connected. The remaining arguments are [scoped models](#scoped_models) that correspond to each subscribe target's path respectively.
+The subscribe callback takes the arguments `callback(err, scopedModels...)`. If
+the transaction succeeds, `err` is `null`. Otherwise, it is a string with an
+error message. This message is `'disconnected'` if Socket.IO is not currently
+connected. The remaining arguments are [scoped models](#scoped_models) that
+correspond to each subscribe target's path respectively.
 
-If a model is already subscribed to a target, calling subscribe again for the same target will have no effect. If all targets are already subscribed, the callback will be invoked immediately.
+If a model is already subscribed to a target, calling subscribe again for the
+same target will have no effect. If all targets are already subscribed, the
+callback will be invoked immediately.
 
 > ### model.unsubscribe` ( [targets...], [callback] )`
 >
@@ -1567,24 +1983,36 @@ If a model is already subscribed to a target, calling subscribe again for the sa
 >
 > **callback:** *(optional)* Called after unsubscription succeeds or upon an error
 
-The unsubscribe callback takes the argument `callback(err)`. Like subscribe, `err` is `null` when unsubscribe succeeds, and it is `'disconnected'` if Socket.IO is not currently connected.
+The unsubscribe callback takes the argument `callback(err)`. Like subscribe,
+`err` is `null` when unsubscribe succeeds, and it is `'disconnected'` if
+Socket.IO is not currently connected.
 
-Calling unsubscribe with no specified targets removes all subscriptions for a model. Unsubscribe removes the subscriptions, but it does not remove any data from the model.
+Calling unsubscribe with no specified targets removes all subscriptions for a
+model. Unsubscribe removes the subscriptions, but it does not remove any data
+from the model.
 
-Path patterns are specified as strings that correspond to model paths. A path pattern subscribe to the entire object, including all of its sub-paths. For example, subscribing to `rooms.lobby` subscribes to all data set under that path, such as `rooms.lobby.name` or `rooms.lobby.items.3.location`.
+Path patterns are specified as strings that correspond to model paths. A path
+pattern subscribes to the entire object, including all of its sub-paths. For
+example, subscribing to `rooms.lobby` subscribes to all data set under that
+path, such as `rooms.lobby.name` or `rooms.lobby.items.3.location`.
 
-It is also possible to use an asterisk as a wildcard character in place of a path segment. For example, `rooms.*.playerCount` subscribes a model to the playerCount for all rooms but no other properties. The scoped model passed to a subscribe callback is scoped to the segments up to the first wildcard character. For this example, the model would be scoped to `rooms`. More complex subscriptions may be specified via [queries](#queries).
+It is also possible to use an asterisk as a wildcard character in place of a
+path segment. For example, `rooms.*.playerCount` subscribes a model to the
+playerCount for all rooms but no other properties. The scoped model passed to a
+subscribe callback is scoped to the segments up to the first wildcard
+character. For this example, the model would be scoped to `rooms`. More complex
+subscriptions may be specified via [queries](#queries).
 
 {% highlight javascript %}
 var roomName = 'lobby'
-model.subscribe('rooms.' + roomName, (err, room) {
+model.subscribe('rooms.' + roomName, function (err, room) {
   // Logs: 'rooms.lobby'
-  console.log(room.path())
+  console.log(room.path());
   // A reference is frequently created from a parameterized
   // path pattern for use later. Refs may be created directly
   // from a scoped model
-  model.ref('_room', room)
-})
+  model.ref('_room', room);
+});
 {% endhighlight %}
 {% highlight coffeescript %}
 roomName = 'lobby'
@@ -1597,7 +2025,11 @@ model.subscribe "rooms.#{roomName}", (err, room) ->
   model.ref '_room', room
 {% endhighlight %}
 
-In addition to `subscribe`, models have a `fetch` method with the same format. Like subscribe, fetch populates a model with data from a store based on path patterns and queries. However, fetch only retrieves the data once, and it does not establish any ongoing subscriptions. Fetch may be used for any data that need not be updated in realtime and avoids use of the PubSub system.
+In addition to `subscribe`, models have a `fetch` method with the same format.
+Like subscribe, fetch populates a model with data from a store based on path
+patterns and queries. However, fetch only retrieves the data once, and it does
+not establish any ongoing subscriptions. Fetch may be used for any data that
+need not be updated in realtime and avoids use of the PubSub system.
 
 > ### model.fetch` ( targets..., callback )`
 >
@@ -1607,13 +2039,11 @@ In addition to `subscribe`, models have a `fetch` method with the same format. L
 
 The fetch callback has the same arguments as subscribe's: `callback(err, scopedModels...)`
 
-### Queries
-
-Queries provide an expressive API for specifying subscriptions and getting data asynchronously. More info coming soon.
-
 ### Scoped models
 
-Scoped models provide a more convenient way to interact with commonly used paths. They support the same methods, and they provide the path argument to accessors, mutators, and event subscribers.
+Scoped models provide a more convenient way to interact with commonly used
+paths. They support the same methods, and they provide the path argument to
+accessors, mutators, and event subscribers.
 
 > ### `scoped = `model.at` ( path, [absolute] )`
 >
