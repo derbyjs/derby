@@ -2426,10 +2426,10 @@ model.set 'cutoff', 3
 # players are added and removed, their scores change, and the
 # cutoff value changes.
 model.fn '_leaders', 'players', 'cutoff', (players, cutoff) ->
-  # Note that the input array is copied with splice before sorting
+  # Note that the input array is copied with slice before sorting
   # it. The function should not modify the values of its inputs.
-  players.splice().sort((a, b) -> a.score - b.score)
-    .splice(0, cutoff - 1)
+  players.slice().sort((a, b) -> a.score - b.score)
+    .slice(0, cutoff - 1)
 {% endhighlight %}
 
 ### References
