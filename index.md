@@ -2404,11 +2404,11 @@ model.set('cutoff', 3);
 // players are added and removed, their scores change, and the
 // cutoff value changes.
 model.fn('_leaders', 'players', 'cutoff', function (players, cutoff) {
-  // Note that the input array is copied with splice before sorting
+  // Note that the input array is copied with slice before sorting
   // it. The function should not modify the values of its inputs.
-  return players.splice().sort(function (a, b) {
+  return players.slice().sort(function (a, b) {
     return a.score - b.score;
-  }).splice(0, cutoff - 1);
+  }).slice(0, cutoff - 1);
 });
 {% endhighlight %}
 {% highlight coffeescript %}
