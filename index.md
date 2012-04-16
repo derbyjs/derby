@@ -514,7 +514,7 @@ However, they are generally placed in template files within the `views`
 directory. Each app automatically looks for a template file that shares the
 same name and calls view.make for each template. Templates placed in a template
 file are also automatically bundled with the application scripts so that they
-can be rendered on the client.A
+can be rendered on the client.
 
 Template files are also HTML, but each template is wrapped in a tag that names
 the template. This name must end in a colon to differentiate it from a normal
