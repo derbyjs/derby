@@ -3,6 +3,7 @@ fs = require 'fs'
 crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
+less = require 'less'
 racer = require 'racer'
 Promise = require 'racer/lib/Promise'
 {finishAfter} = require 'racer/lib/util/async'
@@ -21,6 +22,20 @@ module.exports =
           .set('filename', path)
           .set('compress', compress)
           .render callback
+    findPath root + '/styles', clientName, '.less', (path) ->
+      return callback '' unless path
+      fs.readFile path, 'utf8', (err, lessFile) ->
+        console.log(err)
+        return callback err if err
+        Parser = less.Parser
+        parser = new Parser { 
+          paths: [root + '/styles'], 
+          filename: path 
+        } 
+        parser.parse lessFile, (err, tree) ->
+          console.log(err)
+          return callback err if err
+          callback(null, tree.toCSS({ compress: compress }))
 
   templates: (root, clientName, callback) ->
     count = 0
@@ -228,7 +243,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
 
 extensions =
   html: /\.html$/
-  css: /\.styl$|\.css$/
+  css: /\.styl$|\.css|\.less$/
   js: /\.js$/
 
 ignoreDirectories = ['node_modules', '.git', 'gen']
