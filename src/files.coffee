@@ -24,17 +24,16 @@ styleCompilers =
 
   less: (root, clientName, compress, callback) ->
     findPath root + '/styles', clientName, '.less', (path) ->
-        return callback '' unless path
-        fs.readFile path, 'utf8', (err, lessFile) ->
+      return callback '' unless path
+      fs.readFile path, 'utf8', (err, lessFile) ->
+        return callback err if err
+        parser = new less.Parser {
+          paths: [root + '/styles'], 
+          filename: path 
+        } 
+        parser.parse lessFile, (err, tree) ->
           return callback err if err
-          parser = new less.Parser {
-            paths: [root + '/styles'], 
-            filename: path 
-          } 
-          parser.parse lessFile, (err, tree) ->
-            return finish err if err
-            callback null, tree.toCSS({ compress: compress })
-   
+          callback null, tree.toCSS({ compress: compress })
 
 module.exports =
   css: (root, clientName, compress, callback) ->
@@ -49,7 +48,7 @@ module.exports =
       compiler = styleCompilers[style]
       finish new Error("Unable to find compiler for: " + style) unless compiler
       compiler root, clientName, compress, (err, contents) ->
-        concatStyles += contents
+        concatStyles += contents || ""
         finish err
 
   templates: (root, clientName, callback) ->
