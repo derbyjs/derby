@@ -10,14 +10,8 @@ Promise = require 'racer/lib/Promise'
 {parse: parseHtml} = require './html'
 {trim} = require './View'
 
-module.exports =
-
-  css: (root, clientName, compress, callback) ->
-    concatStyles = ""
-
-    finish = finishAfter 2, (err) ->
-      callback(err, concatStyles)
-
+styleCompilers =  
+  stylus: (root, clientName, compress, callback) ->
     findPath root + '/styles', clientName, '.styl', (path) ->
       return callback '' unless path
       fs.readFile path, 'utf8', (err, styl) ->
@@ -26,23 +20,37 @@ module.exports =
           .use(nib())
           .set('filename', path)
           .set('compress', compress)
-          .render (err, output) -> 
-            return finish err if err
-            concatStyles += output
-            finish()
-            
+          .render callback
+
+  less: (root, clientName, compress, callback) ->
     findPath root + '/styles', clientName, '.less', (path) ->
-      return callback '' unless path
-      fs.readFile path, 'utf8', (err, lessFile) ->
-        return callback err if err
-        parser = new less.Parser { 
-          paths: [root + '/styles'], 
-          filename: path 
-        } 
-        parser.parse lessFile, (err, tree) ->
-          return finish err if err
-          concatStyles += tree.toCSS({ compress: compress })
-          finish()
+        return callback '' unless path
+        fs.readFile path, 'utf8', (err, lessFile) ->
+          return callback err if err
+          parser = new less.Parser {
+            paths: [root + '/styles'], 
+            filename: path 
+          } 
+          parser.parse lessFile, (err, tree) ->
+            return finish err if err
+            callback null, tree.toCSS({ compress: compress })
+   
+
+module.exports =
+  css: (root, clientName, compress, callback) ->
+    concatStyles = ""
+    { styles } = require('./derby').settings
+    styles ||= [ "less", "stylus" ]
+      
+    finish = finishAfter styles.length, (err) ->
+      callback(err, concatStyles)
+
+    for style in styles
+      compiler = styleCompilers[style]
+      finish new Error("Unable to find compiler for: " + style) unless compiler
+      compiler root, clientName, compress, (err, contents) ->
+        concatStyles += contents
+        finish err
 
   templates: (root, clientName, callback) ->
     count = 0
