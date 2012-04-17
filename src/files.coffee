@@ -13,6 +13,11 @@ Promise = require 'racer/lib/Promise'
 module.exports =
 
   css: (root, clientName, compress, callback) ->
+    concatStyles = ""
+
+    finish = finishAfter 2, (err) ->
+      callback(err, concatStyles)
+
     findPath root + '/styles', clientName, '.styl', (path) ->
       return callback '' unless path
       fs.readFile path, 'utf8', (err, styl) ->
@@ -21,21 +26,23 @@ module.exports =
           .use(nib())
           .set('filename', path)
           .set('compress', compress)
-          .render callback
+          .render (err, output) -> 
+            return finish err if err
+            concatStyles += output
+            finish()
+            
     findPath root + '/styles', clientName, '.less', (path) ->
       return callback '' unless path
       fs.readFile path, 'utf8', (err, lessFile) ->
-        console.log(err)
         return callback err if err
-        Parser = less.Parser
-        parser = new Parser { 
+        parser = new less.Parser { 
           paths: [root + '/styles'], 
           filename: path 
         } 
         parser.parse lessFile, (err, tree) ->
-          console.log(err)
-          return callback err if err
-          callback(null, tree.toCSS({ compress: compress }))
+          return finish err if err
+          concatStyles += tree.toCSS({ compress: compress })
+          finish()
 
   templates: (root, clientName, callback) ->
     count = 0
