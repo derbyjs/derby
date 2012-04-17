@@ -40,6 +40,8 @@ module.exports =
     concatStyles = ""
     { styles } = require('./derby').settings
     styles ||= [ "less", "stylus" ]
+
+    styles = [styles] unless Array.isArray styles
       
     finish = finishAfter styles.length, (err) ->
       callback(err, concatStyles)

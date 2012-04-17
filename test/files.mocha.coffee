@@ -8,7 +8,7 @@ describe 'files.css', ->
 
   it "should compile less", (done) ->
     derby.configure "all", ->
-      derby.set "styles", ["less"]
+      derby.set "styles", "less"
     expected = fs.readFileSync __dirname + "/fixtures/styles/app/expected.less.css", 'utf8'
 
     files.css __dirname + "/fixtures", "app", false, (err, contents) ->
