@@ -494,7 +494,7 @@ packageJson = (project, useCoffee) ->
     main: './server.js'
     dependencies:
       derby: '*'
-      express: '>=2 <3'
+      express: '>=2 <=2.5.9'
       'connect-gzip': '>=0.1.5'
     private: true
 
