@@ -3,15 +3,15 @@ fs = require 'fs'
 crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
+less = require 'less'
 racer = require 'racer'
 Promise = require 'racer/lib/Promise'
 {finishAfter} = require 'racer/lib/util/async'
 {parse: parseHtml} = require './html'
 {trim} = require './View'
 
-module.exports =
-
-  css: (root, clientName, compress, callback) ->
+styleCompilers =  
+  stylus: (root, clientName, compress, callback) ->
     findPath root + '/styles', clientName, '.styl', (path) ->
       return callback '' unless path
       fs.readFile path, 'utf8', (err, styl) ->
@@ -21,6 +21,37 @@ module.exports =
           .set('filename', path)
           .set('compress', compress)
           .render callback
+
+  less: (root, clientName, compress, callback) ->
+    findPath root + '/styles', clientName, '.less', (path) ->
+      return callback '' unless path
+      fs.readFile path, 'utf8', (err, lessFile) ->
+        return callback err if err
+        parser = new less.Parser {
+          paths: [root + '/styles'], 
+          filename: path 
+        } 
+        parser.parse lessFile, (err, tree) ->
+          return callback err if err
+          callback null, tree.toCSS({ compress: compress })
+
+module.exports =
+  css: (root, clientName, compress, callback) ->
+    concatStyles = ""
+    { styles } = require('./derby').settings
+    styles ||= [ "less", "stylus" ]
+
+    styles = [styles] unless Array.isArray styles
+      
+    finish = finishAfter styles.length, (err) ->
+      callback(err, concatStyles)
+
+    for style in styles
+      compiler = styleCompilers[style]
+      finish new Error("Unable to find compiler for: " + style) unless compiler
+      compiler root, clientName, compress, (err, contents) ->
+        concatStyles += contents || ""
+        finish err
 
   templates: (root, clientName, callback) ->
     count = 0
@@ -228,7 +259,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
 
 extensions =
   html: /\.html$/
-  css: /\.styl$|\.css$/
+  css: /\.styl$|\.css|\.less$/
   js: /\.js$/
 
 ignoreDirectories = ['node_modules', '.git', 'gen']
