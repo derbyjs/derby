@@ -554,6 +554,10 @@ parseMatch = (text, match, queues, callbacks) ->
 
 parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
   return if typeof value is 'function'
+
+  attrOut = parseMarkup('attr', attr, tagName, events, attrs, value) || {}
+  addId view, attrs  if attrOut.addId
+
   if match = extractPlaceholder value
     {name, macro} = match
 
@@ -570,22 +574,18 @@ parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
         (ctx, model) -> escapeAttr render(ctx, model)
       return
 
-    out = parseMarkup('bound', attr, tagName, events, attrs, name) || {}
-
     if isBound boundMacro, match, name
+      boundOut = parseMarkup('bound', attr, tagName, events, attrs, name) || {}
       addId view, attrs
-      bindEventsById events, macro, name, null, attrs, (out.method || 'attr'), (out.property || attr)
+      bindEventsById events, macro, name, null, attrs, (boundOut.method || 'attr'), (boundOut.property || attr)
 
-    unless out.del
+    unless attrOut.del
       {macro} = match
-      attrs[attr] = if out.bool
+      attrs[attr] = if attrOut.bool
           bool: (ctx, model) ->
             if dataValue(view, ctx, model, name, macro) then ' ' + attr else ''
         else
           textFn view, name, escapeAttr, macro
-
-  out = parseMarkup 'attr', attr, tagName, events, attrs, value
-  addId view, attrs  if out?.addId
   return
 
 parsePartialAttr = (view, viewName, events, attrs, attr, value) ->

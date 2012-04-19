@@ -15,7 +15,7 @@ module.exports =
         else
           # By default, update as the user types
           eventNames = TEXT_EVENTS
-        
+
         if 'x-ignore-focus' of attrs
           # Update value regardless of focus
           delete attrs['x-ignore-focus']
@@ -23,7 +23,7 @@ module.exports =
         else
           # Update value unless window and element are focused
           method = 'propPolite'
-        
+
         addDomEvent events, attrs, eventNames, name, {method: 'prop', property: 'value'}
         # Update the element's property unless it has focus
         return {method}
@@ -31,16 +31,16 @@ module.exports =
     'checked':
       '*': (events, attrs, name) ->
         addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'checked'}
-        return method: 'prop', bool: true
+        return method: 'prop'
 
     'selected':
       '*': (events, attrs, name) ->
         addDomEvent events, attrs, 'change', name, {method: 'prop', property: 'selected'}
-        return method: 'prop', bool: true
+        return method: 'prop'
 
     'disabled':
       '*': ->
-        return method: 'prop', bool: true
+        return method: 'prop'
 
   boundParent:
     'contenteditable':
@@ -90,6 +90,15 @@ module.exports =
       'a': onBindA
 
       'form': onBindForm
+
+    'checked':
+      '*': -> bool: true
+
+    'selected':
+      '*': -> bool: true
+
+    'disabled':
+      '*': -> bool: true
 
   TEXT_EVENTS: TEXT_EVENTS = 'keyup,keydown,paste/0,dragover/0,blur'
 

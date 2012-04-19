@@ -33,12 +33,25 @@ module.exports =
         --count || callback null, templates, instances
     loadTemplates root + '/views', clientName, 'import', calls
 
-  js: (parentFilename, callback) ->
+  js: (parentFilename, options, callback) ->
+    if typeof options is 'function'
+      callback = options
+      options = {}
+
+    # TODO: Move this to config:
+    options.ignore = 'mime'
+    options.require = [{'mime': 'derby/lib/empty'}]
+
+    if options.require
+      options.require.push parentFilename
+    else
+      options.require = [parentFilename]
+
     inlineFile = join dirname(parentFilename), 'inline.js'
     js = inline = null
     finish = finishAfter 2, (err) ->
       callback err, js, inline
-    racer.js {require: parentFilename}, (err, value) ->
+    racer.js options, (err, value) ->
       js = value
       finish err
     fs.readFile inlineFile, 'utf8', (err, value) ->
