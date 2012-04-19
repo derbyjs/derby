@@ -166,60 +166,51 @@ ready(function(model) {
 '''
 
 SERVER_COFFEE = '''
+http = require 'http'
 path = require 'path'
 express = require 'express'
+gzippo = require 'gzippo'
 derby = require 'derby'
 <<app>> = require '../<<app>>'
+serverError = require './serverError'
 
 
 ## SERVER CONFIGURATION ##
 
-MAX_AGE_ONE_YEAR = maxAge: 1000 * 60 * 60 * 24 * 365
+ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
 publicPath = path.join root, 'public'
-staticPages = derby.createStatic root
 
-(module.exports = server = express.createServer())
-  # Remove to disable gzipping
-  .use(express.compress())
-
+(expressApp = express())
   .use(express.favicon())
-  .use(express.static publicPath, MAX_AGE_ONE_YEAR)
+  # Gzip static files and serve from memory
+  .use(gzippo.staticGzip publicPath, maxAge: ONE_YEAR)
+
+  # Gzip dynamically rendered content
+  .use(express.compress())
 
   # Uncomment to add form data parsing support
   # .use(express.bodyParser())
   # .use(express.methodOverride())
 
-  # Uncomment and supply secret to add Derby session handling
   # Derby session middleware creates req.model and subscribes to _session
-  # .use(express.cookieParser())
-  # .use(express.session(secret: '', cookie: MAX_AGE_ONE_YEAR))
+  # .use(express.cookieParser 'secret_sauce')
+  # .use(express.session
+  #   cookie: {maxAge: ONE_YEAR}
+  # )
   # .use(<<app>>.session())
 
   # The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
-  .use(server.router)
+  .use(expressApp.router)
+  .use(serverError root)
 
-
-## ERROR HANDLING ##
-
-server.configure 'development', ->
-  # Log errors in development only
-  server.error (err, req, res, next) ->
-    if err then console.log(if err.stack then err.stack else err)
-    next err
-
-server.error (err, req, res) ->
-  ## Customize error handling here ##
-  message = err.message || err.toString()
-  status = parseInt message
-  if status is 404 then staticPages.render '404', res, {url: req.url}, 404
-  else res.send if 400 <= status < 600 then status else 500
+module.exports = server = http.createServer expressApp
 
 
 ## SERVER ONLY ROUTES ##
 
-server.all '*', (req) ->
+expressApp.all '*', (req) ->
   throw "404: #{req.url}"
 
 
@@ -230,74 +221,106 @@ store = <<app>>.createStore listen: server
 '''
 
 SERVER_JS = '''
-var path = require('path')
+var http = require('http')
+  , path = require('path')
   , express = require('express')
+  , gzippo = require('gzippo')
   , derby = require('derby')
   , <<app>> = require('../<<app>>')
+  , serverError = require('./serverError')
 
 
 // SERVER CONFIGURATION //
 
-var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 }
+var ONE_YEAR = 1000 * 60 * 60 * 24 * 365
   , root = path.dirname(path.dirname(__dirname))
   , publicPath = path.join(root, 'public')
-  , staticPages = derby.createStatic(root)
-  , server, store
+  , expressApp, server, store
 
-;(module.exports = server = express.createServer())
-  // Remove to disable gzipping
-  .use(express.compress())
-
+;(expressApp = express())
   .use(express.favicon())
-  .use(express.static(publicPath, MAX_AGE_ONE_YEAR))
+  // Gzip static files and serve from memory
+  .use(gzippo.staticGzip(publicPath, {maxAge: ONE_YEAR}))
+
+  // Gzip dynamically rendered content
+  .use(express.compress())
 
   // Uncomment to add form data parsing support
   // .use(express.bodyParser())
   // .use(express.methodOverride())
 
-  // Uncomment and supply secret to add Derby session handling
   // Derby session middleware creates req.model and subscribes to _session
-  // .use(express.cookieParser())
-  // .use(express.session({ secret: '', cookie: MAX_AGE_ONE_YEAR }))
+  // .use(express.cookieParser('secret_sauce'))
+  // .use(express.session({
+  //   cookie: {maxAge: ONE_YEAR}
+  // })
   // .use(<<app>>.session())
 
   // The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
-  .use(server.router)
+  .use(expressApp.router)
+  .use(serverError(root))
 
-
-// ERROR HANDLING //
-
-server.configure('development', function() {
-  // Log errors in development only
-  server.error(function(err, req, res, next) {
-    if (err) console.log(err.stack ? err.stack : err)
-    next(err)
-  })
-})
-
-server.error(function(err, req, res) {
-  // Customize error handling here //
-  var message = err.message || err.toString()
-    , status = parseInt(message)
-  if (status === 404) {
-    staticPages.render('404', res, {url: req.url}, 404)
-  } else {
-    res.send( ((status >= 400) && (status < 600)) ? status : 500 )
-  }
-})
+module.exports = server = http.createServer(expressApp)
 
 
 // SERVER ONLY ROUTES //
 
-server.all('*', function(req) {
+expressApp.all('*', function(req) {
   throw '404: ' + req.url
 })
 
 
 // STORE SETUP //
 
-store = <<app>>.createStore({ listen: server })
+store = <<app>>.createStore({listen: server})
+
+'''
+
+SERVER_ERROR_JS = '''
+var derby = require('derby')
+  , isProduction = derby.util.isProduction
+
+module.exports = function(root) {
+  var staticPages = derby.createStatic(root)
+
+  return function(err, req, res, next) {
+    if (err == null) return next()
+
+    console.log(err.stack ? err.stack : err)
+
+    // Customize error handling here
+    var message = err.message || err.toString()
+      , status = parseInt(message)
+    if (status === 404) {
+      staticPages.render('404', res, {url: req.url}, 404)
+    } else {
+      res.send( ((status >= 400) && (status < 600)) ? status : 500)
+    }
+  }
+}
+
+'''
+
+SERVER_ERROR_COFFEE = '''
+derby = require 'derby'
+{isProduction} = derby.util
+
+module.exports = (root) ->
+  staticPages = derby.createStatic root
+
+  return (err, req, res, next) ->
+    return next() unless err?
+
+    console.log(if err.stack then err.stack else err)
+
+    ## Customize error handling here ##
+    message = err.message || err.toString()
+    status = parseInt message
+    if status is 404
+      staticPages.render '404', res, {url: req.url}, 404
+    else
+      res.send if 400 <= status < 600 then status else 500
 
 '''
 
@@ -493,6 +516,7 @@ packageJson = (project, useCoffee) ->
     dependencies:
       derby: '*'
       express: '3.x'
+      gzippo: '>=0.1.4'
     private: true
 
   if useCoffee
@@ -632,6 +656,7 @@ createProject = (dir, app, useCoffee) ->
         writeFile join(appScripts, 'index.coffee'), render(APP_COFFEE, {app}), wait()
       mkdir serverScripts, wait ->
         writeFile join(serverScripts, 'index.coffee'), render(SERVER_COFFEE, {app}), wait()
+        writeFile join(serverScripts, 'serverError.coffee'), render(SERVER_ERROR_COFFEE, {app}), wait()
       writeFile join(dir, 'Makefile'), MAKEFILE_COFFEE, wait()
       writeFile join(dir, '.gitignore'), GITIGNORE_COFFEE, wait()
     else
@@ -639,6 +664,7 @@ createProject = (dir, app, useCoffee) ->
         writeFile join(appScripts, 'index.js'), render(APP_JS, {app}), wait()
       mkdir serverScripts, wait ->
         writeFile join(serverScripts, 'index.js'), render(SERVER_JS, {app}), wait()
+        writeFile join(serverScripts, 'serverError.js'), render(SERVER_ERROR_JS, {app}), wait()
       writeFile join(dir, '.gitignore'), GITIGNORE_JS, wait()
 
     writeFile join(dir, 'server.js'), SERVER, wait()

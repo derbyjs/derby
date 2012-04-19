@@ -5,7 +5,7 @@ module.exports = (root) ->
   staticPages = derby.createStatic root
 
   return (err, req, res, next) ->
-    return next() unless err
+    return next() unless err?
 
     console.log(if err.stack then err.stack else err)
 
