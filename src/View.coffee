@@ -641,7 +641,14 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
 
   ns = if ~(index = viewName.lastIndexOf ':') then viewName[0...index] else ''
 
+  minifyContent = true
   start = (tag, tagName, attrs) ->
+    if 'x-no-minify' of attrs
+      delete attrs['x-no-minify']
+      minifyContent = false
+    else
+      minifyContent = true
+
     if partial = partialName view, tagName
       isNonvoid = view._findItem partial, ns, '_nonvoidComponents'
       for attr, value of attrs
@@ -666,7 +673,8 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
 
   chars = (text, isRawText, remainder) ->
     if isRawText || !(match = extractPlaceholder text)
-      text = if isString then unescapeEntities trim text else trim text
+      if minifyContent
+        text = if isString then unescapeEntities trim text else trim text
       pushChars stack, text
       return
 

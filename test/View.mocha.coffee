@@ -334,3 +334,21 @@ describe 'View', ->
       {{/}}
       '''
     expect(view.get 'test', {nums: [-4, 8, 0, 2.3, -9]}).to.equal '8,0,2.3,'
+
+  it 'supports x-no-minify', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', '''
+      <script type="x-test" x-no-minify>
+        Some text
+        And a new line
+      </script>
+      '''
+
+    expect(view.get 'test').to.equal '''
+      <script type=x-test>
+        Some text
+        And a new line
+      </script>
+      '''
