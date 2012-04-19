@@ -10,7 +10,6 @@ View = require './View.server'
 
 derby = module.exports = mergeAll Object.create(racer),
   options: {}
-  configure: (@options) ->
 
   run: (file, port, options = {numWorkers: 1}) ->
     # Resolve relative filenames

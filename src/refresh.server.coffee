@@ -3,8 +3,14 @@ files = require './files'
 refresh = module.exports = require './refresh'
 
 refresh.cssError = cssError = (err) ->
-  console.error '\nCSS PARSE ERROR\n' + err.stack
-  return err.stack
+  if err.stack
+    console.error '\nCSS PARSE ERROR\n' + err.stack
+    return err.stack
+  else
+    console.error '\nCSS PARSE ERROR\n' + err.message +
+                  '\n' + err.filename
+
+    return err.message + '\n' + err.filename
 
 refresh.templateError = templateError = (err) ->
   console.error '\nTEMPLATE ERROR\n' + err.stack
