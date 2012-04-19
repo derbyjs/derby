@@ -5,9 +5,9 @@
   "main": "./server.js",
   "dependencies": {
     "derby": "*",
+    "express": "3.x",
+    "gzippo": ">=0.1.4",
     "racer-db-mongo": "*",
-    "express": ">=2 <3",
-    "connect-gzip": ">=0.1.5",
     "connect-mongo": ">=0.1.9"
   },
   "private": true,

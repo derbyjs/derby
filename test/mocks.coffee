@@ -1,4 +1,4 @@
-{Model} = require 'racer'
+{Model} = require('racer').protected
 
 DetachedModel = exports.DetachedModel = ->
   Model.apply this, arguments

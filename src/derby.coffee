@@ -6,7 +6,7 @@ up = require 'up'
 View = require './View.server'
 {autoRefresh} = require './refresh.server'
 {addHttpMethods} = require './router.server'
-{mergeAll, isProduction} = require 'racer/lib/util'
+{mergeAll, isProduction} = racer.util
 
 derby = module.exports = mergeAll Object.create(racer),
   options: {}

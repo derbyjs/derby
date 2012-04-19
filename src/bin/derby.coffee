@@ -169,7 +169,6 @@ SERVER_COFFEE = '''
 path = require 'path'
 express = require 'express'
 derby = require 'derby'
-gzip = require 'connect-gzip'
 <<app>> = require '../<<app>>'
 
 
@@ -181,9 +180,11 @@ publicPath = path.join root, 'public'
 staticPages = derby.createStatic root
 
 (module.exports = server = express.createServer())
-  # The express.static middleware can be used instead of gzip.staticGzip
-  .use(gzip.staticGzip publicPath, MAX_AGE_ONE_YEAR)
+  # Remove to disable gzipping
+  .use(express.compress())
+
   .use(express.favicon())
+  .use(express.static publicPath, MAX_AGE_ONE_YEAR)
 
   # Uncomment to add form data parsing support
   # .use(express.bodyParser())
@@ -194,9 +195,6 @@ staticPages = derby.createStatic root
   # .use(express.cookieParser())
   # .use(express.session(secret: '', cookie: MAX_AGE_ONE_YEAR))
   # .use(<<app>>.session())
-
-  # Remove to disable dynamic gzipping
-  .use(gzip.gzip())
 
   # The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
@@ -235,7 +233,6 @@ SERVER_JS = '''
 var path = require('path')
   , express = require('express')
   , derby = require('derby')
-  , gzip = require('connect-gzip')
   , <<app>> = require('../<<app>>')
 
 
@@ -248,9 +245,11 @@ var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 }
   , server, store
 
 ;(module.exports = server = express.createServer())
-  // The express.static middleware can be used instead of gzip.staticGzip
-  .use(gzip.staticGzip(publicPath, MAX_AGE_ONE_YEAR))
+  // Remove to disable gzipping
+  .use(express.compress())
+
   .use(express.favicon())
+  .use(express.static(publicPath, MAX_AGE_ONE_YEAR))
 
   // Uncomment to add form data parsing support
   // .use(express.bodyParser())
@@ -261,9 +260,6 @@ var MAX_AGE_ONE_YEAR = { maxAge: 1000 * 60 * 60 * 24 * 365 }
   // .use(express.cookieParser())
   // .use(express.session({ secret: '', cookie: MAX_AGE_ONE_YEAR }))
   // .use(<<app>>.session())
-
-  // Remove to disable dynamic gzipping
-  .use(gzip.gzip())
 
   // The router method creates an express middleware from the app's routes
   .use(<<app>>.router())
@@ -498,8 +494,7 @@ packageJson = (project, useCoffee) ->
     main: './server.js'
     dependencies:
       derby: '*'
-      express: '>=2 <3'
-      'connect-gzip': '>=0.1.5'
+      express: '3.x'
     private: true
 
   if useCoffee

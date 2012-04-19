@@ -4,10 +4,10 @@ crypto = require 'crypto'
 stylus = require 'stylus'
 nib = require 'nib'
 racer = require 'racer'
-Promise = require 'racer/lib/Promise'
-{finishAfter} = require 'racer/lib/util/async'
 {parse: parseHtml} = require './html'
 {trim} = require './View'
+{Promise} = racer.util
+{finishAfter} = racer.util.async
 
 module.exports =
 

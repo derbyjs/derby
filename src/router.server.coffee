@@ -69,7 +69,13 @@ Page:: =
   render: (ns, ctx, status) ->
     @view.render @res, @model, ns, ctx, status
   redirect: (url, status) ->
-    @res.redirect url, status
+    # TODO: Appears there is a bug that Express throws when an undefined
+    # status is passed. Fix bug and remove this condition
+    if status
+      @res.redirect url, status
+    else
+      @res.redirect url
+    return
 
 # The router middleware checks whether 'case sensitive routes' and 'strict routing'
 # are enabled. For now, always use the default value of false

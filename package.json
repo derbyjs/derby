@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "racer": "0.3.0",
-    "express": ">=3",
+    "express": "3.x",
     "qs": ">=0.4.0",
     "stylus": ">=0.15.0",
     "nib": ">=0.3.0",

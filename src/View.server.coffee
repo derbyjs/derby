@@ -1,12 +1,13 @@
-uglify = require 'racer/node_modules/uglify-js'
-{Model} = require 'racer'
-Promise = require 'racer/lib/Promise'
-{isProduction} = require 'racer/lib/util'
 EventDispatcher = require './EventDispatcher'
+racer = require 'racer'
+uglify = require 'racer/node_modules/uglify-js'
 files = require './files'
 {escapeHtml} = require './html'
 {errorHtml, cssError, templateError} = require './refresh.server'
 {trim} = module.exports = View = require './View'
+
+{Model} = racer.protected
+{Promise, isProduction} = racer.util
 
 empty = ->
 emptyRes =

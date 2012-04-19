@@ -1,6 +1,6 @@
 EventDispatcher = require './EventDispatcher'
 PathMap = require './PathMap'
-{Model} = require 'racer'
+{Model} = require('racer').protected
 
 # Add support for creating a model alias from a DOM node or jQuery object
 Model::__at = Model::at

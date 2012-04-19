@@ -1,4 +1,4 @@
-{merge} = require 'racer/lib/util'
+{merge} = require('racer').util
 {ctxPath, pathFnArgs, setBoundFn} = require './viewPath'
 
 module.exports =

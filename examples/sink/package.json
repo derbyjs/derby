@@ -5,8 +5,8 @@
   "main": "./server.js",
   "dependencies": {
     "derby": "*",
-    "express": ">=2 <3",
-    "connect-gzip": ">=0.1.5"
+    "express": "3.x",
+    "gzippo": ">=0.1.4"
   },
   "private": true,
   "devDependencies": {
