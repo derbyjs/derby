@@ -48,6 +48,6 @@ expressApp.all '*', (req) ->
 
 ## STORE SETUP ##
 
-app.createStore listen: server
+store = app.createStore listen: server
 
 flickr.setup store, key: '86958e03c183fcb1b7fddfeb19f3a423'

@@ -1,6 +1,9 @@
 qs = require 'qs'
 Route = require 'express/lib/router/route'
+{mergeAll} = require('racer').util
 util = require './util'
+
+passThroughNoPage = (model, params, next) -> next()
 
 exports.addHttpMethods = (appExports) ->
   routes = queue: {}, map: {}
@@ -12,7 +15,7 @@ exports.addHttpMethods = (appExports) ->
       if typeof pattern is 'object'
         {from, to} = pattern
         forward = pattern.forward || callback.forward || callback
-        back = pattern.back || callback.back || callback2
+        back = pattern.back || callback.back || callback2 || passThroughNoPage
         fromRoute = new Route method, from, back
         toRoute = new Route method, to, forward
         map.push {from: fromRoute, to: toRoute}, {from: toRoute, to: fromRoute}
@@ -77,22 +80,13 @@ exports.render = (page, routes, previous, url, method, e, body, form) ->
     path = if ~(i = url.indexOf '?') then url[0...i] else url
     renderQueued previous, path, url, form, null, onMatch, map, queue, 0
 
-  onMatch = (path, url, i, route, match, renderNext, noPage) ->
+  onMatch = (path, url, i, route, renderNext, noPage) ->
     # Cancel the default browser action, such as clicking a link or submitting a form
     e.preventDefault()  if e
 
-    params = []
-    params.url = url
-    params.body = body
-    params.query = query
-
-    # Add params from capture groups
-    keys = route.keys
-    for i in [1...match.length]
-      capture = match[i]
-      key = keys[i - 1]
-      value = if typeof capture is 'string' then decodeURIComponent capture else capture
-      if key then params[key.name] = value else params.push value
+    routeParams = route.params
+    params = routeParams.slice()
+    mergeAll params, routeParams, {url, body, query}
 
     next = (err) ->
       return cancelRender url, form  if err?
@@ -114,16 +108,16 @@ exports.render = (page, routes, previous, url, method, e, body, form) ->
 
 renderMapped = (previous, path, url, form, e, onMatch, map, queue, i) ->
   while item = map[i++]
-    continue unless match = item.to.match path
+    continue unless item.to.match path
     continue unless item.from.match previous
-    return onMatch path, url, i, item.to, match, renderMapped, true
+    return onMatch path, url, i, item.to, renderMapped, true
 
   renderQueued previous, path, url, form, e, onMatch, map, queue, 0
 
 renderQueued = (previous, path, url, form, e, onMatch, map, queue, i) ->
   while route = queue[i++]
-    continue unless match = route.match path
-    return onMatch path, url, i, route, match, renderQueued
+    continue unless route.match path
+    return onMatch path, url, i, route, renderQueued
 
   # Cancel rendering by this app if no routes match
   cancelRender url, form, e

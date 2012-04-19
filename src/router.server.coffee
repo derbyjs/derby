@@ -14,7 +14,12 @@ router.addHttpMethods = (appExports, view, createModel) ->
     return params
 
   appExports.router = ->
-    expressRouter = new Router serverMock
+    # TODO: Implement configuration for these options
+    routerOptions =
+      caseSensitive: false
+      strict: false
+
+    expressRouter = new Router routerOptions
 
     middleware = (req, res, next) ->
       unless previousModel = req.model
@@ -76,8 +81,3 @@ Page:: =
     else
       @res.redirect url
     return
-
-# The router middleware checks whether 'case sensitive routes' and 'strict routing'
-# are enabled. For now, always use the default value of false
-serverMock =
-  enabled: -> false
