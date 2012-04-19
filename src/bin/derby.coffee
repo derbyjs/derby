@@ -473,7 +473,6 @@ GITIGNORE_COFFEE = '''
 .DS_Store
 public/gen
 lib/
-node_modules/
 *.swp
 
 '''
@@ -481,7 +480,6 @@ node_modules/
 GITIGNORE_JS = '''
 .DS_Store
 public/gen
-node_modules/
 *.swp
 
 '''
