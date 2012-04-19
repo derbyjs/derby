@@ -29,7 +29,7 @@ router.addHttpMethods = (appExports, view, createModel) ->
       if typeof pattern is 'object'
         {from, to} = pattern
         callback = pattern.forward || callback.forward || callback
-        expressRouter._route method, to, (req, res, next) ->
+        expressRouter.route method, to, (req, res, next) ->
           model = req.model
           page = new Page view, res, model
           params = pageParams req
@@ -55,7 +55,7 @@ router.addHttpMethods = (appExports, view, createModel) ->
         return
 
       # Create a normal route
-      expressRouter._route method, pattern, (req, res, next) ->
+      expressRouter.route method, pattern, (req, res, next) ->
         model = req.model
         page = req._derbyPage || new Page view, res, model
         params = pageParams req
