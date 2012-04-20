@@ -1,3 +1,6 @@
+# This is a hack to get browserify to ignore mime, which is included by express
+require.modules.mime = ->
+
 racer = require 'racer'
 derbyModel = require './derby.Model'
 Dom = require './Dom'

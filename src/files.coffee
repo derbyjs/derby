@@ -37,18 +37,18 @@ styleCompilers =
 
 module.exports =
   css: (root, clientName, compress, callback) ->
-    concatStyles = ""
-    { styles } = require('./derby').settings
-    styles ||= [ "less", "stylus" ]
+    concatStyles = ''
+    {styles} = require('./derby').settings
+    styles ||= ['less', 'stylus']
 
     styles = [styles] unless Array.isArray styles
-      
+
     finish = finishAfter styles.length, (err) ->
       callback(err, concatStyles)
 
     for style in styles
       compiler = styleCompilers[style]
-      finish new Error("Unable to find compiler for: " + style) unless compiler
+      finish new Error('Unable to find compiler for: ' + style) unless compiler
       compiler root, clientName, compress, (err, contents) ->
         concatStyles += contents || ""
         finish err
@@ -65,13 +65,20 @@ module.exports =
     loadTemplates root + '/views', clientName, 'import', calls
 
   js: (parentFilename, options, callback) ->
+    # Needed for tests
+    return unless parentFilename
+
     if typeof options is 'function'
       callback = options
       options = {}
 
     # TODO: Move this to config:
-    options.ignore = 'mime'
-    options.require = [{'mime': 'derby/lib/empty'}]
+    # Express will try to include mime, which won't work in the browser
+    # It doesn't actually need this for routing, so we just ignore it
+    if options.ignore
+      options.ignore.push 'mime'
+    else
+      options.ignore = ['mime']
 
     if options.require
       options.require.push parentFilename
