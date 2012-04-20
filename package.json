@@ -15,7 +15,7 @@
     "derby": "./bin/derby"
   },
   "dependencies": {
-    "racer": "0.3.0",
+    "racer": "0.3.1",
     "express": "3.x",
     "qs": ">=0.4.0",
     "stylus": ">=0.25.0",
