@@ -753,8 +753,17 @@ Let's go <b>{{"{{"}}activity}}</b>!
 
 Before parsing, all HTML comments, leading whitespace, and new lines are
 removed from templates. Whitespace at the end of lines is maintained, in case a
-space is desired in the HTML output. The contents of `<script>` and `<style>`
-tags are passed through literally.
+space is desired in the HTML output.
+
+The contents of `<script>` and `<style>` tags are passed through literally, 
+except for whitespace removal. This whitespace removal can be disabled within an element by adding an `x-no-minify` attribute.
+
+{% highlight html %}
+<script type="application/x-yaml" x-no-minify>
+  firstName: Sam
+  lastName : Reed
+</script>
+{% endhighlight %}
 
 Derby's HTML parser should be able to parse any valid HTML, including elements
 that don't require closing tags and unquoted attributes. However, it is
