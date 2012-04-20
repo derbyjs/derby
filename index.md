@@ -1247,10 +1247,14 @@ view.fn 'unspace', (value) ->
 
 {% highlight html %}
 {{"{{"}}#with home}}
-  <h1 style="color:{unspace(.title.color)}">Welcome in {.title.color}!</h1>
+  <h1 style="color:{unspace(.title.color)}">
+    Welcome in {.title.color}!
+  </h1>
   <select>
     {#each .colors}
-      <option selected="{equal(.name, home.title.color)}">{{"{{"}}.name}}</option>
+      <option selected="{equal(.name, home.title.color)}">
+        {{"{{"}}.name}}
+      </option>
     {/}
   </select>
 {{"{{"}}/}}
