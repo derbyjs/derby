@@ -1233,6 +1233,8 @@ Derby follows the semantic templating approach of Handlebars and Mustache, which
 
 View helper functions are reactive, and they are evaluted when rendering as well as whenever any bound inputs change. In addition, they can work as both getters and setters. This is especially useful when binding to form elements, such as selected options or radio buttons:
 
+#### Controller
+
 {% highlight javascript %}
 // Remove all whitespace from a string
 view.fn('unspace', function(value) {
@@ -1244,6 +1246,8 @@ view.fn('unspace', function(value) {
 view.fn 'unspace', (value) ->
   value && value.replace(/\s/g, '')
 {% endhighlight %}
+
+#### Template
 
 {% highlight html %}
 {{"{{"}}#with home}}
