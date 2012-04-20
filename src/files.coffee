@@ -208,10 +208,13 @@ loadTemplates = (root, fileName, get, calls, files, templates, instances, alias,
 # maintaining a linebreak within HTML tags
 compactHtml = (html) ->
   compact = ''
-  onTag = (tag) ->
+  minifyContent = true
+  onTag = (tag, _, attrs) ->
+    if attrs.constructor == Object
+      minifyContent = ! ('x-no-minify' of attrs)
     compact += tag.replace /\n\s*/g, '\n'
   onText = (text) ->
-    compact += trim text
+    compact += if minifyContent then trim text else text
   parseHtml html,
     start: onTag
     end: onTag
