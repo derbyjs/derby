@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.3.0
+version: 0.3.1
 headers:
   - text: Introduction
     type: h1
@@ -285,7 +285,7 @@ Derby can be used via a dynamic API, as seen in the simple example above.
 
 ## Demos
 
-[Source for the demos](https://github.com/codeparty/derby/tree/master/examples) is included with Derby.
+See [source and installation instructions](https://github.com/codeparty/derby-examples) for the demos
 
 ### Chat
 
