@@ -136,6 +136,7 @@ get('/', function (page, model) {
 {% endhighlight %}
 
 <h3 class="javascript">server.js</h3>
+{% highlight javascript %}
 var http = require('http')
   , express = require('express')
   , hello = require('./hello');
