@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.3.1
+version: 0.3.2
 headers:
   - text: Introduction
     type: h1
@@ -136,18 +136,19 @@ get('/', function (page, model) {
 {% endhighlight %}
 
 <h3 class="javascript">server.js</h3>
-{% highlight javascript %}
-var express = require('express')
-  , hello = require('./hello')
-  , server = express.createServer()
-      .use(express.static(__dirname + '/public'))
-      // Apps create an Express middleware
-      .use(hello.router());
+var http = require('http')
+  , express = require('express')
+  , hello = require('./hello');
+
+var expressApp = express()
+  .use(express.static(__dirname + '/public'))
+  // Apps create an Express middleware
+  .use(hello.router());
+
+var server = http.createServer(expressApp).listen(3000);
 
 // Apps also provide a server-side store for syncing data
-hello.createStore({ listen: server });
-
-server.listen(3000);
+hello.createStore({listen: server});
 {% endhighlight %}
 
 <h3 class="coffeescript">hello.coffee</h3>
@@ -167,17 +168,19 @@ get '/', (page, model) ->
 
 <h3 class="coffeescript">server.coffee</h3>
 {% highlight coffeescript %}
+http = require 'http'
 express = require 'express'
 hello = require './hello'
-server = express.createServer()
+
+expressApp = express()
   .use(express.static __dirname + '/public')
   # Apps create an Express middleware
   .use(hello.router())
 
+server = http.createServer(expressApp).listen 3000
+
 # Apps also provide a server-side store for syncing data
 hello.createStore listen: server
-
-server.listen 3000
 {% endhighlight %}
 
 ### Add water and...
