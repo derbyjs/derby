@@ -209,7 +209,7 @@ interactive as a document editor, and work offline.
 
 * **View bindings:** In addition to HTML rendering, templates specify live
   bindings between the view and model. When model data change, the view updates
-  the properties, text, or HTML neccessary to reflect the new data. When the
+  the properties, text, or HTML necessary to reflect the new data. When the
   user interacts with the page---such as editing the value of a text
   input---the model data updates.
 
@@ -218,7 +218,7 @@ interactive as a document editor, and work offline.
   instantly with push/pop state changes in modern browsers, while server
   rendering provides access to search engines and browsers without JavaScript.
 
-* **Model syncing:** Model changes are automatically sychronized with the
+* **Model syncing:** Model changes are automatically synchronized with the
   server and all clients subscribed to the same data over
   [Socket.IO](http://socket.io/).
 
@@ -269,7 +269,7 @@ apps are realtime.
 Derby eliminates the tedium of wiring together a server, server templating
 engine, CSS compiler, script packager, minifier, client MVC framework, client
 JavaScript library, client templating and/or bindings engine, client history
-library, realtime transport, ORM, and database. It elminates the complexity of
+library, realtime transport, ORM, and database. It eliminates the complexity of
 keeping state synchronized among models and views, clients and servers,
 multiple windows, multiple users, and models and databases.
 
@@ -481,9 +481,9 @@ with an app. This is useful for error pages and other pages that don't need
 dynamic content.
 
 > ### `staticPages = `derby.createStatic` ( root )`
-> 
+>
 > **root:** The root path that contains the "views" and "styles" directories.
-> 
+>
 > **staticPages:** Returns a staticPages object, which has a render method.
 > (While unused, static is a [reserved JavaScript
 > keyword](https://developer.mozilla.org/en/JavaScript/Reference/Reserved_Words),
@@ -501,7 +501,7 @@ Typically, writing Derby apps begins with HTML templates. These templates define
 
 Derby compiles a collection of HTML-based templates into a page based on a
 number of pre-defined names. Pages usually define at least a `Title` and `Body`
-template. Templates may be created programatically via the `view.make()`
+template. Templates may be created programmatically via the `view.make()`
 method:
 
 {% highlight javascript %}
@@ -561,7 +561,7 @@ sends pages a number of chunks:
 
 #### First chunk
 
-1. **`Doctype:`** Standard HTML5 doctype---`<!DOCTYPE html>`---unless overridden 
+1. **`Doctype:`** Standard HTML5 doctype---`<!DOCTYPE html>`---unless overridden
 2. **`Root:`** Optional location for an `<html>` element if desired. This template should not include any other elements
 3. **`Charset:`** `<meta charset=utf-8>` unless overridden
 4. **`Title:`** The text content of the page's `<title>` element
@@ -599,7 +599,7 @@ ol>li:before{content: counter(item) ". "; counter-increment: item}
 ### Importing templates
 
 Templates can be imported from another file for making multiple page apps and
-sharing templates among multiple pages. File paths are expessed relatively,
+sharing templates among multiple pages. File paths are expressed relatively,
 similar to how Node.js modules are loaded. Like in Node.js modules, either
 `pageName.html` or `pageName/index.html` can be imported as `pageName`.
 
@@ -716,7 +716,7 @@ Derby templates can be used this way as well. However, in addition to looking
 for objects in a context object, Derby assumes that the model is part of the
 context. Even better, Derby is able to automatically establish live bindings
 between the view and objects in the model. Derby slightly extends the
-Handlebars syntax in order to support these featueres.
+Handlebars syntax in order to support these features.
 
 The other major difference between Handlebars and Derby templates is that Derby
 templates must be valid HTML first. Handlebars is language agnostic---it can be
@@ -758,12 +758,12 @@ Let's go <b>{{"{{"}}activity}}</b>!
 ### Whitespace and HTML conformance
 
 Before parsing, all HTML comments, leading whitespace, and new lines are
-removed from templates. This reduces page size, and it keeps template code 
+removed from templates. This reduces page size, and it keeps template code
 more readable when spaces are not desired between inline elements. Whitespace
 at the end of lines is maintained, in case a space is desired in the HTML
 output.
 
-The contents of `<script>` and `<style>` tags are passed through literally, 
+The contents of `<script>` and `<style>` tags are passed through literally,
 except for whitespace removal. This whitespace removal can be disabled within an element by adding an `x-no-minify` attribute.
 
 {% highlight html %}
@@ -775,7 +775,7 @@ except for whitespace removal. This whitespace removal can be disabled within an
 
 Derby's HTML parser should be able to parse any valid HTML, including elements
 that don't require closing tags and unquoted attributes. However, it is
-recommended that you **always include closing tags** for elements like `<p>` 
+recommended that you **always include closing tags** for elements like `<p>`
 and `<li>` that might not require a closing tag. The rules around how tags are
 automatically closed are complex, and there are certain cases where template
 sections may be included within an unexpected element.
@@ -904,7 +904,7 @@ page.render
 {% endhighlight %}
 
 Note how in the above example, the context becomes each array item inside of
-the `#each users` section. Similarly, sections set scope when reffering to the
+the `#each users` section. Similarly, sections set scope when referring to the
 name of an object. In addition to the local scope, template tags may refer to
 anything in the parent scope.
 
@@ -947,15 +947,15 @@ I like <a href="http://derbyjs.com/">turtles</a>.
 
 Model-view binding is a relatively recent approach to adding dynamic
 interaction to a page. Its use of declarative syntax dramatically lowers the
-amount of repetative, error-prone DOM manipulation code in an application. With
-Derby's bindings system, it should rarely be neccessary to write any DOM code
+amount of repetitive, error-prone DOM manipulation code in an application. With
+Derby's bindings system, it should rarely be necessary to write any DOM code
 at all.
 
 Derby templates declare bindings by using single curly braces instead of double
 curly braces. If a left curly brace (`{`) character is desired in HTML output,
 use the HTML entity `&#123;`.
 
-Bound template tags output their values in the initally rendered HTML just like
+Bound template tags output their values in the initially rendered HTML just like
 unbound tags. In addition, they create bindings that update the view
 immediately whenever the model changes. If bindings are used for elements that
 change upon user interaction---such as form inputs---Derby will update the
@@ -978,7 +978,7 @@ since the path may be defined later.
 {% endhighlight %}
 
 #### Context
-  
+
 {% highlight javascript %}
 model.set('message', 'Yo, dude.');
 page.render();
@@ -1010,7 +1010,7 @@ If a bound template tag or section is not fully contained by an HTML element, De
 {% endhighlight %}
 
 #### Context
-  
+
 {% highlight javascript %}
 model.set('adjective', 'funny');
 page.render();
@@ -1075,7 +1075,7 @@ page.render
 </ul>
 {% endhighlight %}
 
-Literal values or variable values can be passed to components. These component attributes are available through "macro" template tags, which have triple curly braces. Macro template tags only reference component attribute names, and regular template tags (with one or two curly braces) only reference names from the model or context object. It is possible to use macro template tags to conditionally render any HTML content or other template tags. 
+Literal values or variable values can be passed to components. These component attributes are available through "macro" template tags, which have triple curly braces. Macro template tags only reference component attribute names, and regular template tags (with one or two curly braces) only reference names from the model or context object. It is possible to use macro template tags to conditionally render any HTML content or other template tags.
 
 {% highlight html %}
 <Body:>
@@ -1235,7 +1235,7 @@ page.render()
 
 Derby follows the semantic templating approach of Handlebars and Mustache, which helps to reduce bleeding of logic into templates. However, because of Derby's automatic bindings between the view and model, it can be useful to have computed values that are created only for the view.
 
-View helper functions are reactive, and they are evaluted when rendering as well as whenever any bound inputs change. In addition, they can work as both getters and setters. This is especially useful when binding to form elements, such as selected options or radio buttons:
+View helper functions are reactive, and they are evaluated when rendering as well as whenever any bound inputs change. In addition, they can work as both getters and setters. This is especially useful when binding to form elements, such as selected options or radio buttons:
 
 #### Controller
 
@@ -1411,13 +1411,13 @@ Derby's architecture optimizes time to load the page initially, to re-render sec
 
 ## Stylesheets
 
-Derby uses **[Stylus](http://learnboost.github.com/stylus/)** to automatically compile and includes styles for each page. Stylus extends CSS with variables, mixins, functions, and other awesome features. It supports CSS style syntax interchangeably with a minimal whitespace based syntax. 
+Derby uses **[Stylus](http://learnboost.github.com/stylus/)** to automatically compile and includes styles for each page. Stylus extends CSS with variables, mixins, functions, and other awesome features. It supports CSS style syntax interchangeably with a minimal whitespace based syntax.
 
 Derby also includes **[Nib](http://visionmedia.github.com/nib/)**, which adds a number of convenient CSS3 mixins to Stylus. Nib takes care of adding vendor prefixes, makes CSS gradients *much* easier, and has bunch of other useful features.
 
 Stylus requires that files end in a `.styl` extension. It supports [importing other files](http://learnboost.github.com/stylus/docs/import.html), including support for `index.styl` files. Since Node.js, Derby templates, and Stylus all support similar file importing conventions, it is easy to use the same directory structure for analogous files in the `lib`/`src`, `views`, and `styles` directories.
 
-Derby includes compiled CSS at the top of each page. Inlining CSS almost always decreases load time, and Stylus importing makes it easy to break up shared styles into files included in the appropriate pages. Note, however, that it is not optimial to include a very large amount of CSS, such as large data URI encoded images, at the top of the page. Large images are best loaded as separate files or inline at the bottom of the page, so that the rest of the page may be displayed first.
+Derby includes compiled CSS at the top of each page. Inlining CSS almost always decreases load time, and Stylus importing makes it easy to break up shared styles into files included in the appropriate pages. Note, however, that it is not optimal to include a very large amount of CSS, such as large data URI encoded images, at the top of the page. Large images are best loaded as separate files or inline at the bottom of the page, so that the rest of the page may be displayed first.
 
 ## Rendering
 
@@ -1426,11 +1426,11 @@ Views are rendered in response to [routes](#routes). Most routes should be defin
 In each render method, `namespace`, `model`, `context`, and `status` arguments may be in any order or omitted.
 
 > ### page.render` ( [namespace], [context], [status] )`
-> 
+>
 > **namespace:** *(optional)* A namespace within which to render. Typically is the name of a page or type of page.
 >
 > **context:** *(optional)* Object specifying additional context objects to use in rendering templates.
-> 
+>
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default. Has no effect when rendering on the client.
 
 App routes supply a page object, which provides a consistent interface for rendering an entire page on both server and client. On the server, the page is rendered by calling Node.js response object methods like `res.write`. On the client, Derby renders the page locally. It then replaces the `document.title` and `document.body.innerHTML`, and updates the URL with `history.pushState`.
@@ -1438,31 +1438,31 @@ App routes supply a page object, which provides a consistent interface for rende
 The page's render function implicitly renders in the context of the app's model. An additional context object may be supplied for items that are only needed at render time.
 
 > ### app.render` ( res, model, [namespace], [context], [status] )`
-> 
+>
 > **res:** Response object passed to the Express routing callback
-> 
+>
 > **model:** A Derby model object used for rendering. The contents of the model will be serialized and initialized into the same state in the browser once the page loads.
-> 
+>
 > **namespace:** *(optional)* A namespace within which to render. Typically is the name of a page or type of page.
 >
 > **context:** *(optional)* Additional context objects to use in rendering templates.
-> 
+>
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
 
-Apps may also be rendered within server only Express routes. In this case, it is neccessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
+Apps may also be rendered within server only Express routes. In this case, it is necessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
 
 > ### staticPages.render` ( name, res, [model], [namespace], [context], [status] )`
-> 
+>
 > **name:** Name of the view and style files to render
-> 
+>
 > **res:** Response object passed to the Express routing callback
-> 
+>
 > **model:** *(optional)* A Derby model object. A model object may be used for rendering, but it will not be serialized and included with a static page. Static pages don't have an associated app, and they don't include scripts by default.
 >
 > **namespace:** *(optional)* A namespace within which to render. Typically is the name of a page or type of page.
 >
 > **context:** *(optional)* Additional context objects to use in rendering templates.
-> 
+>
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
 
 For creating error pages and other static pages, Derby provides a `staticPages` object that renders a template and script file specified by name. Typically, this is used without a model object, but it is possible to supply a model object that is used for rendering only. See [Static pages](#static_pages).
@@ -1472,9 +1472,9 @@ For creating error pages and other static pages, Derby provides a `staticPages` 
 Derby adds an `app.view` object for creating and rendering views.
 
 > ### view.make` ( name, template )`
-> 
+>
 > **name:** Name of the template
-> 
+>
 > **template:** A string containing the Derby template. Note that this should be only the content of the template, and it should not have a template name element, such as `<Body:>` at the start.
 
 Apps should typically place all templates in a template file in the `views` folder instead of calling `view.make()` directly. However, templates may be added to an app this way as well.
@@ -1482,7 +1482,7 @@ Apps should typically place all templates in a template file in the `views` fold
 Note that calling `view.make()` only renders the template; it does not include the template in the external script file separately. Thus, it must be called again on the client when the app loads.
 
 > ### view.inline` ( fn )`
-> 
+>
 > **fn:** Function to be inlined in the page and called immediately when the page loads.
 
 This method is intended solely for server use and has no effect when called in the browser.
@@ -1495,7 +1495,7 @@ Usually, it is preferable to place such scripts in a separate file called `inlin
 
 Derby controllers are defined in the script file that invokes `derby.createApp()`. Typically, controllers are located at `lib\app_name\index.js` or `src\app_name\index.coffee`. See [Creating apps](#creating_apps).
 
-Controllers include routes, user event handlers, and application logic. Because Derby provides model-view bindings and syncs models automatically, directly manipulating the DOM and manually sending messages to the server should rarely be neccessary.
+Controllers include routes, user event handlers, and application logic. Because Derby provides model-view bindings and syncs models automatically, directly manipulating the DOM and manually sending messages to the server should rarely be necessary.
 
 ## Routes
 
@@ -1526,9 +1526,9 @@ Routes map URL patterns to actions. Derby routes are powered by [Express](http:/
 
 [expressRedirect]: http://expressjs.com/guide.html#res.redirect()
 
-Unlike Express, which provides direct access to the `req` and `res` objects created by Node HTTP servers, Derby returns `page`, `model`, and `params` objects. These provide the same interface on the client and the server, so that route handlers may be executed in both environments. 
+Unlike Express, which provides direct access to the `req` and `res` objects created by Node HTTP servers, Derby returns `page`, `model`, and `params` objects. These provide the same interface on the client and the server, so that route handlers may be executed in both environments.
 
-Express is used directly on the server. On the client, Derby inclues Express's route matching module. When a link is clicked or a form is submitted, Derby first tries to render the new URL on the client.
+Express is used directly on the server. On the client, Derby includes Express's route matching module. When a link is clicked or a form is submitted, Derby first tries to render the new URL on the client.
 
 Derby can also capture form submissions client-side. It provides support for `post`, `put`, and `del` HTTP methods using the same hidden form field [override approach](http://expressjs.com/guide.html#http-methods) as Express.
 
@@ -1684,11 +1684,11 @@ Application logic executes in response to routes, user events, and model events.
 >
 > **model:** The Derby model object for the given client
 
-Application logic should be written to share as much code between servers and clients as possible. For security reasons or for direct access to backend services, it may be neccessary to only perform certain functions on servers. However, placing as much code as possible in a shared location allows Derby apps to be extremely responsive and work offline by default.
+Application logic should be written to share as much code between servers and clients as possible. For security reasons or for direct access to backend services, it may be necessary to only perform certain functions on servers. However, placing as much code as possible in a shared location allows Derby apps to be extremely responsive and work offline by default.
 
 # Models
 
-Derby models are powered by [Racer](http://racerjs.com/), a realtime model synchronization engine. Racer enables mutliple users to interact with the same data objects via sophisticated conflict detection and resolution algorithms. At the same time, it provides a simple object accessor and event interface for writing application logic.
+Derby models are powered by [Racer](http://racerjs.com/), a realtime model synchronization engine. Racer enables multiple users to interact with the same data objects via sophisticated conflict detection and resolution algorithms. At the same time, it provides a simple object accessor and event interface for writing application logic.
 
 ## Introduction to Racer
 
@@ -1704,11 +1704,11 @@ Model [mutator methods](#mutators) provide callbacks invoked after success or fa
 
 Currently, Racer defaults to applying all transactions in the order received, i.e. last-writer-wins. For realtime-connected clients, this will typically result in expected behavior. However, offline users interacting with the same data are likely to produce conflicting updates that could lead to unexpected behavior.
 
-Therefore, Racer suppots conflict resolution via a combination of [Software Transactional Memory (STM)](http://en.wikipedia.org/wiki/Software_transactional_memory), [Operational Transformation (OT)](http://en.wikipedia.org/wiki/Operational_transformation), and [Diff-match-patch](http://en.wikipedia.org/wiki/Diff) techniques.
+Therefore, Racer supports conflict resolution via a combination of [Software Transactional Memory (STM)](http://en.wikipedia.org/wiki/Software_transactional_memory), [Operational Transformation (OT)](http://en.wikipedia.org/wiki/Operational_transformation), and [Diff-match-patch](http://en.wikipedia.org/wiki/Diff) techniques.
 
 These features are not fully implemented yet, but the [Racer demos](https://github.com/codeparty/racer#readme) show preliminary examples of STM and OT. Letters uses STM mode to automatically detect conflicts when different users move the same letters at the same time. Pad uses OT for a minimal collaborative text editor.
 
-To perform these algorithms, Racer stores a journal of all transactions. When new transactions arrive, their paths and versions are compared to the transactions already commited to the journal. STM accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
+To perform these algorithms, Racer stores a journal of all transactions. When new transactions arrive, their paths and versions are compared to the transactions already committed to the journal. STM accepts a transaction if it is not in conflict with any other operations on the same path. STM works well when changes need to be either fully accepted or rejected, such as updating a username. In contrast, OT is designed for situations like collaborative text editing, where changes should be merged together. In OT, transactions are modified to work together in any order instead of being rejected.
 
 ## Creating stores
 
@@ -1832,7 +1832,7 @@ If a model is assigned to `req.model`, Derby uses that instead of creating a new
 >
 > **model:** A Racer model object associated with the given store
 
-If using the the Racer session middleware, server-side routes can use the model supplied on `req.model`. Otherwise, they can manually create a model via `store.createModel()`.
+If using the Racer session middleware, server-side routes can use the model supplied on `req.model`. Otherwise, they can manually create a model via `store.createModel()`.
 
 ## Model features
 
@@ -1851,7 +1851,7 @@ For example, the model:
       ]
     }
 
-Would have paths like `title`, `fruits.1`, and `fruits.0.color`. Paths consist of valid JavaScript variable names---alphanumeric characters or underscore (`_`), beginning with a letter or underscore---or array indicies joined by dots (`.`). They should not contain dollar signs (`$`), which are reserved for internal use.
+Would have paths like `title`, `fruits.1`, and `fruits.0.color`. Paths consist of valid JavaScript variable names---alphanumeric characters or underscore (`_`), beginning with a letter or underscore---or array indices joined by dots (`.`). They should not contain dollar signs (`$`), which are reserved for internal use.
 
 #### Private paths
 
@@ -1859,7 +1859,7 @@ Paths that contain a segment starting with an underscore (e.g. `_showFooter` or 
 
 #### GUIDs
 
-Models provide a method to create globablly unique ids. These can be used as part of a path or within mutator methods.
+Models provide a method to create globally unique ids. These can be used as part of a path or within mutator methods.
 
 > ### `guid = `model.id` ( )`
 >
@@ -1950,7 +1950,7 @@ model.query 'users',
 
     # With shoe as either 'nike' or 'adidas'
     shoe:
-      within: ['nike', 'adidas']   
+      within: ['nike', 'adidas']
 
   # Pagination ftw!
   skip: 10
@@ -2150,7 +2150,7 @@ accessors, mutators, and event subscribers.
 
 > ### `segment = `model.leaf` ( )`
 >
-> **segment:** Returns the last segment for the reference path. This may be useful for getting indicies or other properties set at the end of a path
+> **segment:** Returns the last segment for the reference path. This may be useful for getting indices or other properties set at the end of a path
 
 {% highlight javascript %}
 room = model.at('_room');
@@ -2392,7 +2392,7 @@ The event callback receives a number of arguments based on the path pattern and 
 >
 > **passed:** `undefined`, unless a value is specified via `model.pass`. See description below
 
-In path patterns, wildcards (`*`) will only match a single segment in the middle of a path, but they will match a single or mutliple path segments at the end of the path. In other words, they are non-greedy in the middle of a pattern and greedy at the end of a pattern.
+In path patterns, wildcards (`*`) will only match a single segment in the middle of a path, but they will match a single or multiple path segments at the end of the path. In other words, they are non-greedy in the middle of a pattern and greedy at the end of a pattern.
 
 {% highlight javascript %}
 // Matches only model.push('messages', message)
@@ -2460,7 +2460,7 @@ Reactive functions provide a simple way to update a computed value whenever one 
 >
 > **inputPaths:** One or more paths for function inputs. The function will be called whenever one of the inputs or its sub-paths are modified
 >
-> **fn:** The function to evalute. The function will be called with each of its inputs as arguments
+> **fn:** The function to evaluate. The function will be called with each of its inputs as arguments
 >
 > **out:** Returns the result of the function
 
