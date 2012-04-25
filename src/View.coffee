@@ -472,11 +472,15 @@ pushVar = (view, ns, stack, events, boundMacro, remainder, match, fn) ->
     if wrap
       stack.push ['marker', '', attrs = {}]
     else
-      for attr of attrs = last[2]
+      attrs = last[2]
+      for attr of attrs
         parseMarkup 'boundParent', attr, tagName, events, attrs, name
+      if boundOut = parseMarkup 'boundParent', '*', tagName, events, attrs, name
+        bindEventsById events, macro, name, null, attrs, boundOut.method, boundOut.property
     addId view, attrs
 
-    bindEventsById events, macro, name, fn, attrs, 'html', !fn && escapeFn, true
+    unless boundOut
+      bindEventsById events, macro, name, fn, attrs, 'html', !fn && escapeFn, true
 
   pushVarFn view, stack, fn, name, escapeFn, macro
   stack.push ['marker', '$', {id: -> attrs._id}]  if wrap

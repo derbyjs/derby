@@ -48,6 +48,11 @@ module.exports =
         addDomEvent events, attrs, TEXT_EVENTS, name, {method: 'html'}
         return
 
+    '*':
+      'textarea': (events, attrs, name) ->
+        addDomEvent events, attrs, TEXT_EVENTS, name, {method: 'prop', property: 'value'}
+        return method: 'prop', property: 'value'
+
   element:
     'select': (events, attrs) ->
       # Distribute change event to child nodes of select elements
