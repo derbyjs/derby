@@ -212,5 +212,5 @@ remove = (events, pathMap, path, start, howMany, local, pass) ->
   end = start + howMany
   pathMap.onRemove path, start, howMany  # Update indicies in pathMap
   for index in [start...end]
-    triggerEach events, pathMap, path, 'remove', local, pass, index
+    triggerEach events, pathMap, path, 'remove', local, pass, start
   return
