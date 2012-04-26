@@ -81,7 +81,7 @@ Dom = module.exports = (model, appExports) ->
         return unless el = el.parentNode
       # Stop bubbling once the event is handled
       return if events.trigger prefix + id, id, e, el, next
-      el = el.parentNode
+      return unless el = el.parentNode
     return
 
   @captureTrigger = captureTrigger = (e) ->
