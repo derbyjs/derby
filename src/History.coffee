@@ -112,7 +112,7 @@ History:: =
 
     # Update the URL
     previous = winLocation.pathname
-    state.$render = render
+    state.$render = true
     state.$method = method
     winHistory[historyMethod] state, null, url
     currentPath = winLocation.pathname
