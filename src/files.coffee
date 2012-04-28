@@ -5,7 +5,7 @@ stylus = require 'stylus'
 nib = require 'nib'
 less = require 'less'
 racer = require 'racer'
-{parse: parseHtml} = require './html'
+{parse: parseHtml} = require 'html-util'
 {trim} = require './View'
 {Promise} = racer.util
 {finishAfter} = racer.util.async
@@ -218,13 +218,16 @@ compactHtml = (html) ->
   parseHtml html,
     start: onTag
     end: onTag
-    chars: onText
+    text: onText
   return compact
 
 parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias, currentNs, matchesGet, file) ->
   name = src = ns = as = importTemplates = templateOptions = null
   relativePath = relative root, path
   parseHtml file,
+    # Force template tags to be treated as raw tags,
+    # meaning their contents are not parsed as HTML
+    rawTags: /^(?:[^\s=\/>]+:|style|script)$/i
 
     start: (tag, tagName, attrs) ->
       name = src = ns = as = importTemplates = null
@@ -260,7 +263,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
         templateOptions = attrs
       return
 
-    chars: (text, literal) ->
+    text: (text, isRawText) ->
       return unless matchesGet name
       if src
         unless onlyWhitespace.test text
@@ -274,7 +277,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
       instances[instanceName] = [templateName, templateOptions]
 
       return if templates[templateName]
-      unless name && literal
+      unless name && isRawText
         return if onlyWhitespace.test text
         calls.finish new Error "Can't read template in #{path} near the text: #{text}"
 

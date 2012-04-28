@@ -2,7 +2,7 @@ EventDispatcher = require './EventDispatcher'
 racer = require 'racer'
 uglify = require 'racer/node_modules/uglify-js'
 files = require './files'
-{escapeHtml} = require './html'
+{escapeHtml} = require 'html-util'
 {errorHtml, cssError, templateError} = require './refresh.server'
 {trim} = module.exports = View = require './View'
 

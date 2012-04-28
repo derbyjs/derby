@@ -1,4 +1,4 @@
-{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttr, isVoid} = require './html'
+{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttribute, isVoid} = require 'html-util'
 markup = require './markup'
 {trim, wrapRemainder, ctxPath, extractPlaceholder, dataValue, pathFnArgs} = require './viewPath'
 
@@ -168,7 +168,7 @@ View:: =
     doc.title = title
 
   escapeHtml: escapeHtml
-  escapeAttr: escapeAttr
+  escapeAttribute: escapeAttribute
 
 View.trim = trim
 
@@ -251,7 +251,7 @@ reduceStack = (stack) ->
     if value && value.call
       i = html.push(value, '') - 1
     else
-      html[i] += if isAttr then escapeAttr value else value
+      html[i] += if isAttr then escapeAttribute value else value
 
   for item in stack
     switch item[0]
@@ -272,7 +272,7 @@ reduceStack = (stack) ->
             pushValue value, true
           else html[i] += ' ' + key
         html[i] += '>'
-      when 'chars'
+      when 'text'
         pushValue item[1]
       when 'end'
         html[i] += '</' + item[1] + '>'
@@ -433,14 +433,14 @@ parseMarkup = (type, attr, tagName, events, attrs, name) ->
   delete attrs[attr]  if out?.del
   return out
 
-pushChars = (stack, text) ->
-  stack.push ['chars', text]  if text
+pushText = (stack, text) ->
+  stack.push ['text', text]  if text
 
 pushVarFn = (view, stack, fn, name, escapeFn, macro) ->
   if fn
-    pushChars stack, fn
+    pushText stack, fn
   else
-    pushChars stack, textFn(view, name, escapeFn, macro)
+    pushText stack, textFn(view, name, escapeFn, macro)
 
 boundMacroName = (boundMacro, name) ->
   macroVar = name.split('.')[0]
@@ -573,9 +573,9 @@ parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
       , boundMacro
 
       attrs[attr] = if attr is 'id'
-        (ctx, model) -> attrs._id = escapeAttr render(ctx, model)
+        (ctx, model) -> attrs._id = escapeAttribute render(ctx, model)
       else
-        (ctx, model) -> escapeAttr render(ctx, model)
+        (ctx, model) -> escapeAttribute render(ctx, model)
       return
 
     if isBound boundMacro, match, name
@@ -589,7 +589,7 @@ parseAttr = (view, viewName, events, boundMacro, tagName, attrs, attr, value) ->
           bool: (ctx, model) ->
             if dataValue(view, ctx, model, name, macro) then ' ' + attr else ''
         else
-          textFn view, name, escapeAttr, macro
+          textFn view, name, escapeAttribute, macro
   return
 
 parsePartialAttr = (view, viewName, events, attrs, attr, value) ->
@@ -646,7 +646,7 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
   ns = if ~(index = viewName.lastIndexOf ':') then viewName[0...index] else ''
 
   minifyContent = true
-  start = (tag, tagName, attrs) ->
+  parseStart = (tag, tagName, attrs) ->
     if 'x-no-minify' of attrs
       delete attrs['x-no-minify']
       minifyContent = false
@@ -675,16 +675,16 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
 
     stack.push ['start', tagName, attrs]
 
-  chars = (text, isRawText, remainder) ->
+  parseText = (text, isRawText, remainder) ->
     if isRawText || !(match = extractPlaceholder text)
       if minifyContent
         text = if isString then unescapeEntities trim text else trim text
-      pushChars stack, text
+      pushText stack, text
       return
 
     {pre, post} = match
     pre = unescapeEntities pre  if isString
-    pushChars stack, pre
+    pushText stack, pre
     remainder = post || remainder
 
     parseMatch text, match, queues,
@@ -695,9 +695,9 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
       onContent: (match) ->
         push view, ns, stack, events, boundMacro, remainder, match
 
-    chars post  if post
+    parseText post  if post
 
-  end = (tag, tagName) ->
+  parseEnd = (tag, tagName) ->
     if partial = partialName view, tagName
       onBlock false, true, null, queues,
         onStart: onStart
@@ -710,8 +710,8 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
     stack.push ['end', tagName]
 
   if isString
-    chars template
+    parseText template
   else
-    parseHtml template, {start, chars, end}
+    parseHtml template, {start: parseStart, text: parseText, end: parseEnd}
 
   return renderer view, reduceStack(stack), events, onRender
