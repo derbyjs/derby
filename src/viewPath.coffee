@@ -1,8 +1,5 @@
 {lookup} = require 'racer/lib/path'
-
-# Remove leading whitespace and newlines from a string. Note that trailing
-# whitespace is not removed in case whitespace is desired between lines
-exports.trim = trim = (s) -> if s then s.replace /\n\s*/g, '' else ''
+{trimLeading} = require 'html-util'
 
 # True if remaining text does not immediately close the current tag
 exports.wrapRemainder = (tagName, remainder) ->
@@ -55,8 +52,8 @@ exports.extractPlaceholder = extractPlaceholder = (text) ->
     escaped = false
 
   return {
-    pre: trim pre
-    post: trim post
+    pre: trimLeading pre
+    post: trimLeading post
     bound: bound
     macro: macro
     hash: content[1]

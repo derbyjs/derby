@@ -2,9 +2,9 @@ EventDispatcher = require './EventDispatcher'
 racer = require 'racer'
 uglify = require 'racer/node_modules/uglify-js'
 files = require './files'
-{escapeHtml} = require 'html-util'
+{escapeHtml, trimLeading} = require 'html-util'
 {errorHtml, cssError, templateError} = require './refresh.server'
-{trim} = module.exports = View = require './View'
+module.exports = View = require './View'
 
 {Model} = racer.protected
 {Promise, isProduction} = racer.util
@@ -108,7 +108,7 @@ View::_load = (isStatic, callback) ->
       @_css = '<style id=$_css></style>'
       errors['CSS'] = cssError err
       return finish()
-    value = if isProduction then trim value else '\n' + value
+    value = if isProduction then trimLeading value else '\n' + value
     @_css = if value then "<style id=$_css>#{value}</style>" else ''
     finish()
 

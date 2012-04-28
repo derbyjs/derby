@@ -26,6 +26,28 @@ describe 'View', ->
     # String views should have line breaks and leading whitespace removed
     expect(view.get 'test').to.eql '<style>body {margin: 0}</style>'
 
+  it 'doctypes and conditional comments are maintained', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', """
+      <!DOCTYPE html>
+      <!-- This comment is removed -->
+      <title></title>
+      <!--[if gt IE 6]>
+      IE greater than 6
+      <![endif]-->
+      <!--[if !IE]> -->
+      Not IE
+      <!-- <![endif]-->
+      """
+    expect(view.get 'test').to.eql '<!DOCTYPE html>' +
+      '<title></title>' +
+      '<!--[if gt IE 6]>\n' +
+      'IE greater than 6\n' +
+      '<![endif]-->' +
+      '<!--[if !IE]> -->Not IE<!-- <![endif]-->'
+
   it 'supports substituting variables into text', ->
     view = new View
     model = new Model

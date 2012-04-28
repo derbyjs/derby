@@ -1,6 +1,6 @@
-{parse: parseHtml, unescapeEntities, escapeHtml, escapeAttribute, isVoid} = require 'html-util'
+{parse: parseHtml, trimLeading, unescapeEntities, escapeHtml, escapeAttribute, isVoid, conditionalComment} = require 'html-util'
 markup = require './markup'
-{trim, wrapRemainder, ctxPath, extractPlaceholder, dataValue, pathFnArgs} = require './viewPath'
+{wrapRemainder, ctxPath, extractPlaceholder, dataValue, pathFnArgs} = require './viewPath'
 
 empty = -> ''
 notFound = (name, ns) ->
@@ -169,8 +169,6 @@ View:: =
 
   escapeHtml: escapeHtml
   escapeAttribute: escapeAttribute
-
-View.trim = trim
 
 keyHash = (obj) ->
   keys = []
@@ -678,7 +676,7 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
   parseText = (text, isRawText, remainder) ->
     if isRawText || !(match = extractPlaceholder text)
       if minifyContent
-        text = if isString then unescapeEntities trim text else trim text
+        text = if isString then unescapeEntities trimLeading text else trimLeading text
       pushText stack, text
       return
 
@@ -712,6 +710,14 @@ parse = (view, viewName, template, isString, onBind, boundMacro = {}) ->
   if isString
     parseText template
   else
-    parseHtml template, {start: parseStart, text: parseText, end: parseEnd}
-
+    parseHtml template,
+      start: parseStart
+      text: parseText
+      end: parseEnd
+      comment: (tag) ->
+        if conditionalComment(tag)
+          pushText stack, tag
+        return
+      other: (tag) ->
+        pushText stack, tag
   return renderer view, reduceStack(stack), events, onRender

@@ -5,8 +5,7 @@ stylus = require 'stylus'
 nib = require 'nib'
 less = require 'less'
 racer = require 'racer'
-{parse: parseHtml} = require 'html-util'
-{trim} = require './View'
+{parse: parseHtml, minify: minifyHtml} = require 'html-util'
 {Promise} = racer.util
 {finishAfter} = racer.util.async
 
@@ -204,23 +203,6 @@ loadTemplates = (root, fileName, get, calls, files, templates, instances, alias,
       calls.finish new Error "Can't find template '#{get}' in #{path}"  unless got
       calls.finish null, templates, instances
 
-# Trim linebreaks and leading space, while
-# maintaining a linebreak within HTML tags
-compactHtml = (html) ->
-  compact = ''
-  minifyContent = true
-  onTag = (tag, _, attrs) ->
-    if attrs.constructor == Object
-      minifyContent = ! ('x-no-minify' of attrs)
-    compact += tag.replace /\n\s*/g, '\n'
-  onText = (text) ->
-    compact += if minifyContent then trim text else text
-  parseHtml html,
-    start: onTag
-    end: onTag
-    text: onText
-  return compact
-
 parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias, currentNs, matchesGet, file) ->
   name = src = ns = as = importTemplates = templateOptions = null
   relativePath = relative root, path
@@ -281,7 +263,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
         return if onlyWhitespace.test text
         calls.finish new Error "Can't read template in #{path} near the text: #{text}"
 
-      templates[templateName] = compactHtml text
+      templates[templateName] = minifyHtml text
 
 extensions =
   html: /\.html$/
