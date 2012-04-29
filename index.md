@@ -2031,6 +2031,30 @@ model.subscribe "rooms.#{roomName}", (err, room) ->
   model.ref '_room', room
 {% endhighlight %}
 
+{% highlight javascript %}
+var query = model.query('posts').where('authorId').equals(userId);
+model.subscribe(query, function (err, posts) {
+  // Logs: 'posts'
+  console.log(posts.path());
+  // A reference is frequently created from a parameterized
+  // path pattern for use later. Refs may be created directly
+  // from a scoped model
+  model.ref('_posts', posts);
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+query = model.query 'posts'
+  where:
+    authorId: userId
+model.subscribe query, (err, posts) ->
+  # Logs: 'posts'
+  console.log posts.path()
+  # A reference is frequently created from a parameterized
+  # path pattern for use later. Refs may be created directly
+  # from a scoped model
+  model.ref '_posts', posts
+{% endhighlight %}
+
 In addition to `subscribe`, models have a `fetch` method with the same format.
 Like subscribe, fetch populates a model with data from a store based on path
 patterns and queries. However, fetch only retrieves the data once, and it does
