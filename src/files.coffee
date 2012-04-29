@@ -146,8 +146,12 @@ module.exports =
     options = interval: 100
     extension = extensions[type]
     files(dir, extension).forEach (file) ->
-      fs.watchFile file, options, (curr, prev) ->
-        onChange file  if prev.mtime < curr.mtime
+      if process.platform is 'win32'
+        fs.watch file, (event) ->
+          onChange file  if event is 'change'
+      else
+        fs.watchFile file, options, (curr, prev) ->
+          onChange file  if prev.mtime < curr.mtime
 
 
 onlyWhitespace = /^[\s\n]*$/
