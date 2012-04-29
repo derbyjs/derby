@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.3.1
+version: 0.3.2
 headers:
   - text: Introduction
     type: h1
@@ -47,6 +47,8 @@ headers:
   - text: Relative model paths and aliases
     type: h3
   - text: Components
+    type: h3
+  - text: View helper functions
     type: h3
   - text: HTML extensions
     type: h2
@@ -135,17 +137,19 @@ get('/', function (page, model) {
 
 <h3 class="javascript">server.js</h3>
 {% highlight javascript %}
-var express = require('express')
-  , hello = require('./hello')
-  , server = express.createServer()
-      .use(express.static(__dirname + '/public'))
-      // Apps create an Express middleware
-      .use(hello.router());
+var http = require('http')
+  , express = require('express')
+  , hello = require('./hello');
+
+var expressApp = express()
+  .use(express.static(__dirname + '/public'))
+  // Apps create an Express middleware
+  .use(hello.router());
+
+var server = http.createServer(expressApp).listen(3000);
 
 // Apps also provide a server-side store for syncing data
-hello.createStore({ listen: server });
-
-server.listen(3000);
+hello.createStore({listen: server});
 {% endhighlight %}
 
 <h3 class="coffeescript">hello.coffee</h3>
@@ -165,17 +169,19 @@ get '/', (page, model) ->
 
 <h3 class="coffeescript">server.coffee</h3>
 {% highlight coffeescript %}
+http = require 'http'
 express = require 'express'
 hello = require './hello'
-server = express.createServer()
+
+expressApp = express()
   .use(express.static __dirname + '/public')
   # Apps create an Express middleware
   .use(hello.router())
 
+server = http.createServer(expressApp).listen 3000
+
 # Apps also provide a server-side store for syncing data
 hello.createStore listen: server
-
-server.listen 3000
 {% endhighlight %}
 
 ### Add water and...
@@ -666,7 +672,7 @@ page.render 'home',
 ## Template syntax
 
 Derby's template syntax is largely based on
-[Handlebars](http://handlebarsjs.com/), a popular logic-less templating
+[Handlebars](http://handlebarsjs.com/), a popular semantic templating
 language similar to [Mustache](http://mustache.github.com/mustache.5.html).
 
 If you use Sublime Text 2 or TextMate, you can use [our fork of the HTML5
@@ -698,11 +704,11 @@ Will produce the following:
     You have just won $10000!
     Well, $6000.0, after taxes.
 
-Logic-less templates better enforce separation of logic from presentation by
-making it impossible to embed logic within views. Instead of conditional
-statements and loops, logic-less templates use a restricted set of template
-tags. These tags are replaced with data passed in when the template is
-rendered. This data is often referred to as the "context."
+Semantic templates better enforce separation of logic from presentation by
+restricting the ability to embed logic within views. Instead of conditional
+statements and loops, there is a small set of template tags. During rendering,
+data are passed to the template, and template tags are replaced with the
+appropriate values. This data is often referred to as the "context."
 
 With Handlebars, application code generates a context object before rendering
 the view. It then passes that object along with the template at render time.
@@ -752,21 +758,32 @@ Let's go <b>{{"{{"}}activity}}</b>!
 ### Whitespace and HTML conformance
 
 Before parsing, all HTML comments, leading whitespace, and new lines are
-removed from templates. Whitespace at the end of lines is maintained, in case a
-space is desired in the HTML output. The contents of `<script>` and `<style>`
-tags are passed through literally.
+removed from templates. This reduces page size, and it keeps template code 
+more readable when spaces are not desired between inline elements. Whitespace
+at the end of lines is maintained, in case a space is desired in the HTML
+output.
+
+The contents of `<script>` and `<style>` tags are passed through literally, 
+except for whitespace removal. This whitespace removal can be disabled within an element by adding an `x-no-minify` attribute.
+
+{% highlight html %}
+<script type="application/x-yaml" x-no-minify>
+  firstName: Sam
+  lastName : Reed
+</script>
+{% endhighlight %}
 
 Derby's HTML parser should be able to parse any valid HTML, including elements
 that don't require closing tags and unquoted attributes. However, it is
-recommended that you always include closing tags for elements like `<p>` and
-`<li>` that might not require a closing tag. The rules around how tags are
+recommended that you **always include closing tags** for elements like `<p>` 
+and `<li>` that might not require a closing tag. The rules around how tags are
 automatically closed are complex, and there are certain cases where template
 sections may be included within an unexpected element.
 
 HTML attribute values only need to be quoted if they are the empty string or if
 they contain a space, equals sign, or greater than sign. Since Derby templates
 are parsed as HTML first, any of these characters within a template tag require
-an attribute to be escaped. Using quotes around all attribute values is
+an attribute to be escaped. Using **quotes around all attribute values** is
 recommended.
 
 Because it understands the HTML context, Derby's HTML escaping is much more
@@ -1213,6 +1230,68 @@ page.render()
   <p>Truck on the <!--$8-->shelf<!--$$8--></p>
 <!--$$5-->
 {% endhighlight %}
+
+### View helper functions
+
+Derby follows the semantic templating approach of Handlebars and Mustache, which helps to reduce bleeding of logic into templates. However, because of Derby's automatic bindings between the view and model, it can be useful to have computed values that are created only for the view.
+
+View helper functions are reactive, and they are evaluted when rendering as well as whenever any bound inputs change. In addition, they can work as both getters and setters. This is especially useful when binding to form elements, such as selected options or radio buttons:
+
+#### Controller
+
+{% highlight javascript %}
+// Remove all whitespace from a string
+view.fn('unspace', function(value) {
+  return value && value.replace(/\s/g, '')
+})
+{% endhighlight %}
+{% highlight coffeescript %}
+# Remove all whitespace from a string
+view.fn 'unspace', (value) ->
+  value && value.replace(/\s/g, '')
+{% endhighlight %}
+
+#### Template
+
+{% highlight html %}
+{{"{{"}}#with home}}
+  <h1 style="color:{unspace(.title.color)}">
+    Welcome in {.title.color}!
+  </h1>
+  <select>
+    {#each .colors}
+      <option selected="{equal(.name, home.title.color)}">
+        {{"{{"}}.name}}
+      </option>
+    {/}
+  </select>
+{{"{{"}}/}}
+{% endhighlight %}
+
+There are two default view helper functions, `equal` and `not`, that are aways available. It is also possible to define custom view helper functions, such as `unspace` in the example above. The `equal` and `not` functions can act as both getters and setters. In this example, when the page renders, the option with a name equal to the value of `home.title.color` will have a `selected` attribute and the others will not. When the user selects a different option from the drop down, `home.title.color` will be set to the value of the option that is now selected.
+
+Note that helper functions provide enough flexibility to introduce logic into templates, which is considered bad practice. For example:
+
+{% highlight html %}
+<!-- WARNING: Not recommended -->
+{#if lessThan(5, _user.score)}
+  <b>Let's try that again!</b>
+{/}
+
+<!-- A little better: -->
+{#if lessThan(lowScoreCutoff, _user.score)}
+  <b>Let's try that again!</b>
+{/}
+
+<!-- Preferred: -->
+{#if isLowScore(_user.score)}
+  <b>Let's try that again!</b>
+{/}
+{% endhighlight %}
+
+The first example is basically just straight logic embedded within the template. This is not recommended, because as business rules change (such as changing scoring so that 20 is now a low score), templates should not need to be modified. It is typically better to define constants in the controller code and store them in the model or pass them in as context data. Better still is to define a function specifically for each purpose, as what determines the low score could change entirely to a function of an additional input and no longer a simple cutoff.
+
+When defining view helpers, try to avoid basic comparison functions like `lessThan`. While tempting, such functions are likely to produce less maintainable code in the long run.
 
 ## HTML extensions
 
