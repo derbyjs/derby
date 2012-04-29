@@ -2085,8 +2085,7 @@ It is also possible to use an asterisk as a wildcard character in place of a
 path segment. For example, `rooms.*.playerCount` subscribes a model to the
 playerCount for all rooms but no other properties. The scoped model passed to a
 subscribe callback is scoped to the segments up to the first wildcard
-character. For this example, the model would be scoped to `rooms`. More complex
-subscriptions may be specified via [queries](#queries).
+character. For this example, the model would be scoped to `rooms`.
 
 {% highlight javascript %}
 var roomName = 'lobby';
@@ -2109,6 +2108,8 @@ model.subscribe "rooms.#{roomName}", (err, room) ->
   # from a scoped model
   model.ref '_room', room
 {% endhighlight %}
+
+More complex subscriptions can be specified via [queries](#queries).
 
 {% highlight javascript %}
 var query = model.query('posts').where('authorId').equals(userId);
