@@ -211,6 +211,12 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
     # meaning their contents are not parsed as HTML
     rawTags: /^(?:[^\s=\/>]+:|style|script)$/i
 
+    matchEnd: (tagName) ->
+      return if tagName.slice(-1) == ':'
+        /<\/?[^\s=\/>]+:[\s>]/
+      else
+        new RegExp('</' + tagName, 'i')
+
     start: (tag, tagName, attrs) ->
       name = src = ns = as = importTemplates = null
       i = tagName.length - 1
@@ -249,7 +255,7 @@ parseTemplateFile = (root, dir, path, calls, files, templates, instances, alias,
       return unless matchesGet name
       if src
         unless onlyWhitespace.test text
-          calls.finish new Error "Template import of '#{src}' in #{path} can't contain content"
+          calls.finish new Error "Template import of '#{src}' in #{path} can't contain content: #{text}"
         toGet = importTemplates || 'import'
         return loadTemplates root, join(dir, src), toGet, calls, files, templates, instances, as, ns
 
