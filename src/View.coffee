@@ -371,22 +371,29 @@ partialFn = (view, name, type, alias, render, macroCtx, macro) ->
   if type is 'each'
     return (ctx, model, triggerPath, triggerId, value, index, listener) ->
       value = partialValue view, ctx, model, name, value, listener, macro
-      isArray = Array.isArray(value)
+      isObject = typeof value is 'object'
 
-      if listener && !isArray
+      if listener && !isObject
         return withFn ctx, model, triggerPath, triggerId, value, index, true
 
-      return '' unless isArray
+      return '' unless isObject
 
       ctx = extendCtx ctx, null, name, alias, null, true
 
       out = ''
       indices = ctx.$indices
-      for item, i in value
-        renderCtx = extend ctx, item
-        renderCtx.this = item
-        renderCtx.$indices = [i].concat indices
-        out += render renderCtx, model, triggerPath
+      if Array.isArray(value)
+        for item, i in value
+          renderCtx = extend ctx, item
+          renderCtx.this = item
+          renderCtx.$indices = [i].concat indices
+          out += render renderCtx, model, triggerPath
+      else
+        for i, item  of value
+          renderCtx = extend ctx, item
+          renderCtx.this = item
+          renderCtx.$indices = [i].concat indices
+          out += render renderCtx, model, triggerPath
       return out
 
   throw new Error 'Unknown block type: ' + type
