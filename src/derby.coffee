@@ -64,7 +64,7 @@ derby = module.exports = mergeAll Object.create(racer),
     appExports.createStore = (options) -> setStore racer.createStore options
     appExports.session = -> session = racer.session store
 
-    addHttpMethods appExports, view, createModel
+    appExports.routes = addHttpMethods appExports, view, createModel
 
     process.nextTick -> view.render()
 
