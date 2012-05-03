@@ -1,6 +1,6 @@
 {expect, calls} = require 'racer/test/util'
 {DetachedModel: Model} = require './mocks'
-View = require '../src/View.server'
+View = require '../lib/View.server'
 
 describe 'View components', ->
 

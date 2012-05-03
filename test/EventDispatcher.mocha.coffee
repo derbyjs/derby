@@ -1,5 +1,5 @@
 {expect, calls} = require 'racer/test/util'
-EventDispatcher = require '../src/EventDispatcher'
+EventDispatcher = require '../lib/EventDispatcher'
 
 describe 'EventDispatcher', ->
 

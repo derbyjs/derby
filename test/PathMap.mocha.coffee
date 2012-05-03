@@ -1,5 +1,5 @@
 {expect, calls} = require 'racer/test/util'
-PathMap = require '../src/PathMap'
+PathMap = require '../lib/PathMap'
 
 describe 'PathMap', ->
 
