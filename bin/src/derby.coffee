@@ -253,7 +253,7 @@ var ONE_YEAR = 1000 * 60 * 60 * 24 * 365
   // .use(express.cookieParser('secret_sauce'))
   // .use(express.session({
   //   cookie: {maxAge: ONE_YEAR}
-  // })
+  // }))
   // .use(<<app>>.session())
 
   // The router method creates an express middleware from the app's routes
