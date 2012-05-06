@@ -26,6 +26,20 @@ describe 'View components', ->
     '''
     expect(view.get 'test').to.equal 'say "Howdy" or "Yo"'
 
+  it 'macro attributes are case-insensitive', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', 'say "<app:test2 messAGE="Howdy">" or "<app:test2>"'
+    view.make 'test2', '''
+      {{{#if messAGE}}}
+        {{{message}}}
+      {{{else}}}
+        Yo
+      {{{/}}}
+    '''
+    expect(view.get 'test').to.equal 'say "Howdy" or "Yo"'
+
   it 'supports boolean and numerical attributes', ->
     view = new View
     view._init new Model
