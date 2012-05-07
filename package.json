@@ -1,7 +1,7 @@
 {
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "homepage": "http://derbyjs.com/",
   "repository": {
     "type": "git",
