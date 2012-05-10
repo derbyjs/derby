@@ -2,7 +2,7 @@
 {DetachedModel: Model} = require './mocks'
 View = require '../lib/View.server'
 
-describe 'View components', ->
+describe 'App HTML components', ->
 
   it 'supports void components', ->
     view = new View
