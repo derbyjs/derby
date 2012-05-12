@@ -1,6 +1,6 @@
 // Components must export a create function
 
-// Components are passed a scoped model underneath _$components.{uid}
+// Components are passed a scoped model underneath _$component.{uid}
 
 exports.create = function(self, dom, elements) {
   var container = elements.container

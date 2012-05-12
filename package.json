@@ -8,9 +8,6 @@
     "url": "git://github.com/codeparty/derby.git"
   },
   "main": "./lib/derby.js",
-  "browserify": {
-    "main": "./lib/derby.browser.js"
-  },
   "bin": {
     "derby": "./bin/derby"
   },

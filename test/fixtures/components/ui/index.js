@@ -1,7 +1,11 @@
+var scripts = {
+  dropdown: require('./dropdown')
+}
+
 module.exports = plugin
 plugin.decorate = 'derby'
-plugin.useWith = {server: true, browser: false}
+plugin.useWith = {server: true, browser: true}
 
 function plugin(derby, options) {
-  var ui = derby.createLibrary(module, options)
+  derby.createLibrary(module, scripts, options)
 }
