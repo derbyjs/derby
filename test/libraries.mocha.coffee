@@ -12,7 +12,12 @@ describe 'Component libraries', ->
     view = new View(derby._libraries)
     view._init new Model
 
-    console.log(view._libraries.__proto__)
+    view.make 'test', 'give me a <ui:box>'
+    expect(view.get 'test').to.equal 'give me a <div class=box></div>'
 
-    # view.make 'test', 'give me a <ui:box>'
-    # expect(view.get 'test').to.equal 'give me a <div class=box></div>'
+  it 'supports non-void components from libraries', ->
+    view = new View(derby._libraries)
+    view._init new Model
+
+    view.make 'test', 'give me a <ui:button>Click</ui:button>'
+    expect(view.get 'test').to.equal 'give me a <button>Click</button>'
