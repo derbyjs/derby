@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.3.2
+version: 0.3.6
 headers:
   - text: Introduction
     type: h1
