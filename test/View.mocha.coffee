@@ -266,6 +266,36 @@ describe 'View', ->
     expect(view.get 'test', arr: [{name: 'stuff'}, {name: 'more'}])
       .to.eql '<ul><li>stuff<li>more</ul>'
 
+  it 'supports nested lists', ->
+    view = new View
+    view._init new Model
+
+    template = """
+    {{#each outer as :out}}
+      {{#each inner as :in}}
+        {{#each core as :core}}
+        [{{:out.name}} {{:in.name}} {{:core.name}} {{equal(:out.color, :in.color)}}]
+        {{/}}
+      {{/}}
+    {{/}}
+    """
+
+    view.make 'test', template
+    compiled = view.get 'test',
+      outer: [{name: 'stuff', color: 'blue'}, {name: 'more', color: 'pink'}]
+      inner: [{name: '0', color: 'pink'}, {name: '1', color: 'blue'}]
+      core: [{name: '0'}, {name: '1'}]
+    expect(compiled).to.equal [
+      '[stuff 0 0 false]'
+      '[stuff 0 1 false]'
+      '[stuff 1 0 true]'
+      '[stuff 1 1 true]'
+      '[more 0 0 true]'
+      '[more 0 1 true]'
+      '[more 1 0 false]'
+      '[more 1 1 false]'
+    ].join('')
+
   it 'supports boolean attributes', ->
     view = new View
     view._init new Model
