@@ -10,23 +10,23 @@ describe 'Component libraries', ->
 
   it 'supports void components from libraries', ->
     view = new View(derby._libraries)
-    view._init new Model
+    view._init new Model, false, ->
 
-    view.make 'test', 'give me a <ui:box>'
-    expect(view.get 'test').to.equal 'give me a <div class=box></div>'
+      view.make 'test', 'give me a <ui:box>'
+      expect(view.get 'test').to.equal 'give me a <div class=box></div>'
 
   it 'supports non-void components from libraries', ->
     view = new View(derby._libraries)
-    view._init new Model
+    view._init new Model, false, ->
 
-    view.make 'test', 'give me a <ui:button>Click</ui:button>'
-    expect(view.get 'test').to.equal 'give me a <button>Click</button>'
+      view.make 'test', 'give me a <ui:button>Click</ui:button>'
+      expect(view.get 'test').to.equal 'give me a <button>Click</button>'
 
   it 'supports rendering full components from libraries', ->
     view = new View(derby._libraries)
-    view._init new Model
+    view._init new Model, false, ->
 
-    view.make 'test', 'give me a <ui:dropdown>'
-    expect(view.get 'test').to.equal 'give me a <div id=$0 class="">' + 
-      '<button id=$1> <i class=caret></i></button>' + 
-      '<menu id=$2></menu></div>'
+      view.make 'test', 'give me a <ui:dropdown>'
+      expect(view.get 'test').to.equal 'give me a <div id=$0 class="">' + 
+        '<button id=$1> <i class=caret></i></button>' + 
+        '<menu id=$2></menu></div>'
