@@ -2,7 +2,7 @@
 {DetachedModel: Model, ResMock} = require './mocks'
 View = require '../lib/View.server'
 
-describe 'View', ->
+describe 'View.render', ->
 
   it 'supports view.render with no defined views', ->
     view = new View
@@ -11,10 +11,15 @@ describe 'View', ->
       expect(html).to.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
     view.render res
 
-  it 'supports rendering a string literal view', ->
-    view = new View
-    view._init new Model
+describe 'View', ->
+  view = model = null
 
+  beforeEach (done) ->
+    view = new View
+    model = new Model
+    view._init model, false, done
+
+  it 'supports rendering a string literal view', ->
     view.make 'test', """
       <style>
         body {
@@ -27,9 +32,6 @@ describe 'View', ->
     expect(view.get 'test').to.eql '<style>body {margin: 0}</style>'
 
   it 'doctypes and conditional comments are maintained', ->
-    view = new View
-    view._init new Model
-
     view.make 'test', """
       <!DOCTYPE html>
       <!-- This comment is removed -->
@@ -49,10 +51,6 @@ describe 'View', ->
       '<!--[if !IE]> -->Not IE<!-- <![endif]-->'
 
   it 'supports substituting variables into text', ->
-    view = new View
-    model = new Model
-    view._init model
-
     view.make 'test', '''
       {{connected}}{{canConnect}} {{nada}}
       <p>
@@ -79,10 +77,6 @@ describe 'View', ->
     expect(view.get 'test', ctx).to.equal expected
 
   it 'supports binding variables in text', ->
-    view = new View
-    model = new Model
-    view._init model
-
     view.make 'test', '''
       {connected}{canConnect} {nada}
       <p>
@@ -107,10 +101,6 @@ describe 'View', ->
       '<p><!--$4-->22<!--$$4--> - <!--$5-->6 ft 2 in<!--$$5--> - <!--$6-->165 lbs<!--$$6--></p>'
 
   it 'supports HTML escaping', ->
-    view = new View
-    model = new Model
-    view._init model
-
     # Attribute values are escaped regardless of placeholder type
     # Ampersands are escaped at the end of a replacement even when not
     # required, because it is sometimes needed depending on the following item
@@ -135,19 +125,11 @@ describe 'View', ->
     ).to.eql '<p a=&quot; b="\'" c="<" d=">" e="=" f=" " g="" h="" i>'
 
   it 'supports HTML entity unescaping in string partials', ->
-    view = new View
-    model = new Model
-    view._init model
-
     view.make 'title', '{{unescaped name}} - stuff'
     ctx = name: 'Cr&egrave;me Br&ucirc;l&eacute;e'
     expect(view.get 'title$s', ctx).to.eql 'Crème Brûlée - stuff'
 
   it 'supports conditional blocks in text', ->
-    view = new View
-    model = new Model
-    view._init model
-
     view.make 'literal',
       '{{#if show}}Yep{{else}}Nope{{/}}{{#if show}} Yes!{{/}} {{#unless show}}No{{/}}'
     view.make 'bound',
@@ -209,9 +191,6 @@ describe 'View', ->
     expect(view.get 'bound').to.eql modelFalsey
 
   it 'supports else if conditionals', ->
-    view = new View
-    view._init new Model
-
     view.make 'test', """
     {{#if equal('red', value)}}
       1
@@ -230,9 +209,6 @@ describe 'View', ->
     expect(view.get 'test').to.equal '4'
 
   it 'supports unless then else conditionals', ->
-    view = new View
-    view._init new Model
-
     view.make 'test', """
     {{#unless value}}
       1
@@ -245,9 +221,6 @@ describe 'View', ->
     expect(view.get 'test', value: false).to.equal '1'
 
   it 'supports lists in text', ->
-    view = new View
-    view._init new Model
-
     template = """
     <ul>
     {{#each arr}}
@@ -267,9 +240,6 @@ describe 'View', ->
       .to.eql '<ul><li>stuff<li>more</ul>'
 
   it 'supports nested lists', ->
-    view = new View
-    view._init new Model
-
     template = """
     {{#each outer as :out}}
       {{#each inner as :in}}
@@ -297,9 +267,6 @@ describe 'View', ->
     ].join('')
 
   it 'supports boolean attributes', ->
-    view = new View
-    view._init new Model
-
     view.make 'test', '<input disabled={maybe}>'
 
     expect(view.get 'test').to.equal '<input id=$0>'
@@ -307,27 +274,18 @@ describe 'View', ->
     expect(view.get 'test', maybe: true).to.equal '<input id=$2 disabled>'
 
   it 'supports paths containing dots for ctx object items', ->
-    view = new View
-    view._init new Model
-
     view.make 'test', '<b>{{user.name}}</b>'
     ctx = user: {name: 'John'}
 
     expect(view.get 'test', ctx).to.equal '<b>John</b>'
 
   it 'supports relative paths for ctx object items', ->
-    view = new View
-    view._init new Model
-
     view.make 'test', '{{#if user}}<b>{{.name}}</b>{{/}}'
     ctx = user: {name: 'John'}
 
     expect(view.get 'test', ctx).to.equal '<b>John</b>'
 
   it 'supports Arrays containing non-objects from ctx', ->
-    view = new View
-    view._init new Model
-
     view.make 'test1', '{{#each bools}}<b>{{this}}</b>{{/}}'
     view.make 'test2', '{{#each bools as :value}}<b>{{:value}}</b>{{/}}'
     ctx = bools: [true, false, true]
@@ -336,10 +294,6 @@ describe 'View', ->
     expect(view.get 'test2', ctx).to.equal '<b>true</b><b>false</b><b>true</b>'
 
   it 'supports view helper functions', ->
-    view = new View
-    model = new Model
-    view._init model
-
     view.fn 'lower', (s) -> s.toLowerCase()
 
     view.make 'test', '''{{lower('HI')}} {lower( "HI" )}'''
@@ -388,9 +342,6 @@ describe 'View', ->
     expect(view.get 'test', {nums: [-4, 8, 0, 2.3, -9]}).to.equal '8,0,2.3,'
 
   it 'supports x-no-minify', ->
-    view = new View
-    view._init new Model
-
     view.make 'test', '''
       <script type="x-test" x-no-minify>
         Some text

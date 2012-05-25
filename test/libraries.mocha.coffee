@@ -8,25 +8,23 @@ ui = require './fixtures/components/ui'
 describe 'Component libraries', ->
   derby.use ui
 
-  it 'supports void components from libraries', ->
+  view = null
+  beforeEach (done) ->
     view = new View(derby._libraries)
-    view._init new Model, false, ->
+    model = new Model
+    view._init model, false, done
 
-      view.make 'test', 'give me a <ui:box>'
-      expect(view.get 'test').to.equal 'give me a <div class=box></div>'
+  it 'supports void components from libraries', ->
+    view.make 'test', 'give me a <ui:box>'
+    expect(view.get 'test').to.equal 'give me a <div class=box></div>'
 
   it 'supports non-void components from libraries', ->
-    view = new View(derby._libraries)
-    view._init new Model, false, ->
-
-      view.make 'test', 'give me a <ui:button>Click</ui:button>'
-      expect(view.get 'test').to.equal 'give me a <button>Click</button>'
+    view.make 'test', 'give me a <ui:button>Click</ui:button>'
+    expect(view.get 'test').to.equal 'give me a <button>Click</button>'
 
   it 'supports rendering full components from libraries', ->
-    view = new View(derby._libraries)
-    view._init new Model, false, ->
-
-      view.make 'test', 'give me a <ui:dropdown>'
-      expect(view.get 'test').to.equal 'give me a <div id=$0 class="">' + 
-        '<button id=$1> <i class=caret></i></button>' + 
-        '<menu id=$2></menu></div>'
+    view.make 'test', 'give me a <ui:dropdown>'
+    # The id of '$0' is used for the component namespace, which is why the
+    # first element has an id of '$1'
+    expect(view.get 'test').to.equal 'give me a <div id=$1 class="">' + 
+      '<button id=$2></button><menu></menu></div>'

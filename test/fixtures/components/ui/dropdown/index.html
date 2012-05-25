@@ -2,14 +2,6 @@
   <!-- a :self path alias is automatically created per component -->
   <!-- x-as can be used to pass a reference to an element to the script -->
   <div x-as="container" class="{#if :self.open}open{/}">
-    <button x-bind="click: clickButton">{{{value}}} <i class="caret"></i></button>
-    <menu x-bind="click: clickMenu">
-      {{{#each list}}}
-        {{#if separator}}
-          <hr>
-        {{else}}
-          <li>{{text}}</li>
-        {{/}}
-      {{{/}}}
-    </menu>
+    <button x-bind="click: clickButton">{{{value}}}</button>
+    <menu></menu>
   </div>
