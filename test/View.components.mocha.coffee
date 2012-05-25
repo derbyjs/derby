@@ -128,3 +128,11 @@ describe 'App HTML components', ->
     view.make 'test', '<ul><app:test2><b>Hi!</b></app:test2></ul>'
     view.make 'test2', '<li>{{{content}}}</li>', {nonvoid: null}
     expect(view.get 'test').to.equal '<ul><li><b>Hi!</b></li></ul>'
+
+  it 'supports content sections', ->
+    view = new View
+    view._init new Model
+
+    view.make 'test', '<ul><app:test2><@section><i>Heyo</i></@section><b>Hi!</b></app:test2></ul>'
+    view.make 'test2', '<li>{{{content}}}</li><li>{{{section}}}</li>', {nonvoid: null}
+    expect(view.get 'test').to.equal '<ul><li><b>Hi!</b></li><li><i>Heyo</i></li></ul>'
