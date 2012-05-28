@@ -24,7 +24,5 @@ describe 'Component libraries', ->
 
   it 'supports rendering full components from libraries', ->
     view.make 'test', 'give me a <ui:dropdown>'
-    # The id of '$0' is used for the component namespace, which is why the
-    # first element has an id of '$1'
-    expect(view.get 'test').to.equal 'give me a <div id=$1 class="">' + 
-      '<button id=$2></button><menu></menu></div>'
+    expect(view.get 'test').to.equal 'give me a <div id=$0 class="">' + 
+      '<button id=$1></button><menu></menu></div>'
