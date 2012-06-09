@@ -9,7 +9,10 @@ derby = require '../../lib/derby'
 ## TEMPLATES ##
 
 APP_COFFEE = '''
-{get, view, ready} = require('derby').createApp module
+derby = require 'derby'
+{get, view, ready} = derby.createApp module
+derby.use(require '../../ui')
+
 
 ## ROUTES ##
 
@@ -66,28 +69,20 @@ ready (model) ->
       model.set '_timer', (((+new Date()) - start) / 1000).toFixed(1)
     , 100
 
-
-  model.set '_showReconnect', true
-  exports.connect = ->
-    # Hide the reconnect link for a second after clicking it
-    model.set '_showReconnect', false
-    setTimeout (-> model.set '_showReconnect', true), 1000
-    model.socket.socket.connect()
-
-  exports.reload = -> window.location.reload()
-
 '''
 
 APP_JS = '''
-var <<app>> = require('derby').createApp(module)
+var derby = require('derby')
+  , <<app>> = derby.createApp(module)
   , get = <<app>>.get
   , view = <<app>>.view
   , ready = <<app>>.ready
-  , start
+  , start = +new Date()
+
+derby.use(require('../../ui'))
+
 
 // ROUTES //
-
-start = +new Date()
 
 // Derby routes can be rendered on the client and the server
 get('/:roomName?', function(page, model, params) {
@@ -145,21 +140,6 @@ ready(function(model) {
     }, 100)
   }
   exports.start()
-
-
-  model.set('_showReconnect', true)
-  exports.connect = function() {
-    // Hide the reconnect link for a second after clicking it
-    model.set('_showReconnect', false)
-    setTimeout(function() {
-      model.set('_showReconnect', true)
-    }, 1000)
-    model.socket.socket.connect()
-  }
-
-  exports.reload = function() {
-    window.location.reload()
-  }
 
 })
 
@@ -324,6 +304,43 @@ module.exports = (root) ->
 
 '''
 
+CONNECTION_ALERT_JS = '''
+exports.create = function(model) {
+
+  this.connect = function() {
+    // Hide the reconnect link for a second after clicking it
+    model.set('hideReconnect', true)
+    setTimeout(function() {
+      model.set('hideReconnect', false)
+    }, 1000)
+    model.socket.socket.connect()
+  }
+
+  this.reload = function() {
+    window.location.reload()
+  }
+}
+
+'''
+
+UI_JS = '''
+var config = {
+  filename: __filename
+, styles: '../styles/ui'
+, scripts: {
+    connectionAlert: require('./connectionAlert')
+  }
+};
+
+module.exports = ui
+ui.decorate = 'derby'
+
+function ui(derby, options) {
+  derby.createLibrary(config, options)
+}
+
+'''
+
 APP_HTML = '''
 <!--
   Derby templates are similar to Handlebars, except that they are first
@@ -345,13 +362,14 @@ APP_HTML = '''
   {{roomName}} - {_room.visits} visits
 
 <Header:>
-  <!-- Other templates are referenced like custom HTML elements -->
-  <app:alert>
+  <!-- This is a component defined in the /ui directory -->
+  <ui:connectionAlert>
 
 <Body:>
   <h1>{_room.welcome}</h1>
   <p><label>Welcome message: <input value="{_room.welcome}"></label></p>
 
+  <!-- Other templates are referenced like HTML elements -->
   <p>This page has been visted {_room.visits} times. <app:timer></p>
 
   <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.</p>
@@ -362,26 +380,6 @@ APP_HTML = '''
   {else}
     You have been here for {_timer} seconds. <a x-bind="click:stop">Stop</a>
   {/}
-
-<!--
-  connected and canConnect are built-in properties of model. If a variable
-  is not defined in the current context, it will be looked up in the model
-  data and the model properties
--->
-<alert:>
-  <div id="alert">
-    {#unless connected}
-      <p>
-        {#if canConnect}
-          <!-- Leading space is removed, and trailing space is maintained -->
-          Offline 
-          {#if _showReconnect}&ndash; <a x-bind="click:connect">Reconnect</a>{/}
-        {else}
-          Unable to reconnect &ndash; <a x-bind="click:reload">Reload</a>
-        {/}
-      </p>
-    {/}
-  </div>
 
 '''
 
@@ -402,6 +400,32 @@ _404_HTML = '''
   <h1>404</h1>
   <p>Sorry, we can't find anything at <b>{{url}}</b>.
   <p>Try heading back to the <a href="/">home page</a>.
+
+'''
+
+CONNECTION_ALERT_HTML = '''
+<connectionAlert:>
+  <div class="connection">
+    <!--
+      connected and canConnect are built-in properties of model. If a variable
+      is not defined in the current context, it will be looked up in the model
+      data and the model properties
+    -->
+    {#unless connected}
+      <p class="alert">
+        {#if canConnect}
+          <!-- Leading space is removed, and trailing space is maintained -->
+          Offline 
+          <!-- a :self path alias is automatically created per component -->
+          {#unless :self.hideReconnect}
+            &ndash; <a x-bind="click:connect">Reconnect</a>
+          {/}
+        {else}
+          Unable to reconnect &ndash; <a x-bind="click:reload">Reload</a>
+        {/}
+      </p>
+    {/}
+  </div>
 
 '''
 
@@ -450,7 +474,15 @@ p {
 APP_STYL = '''
 @import "../base";
 
-#alert {
+'''
+
+_404_STYL = '''
+@import "./base";
+
+'''
+
+UI_STYL = '''
+.connection {
   position: absolute;
   text-align: center;
   top: 0;
@@ -459,7 +491,7 @@ APP_STYL = '''
   height: 0;
   z-index: 99;
 }
-#alert > p {
+.connection > .alert {
   background: #fff1a8;
   border: 1px solid #999;
   border-top: 0;
@@ -468,11 +500,6 @@ APP_STYL = '''
   line-height: 21px;
   padding: 0 12px;
 }
-
-'''
-
-_404_STYL = '''
-@import "./base";
 
 '''
 
@@ -601,6 +628,8 @@ createProject = (dir, app, useCoffee) ->
   scripts = if useCoffee then join dir, 'src' else join dir, 'lib'
   appViews = join views, app
   appStyles = join styles, app
+  ui = join dir, 'ui'
+  connectionAlert = join ui, 'connectionAlert'
   appScripts = join scripts, app
   serverScripts = join scripts, 'server'
 
@@ -616,7 +645,14 @@ createProject = (dir, app, useCoffee) ->
   write join(styles, '404.styl'), _404_STYL
   write join(styles, 'reset.styl'), RESET_STYL
   write join(styles, 'base.styl'), BASE_STYL
-  
+  write join(styles, 'ui.styl'), UI_STYL
+
+  mkdir ui
+  mkdir connectionAlert
+  write join(connectionAlert, 'index.html'), CONNECTION_ALERT_HTML
+  write join(connectionAlert, 'index.js'), CONNECTION_ALERT_JS
+  write join(ui, 'index.js'), UI_JS
+
   if useCoffee
     mkdir appScripts
     write join(appScripts, 'index.coffee'), render(APP_COFFEE, {app})
