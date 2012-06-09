@@ -569,17 +569,16 @@ emptyDirectory = (path, callback) ->
     throw err  if err && err.code isnt 'ENOENT'
     callback !files || !files.length
 
-makeCallback = (path, callback) ->
-  (err) ->
-    throw err if err
-    console.log style('green', '  created: ') + path
-    callback() if callback
+logWrite = (path) ->
+  console.log style('green', '  created: ') + path
 
-mkdir = (path, callback) ->
-  mkdirp path, '0755', makeCallback(path, callback)
+mkdir = (path) ->
+  mkdirp.sync path, '0755'
+  logWrite(path)
 
-writeFile = (path, text, callback) ->
-  fs.writeFile path, text, makeCallback(path, callback)
+write = (path, text) ->
+  fs.writeFileSync path, text
+  logWrite(path)
 
 render = (template, ctx) ->
   for key, value of ctx
@@ -605,6 +604,44 @@ createProject = (dir, app, useCoffee) ->
   appScripts = join scripts, app
   serverScripts = join scripts, 'server'
 
+  mkdir dir
+  mkdir join(dir, 'public', 'img')
+
+  mkdir appViews
+  write join(appViews, 'index.html'), APP_HTML
+  write join(views, '404.html'), _404_HTML
+  
+  mkdir appStyles
+  write join(appStyles, 'index.styl'), APP_STYL
+  write join(styles, '404.styl'), _404_STYL
+  write join(styles, 'reset.styl'), RESET_STYL
+  write join(styles, 'base.styl'), BASE_STYL
+  
+  if useCoffee
+    mkdir appScripts
+    write join(appScripts, 'index.coffee'), render(APP_COFFEE, {app})
+
+    mkdir serverScripts
+    write join(serverScripts, 'index.coffee'), render(SERVER_COFFEE, {app})
+    write join(serverScripts, 'serverError.coffee'), render(SERVER_ERROR_COFFEE, {app})
+
+    write join(dir, 'Makefile'), MAKEFILE_COFFEE
+    write join(dir, '.gitignore'), GITIGNORE_COFFEE
+
+  else
+    mkdir appScripts
+    write join(appScripts, 'index.js'), render(APP_JS, {app})
+
+    mkdir serverScripts
+    write join(serverScripts, 'index.js'), render(SERVER_JS, {app})
+    write join(serverScripts, 'serverError.js'), render(SERVER_ERROR_JS, {app})
+    
+    write join(dir, '.gitignore'), GITIGNORE_JS
+
+  write join(dir, 'server.js'), SERVER
+  write join(dir, 'package.json'), packageJson(project, useCoffee)
+  write join(dir, 'README.md'), render(README, {project})
+
   logComplete = ->
     message = style('green bold', '\n  Project created!') + '\n\n  Try it out:'
     message += "\n    $ cd #{dir}"  if dir != '.'
@@ -624,52 +661,14 @@ createProject = (dir, app, useCoffee) ->
     """
     console.log message
 
-  finish = ->
-    return logComplete()  if program.noinstall
-    process.chdir dir
-    console.log '\n  Installing dependencies. This may take a little while...'
-    exec 'npm install', (err, stdout, stderr) ->
-      return console.error stderr if err
-      console.log stdout.replace /^|\n/g, '\n  '  if stdout
-      logComplete()
+  return logComplete()  if program.noinstall
+  process.chdir dir
+  console.log '\n  Installing dependencies. This may take a little while...'
+  exec 'npm install', (err, stdout, stderr) ->
+    return console.error stderr if err
+    console.log stdout.replace /^|\n/g, '\n  '  if stdout
+    logComplete()
 
-  count = 0
-  wait = (callback) ->
-    count++
-    return ->
-      callback()  if callback
-      finish()  unless --count
-
-  mkdir dir, ->
-    mkdir join(dir, 'public', 'img'), wait()
-    mkdir appViews, wait ->
-      writeFile join(appViews, 'index.html'), APP_HTML, wait()
-      writeFile join(views, '404.html'), _404_HTML, wait()
-    mkdir appStyles, wait ->
-      writeFile join(appStyles, 'index.styl'), APP_STYL, wait()
-      writeFile join(styles, '404.styl'), _404_STYL, wait()
-      writeFile join(styles, 'reset.styl'), RESET_STYL, wait()
-      writeFile join(styles, 'base.styl'), BASE_STYL, wait()
-    
-    if useCoffee
-      mkdir appScripts, wait ->
-        writeFile join(appScripts, 'index.coffee'), render(APP_COFFEE, {app}), wait()
-      mkdir serverScripts, wait ->
-        writeFile join(serverScripts, 'index.coffee'), render(SERVER_COFFEE, {app}), wait()
-        writeFile join(serverScripts, 'serverError.coffee'), render(SERVER_ERROR_COFFEE, {app}), wait()
-      writeFile join(dir, 'Makefile'), MAKEFILE_COFFEE, wait()
-      writeFile join(dir, '.gitignore'), GITIGNORE_COFFEE, wait()
-    else
-      mkdir appScripts, wait ->
-        writeFile join(appScripts, 'index.js'), render(APP_JS, {app}), wait()
-      mkdir serverScripts, wait ->
-        writeFile join(serverScripts, 'index.js'), render(SERVER_JS, {app}), wait()
-        writeFile join(serverScripts, 'serverError.js'), render(SERVER_ERROR_JS, {app}), wait()
-      writeFile join(dir, '.gitignore'), GITIGNORE_JS, wait()
-
-    writeFile join(dir, 'server.js'), SERVER, wait()
-    writeFile join(dir, 'package.json'), packageJson(project, useCoffee), wait()
-    writeFile join(dir, 'README.md'), render(README, {project}), wait()
 
 newProject = (dir = '.', app = 'app') ->
   printUsage = false
