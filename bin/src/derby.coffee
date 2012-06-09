@@ -559,9 +559,9 @@ ANSI_CODES =
 styleTag = (name) -> "\u001b[#{ANSI_CODES[name]}m"
 
 style = (styles, text) ->
-  styles = styles.split ' '
   out = ''
-  out += styleTag style  for style in styles
+  for item in styles.split(' ')
+    out += styleTag item
   return out + text + styleTag('off')
 
 emptyDirectory = (path, callback) ->
