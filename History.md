@@ -1,8 +1,14 @@
+Racer provides the model and data synchronization for Derby. It's versions are updated along with Derby versions. See change history for Racer as well:
+https://github.com/codeparty/racer/blob/master/History.md
+
 0.3.11
 - Emit 'render', 'render:{ns}', 'replace', and 'replace:{ns}' events on an app when the page is rendered client-side
+- Call x-bind functions with `this` set to the app or component object
+- Support prototype-like definition of component methods for more efficient creation of component instances
 - More careful delaying of component creation method calls instead of using setTimeout
 - Fix bug in lookup of templates from an inherited namespace
-- Fix bugs with determining correct paths from bound macro attributes
+- Fix bug when binding to a view helper function inside of an each and later updating array indicies
+- Fix bugs in component path binding lookup
 
 0.3.10
 - Fix bugs with Browserify 1.13.0 and Express 3.0.0 beta 3
