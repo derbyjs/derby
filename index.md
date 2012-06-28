@@ -1899,7 +1899,7 @@ Models provide a method to create globally unique ids. These can be used as part
 
 ### Queries
 
-> ### **WARNING:**
+> ### WARNING:
 > 
 > This section is out of date. Please see the [Queries Readme](https://github.com/codeparty/racer/blob/master/src/queries/README.md) for now.
 
