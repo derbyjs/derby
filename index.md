@@ -311,11 +311,23 @@ automatically.
 The requisite MVC demo, but collaborative and realtime! Todo items are
 contenteditable fields with support for bold and italics.
 
+### Directory
+
+[http://directory.derbyjs.com/](http://directory.derbyjs.com/)
+
+A simple example of an application with multiple pages.
+
 ### Sink
 
 [http://sink.derbyjs.com/](http://sink.derbyjs.com/)
 
 A kitchen-sink style example with random features. Largely used for testing.
+
+### Widgets
+
+[http://widgets.derbyjs.com/](http://widgets.derbyjs.com/)
+
+Test of the components in the [Boot](https://github.com/codeparty/derby-ui-boot/) component library.
 
 ## Disclaimer
 
