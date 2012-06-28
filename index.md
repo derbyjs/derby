@@ -1899,9 +1899,10 @@ Models provide a method to create globally unique ids. These can be used as part
 
 ### Queries
 
-> ### WARNING:
-> 
-> This section is out of date. Please see the [Queries Readme](https://github.com/codeparty/racer/blob/master/src/queries/README.md) for now.
+<blockquote style="background: #e58a8e; border: 1px solid #e84c52">
+<h3>WARNING</h3>
+<p>This section is out of date. Please see the [Queries Readme](https://github.com/codeparty/racer/blob/master/src/queries/README.md) for now.</p>
+</blockquote>
 
 Models have access to an expressive, chainable query API. Queries enable a more
 versatile approach than Paths (see above) to subscribe to a set of data. For
