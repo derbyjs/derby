@@ -1899,9 +1899,9 @@ Models provide a method to create globally unique ids. These can be used as part
 
 ### Queries
 
-<blockquote style="background: #e58a8e; border: 1px solid #e84c52">
+<blockquote style="background: #E5C3C4; border: 1px solid #E58A8E">
 <h3>WARNING</h3>
-<p>This section is out of date. Please see the [Queries Readme](https://github.com/codeparty/racer/blob/master/src/queries/README.md) for now.</p>
+<p>This section is out of date. Please see the <a href="https://github.com/codeparty/racer/blob/master/src/queries/README.md">Queries Readme</a> for now.</p>
 </blockquote>
 
 Models have access to an expressive, chainable query API. Queries enable a more
