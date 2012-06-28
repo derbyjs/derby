@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.3.6
+version: 0.3.11
 headers:
   - text: Introduction
     type: h1
@@ -46,9 +46,11 @@ headers:
     type: h3
   - text: Relative model paths and aliases
     type: h3
-  - text: Components
-    type: h3
   - text: View helper functions
+    type: h3
+  - text: Components
+    type: h2
+  - text: Component libraries
     type: h3
   - text: HTML extensions
     type: h2
@@ -366,6 +368,7 @@ The default file structure is:
         index.js
       /server
         index.js
+        serverError.js
     /public
       /img
       /gen
@@ -379,6 +382,11 @@ The default file structure is:
       /app
         index.html
       404.html
+    /ui
+      /connectionAlert
+        index.html
+        index.js
+      index.js
     .gitignore
     package.json
     README.md
@@ -405,6 +413,12 @@ static files. Therefore, new file versions must be given new filenames. Derby
 compiles scripts for the browser into the `public\gen` folder by default. Each
 script's filename is generated from a hash, so that it can be cached long
 term.
+
+The `ui` directory contains a component library, which can be used to create
+custom components for the containing project. These are re-usable templates,
+scripts, and styles that can be used to create custom HTML tags for use in
+applications. General purpose component libraries can be created as separate
+npm modules. See [Component Libraries](#component_libraries).
 
 # Apps and static pages
 
@@ -668,6 +682,7 @@ page.render 'home',
   year: 2012
 {% endhighlight %}
 
+See [Components](#components) for more info on defining template components.
 
 ## Template syntax
 
@@ -1026,106 +1041,6 @@ page.render()
 Welcome to our <!--$0-->funny<!--$$0--> city!
 {% endhighlight %}
 
-### Components
-
-Components are similar to Handlebars partials, but they are much more powerful. Like partials, they inherit the scope of the parent context where they are used. In addition, Derby's components let you supply additional arguments as attributes and HTML content. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use components for each significant unit.
-
-Any Derby template can be used as a component. They are included like custom HTML tags with a special namespace. Components defined within an app are all accessed from the `app` namespace. In the future, it will be possible to create component libraries with their own namespaces.
-
-#### Template
-
-{% highlight html %}
-<Body:>
-  <app:nav>
-
-<nav:>
-  <ul>{{"{{"}}each navItems}}<app:navItem>{{"{{"}}/}}</ul>
-
-<navItem:>
-  <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a></li>
-{% endhighlight %}
-
-#### Context
-
-{% highlight javascript %}
-page.render({
-  navItems: [
-    { title: 'Home', link '/' }
-  , { title: 'About', link '/about' }
-  , { title: 'Contact us', link '/contact' }
-  ]
-});
-{% endhighlight %}
-{% highlight coffeescript %}
-page.render
-  navItems: [
-    { title: 'Home', link '/' }
-    { title: 'About', link '/about' }
-    { title: 'Contact us', link '/contact' }
-  ]
-{% endhighlight %}
-
-#### Output
-
-{% highlight html %}
-<ul>
-  <li><a href="/">Home</a></li>
-  <li><a href="/about">About</a></li>
-  <li><a href="/contact">Contact us</a></li>
-</ul>
-{% endhighlight %}
-
-Literal values or variable values can be passed to components. These component attributes are available through "macro" template tags, which have triple curly braces. Macro template tags only reference component attribute names, and regular template tags (with one or two curly braces) only reference names from the model or context object. It is possible to use macro template tags to conditionally render any HTML content or other template tags.
-
-{% highlight html %}
-<Body:>
-  <h1><app:greeting message="Hello" to="{_user.name}"></h1>
-
-<greeting:>
-  {{"{{"}}{#if to}}}
-    {{"{{"}}{message}}}, {{"{{"}}{to}}}!
-  {{"{{"}}{else}}}
-    {{"{{"}}{message}}}!
-  {{"{{"}}{/}}}
-{% endhighlight %}
-
-produces the same output as:
-
-{% highlight html %}
-<Body:>
-  <h1>
-    {#if _user.name}
-      Hello, {_user.name}!
-    {else}
-      Hello!
-    {/}
-  </h1>
-{% endhighlight %}
-
-By default, all components are void HTML elements. This means that they must only have an opening tag and no closing tag, just like the `<img>` and `<br>` elements. A component can be defined as nonvoid, which means that it must have both a starting and a closing tag. Nonvoid components have access to a special `content` macro that makes it possible to pass HTML content to the component. For example:
-
-{% highlight html %}
-<Body:>
-  Welcome!
-  <app:fancyButton>
-    <b>Click me {{"{{"}}#if isUrgent}}now!{{"{{"}}/}}</b>
-  </app:fancyButton>
-
-<fancyButton: nonvoid>
-  <button class="fancy">
-    {{"{{"}}{content}}}
-  </button>
-{% endhighlight %}
-
-produces the same output as:
-
-{% highlight html %}
-<Body:>
-  Welcome!
-  <button class="fancy">
-    <b>Click me {{"{{"}}#if isUrgent}}now!{{"{{"}}/}}</b>
-  </button>
-{% endhighlight %}
 
 ### Relative model paths and aliases
 
@@ -1292,6 +1207,111 @@ Note that helper functions provide enough flexibility to introduce logic into te
 The first example is basically just straight logic embedded within the template. This is not recommended, because as business rules change (such as changing scoring so that 20 is now a low score), templates should not need to be modified. It is typically better to define constants in the controller code and store them in the model or pass them in as context data. Better still is to define a function specifically for each purpose, as what determines the low score could change entirely to a function of an additional input and no longer a simple cutoff.
 
 When defining view helpers, try to avoid basic comparison functions like `lessThan`. While tempting, such functions are likely to produce less maintainable code in the long run.
+
+## Components
+
+Components are similar to Handlebars partials, but they are much more powerful. Like partials, they inherit the scope of the parent context where they are used. In addition, Derby's components let you supply additional arguments as attributes and HTML content. Both for code readability and for more efficient template compilation, it is best to keep individual templates relatively simple and use components for each significant unit.
+
+Any Derby template can be used as a component. They are included like custom HTML tags with a special namespace. Components defined within an app are all accessed from the `app` namespace.
+
+#### Template
+
+{% highlight html %}
+<Body:>
+  <app:nav>
+
+<nav:>
+  <ul>{{"{{"}}each navItems}}<app:navItem>{{"{{"}}/}}</ul>
+
+<navItem:>
+  <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a></li>
+{% endhighlight %}
+
+#### Context
+
+{% highlight javascript %}
+page.render({
+  navItems: [
+    { title: 'Home', link '/' }
+  , { title: 'About', link '/about' }
+  , { title: 'Contact us', link '/contact' }
+  ]
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+page.render
+  navItems: [
+    { title: 'Home', link '/' }
+    { title: 'About', link '/about' }
+    { title: 'Contact us', link '/contact' }
+  ]
+{% endhighlight %}
+
+#### Output
+
+{% highlight html %}
+<ul>
+  <li><a href="/">Home</a></li>
+  <li><a href="/about">About</a></li>
+  <li><a href="/contact">Contact us</a></li>
+</ul>
+{% endhighlight %}
+
+Literal values or variable values can be passed to components. These component attributes are available through "macro" template tags, which have triple curly braces. Macro template tags only reference component attribute names, and regular template tags (with one or two curly braces) only reference names from the model or context object. It is possible to use macro template tags to conditionally render any HTML content or other template tags.
+
+{% highlight html %}
+<Body:>
+  <h1><app:greeting message="Hello" to="{_user.name}"></h1>
+
+<greeting:>
+  {{"{{"}}{#if to}}}
+    {{"{{"}}{message}}}, {{"{{"}}{to}}}!
+  {{"{{"}}{else}}}
+    {{"{{"}}{message}}}!
+  {{"{{"}}{/}}}
+{% endhighlight %}
+
+produces the same output as:
+
+{% highlight html %}
+<Body:>
+  <h1>
+    {#if _user.name}
+      Hello, {_user.name}!
+    {else}
+      Hello!
+    {/}
+  </h1>
+{% endhighlight %}
+
+By default, all components are void HTML elements. This means that they must only have an opening tag and no closing tag, just like the `<img>` and `<br>` elements. A component can be defined as nonvoid, which means that it must have both a starting and a closing tag. Nonvoid components have access to a special `content` macro that makes it possible to pass HTML content to the component. For example:
+
+{% highlight html %}
+<Body:>
+  Welcome!
+  <app:fancyButton>
+    <b>Click me {{"{{"}}#if isUrgent}}now!{{"{{"}}/}}</b>
+  </app:fancyButton>
+
+<fancyButton: nonvoid>
+  <button class="fancy">
+    {{"{{"}}{content}}}
+  </button>
+{% endhighlight %}
+
+produces the same output as:
+
+{% highlight html %}
+<Body:>
+  Welcome!
+  <button class="fancy">
+    <b>Click me {{"{{"}}#if isUrgent}}now!{{"{{"}}/}}</b>
+  </button>
+{% endhighlight %}
+
+### Component libraries
+
+Documentation is forthcoming. Until then, please see the [Widgets example](https://github.com/codeparty/derby-examples/tree/master/widgets) for usage and the [Boot source](https://github.com/codeparty/derby-ui-boot).
 
 ## HTML extensions
 
@@ -1867,6 +1887,8 @@ Models provide a method to create globally unique ids. These can be used as part
 
 ### Queries
 
+(**Warning:** This section is out of date. Please see the [Queries Readme](https://github.com/codeparty/racer/blob/master/src/queries/README.md) for now.)
+
 Models have access to an expressive, chainable query API. Queries enable a more
 versatile approach than Paths (see above) to subscribe to a set of data. For
 example, with paths, it is not possible to specify a subscription to all users
@@ -1960,13 +1982,13 @@ model.query 'users',
 Notice how we can chain query descriptors together to build up our query.
 
 If you happen to know the `id` of the document you want to find, then you can
-use the query method, `byKey`. So for example,
+use the query method, `byId`. So for example,
 
 {% highlight javascript %}
-model.query('users').byKey('1');
+model.query('users').byId('1');
 {% endhighlight %}
 {% highlight coffeescript %}
-model.query 'users', byKey: '1'
+model.query 'users', byId: '1'
 {% endhighlight %}
 
 This will find the single document `{id: '1', name: 'Lars'}`.
@@ -2031,9 +2053,6 @@ model.query 'users'
       gte: 25
   sort: ['age', 'asc', 'name', 'desc']
 {% endhighlight %}
-
-Queries at the moment can only be used for subscribing to and fetching new data but in the
-future will also be available to filter data that is already loaded into the model.
 
 ### Subscription
 
