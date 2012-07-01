@@ -239,7 +239,45 @@ describe 'View', ->
     expect(view.get 'test', arr: [{name: 'stuff'}, {name: 'more'}])
       .to.eql '<ul><li>stuff<li>more</ul>'
 
-  it 'supports nested lists', ->
+  it 'supports nesting lists with relative paths', ->
+    template = """
+      <table>
+        <tbody>
+          {{#each table.rows}}
+            <tr>
+              {{#each .cells}}
+                <td><input value={{.text}}></td>
+              {{/}}
+            </tr>
+          {{/}}
+        </tbody>
+      </table>
+    """
+
+    model.set 'table.rows', [
+      {cells: [{text: 'A'}, {text: 'B'}, {text: 'C'}]}
+      {cells: [{text: 1}, {text: 2}, {text: 3}]}
+    ]
+
+    view.make 'test', template
+    expect(view.get 'test').to.equal [
+      '<table>'
+        '<tbody>'
+          '<tr>'
+            '<td><input value=A></td>'
+            '<td><input value=B></td>'
+            '<td><input value=C></td>'
+          '</tr>'
+          '<tr>'
+            '<td><input value=1></td>'
+            '<td><input value=2></td>'
+            '<td><input value=3></td>'
+          '</tr>'
+        '</tbody>'
+      '</table>'
+    ].join('')
+
+  it 'supports nesting aliases to flat lists', ->
     template = """
     {{#each outer as :out}}
       {{#each inner as :in}}
@@ -264,6 +302,100 @@ describe 'View', ->
       '[more 0 1 true]'
       '[more 1 0 false]'
       '[more 1 1 false]'
+    ].join('')
+
+  it 'supports aliases from relative paths on nested lists', ->
+    template = """
+    <ul>
+      {{#each _room.street}}
+        <li>Type: {{.type}}
+          {{#each .people as :person}}
+            {{#if :person.editable}}
+              <input value={{:person.name}}>
+            {{else}}
+              {{:person.name}}
+            {{/}}
+          {{/}}
+        </li>
+      {{/}}
+    </ul>
+    """
+
+    model.set '_room.street', [
+      {
+        type: 'home'
+        people: [
+          {name: 'fred',  editable: true} 
+          {name: 'wilma', editable: false}
+        ]
+      }, {
+        type: 'neighbor'
+        people: [
+          {name: 'barney', editable: false}
+          {name: 'betty',  editable: true}
+        ]
+      }
+    ]
+
+    view.make 'test', template
+    expect(view.get 'test').to.equal [
+      '<ul>'
+        '<li>Type: home'
+          '<input value=fred>'
+          'wilma'
+        '</li>'
+        '<li>Type: neighbor'
+          'barney'
+          '<input value=betty>'
+        '</li>'
+      '</ul>'
+    ].join('')
+
+  it 'supports aliases from aliases on nested lists', ->
+    template = """
+    <ul>
+      {{#each _room.street as :street}}
+        <li>Type: {{:street.type}}
+          {{#each :street.people as :person}}
+            {{#if :person.editable}}
+              <input value={{:person.name}}>
+            {{else}}
+              {{:person.name}}
+            {{/}}
+          {{/}}
+        </li>
+      {{/}}
+    </ul>
+    """
+
+    model.set '_room.street', [
+      {
+        type: 'home'
+        people: [
+          {name: 'fred',  editable: true} 
+          {name: 'wilma', editable: false}
+        ]
+      }, {
+        type: 'neighbor'
+        people: [
+          {name: 'barney', editable: false}
+          {name: 'betty',  editable: true}
+        ]
+      }
+    ]
+
+    view.make 'test', template
+    expect(view.get 'test').to.equal [
+      '<ul>'
+        '<li>Type: home'
+          '<input value=fred>'
+          'wilma'
+        '</li>'
+        '<li>Type: neighbor'
+          'barney'
+          '<input value=betty>'
+        '</li>'
+      '</ul>'
     ].join('')
 
   it 'supports boolean attributes', ->
