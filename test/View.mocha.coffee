@@ -76,6 +76,32 @@ describe 'View', ->
 
     expect(view.get 'test', ctx).to.equal expected
 
+  it 'supports path interpolation', ->
+    view.make 'test', """
+      {{items[id]}}
+      {{#each ids}}
+        {{items[this]}}
+      {{/}}
+      {{#each others}}
+        {{items[.id]}}
+      {{/}}
+      """
+    model.set 'id', 2
+    model.set 'ids', [2, 0]
+    ctx =
+      items:
+        0: 'red'
+        1: 'green'
+        2: 'blue'
+      others: [
+        {id: 1}
+        {id: 2}
+      ]
+
+    expect(view.get 'test', ctx).to.equal 'blue' +
+      'blue' + 'red' +
+      'green' + 'blue'
+
   it 'supports binding variables in text', ->
     view.make 'test', '''
       {connected}{canConnect} {nada}
