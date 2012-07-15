@@ -145,6 +145,11 @@ ready(function(model) {
 
 '''
 
+SERVER_COFFEE_INDEX_JS = '''
+require('coffee-script')
+module.exports = require('./index.coffee')
+'''
+
 SERVER_COFFEE = '''
 http = require 'http'
 path = require 'path'
@@ -547,8 +552,7 @@ packageJson = (project, useCoffee) ->
     private: true
 
   if useCoffee
-    pkg.devDependencies =
-      'coffee-script': '>=1.2'
+    pkg.dependencies['coffee-script'] = '>=1.2'
 
   return JSON.stringify pkg, null, '  '
 
@@ -658,6 +662,7 @@ createProject = (dir, app, useCoffee) ->
     write join(appScripts, 'index.coffee'), render(APP_COFFEE, {app})
 
     mkdir serverScripts
+    write join(serverScripts, 'index.js'), render(SERVER_COFFEE_INDEX_JS, {app})
     write join(serverScripts, 'index.coffee'), render(SERVER_COFFEE, {app})
     write join(serverScripts, 'serverError.coffee'), render(SERVER_ERROR_COFFEE, {app})
 
@@ -688,6 +693,10 @@ createProject = (dir, app, useCoffee) ->
 
         Then in a new terminal:
           $ cd #{dirPath}
+          $ node server.js
+
+        Or run the uncompiled CoffeeScript source without the make step:
+          $ sed -i'' -e 's!/lib/!/src/!' server.js
       """
     message += """
     \n    $ node server.js
