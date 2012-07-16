@@ -96,15 +96,15 @@ headers:
     type: h2
   - text: Paths
     type: h3
-  - text: Queries
-    type: h3
-  - text: Subscription
-    type: h3
-  - text: Scoped models
-    type: h3
   - text: Mutators
     type: h3
   - text: Events
+    type: h3
+  - text: Scoped models
+    type: h3
+  - text: Queries
+    type: h3
+  - text: Subscription
     type: h3
   - text: Reactive functions
     type: h3
@@ -1894,6 +1894,332 @@ Models provide a method to create globally unique ids. These can be used as part
 >
 > **guid:** Returns a globally unique identifier that can be used for model operations
 
+### Mutators
+
+Model mutator methods are applied optimistically. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model mutator methods are synchronous and provide an optional callback.
+
+#### Basic methods
+
+These methods can be used on any model path to get, set, or delete an object.
+
+> ### `value = `model.get` ( [path] )`
+>
+> **path:** *(optional)* Path of object to get. Not supplying a path will return all data in the model
+>
+> **value:** Current value of the object at the given path. Note that objects are returned by reference and should not be modified directly
+
+All model mutators have an optional callback with the arguments `callback(err, methodArgs...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'conflict'` if when there is a conflict with another transaction. The method arguments used to call the original function (e.g. `path, value` for the `model.set()` method) are also passed back to the callback.
+
+> ### `previous = `model.set` ( path, value, [callback] )`
+>
+> **path:** Model path to set
+>
+> **value:** Value to assign
+>
+> **previous:** Returns the value that was set at the path previously
+>
+> **callback:** *(optional)* Invoked upon completion of a successful or failed transaction
+
+> ### `obj = `model.del` ( path, [callback] )`
+>
+> **path:** Model path of object to delete
+>
+> **obj:** Returns the deleted object
+
+Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
+
+{% highlight javascript %}
+var model = store.createModel();
+model.set('cars.DeLorean.DMC12.color', 'silver');
+// Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
+console.log(model.get());
+{% endhighlight %}
+{% highlight coffeescript %}
+model = store.createModel()
+model.set 'cars.DeLorean.DMC12.color', 'silver'
+# Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
+console.log model.get()
+{% endhighlight %}
+
+> ### `obj = `model.setNull` ( path, value, [callback] )`
+>
+> **path:** Model path to set
+>
+> **value:** Value to assign only if the path is null or undefined
+>
+> **obj:** Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
+
+> ### `num = `model.incr` ( path, [byNum], [callback] )`
+>
+> **path:** Model path to set
+>
+> **byNum:** *(optional)* Number specifying amount to increment or decrement if negative. Defaults to 1
+>
+> **num:** Returns the new value that was set after incrementing
+
+The `model.setNull()` and `model.incr()` methods provide a more convenient way to perform common get and set combinations. Internally, they perform a `model.get()` and a `model.set()`, so the model events raised by both of these methods are `set` events and *not* `setNull` or `incr`. Note that `incr` can be called on a null path, in which case the value will be set to `byNum`.
+
+#### Array methods
+
+Array methods can only be used on paths set to arrays, null, or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
+
+> ### `length = `model.push` ( path, items..., [callback] )`
+>
+> **path:** Model path to an array
+>
+> **items:** One or more items to add to the *end* of the array
+>
+> **length:** Returns the length of the array with the new items added
+
+> ### `length = `model.unshift` ( path, items..., [callback] )`
+>
+> **path:** Model path to an array
+>
+> **items:** One items to add to the *beginning* of the array
+>
+> **length:** Returns the length of the array with the new items added
+
+> ### `length = `model.insert` ( path, index, items..., [callback] )`
+>
+> **path:** Model path to an array
+>
+> **index:** Index at which to start inserting. This can also be specified by appending it to the path instead of as a separate argument
+>
+> **items:** One or more items to insert at the index
+>
+> **length:** Returns the length of the array with the new items added
+
+> ### `item = `model.pop` ( path, [callback] )`
+>
+> **path:** Model path to an array
+>
+> **item:** Removes the last item in the array and returns it
+
+> ### `item = `model.shift` ( path, [callback] )`
+>
+> **path:** Model path to an array
+>
+> **item:** Removes the first item in the array and returns it
+
+> ### `removed = `model.remove` ( path, index, [howMany], [callback] )`
+>
+> **path:** Model path to an array
+>
+> **index:** Index at which to start removing items. This can also be specified by appending it to the path instead of as a separate argument
+>
+> **howMany:** *(optional)* Number of items to remove. Defaults to 1
+>
+> **removed:** Returns an array of removed items
+
+> ### `item = `model.move` ( path, from, to, [callback] )`
+>
+> **path:** Model path to an array
+>
+> **from:** Starting index of the item to move. This can also be specified by appending it to the path instead of as a separate argument
+>
+> **to:** New index where the item should be moved
+>
+> **item:** Returns the item that was moved
+
+#### OT methods
+
+OT support is experimental, and it is not enabled by default. The OT plugin must be included in order to use OT methods. See the Racer [pad example](https://github.com/codeparty/racer/tree/master/examples/pad) for more info.
+
+> ### `previous = `model.ot` ( path, value, [callback] )`
+>
+> **path:** Model path to initialize as an OT field
+>
+> **value:** A string to use as the initial value of the OT field
+>
+> **previous:** Returns the value that was set at the path previously
+
+> ### `obj = `model.otNull` ( path, value, [callback] )`
+>
+> **path:** Model path to initialize as an OT field if the path is currently null or undefined
+>
+> **value:** A string to use as the initial value of the OT field
+>
+> **obj:** Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
+
+> ### model.otInsert` ( path, index, text, [callback] )`
+>
+> **path:** Model path to an OT field
+>
+> **index:** Position within the current OT field at which to insert
+>
+> **text:** String to insert
+
+> ### `deleted = `model.otDel` ( path, index, length, [callback] )`
+>
+> **path:** Model path to an OT field
+>
+> **index:** Position within the current OT field at which to start deleting
+>
+> **length:** Number of characters to delete
+>
+> **deleted:** Returns the string that was deleted
+
+### Events
+
+Models inherit from the standard [Node.js EventEmitter](http://nodejs.org/docs/latest/api/events.html), and they support the same methods: `on`, `once`, `removeListener`, `emit`, etc.
+
+#### Model mutator events
+
+Racer emits events whenever it mutates data via `model.set`, `model.push`, etc. These events provide an entry point for an app to react to a specific data mutation or pattern of data mutations.
+
+`model.on` and `model.once` accept a second argument for these types of events. The second argument may be a path pattern or regular expression that will filter emitted events, calling the handler function only when a mutator matches the pattern.
+
+> ### `listener = `model.on` ( method, path, eventCallback )`
+>
+> **method:** Name of the mutator method - e.g., "set", "push"
+>
+> **path:** Pattern or regular expression matching the path being mutated
+>
+> **eventCallback:** Function to call when a matching method and path are mutated
+>
+> **listener:** Returns the listener function subscribed to the event emitter. This is the function that should be passed to `model.removeListener`
+
+The event callback receives a number of arguments based on the path pattern and method. The arguments are:
+
+> ### eventCallback` ( captures..., args..., out, isLocal, passed )`
+>
+> **captures:** The capturing groups from the path pattern or regular expression. If specifying a string pattern, a capturing group will be created for each `*` wildcard and anything in parentheses, such as `(one|two)`
+>
+> **args:** The arguments to the method. Note that optional arguments with a default value (such as the `byNum` argument of `model.incr`) will always be included
+>
+> **out:** The return value of the model mutator method
+>
+> **isLocal:** `true` if the model mutation was originally called on the same model and `false` otherwise
+>
+> **passed:** `undefined`, unless a value is specified via `model.pass`. See description below
+
+In path patterns, wildcards (`*`) will only match a single segment in the middle of a path, but they will match a single or multiple path segments at the end of the path. In other words, they are non-greedy in the middle of a pattern and greedy at the end of a pattern.
+
+{% highlight javascript %}
+// Matches only model.push('messages', message)
+model.on('push', 'messages', function (message, messagesLength) {
+  ...
+});
+
+// Matches model.set('todos.4.completed', true), etc.
+model.on('set', 'todos.*.completed', function (todoId, isComplete) {
+  ...
+});
+
+// Matches all set operations
+model.on('set', '*', function (path, value) {
+  ...
+});
+{% endhighlight %}
+{% highlight coffeescript %}
+# Matches only model.push('messages', message)
+model.on 'push', 'messages', (message, messagesLength) ->
+  ...
+
+# Matches model.set('todos.4.completed', true), etc.
+model.on 'set', 'todos.*.completed', (todoId, isComplete) ->
+  ...
+
+# Matches all set operations
+model.on 'set', '*', (path, value) ->
+  ...
+{% endhighlight %}
+
+#### model.pass
+
+This method can be chained before calling a mutator method to pass an argument to model event listeners. Note that this value is only passed to local listeners, and it is not sent to the server or other clients.
+
+{% highlight javascript %}
+// Logs:
+//   'red', undefined
+//   'green', 'hi'
+
+model.on('set', 'color', function (value, out, isLocal, passed) {
+  console.log(value, passed);
+});
+model.set('color', 'red');
+model.pass('hi').set('color', 'green');
+{% endhighlight %}
+{% highlight coffeescript %}
+# Logs:
+#   'red', undefined
+#   'green', 'hi'
+
+model.on 'set', 'color', (value, out, isLocal, passed) ->
+  console.log value, passed
+model.set 'color', 'red'
+model.pass('hi').set 'color', 'green'
+{% endhighlight %}
+
+### Scoped models
+
+Scoped models provide a more convenient way to interact with commonly used
+paths. They support the same methods, and they provide the path argument to
+accessors, mutators, and event subscribers.
+
+> ### `scoped = `model.at` ( path, [absolute] )`
+>
+> **path:** The reference path to set. Note that Derby also supports supplying a DOM node instead of a path string
+>
+> **inputPaths:** *(optional)* Will replace the model's reference path if true. By default, the path is appended
+>
+> **scoped:** Returns a scoped model
+
+> ### `scoped = `model.parent` ( [levels] )`
+>
+> **levels:** *(optional)* Defaults to 1. The number of path segments to remove from the end of the reference path
+>
+> **scoped:** Returns a scoped model
+
+> ### `path = `model.path` ( )`
+>
+> **path:** Returns the reference path for the model that was set via `model.at` or `model.parent`
+
+> ### `segment = `model.leaf` ( )`
+>
+> **segment:** Returns the last segment for the reference path. This may be useful for getting indices or other properties set at the end of a path
+
+{% highlight javascript %}
+room = model.at('_room');
+
+// These are equivalent:
+room.at('name').set('Fun room');
+room.set('name', 'Fun room');
+
+// Logs: {name: 'Fun room'}
+console.log(room.get());
+// Logs: 'Fun room'
+console.log(room.get('name'));
+
+// Array methods can take a subpath as a first argument
+// when the scoped model points to an object
+room.push('toys', 'blocks', 'puzzles');
+// When the scoped model points to an array, no subpath
+// argument should be supplied
+room.at('toys').push('cards', 'dominoes');
+{% endhighlight %}
+{% highlight coffeescript %}
+room = model.at '_room'
+
+# These are equivalent:
+room.at('name').set 'Fun room'
+room.set 'name', 'Fun room'
+
+# Logs: {name: 'Fun room'}
+console.log room.get()
+# Logs: 'Fun room'
+console.log room.get('name')
+
+# Array methods can take a subpath as a first argument
+# when the scoped model points to an object
+room.push 'toys', 'blocks', 'puzzles'
+# When the scoped model points to an array, no subpath
+# argument should be supplied
+room.at('toys').push 'cards', 'dominoes'
+{% endhighlight %}
+
+Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#dom_event_binding).
+
 ### Queries
 
 <blockquote style="background: #E5C3C4; border: 1px solid #E58A8E">
@@ -2179,332 +2505,6 @@ need not be updated in realtime and avoids use of the PubSub system.
 > **callback:** Called after a fetch succeeds and the data is set in the model or upon an error
 
 The fetch callback has the same arguments as subscribe's: `callback(err, scopedModels...)`
-
-### Scoped models
-
-Scoped models provide a more convenient way to interact with commonly used
-paths. They support the same methods, and they provide the path argument to
-accessors, mutators, and event subscribers.
-
-> ### `scoped = `model.at` ( path, [absolute] )`
->
-> **path:** The reference path to set. Note that Derby also supports supplying a DOM node instead of a path string
->
-> **inputPaths:** *(optional)* Will replace the model's reference path if true. By default, the path is appended
->
-> **scoped:** Returns a scoped model
-
-> ### `scoped = `model.parent` ( [levels] )`
->
-> **levels:** *(optional)* Defaults to 1. The number of path segments to remove from the end of the reference path
->
-> **scoped:** Returns a scoped model
-
-> ### `path = `model.path` ( )`
->
-> **path:** Returns the reference path for the model that was set via `model.at` or `model.parent`
-
-> ### `segment = `model.leaf` ( )`
->
-> **segment:** Returns the last segment for the reference path. This may be useful for getting indices or other properties set at the end of a path
-
-{% highlight javascript %}
-room = model.at('_room');
-
-// These are equivalent:
-room.at('name').set('Fun room');
-room.set('name', 'Fun room');
-
-// Logs: {name: 'Fun room'}
-console.log(room.get());
-// Logs: 'Fun room'
-console.log(room.get('name'));
-
-// Array methods can take a subpath as a first argument
-// when the scoped model points to an object
-room.push('toys', 'blocks', 'puzzles');
-// When the scoped model points to an array, no subpath
-// argument should be supplied
-room.at('toys').push('cards', 'dominoes');
-{% endhighlight %}
-{% highlight coffeescript %}
-room = model.at '_room'
-
-# These are equivalent:
-room.at('name').set 'Fun room'
-room.set 'name', 'Fun room'
-
-# Logs: {name: 'Fun room'}
-console.log room.get()
-# Logs: 'Fun room'
-console.log room.get('name')
-
-# Array methods can take a subpath as a first argument
-# when the scoped model points to an object
-room.push 'toys', 'blocks', 'puzzles'
-# When the scoped model points to an array, no subpath
-# argument should be supplied
-room.at('toys').push 'cards', 'dominoes'
-{% endhighlight %}
-
-Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#dom_event_binding).
-
-### Mutators
-
-Model mutator methods are applied optimistically. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model mutator methods are synchronous and provide an optional callback.
-
-#### Basic methods
-
-These methods can be used on any model path to get, set, or delete an object.
-
-> ### `value = `model.get` ( [path] )`
->
-> **path:** *(optional)* Path of object to get. Not supplying a path will return all data in the model
->
-> **value:** Current value of the object at the given path. Note that objects are returned by reference and should not be modified directly
-
-All model mutators have an optional callback with the arguments `callback(err, methodArgs...)`. If the transaction succeeds, `err` is `null`. Otherwise, it is a string with an error message. This message is `'conflict'` if when there is a conflict with another transaction. The method arguments used to call the original function (e.g. `path, value` for the `model.set()` method) are also passed back to the callback.
-
-> ### `previous = `model.set` ( path, value, [callback] )`
->
-> **path:** Model path to set
->
-> **value:** Value to assign
->
-> **previous:** Returns the value that was set at the path previously
->
-> **callback:** *(optional)* Invoked upon completion of a successful or failed transaction
-
-> ### `obj = `model.del` ( path, [callback] )`
->
-> **path:** Model path of object to delete
->
-> **obj:** Returns the deleted object
-
-Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
-
-{% highlight javascript %}
-var model = store.createModel();
-model.set('cars.DeLorean.DMC12.color', 'silver');
-// Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
-console.log(model.get());
-{% endhighlight %}
-{% highlight coffeescript %}
-model = store.createModel()
-model.set 'cars.DeLorean.DMC12.color', 'silver'
-# Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
-console.log model.get()
-{% endhighlight %}
-
-> ### `obj = `model.setNull` ( path, value, [callback] )`
->
-> **path:** Model path to set
->
-> **value:** Value to assign only if the path is null or undefined
->
-> **obj:** Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
-
-> ### `num = `model.incr` ( path, [byNum], [callback] )`
->
-> **path:** Model path to set
->
-> **byNum:** *(optional)* Number specifying amount to increment or decrement if negative. Defaults to 1
->
-> **num:** Returns the new value that was set after incrementing
-
-The `model.setNull()` and `model.incr()` methods provide a more convenient way to perform common get and set combinations. Internally, they perform a `model.get()` and a `model.set()`, so the model events raised by both of these methods are `set` events and *not* `setNull` or `incr`. Note that `incr` can be called on a null path, in which case the value will be set to `byNum`.
-
-#### Array methods
-
-Array methods can only be used on paths set to arrays, null, or undefined. If the path is null or undefined, the path will first be set to an empty array before applying the method.
-
-> ### `length = `model.push` ( path, items..., [callback] )`
->
-> **path:** Model path to an array
->
-> **items:** One or more items to add to the *end* of the array
->
-> **length:** Returns the length of the array with the new items added
-
-> ### `length = `model.unshift` ( path, items..., [callback] )`
->
-> **path:** Model path to an array
->
-> **items:** One items to add to the *beginning* of the array
->
-> **length:** Returns the length of the array with the new items added
-
-> ### `length = `model.insert` ( path, index, items..., [callback] )`
->
-> **path:** Model path to an array
->
-> **index:** Index at which to start inserting. This can also be specified by appending it to the path instead of as a separate argument
->
-> **items:** One or more items to insert at the index
->
-> **length:** Returns the length of the array with the new items added
-
-> ### `item = `model.pop` ( path, [callback] )`
->
-> **path:** Model path to an array
->
-> **item:** Removes the last item in the array and returns it
-
-> ### `item = `model.shift` ( path, [callback] )`
->
-> **path:** Model path to an array
->
-> **item:** Removes the first item in the array and returns it
-
-> ### `removed = `model.remove` ( path, index, [howMany], [callback] )`
->
-> **path:** Model path to an array
->
-> **index:** Index at which to start removing items. This can also be specified by appending it to the path instead of as a separate argument
->
-> **howMany:** *(optional)* Number of items to remove. Defaults to 1
->
-> **removed:** Returns an array of removed items
-
-> ### `item = `model.move` ( path, from, to, [callback] )`
->
-> **path:** Model path to an array
->
-> **from:** Starting index of the item to move. This can also be specified by appending it to the path instead of as a separate argument
->
-> **to:** New index where the item should be moved
->
-> **item:** Returns the item that was moved
-
-#### OT methods
-
-OT support is experimental, and it is not enabled by default. The OT plugin must be included in order to use OT methods. See the Racer [pad example](https://github.com/codeparty/racer/tree/master/examples/pad) for more info.
-
-> ### `previous = `model.ot` ( path, value, [callback] )`
->
-> **path:** Model path to initialize as an OT field
->
-> **value:** A string to use as the initial value of the OT field
->
-> **previous:** Returns the value that was set at the path previously
-
-> ### `obj = `model.otNull` ( path, value, [callback] )`
->
-> **path:** Model path to initialize as an OT field if the path is currently null or undefined
->
-> **value:** A string to use as the initial value of the OT field
->
-> **obj:** Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
-
-> ### model.otInsert` ( path, index, text, [callback] )`
->
-> **path:** Model path to an OT field
->
-> **index:** Position within the current OT field at which to insert
->
-> **text:** String to insert
-
-> ### `deleted = `model.otDel` ( path, index, length, [callback] )`
->
-> **path:** Model path to an OT field
->
-> **index:** Position within the current OT field at which to start deleting
->
-> **length:** Number of characters to delete
->
-> **deleted:** Returns the string that was deleted
-
-### Events
-
-Models inherit from the standard [Node.js EventEmitter](http://nodejs.org/docs/latest/api/events.html), and they support the same methods: `on`, `once`, `removeListener`, `emit`, etc.
-
-#### Model mutator events
-
-Racer emits events whenever it mutates data via `model.set`, `model.push`, etc. These events provide an entry point for an app to react to a specific data mutation or pattern of data mutations.
-
-`model.on` and `model.once` accept a second argument for these types of events. The second argument may be a path pattern or regular expression that will filter emitted events, calling the handler function only when a mutator matches the pattern.
-
-> ### `listener = `model.on` ( method, path, eventCallback )`
->
-> **method:** Name of the mutator method - e.g., "set", "push"
->
-> **path:** Pattern or regular expression matching the path being mutated
->
-> **eventCallback:** Function to call when a matching method and path are mutated
->
-> **listener:** Returns the listener function subscribed to the event emitter. This is the function that should be passed to `model.removeListener`
-
-The event callback receives a number of arguments based on the path pattern and method. The arguments are:
-
-> ### eventCallback` ( captures..., args..., out, isLocal, passed )`
->
-> **captures:** The capturing groups from the path pattern or regular expression. If specifying a string pattern, a capturing group will be created for each `*` wildcard and anything in parentheses, such as `(one|two)`
->
-> **args:** The arguments to the method. Note that optional arguments with a default value (such as the `byNum` argument of `model.incr`) will always be included
->
-> **out:** The return value of the model mutator method
->
-> **isLocal:** `true` if the model mutation was originally called on the same model and `false` otherwise
->
-> **passed:** `undefined`, unless a value is specified via `model.pass`. See description below
-
-In path patterns, wildcards (`*`) will only match a single segment in the middle of a path, but they will match a single or multiple path segments at the end of the path. In other words, they are non-greedy in the middle of a pattern and greedy at the end of a pattern.
-
-{% highlight javascript %}
-// Matches only model.push('messages', message)
-model.on('push', 'messages', function (message, messagesLength) {
-  ...
-});
-
-// Matches model.set('todos.4.completed', true), etc.
-model.on('set', 'todos.*.completed', function (todoId, isComplete) {
-  ...
-});
-
-// Matches all set operations
-model.on('set', '*', function (path, value) {
-  ...
-});
-{% endhighlight %}
-{% highlight coffeescript %}
-# Matches only model.push('messages', message)
-model.on 'push', 'messages', (message, messagesLength) ->
-  ...
-
-# Matches model.set('todos.4.completed', true), etc.
-model.on 'set', 'todos.*.completed', (todoId, isComplete) ->
-  ...
-
-# Matches all set operations
-model.on 'set', '*', (path, value) ->
-  ...
-{% endhighlight %}
-
-#### model.pass
-
-This method can be chained before calling a mutator method to pass an argument to model event listeners. Note that this value is only passed to local listeners, and it is not sent to the server or other clients.
-
-{% highlight javascript %}
-// Logs:
-//   'red', undefined
-//   'green', 'hi'
-
-model.on('set', 'color', function (value, out, isLocal, passed) {
-  console.log(value, passed);
-});
-model.set('color', 'red');
-model.pass('hi').set('color', 'green');
-{% endhighlight %}
-{% highlight coffeescript %}
-# Logs:
-#   'red', undefined
-#   'green', 'hi'
-
-model.on 'set', 'color', (value, out, isLocal, passed) ->
-  console.log value, passed
-model.set 'color', 'red'
-model.pass('hi').set 'color', 'green'
-{% endhighlight %}
 
 ### Reactive functions
 
