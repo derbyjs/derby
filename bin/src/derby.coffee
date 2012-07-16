@@ -49,10 +49,6 @@ get '/:roomName?', (page, model, {roomName}) ->
 ready (model) ->
   timer = null
 
-  # Expose the model as a global variable in the browser. This is fun in
-  # development, but it should be removed when writing an app
-  window.model = model
-
   # Exported functions are exposed as a global in the browser with the same
   # name as the module that includes Derby. They can also be bound to DOM
   # events using the "x-bind" attribute in a template.
@@ -117,10 +113,6 @@ get('/:roomName?', function(page, model, params) {
 
 ready(function(model) {
   var timer
-
-  // Expose the model as a global variable in the browser. This is fun in
-  // development, but it should be removed when writing an app
-  window.model = model
 
   // Exported functions are exposed as a global in the browser with the same
   // name as the module that includes Derby. They can also be bound to DOM
