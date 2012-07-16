@@ -225,10 +225,10 @@ expressApp
   // Uncomment and supply secret to add Derby session handling
   // Derby session middleware creates req.model and subscribes to _session
   // .use(express.cookieParser())
-  // .use(store.sessionMiddleware
+  // .use(store.sessionMiddleware({
   //   secret: process.env.SESSION_SECRET || 'YOUR SECRET HERE'
-  //   cookie: {maxAge: ONE_YEAR}
-  // )
+  // , cookie: {maxAge: ONE_YEAR}
+  // }))
 
   // Adds req.getModel method
   .use(store.modelMiddleware())
