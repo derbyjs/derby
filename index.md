@@ -839,10 +839,10 @@ The `unescaped` keyword may be used to insert a value without escaping.
 
 {% highlight html %}
 <Body:>
-  <p>{{"{{"}}name}}
-  <p>{{"{{"}}age}}
-  <p>{{"{{"}}location}}
-  <p>{{"{{"}}unescaped location}}
+  <p>{{"{{"}}name}}</p>
+  <p>{{"{{"}}age}}</p>
+  <p>{{"{{"}}location}}</p>
+  <p>{{"{{"}}unescaped location}}</p>
 {% endhighlight %}
 
 #### Context
@@ -857,10 +857,10 @@ page.render name: 'Parker', location: '<b>500 ft</b> away'
 #### Output
 
 {% highlight html %}
-<p>Parker
-<p>
-<p>&lt;b>500 ft&lt;/b> away
-<p><b>500 ft</b> away
+<p>Parker</p>
+<p></p>
+<p>&lt;b>500 ft&lt;/b> away</p>
+<p><b>500 ft</b> away</p>
 {% endhighlight %}
 
 ### Sections
@@ -888,7 +888,7 @@ other values are truthy.
   </h1>
   <ul>
     {{"{{"}}#each users}}
-      <li>{{"{{"}}name}}: {{"{{"}}motto}}
+      <li>{{"{{"}}name}}: {{"{{"}}motto}}</li>
     {{"{{"}}/}}
   </ul>
   {{"{{"}}#unless hideFooter}}
@@ -928,8 +928,8 @@ page.render
 {% highlight html %}
 <h1>Welcome back!</h1>
 <ul>
-  <li>Billy: Shufflin', shufflin'
-  <li>Ringo: Make haste slowly
+  <li>Billy: Shufflin', shufflin'</li>
+  <li>Ringo: Make haste slowly</li>
 </ul>
 <small>Copyright &copy; 1999 Party Like It's.</small>
 {% endhighlight %}
@@ -1071,7 +1071,7 @@ Yet, a template might need to define how each item in an array should be rendere
   <ul>{#each items}<app:item>{/}</ul>
 
 <item:>
-  <li><a href="{{"{{"}}url}}">{.name}</a>: ${.price}
+  <li><a href="{{"{{"}}url}}">{.name}</a>: ${.price}</li>
 {% endhighlight %}
 
 #### Context
@@ -1097,9 +1097,9 @@ page.render()
 
 {% highlight html %}
 <ul id="$0">
-  <li><a href="/p/0" id="$1">Cool can</a>: $<!--$2-->5.99<!--$$2-->
-  <li><a href="/p/1" id="$3">Fun fin</a>: $<!--$4-->10.99<!--$$4-->
-  <li><a href="/p/2" id="$5">Bam bot</a>: $<!--$6-->24.95<!--$$6-->
+  <li><a href="/p/0" id="$1">Cool can</a>: $<!--$2-->5.99<!--$$2--></li>
+  <li><a href="/p/1" id="$3">Fun fin</a>: $<!--$4-->10.99<!--$$4--></li>
+  <li><a href="/p/2" id="$5">Bam bot</a>: $<!--$6-->24.95<!--$$6--></li>
 </ul>
 {% endhighlight %}
 
