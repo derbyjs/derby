@@ -423,12 +423,14 @@ Apps are associated with their respective styles and views by filename only.
 Derby automatically includes them when rendering. Both support importing, so
 shared styles and templates may be defined in separate files.
 
-Static files can be placed in the public folder. The default Express server
-created by the Derby project generator sets a cache time of one year for all
-static files. Therefore, new file versions must be given new filenames. Derby
-compiles scripts for the browser into the `public\gen` folder by default. Each
-script's filename is generated from a hash, so that it can be cached long
-term.
+Static files can be placed in the public folder. (Note that the contents of the
+public folder map to the root URL, so the image stored at the file
+`public/img/logo.png` would be served from the URL `/img/logo.png`.)
+The default Express server created by the Derby project generator sets a cache
+time of one year for all static files. Therefore, new file versions must be given
+new filenames. Derby compiles scripts for the browser into the `public\gen`
+folder by default. Each script's filename is generated from a hash, so that it
+can be cached long term.
 
 The `ui` directory contains a component library, which can be used to create
 custom components for the containing project. These are re-usable templates,
