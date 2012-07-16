@@ -49,17 +49,15 @@ get '/:roomName?', (page, model, {roomName}) ->
 ready (model) ->
   timer = null
 
-  # Exported functions are exposed as a global in the browser with the same
-  # name as the module that includes Derby. They can also be bound to DOM
-  # events using the "x-bind" attribute in a template.
-  exports.stop = ->
-
+  # Functions on the app can be bound to DOM events using the "x-bind"
+  # attribute in a template.
+  @stop = ->
     # Any path name that starts with an underscore is private to the current
     # client. Nothing set under a private path is synced back to the server.
     model.set '_stopped', true
     clearInterval timer
 
-  do exports.start = ->
+  do @start = ->
     model.set '_stopped', false
     timer = setInterval ->
       model.set '_timer', (((+new Date()) - start) / 1000).toFixed(1)
@@ -114,24 +112,22 @@ get('/:roomName?', function(page, model, params) {
 ready(function(model) {
   var timer
 
-  // Exported functions are exposed as a global in the browser with the same
-  // name as the module that includes Derby. They can also be bound to DOM
-  // events using the "x-bind" attribute in a template.
-  exports.stop = function() {
-
+  // Functions on the app can be bound to DOM events using the "x-bind"
+  // attribute in a template.
+  this.stop = function() {
     // Any path name that starts with an underscore is private to the current
     // client. Nothing set under a private path is synced back to the server.
     model.set('_stopped', true)
     clearInterval(timer)
   }
 
-  exports.start = function() {
+  this.start = function() {
     model.set('_stopped', false)
     timer = setInterval(function() {
       model.set('_timer', (((+new Date()) - start) / 1000).toFixed(1))
     }, 100)
   }
-  exports.start()
+  this.start()
 
 })
 
@@ -149,46 +145,47 @@ serverError = require './serverError'
 
 ## SERVER CONFIGURATION ##
 
+expressApp = express()
+server = http.createServer expressApp
+store = derby.createStore listen: server
+
+module.exports = server
+
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
 publicPath = path.join root, 'public'
 
-(expressApp = express())
+expressApp
   .use(express.favicon())
   # Gzip static files and serve from memory
   .use(gzippo.staticGzip publicPath, maxAge: ONE_YEAR)
-
   # Gzip dynamically rendered content
   .use(express.compress())
 
   # Uncomment to add form data parsing support
-  # .use(express.bodyParser())
-  # .use(express.methodOverride())
+  .use(express.bodyParser())
+  .use(express.methodOverride())
 
-  # Derby session middleware creates req.model and subscribes to _session
-  # .use(express.cookieParser 'secret_sauce')
-  # .use(express.session
+  # Uncomment and supply secret to add Derby session handling
+  # Derby session middleware creates req.session and socket.io sessions
+  # .use(express.cookieParser())
+  # .use(store.sessionMiddleware
+  #   secret: process.env.SESSION_SECRET || 'YOUR SECRET HERE'
   #   cookie: {maxAge: ONE_YEAR}
   # )
-  # .use(<<app>>.session())
 
-  # The router method creates an express middleware from the app's routes
+  # Adds req.getModel method
+  .use(store.modelMiddleware())
+  # Creates an express middleware from the app's routes
   .use(<<app>>.router())
   .use(expressApp.router)
   .use(serverError root)
-
-module.exports = server = http.createServer expressApp
 
 
 ## SERVER ONLY ROUTES ##
 
 expressApp.all '*', (req) ->
   throw "404: #{req.url}"
-
-
-## STORE SETUP ##
-
-store = <<app>>.createStore listen: server
 
 '''
 
@@ -204,16 +201,20 @@ var http = require('http')
 
 // SERVER CONFIGURATION //
 
+var expressApp = express()
+  , server = http.createServer(expressApp)
+  , store = derby.createStore({listen: server})
+
+module.exports = server
+
 var ONE_YEAR = 1000 * 60 * 60 * 24 * 365
   , root = path.dirname(path.dirname(__dirname))
   , publicPath = path.join(root, 'public')
-  , expressApp, server, store
 
-;(expressApp = express())
+expressApp
   .use(express.favicon())
   // Gzip static files and serve from memory
   .use(gzippo.staticGzip(publicPath, {maxAge: ONE_YEAR}))
-
   // Gzip dynamically rendered content
   .use(express.compress())
 
@@ -221,19 +222,20 @@ var ONE_YEAR = 1000 * 60 * 60 * 24 * 365
   // .use(express.bodyParser())
   // .use(express.methodOverride())
 
+  // Uncomment and supply secret to add Derby session handling
   // Derby session middleware creates req.model and subscribes to _session
-  // .use(express.cookieParser('secret_sauce'))
-  // .use(express.session({
+  // .use(express.cookieParser())
+  // .use(store.sessionMiddleware
+  //   secret: process.env.SESSION_SECRET || 'YOUR SECRET HERE'
   //   cookie: {maxAge: ONE_YEAR}
-  // }))
-  // .use(<<app>>.session())
+  // )
 
-  // The router method creates an express middleware from the app's routes
+  // Adds req.getModel method
+  .use(store.modelMiddleware())
+  // Creates an express middleware from the app's routes
   .use(<<app>>.router())
   .use(expressApp.router)
   .use(serverError(root))
-
-module.exports = server = http.createServer(expressApp)
 
 
 // SERVER ONLY ROUTES //
@@ -241,11 +243,6 @@ module.exports = server = http.createServer(expressApp)
 expressApp.all('*', function(req) {
   throw '404: ' + req.url
 })
-
-
-// STORE SETUP //
-
-store = <<app>>.createStore({listen: server})
 
 '''
 
@@ -297,20 +294,18 @@ module.exports = (root) ->
 '''
 
 CONNECTION_ALERT_JS = '''
-exports.create = function(model) {
+exports.connect = function() {
+  model = this.model
+  // Hide the reconnect link for a second after clicking it
+  model.set('hideReconnect', true)
+  setTimeout(function() {
+    model.set('hideReconnect', false)
+  }, 1000)
+  model.socket.socket.connect()
+}
 
-  this.connect = function() {
-    // Hide the reconnect link for a second after clicking it
-    model.set('hideReconnect', true)
-    setTimeout(function() {
-      model.set('hideReconnect', false)
-    }, 1000)
-    model.socket.socket.connect()
-  }
-
-  this.reload = function() {
-    window.location.reload()
-  }
+exports.reload = function() {
+  window.location.reload()
 }
 
 '''
@@ -534,13 +529,13 @@ packageJson = (project, useCoffee) ->
     main: './server.js'
     dependencies:
       derby: '*'
-      express: '3.x'
-      gzippo: '>=0.1.4'
+      express: '3.0.0beta4'
+      gzippo: '>=0.1.7'
     private: true
 
   if useCoffee
     pkg.devDependencies =
-      'coffee-script': '>=1.2'
+      'coffee-script': '>=1.3.3'
 
   return JSON.stringify pkg, null, '  '
 
