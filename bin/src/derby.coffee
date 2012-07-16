@@ -146,10 +146,10 @@ serverError = require './serverError'
 ## SERVER CONFIGURATION ##
 
 expressApp = express()
-server = http.createServer expressApp
-store = derby.createStore listen: server
+server = module.exports = http.createServer expressApp
 
-module.exports = server
+derby.use(derby.logPlugin)
+store = derby.createStore listen: server
 
 ONE_YEAR = 1000 * 60 * 60 * 24 * 365
 root = path.dirname path.dirname __dirname
@@ -202,10 +202,10 @@ var http = require('http')
 // SERVER CONFIGURATION //
 
 var expressApp = express()
-  , server = http.createServer(expressApp)
-  , store = derby.createStore({listen: server})
+  , server = module.exports = http.createServer(expressApp)
 
-module.exports = server
+derby.use(derby.logPlugin)
+var store = derby.createStore({listen: server})
 
 var ONE_YEAR = 1000 * 60 * 60 * 24 * 365
   , root = path.dirname(path.dirname(__dirname))
