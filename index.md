@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.3.11
+version: 0.3.12
 headers:
   - text: Introduction
     type: h1
@@ -139,19 +139,21 @@ get('/', function (page, model) {
 
 <h3 class="javascript">server.js</h3>
 {% highlight javascript %}
-var http = require('http')
-  , express = require('express')
-  , hello = require('./hello');
+var express = require('express')
+  , expressApp = express()
+  , server = require('http').createServer(expressApp);
 
-var expressApp = express()
+// The server-side store syncs data over Socket.IO
+var store = require('derby').createStore({listen: server});
+
+expressApp
   .use(express.static(__dirname + '/public'))
-  // Apps create an Express middleware
-  .use(hello.router());
+  // The store creates models for incoming requests
+  .use(store.modelMiddleware())
+  // App routes create an Express middleware
+  .use(require('./hello').router());
 
-var server = http.createServer(expressApp).listen(3000);
-
-// Apps also provide a server-side store for syncing data
-hello.createStore({listen: server});
+server.listen(3000);
 {% endhighlight %}
 
 <h3 class="coffeescript">hello.coffee</h3>
@@ -171,19 +173,21 @@ get '/', (page, model) ->
 
 <h3 class="coffeescript">server.coffee</h3>
 {% highlight coffeescript %}
-http = require 'http'
 express = require 'express'
-hello = require './hello'
-
 expressApp = express()
+server = require('http').createServer expressApp
+
+# The server-side store syncs data over Socket.IO
+store = require('derby').createStore listen: server
+
+expressApp
   .use(express.static __dirname + '/public')
-  # Apps create an Express middleware
-  .use(hello.router())
+  # The store creates models for incoming requests
+  .use(store.modelMiddleware())
+  # App routes create an Express middleware
+  .use(require('./hello').router())
 
-server = http.createServer(expressApp).listen 3000
-
-# Apps also provide a server-side store for syncing data
-hello.createStore listen: server
+server.listen 3000
 {% endhighlight %}
 
 ### Add water and...
@@ -495,10 +499,8 @@ that handles all of the app's routes.
 
 The server also needs to create a `store` object, which is what sets up
 Socket.IO, creates models, coordinates data syncing, and interfaces with
-databases. A store associated with one app can be created using that app's
-`app.createStore()` method. If a store is shared among multiple apps, it should
-be created using the `derby.createStore()` method, which is passed each of the
-apps as aruguments. See [Creating stores](#creating_stores).
+databases. Stores are created via the `derby.createStore()` method.
+See [Creating stores](#creating_stores).
 
 ## Static pages
 
@@ -1481,7 +1483,7 @@ The page's render function implicitly renders in the context of the app's model.
 >
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
 
-Apps may also be rendered within server only Express routes. In this case, it is necessary to provide the renderer with a response object and model. On the server, Models are created with the `store.createModel()` method. If the Derby session middleware is used, it will create models automatically and set a reference to them on `req.model`.
+Apps may also be rendered within server only Express routes. In this case, it is necessary to provide the renderer with a response object and model. When using the store.modelMiddleware, the model for a request is retrieved from `req.getModel()`. Otherwise, models can be made directly from the store via the `store.createModel()` method.
 
 > ### staticPages.render` ( name, res, [model], [namespace], [context], [status] )`
 >
@@ -1744,20 +1746,15 @@ To perform these algorithms, Racer stores a journal of all transactions. When ne
 
 ## Creating stores
 
-The default server produced by the Derby project generator will create a store
-associated with an app. Derby will then use that store to create models when
-invoking app routes.A
+The default server produced by the Derby project generator will create a store and add a modelMiddleware to the Express server before any app routers. The modelMiddleware adds a `req.getModel()` function which can be called to create or get a model (if one was already created) for a given request.
 
-> ### `store = `app.createStore` ( options )`
-> ### `store = `derby.createStore` ( apps..., options )`
+> ### `store = `derby.createStore` ( options )`
 >
 > **options:** An object that configures the store
 >
 > **store:** Returns a Racer store object
->
-> **apps:** The `derby.createStore()` method accepts one or more Derby applications as arguments. Each of these apps is associated with the created store.
 
-Typically, a project will have only one store, even if it has multiple apps. It is possible to have multiple stores, though an app can only be associated with one store.
+Typically, a project will have only one store, even if it has multiple apps. It is possible to have multiple stores, though a given page can only have one model, and a model is associated with one store.
 
 ### Configuration options
 
@@ -1858,13 +1855,13 @@ console.log model.get('meta.app')
 
 Derby provides a model when calling application routes. On the server, it creates an empty model from the `store` associated with an app. When the server renders the page, the model is serialized. It is then reinitialized into the same state on the client. This model object is passed to the `app.ready()` callback and app routes rendered on the client.
 
-If a model is assigned to `req.model`, Derby uses that instead of creating a new model. This can be used to pass data from server middleware to an application route. The Racer session middleware uses this to create a model with a `_session` object for a given cookie.
+Derby uses the model supplied by the store.modelMiddleware by calling `req.getModel()`. To pass data from server-side express middleware or routes, the model can be retrieved via this same method and data can be set on it before passing control to the app router.
 
 > ### `model = `store.createModel` ( )`
 >
 > **model:** A Racer model object associated with the given store
 
-If using the Racer session middleware, server-side routes can use the model supplied on `req.model`. Otherwise, they can manually create a model via `store.createModel()`.
+Server-side routes can use the model from `req.getModel()`. Otherwise, they can manually create a model via `store.createModel()`.
 
 ## Model features
 
