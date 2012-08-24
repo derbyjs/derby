@@ -3,6 +3,14 @@
 Racer provides the model and data synchronization for Derby. It's versions are updated along with Derby versions. See change history for Racer as well:
 https://github.com/codeparty/racer/blob/master/History.md
 
+## 0.3.13
+Mostly just bug fixes
+
+- Add Component#emitDelayable()
+- Fix options specification to be more consistent
+- Add staticMount option
+- Lots of bug fixes
+
 ## 0.3.12
 The API for creating stores and sessions has changed in support of adding auth. Generating a new starter server via `derby new` is recommended
 
