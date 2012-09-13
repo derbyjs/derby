@@ -357,7 +357,7 @@ APP_HTML = '''
   <p><label>Welcome message: <input value="{_room.welcome}"></label></p>
 
   <!-- Other templates are referenced like HTML elements -->
-  <p>This page has been visted {_room.visits} times. <app:timer></p>
+  <p>This page has been visited {_room.visits} times. <app:timer></p>
 
   <p>Let's go <a href="/{{randomUrl}}">somewhere random</a>.</p>
 
