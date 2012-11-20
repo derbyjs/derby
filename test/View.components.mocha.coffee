@@ -78,6 +78,13 @@ describe 'App HTML components', ->
     '''
     expect(view.get 'test', myMessage: {text: 'Heyo'}).to.equal 'say "Heyo"'
 
+  it 'supports dot syntax for nested properties of variable object attributes', ->
+    view.make 'test', 'say "<app:test2 messages="{{myMessages}}">"'
+    view.make 'test2', '''
+      {{@messages.0.text}}
+    '''
+    expect(view.get 'test', myMessages: [{text: 'Heyo'}]).to.equal 'say "Heyo"'
+
   it 'supports this within scope from literal attribute', ->
     view.make 'test', 'say "<app:test2 message="Heyo">"'
     view.make 'test2', '''
