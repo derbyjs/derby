@@ -78,6 +78,16 @@ describe 'App HTML components', ->
     '''
     expect(view.get 'test', myMessage: {text: 'Heyo'}).to.equal 'say "Heyo"'
 
+  it 'supports this within scope from literal attribute', ->
+    view.make 'test', 'say "<app:test2 message="Heyo">"'
+    view.make 'test2', '''
+      {{#with @message}}
+        {{this}}
+        {this}
+      {{/}}
+    '''
+    expect(view.get 'test').to.equal 'say "Heyo<!--$0-->Heyo<!--$$0-->"'
+
   it 'supports bound attributes', ->
     view.make 'test', 'say "<app:test2 message="{myMessage}">"'
     view.make 'test2', '''
