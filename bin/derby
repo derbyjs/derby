@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-require('./lib/derby');
+require('coffee-script');
+require('./src/derby');
