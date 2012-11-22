@@ -10,6 +10,14 @@ describe 'App HTML components', ->
     model = new Model
     view._init model, false, done
 
+  it 'supports passing through attributes', ->
+    view.make 'test', '<app:test2 message=Howdy>'
+    view.make 'test2', '<app:test3 text={{@message}}>'
+    view.make 'test3', '{{@text}}'
+    expect(view.get 'test').to.equal 'Howdy'
+
+  return
+
   it 'supports void components', ->
     view.make 'test', 'say "<app:test2>"'
     view.make 'test2', 'hi'
@@ -38,7 +46,7 @@ describe 'App HTML components', ->
     expect(view.get 'test').to.equal 'say "Howdy" or "Yo"'
 
   it 'supports boolean and numerical attributes', ->
-    view.make 'test', '<app:test2 show="true"> / <app:test2 num="-4.5"> / <app:test2 show="false">'
+    view.make 'test', '<app:test2 show> / <app:test2 num="-4.5"> / <app:test2>'
     view.make 'test2', '''
       {{#if @show}}
         Hi
