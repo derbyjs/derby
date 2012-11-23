@@ -2226,7 +2226,7 @@ Note that Derby also extends `model.at` to accept a DOM node as an argument. Thi
 
 <blockquote style="background: #E5C3C4; border: 1px solid #E58A8E">
 <h3>WARNING</h3>
-<p>This section is out of date. Please see the <a href="https://github.com/codeparty/racer/blob/master/src/descriptor/query/README.md">Queries Readme</a> for now.</p>
+<p>This section is out of date. Please see the <a href="https://github.com/codeparty/racer/blob/master/lib/descriptor/query/README.md">Queries Readme</a> for now.</p>
 </blockquote>
 
 Models have access to an expressive, chainable query API. Queries enable a more
