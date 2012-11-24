@@ -10,14 +10,6 @@ describe 'App HTML components', ->
     model = new Model
     view._init model, false, done
 
-  it 'supports passing through attributes', ->
-    view.make 'test', '<app:test2 message=Howdy>'
-    view.make 'test2', '<app:test3 text={{@message}}>'
-    view.make 'test3', '{{@text}}'
-    expect(view.get 'test').to.equal 'Howdy'
-
-  return
-
   it 'supports void components', ->
     view.make 'test', 'say "<app:test2>"'
     view.make 'test2', 'hi'
@@ -93,6 +85,19 @@ describe 'App HTML components', ->
     '''
     expect(view.get 'test', myMessages: [{text: 'Heyo'}]).to.equal 'say "Heyo"'
 
+  it 'supports passing through literal attributes', ->
+    view.make 'test', '<app:test2 message=Howdy>'
+    view.make 'test2', '<app:test3 text={{@message}}>'
+    view.make 'test3', '{{@text}}'
+    expect(view.get 'test').to.equal 'Howdy'
+
+  it 'supports passing through bound attributes', ->
+    view.make 'test', '<app:test2 message={_stuff}>'
+    view.make 'test2', '<app:test3 text={@message}>'
+    view.make 'test3', '{{@text}}'
+    model.set '_stuff', 'Howdy'
+    expect(view.get 'test').to.equal 'Howdy'
+
   it 'supports this within scope from literal attribute', ->
     view.make 'test', 'say "<app:test2 message="Heyo">"'
     view.make 'test2', '''
@@ -117,25 +122,19 @@ describe 'App HTML components', ->
 
   it 'supports bound attributes as element attributes', ->
     view.make 'test', 'say "<app:test2 message="{myMessage}">"'
-    view.make 'test2', '''
-      <div title={@message}></div>
-    '''
+    view.make 'test2', '<div title={@message}></div>'
     model.set 'myMessage', 'Heyo'
     expect(view.get 'test').to.equal 'say "<div id=$0 title=Heyo></div>"'
 
   it 'supports blocks in attributes used in an attribute', ->
     view.make 'test', 'say "<app:test2 message="Say {{myMessage}}">"'
-    view.make 'test2', '''
-      <div title="{{@message}}"></div>
-    '''
+    view.make 'test2', '<div title="{{@message}}"></div>'
     model.set 'myMessage', 'Heyo'
     expect(view.get 'test').to.equal 'say "<div title="Say Heyo"></div>"'
 
   it 'supports bound blocks in attributes used in an attribute'
     # view.make 'test', 'say "<app:test2 message="Say {myMessage}">"'
-    # view.make 'test2', '''
-    #   <div title="{@message}"></div>
-    # '''
+    # view.make 'test2', '<div title="{@message}"></div>'
     # model.set 'myMessage', 'Heyo'
     # expect(view.get 'test').to.equal 'say "<div id=$0 title="Say Heyo"></div>"'
 
