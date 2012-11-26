@@ -10,6 +10,28 @@ describe 'App HTML components', ->
     model = new Model
     view._init model, false, done
 
+  it 'supports <get view="name"> lookup', ->
+    view.make 'test', 'say "<get view=test2>"'
+    view.make 'test2', 'hi'
+    expect(view.get 'test').to.equal 'say "hi"'
+
+  it 'supports <get view="{{name}}"> lookup', ->
+    view.make 'test', 'say "<get view={{template}}>"'
+    view.make 'test2', 'hi'
+    expect(view.get 'test', {template: 'test2'}).to.equal 'say "hi"'
+
+  it 'supports <get view="{{@name}}"> lookup', ->
+    view.make 'test', '<app:test2 template=test3>'
+    view.make 'test2', 'say "<get view={{@template}}>"'
+    view.make 'test3', 'hi'
+    expect(view.get 'test').to.equal 'say "hi"'
+
+  it 'supports <get view="{{@name}}"> lookup via inherit', ->
+    view.make 'test', '<app:test2 view=test3>'
+    view.make 'test2', 'say "<get inherit=*>"'
+    view.make 'test3', 'hi'
+    expect(view.get 'test').to.equal 'say "hi"'
+
   it 'supports void components', ->
     view.make 'test', 'say "<app:test2>"'
     view.make 'test2', 'hi'
