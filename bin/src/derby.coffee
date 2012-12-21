@@ -529,13 +529,13 @@ packageJson = (project, useCoffee) ->
     main: './server.js'
     dependencies:
       derby: '*'
-      express: '3.0.0beta4'
-      gzippo: '>=0.1.7'
+      express: '>=3.0.0'
+      gzippo: '>=0.2.0'
     private: true
 
   if useCoffee
     pkg.devDependencies =
-      'coffee-script': '>=1.3.3'
+      'coffee-script': '>=1.4.0'
 
   return JSON.stringify pkg, null, '  '
 
