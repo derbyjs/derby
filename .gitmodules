@@ -1,0 +1,7 @@
+[submodule "node_modules/racer"]
+	path = node_modules/racer
+	url = https://github.com/reneclaus/racer
+
+[submodule "node_modules/tracks"]
+	path = node_modules/tracks
+	url = https://github.com/reneclaus/tracks
