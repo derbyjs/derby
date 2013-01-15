@@ -14,8 +14,8 @@
   "dependencies": {
     "dom-shim": ">=0.1.0",
     "html-util": ">=0.1.3",
-    "tracks": ">=0.1.10",
-    "racer": "0.3.13",
+    "tracks": "git://github.com/reneclaus/tracks",
+    "racer": "git://github.com/reneclaus/racer#master",
     "chokidar": ">=0.2.6",
     "stylus": ">=0.25.0",
     "less": ">=1.3.0",

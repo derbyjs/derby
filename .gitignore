@@ -1,5 +1,14 @@
 /bin/lib
-node_modules
 test-output.tmp
 *swp
-*un~
+/node_modules/stylus
+/node_modules/nib
+/node_modules/mkdirp
+/node_modules/MD5
+/node_modules/less
+/node_modules/html-util
+/node_modules/dom-shim
+/node_modules/commander
+/node_modules/chokidar
+/node_modules/up
+/node_modules/.bin
