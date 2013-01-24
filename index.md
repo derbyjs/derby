@@ -1898,7 +1898,7 @@ Models provide a method to create globally unique ids. These can be used as part
 
 ### Mutators
 
-Model mutator methods are applied optimistically. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model mutator methods are synchronous and provide an optional callback.
+Model mutator methods are applied optimistically. This means that changes are reflected immediately, but they may ultimately fail and be rolled back. All model mutator methods are asynchronous and provide an optional callback.
 
 #### Basic methods
 
