@@ -3,6 +3,27 @@
 Racer provides the model and data synchronization for Derby. It's versions are updated along with Derby versions. See change history for Racer as well:
 https://github.com/codeparty/racer/blob/master/History.md
 
+## 0.3.14
+This release includes a great deal of work making components and templating more full featured and performant
+
+- Instead of macro template tags with triple curly braces, such as {{{items}}}, attributes passed to components are now accessed with an @ sign, such as {{@items}} or {@items}
+- <derby:view view="example"> syntax is now supported for including components with a variable name. This is equivalent to <app:example>, but the view attribute can vary based on context
+- Components can be passed an `inherit` attribute to default to the attributes from the parent
+- View#fn syntax has changed to support more arbitrary inputs and outputs. See the docs for more detail
+- Instead of view.dom, it is now app.view, app.dom, app.history, and app.model in the client
+- Add View#componentsByName
+- Bindings don't update during route execution for faster page renders
+- Initial support for bindings within inline SVG elements
+- Components have a 'destroy' event that gets invoked when they are no longer in the DOM
+- Components automatically cleanup listeners added via dom.addListener and model.on within a component
+- App#fn can be used to add controller methods to the app more easily across different files
+- App auto-reloading no longer uses Up, which didn't work well with polling. Reloading now uses cluster, though it is still somewhat buggy
+- App#enter and App#exit added, which get called upon entering or exiting a particular route pattern. Can be used intead of App#ready, which only gets called on the very first page load
+- Add Component#setup for more easy access to the library within a given components code. Useful for adding view functions pertaining to a particular component
+- App#Collection added for more convenient access to scoped models in controller functions and definition of collection specific methods. Demonstrated in the leaderboard code of the Sink example.
+- e.path(), e.get(), and e.at() now available for using template-style path names in controller code. Often more flexible and convenient than using model.at(el)
+- Many bug fixes
+
 ## 0.3.13
 Mostly just bug fixes
 
