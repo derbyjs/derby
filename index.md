@@ -119,17 +119,15 @@ applications that run in both Node.js and browsers.</p>
 
 <h3 class="javascript">hello.js</h3>
 {% highlight javascript %}{% raw %}
-var hello = require('derby').createApp(module)
-  , view = hello.view
-  , get = hello.get;
+var app = require('derby').createApp(module);
 
 // Templates define both HTML and model <- -> view bindings
-view.make('Body'
+app.view.make('Body'
 , 'Holler: <input value="{message}"><h1>{message}</h1>'
 );
 
 // Routes render on client as well as server
-get('/', function (page, model) {
+app.get('/', function (page, model) {
   // Subscribe specifies the data to sync
   model.subscribe('message', function () {
     page.render();
@@ -158,14 +156,14 @@ server.listen(3000);
 
 <h3 class="coffeescript">hello.coffee</h3>
 {% highlight coffeescript %}{% raw %}
-{view, get} = require('derby').createApp module
+app = require('derby').createApp module
 
 # Templates define both HTML and model <- -> view bindings
-view.make 'Body',
+app.view.make 'Body',
   'Holler: <input value="{message}"><h1>{message}</h1>'
 
 # Routes render on client as well as server
-get '/', (page, model) ->
+app.get '/', (page, model) ->
   # Subscribe specifies the data to sync
   model.subscribe 'message', ->
     page.render()
