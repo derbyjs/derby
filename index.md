@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.3.12
+version: 0.3.14
 headers:
   - text: Introduction
     type: h1
@@ -118,7 +118,7 @@ headers:
 applications that run in both Node.js and browsers.</p>
 
 <h3 class="javascript">hello.js</h3>
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 var hello = require('derby').createApp(module)
   , view = hello.view
   , get = hello.get;
@@ -135,10 +135,10 @@ get('/', function (page, model) {
     page.render();
   });
 });
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 <h3 class="javascript">server.js</h3>
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 var express = require('express')
   , expressApp = express()
   , server = require('http').createServer(expressApp);
@@ -154,10 +154,10 @@ expressApp
   .use(require('./hello').router());
 
 server.listen(3000);
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 <h3 class="coffeescript">hello.coffee</h3>
-{% highlight coffeescript %}
+{% highlight html %}{% raw %}
 {view, get} = require('derby').createApp module
 
 # Templates define both HTML and model <- -> view bindings
@@ -169,10 +169,10 @@ get '/', (page, model) ->
   # Subscribe specifies the data to sync
   model.subscribe 'message', ->
     page.render()
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 <h3 class="coffeescript">server.coffee</h3>
-{% highlight coffeescript %}
+{% highlight html %}{% raw %}
 express = require 'express'
 expressApp = express()
 server = require('http').createServer expressApp
@@ -188,7 +188,7 @@ expressApp
   .use(require('./hello').router())
 
 server.listen 3000
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Add water and...
 
@@ -534,17 +534,17 @@ number of pre-defined names. Pages usually define at least a `Title` and `Body`
 template. Templates may be created programmatically via the `view.make()`
 method:
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 var view = require('derby').createApp(module).view;
 
 view.make('Body', '<h1>Howdy!</h1>');
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
-{% highlight coffeescript %}
+{% highlight html %}{% raw %}
 {view} = require('derby').createApp module
 
 view.make 'Body', '<h1>Howdy!</h1>'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 However, they are generally placed in template files within the `views`
 directory. Each app automatically looks for a template file that shares the
@@ -556,13 +556,13 @@ Template files are also HTML, but each template is wrapped in a tag that names
 the template. This name must end in a colon to differentiate it from a normal
 HTML tag. These tags need not be closed. For example:
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Title:>
   Silly example
 
 <Body:>
   <h1>Howdy!</h1>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Pre-defined templates
 
@@ -633,7 +633,7 @@ sharing templates among multiple pages. File paths are expressed relatively,
 similar to how Node.js modules are loaded. Like in Node.js modules, either
 `pageName.html` or `pageName/index.html` can be imported as `pageName`.
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <!-- all templates from "./home.html" with the namespace "home" -->
 <import: src="home">
 
@@ -645,7 +645,7 @@ similar to how Node.js modules are loaded. Like in Node.js modules, either
 
 <!-- one template as a different name in the current namespace -->
 <import: src="home" template="message" as="myMessage">
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Templates defined in a parent namespace are inherited unless they are
 overridden by a template with the same name in the child namespace. Thus, it
@@ -657,25 +657,25 @@ Namespaces are separated by colons, and a namespace can be passed to the
 `page.render()` method to render a specific page or application state.
 
 #### shared.html
-{% highlight html %}
+{% highlight html %}{% raw %}
 <profile:>
   <div class="profile">
     ...
   </div>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### home.html
-{% highlight html %}
+{% highlight html %}{% raw %}
 <import: src="shared">
 
 <Body:>
   Welcome to the home page
   <!-- include component from an imported namespace -->
   <app:shared:profile>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### index.html
-{% highlight html %}
+{% highlight html %}{% raw %}
 <import: src="home">
 <import: src="contact">
 <import: src="about">
@@ -684,19 +684,19 @@ Namespaces are separated by colons, and a namespace can be passed to the
   Default page content
 
 <Footer:>
-  <p><small>&copy; {{"{{"}}year}}</small></p>
-{% endhighlight %}
+  <p><small>&copy; {{year}}</small></p>
+{% endraw %}{% endhighlight %}
 
 #### Context
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 page.render('home', {
   year: 2012
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 page.render 'home',
   year: 2012
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 See [Components](#components) for more info on defining template components.
 
@@ -714,11 +714,11 @@ highlights each type of template tag appropriately.
 
 A simple Handlebars template:
 
-    Hello {{"{{"}}name}}
-    You have just won ${{"{{"}}value}}!
-    {{"{{"}}#if inCalifornia}}
-    Well, ${{"{{"}}taxedValue}}, after taxes.
-    {{"{{"}}/if}}
+    Hello {{name}}
+    You have just won ${{value}}!
+    {{#if inCalifornia}}
+    Well, ${{taxedValue}}, after taxes.
+    {{/if}}
 
 Given the following data context:
 
@@ -757,34 +757,34 @@ bind data to the surrounding DOM objects. Template tags are only allowed within
 elements or text, within attribute values, and surrounding elements.
 
 #### Invalid template tag placements
-{% highlight html %}
+{% highlight html %}{% raw %}
 <!-- INVALID: Within element names -->
-<{{"{{"}}tagName}}>Bad boy!</{{"{{"}}tagName}}>
+<{{tagName}}>Bad boy!</{{tagName}}>
 
 <!-- INVALID: Within attribute names -->
-<b {{"{{"}}attrName}}="confused" {{"{{"}}booleanAttr}}>Bad boy!</b>
+<b {{attrName}}="confused" {{booleanAttr}}>Bad boy!</b>
 
 <!-- INVALID: Splitting an html tag -->
-<b{{"{{"}}#if maybe}}>Bad boy!</b{{"{{"}}/}}>
+<b{{#if maybe}}>Bad boy!</b{{/}}>
 
 <!-- INVALID: Splitting an element -->
-{{"{{"}}#if maybe}}<b>{{"{{"}}/}}Bad boy!</b>
-{% endhighlight %}
+{{#if maybe}}<b>{{/}}Bad boy!</b>
+{% endraw %}{% endhighlight %}
 
 #### Valid placements
-{% highlight html %}
+{% highlight html %}{% raw %}
 <!-- Within an element -->
-Let's go <b>{{"{{"}}activity}}</b>!
+Let's go <b>{{activity}}</b>!
 
 <!-- Within text -->
-<b>Let's go {{"{{"}}activity}}!</b>
+<b>Let's go {{activity}}!</b>
 
 <!-- Within attribute values -->
-<b style="color:{{"{{"}}displayColor}}">Let's go running!</b>
+<b style="color:{{displayColor}}">Let's go running!</b>
 
 <!-- Surrounding one or more elements and text -->
-{{"{{"}}#if maybe}}<b>Let's go dancing!</b>{{"{{"}}/}}
-{% endhighlight %}
+{{#if maybe}}<b>Let's go dancing!</b>{{/}}
+{% endraw %}{% endhighlight %}
 
 ### Whitespace and HTML conformance
 
@@ -797,12 +797,12 @@ output.
 The contents of `<script>` and `<style>` tags are passed through literally,
 except for whitespace removal. This whitespace removal can be disabled within an element by adding an `x-no-minify` attribute.
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <script type="application/x-yaml" x-no-minify>
   firstName: Sam
   lastName : Reed
 </script>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Derby's HTML parser should be able to parse any valid HTML, including elements
 that don't require closing tags and unquoted attributes. However, it is
@@ -837,31 +837,31 @@ The `unescaped` keyword may be used to insert a value without escaping.
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
-  <p>{{"{{"}}name}}</p>
-  <p>{{"{{"}}age}}</p>
-  <p>{{"{{"}}location}}</p>
-  <p>{{"{{"}}unescaped location}}</p>
-{% endhighlight %}
+  <p>{{name}}</p>
+  <p>{{age}}</p>
+  <p>{{location}}</p>
+  <p>{{unescaped location}}</p>
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 page.render({ name: 'Parker', location: '<b>500 ft</b> away' });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 page.render name: 'Parker', location: '<b>500 ft</b> away'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <p>Parker</p>
 <p></p>
 <p>&lt;b>500 ft&lt;/b> away</p>
 <p><b>500 ft</b> away</p>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Sections
 
@@ -877,30 +877,30 @@ other values are truthy.
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <h1>
-    {{"{{"}}#if visited}}
+    {{#if visited}}
       Welcome back!
-    {{"{{"}}else}}
+    {{else}}
       Welcome to the party!
-    {{"{{"}}/}}
+    {{/}}
   </h1>
   <ul>
-    {{"{{"}}#each users}}
-      <li>{{"{{"}}name}}: {{"{{"}}motto}}</li>
-    {{"{{"}}/}}
+    {{#each users}}
+      <li>{{name}}: {{motto}}</li>
+    {{/}}
   </ul>
-  {{"{{"}}#unless hideFooter}}
-    {{"{{"}}#with meta}}
-      <small>Copyright &copy; {{"{{"}}year}} Party Like It's.</small>
-    {{"{{"}}/}}
-  {{"{{"}}/}}
-{% endhighlight %}
+  {{#unless hideFooter}}
+    {{#with meta}}
+      <small>Copyright &copy; {{year}} Party Like It's.</small>
+    {{/}}
+  {{/}}
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 page.render({
   visited: true
 , users: [
@@ -911,8 +911,8 @@ page.render({
     year: 1999
   }
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 page.render
   visited: true
   users: [
@@ -921,18 +921,18 @@ page.render
   ]
   meta:
     year: 1999
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <h1>Welcome back!</h1>
 <ul>
   <li>Billy: Shufflin', shufflin'</li>
   <li>Ringo: Make haste slowly</li>
 </ul>
 <small>Copyright &copy; 1999 Party Like It's.</small>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Note how in the above example, the context becomes each array item inside of
 the `#each users` section. Similarly, sections set scope when referring to the
@@ -941,16 +941,16 @@ anything in the parent scope.
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
-  {{"{{"}}#with users.jill}}
-    I like <a href="{{"{{"}}link}}">{{"{{"}}favorite}}</a>.
-  {{"{{"}}/}}
-{% endhighlight %}
+  {{#with users.jill}}
+    I like <a href="{{link}}">{{favorite}}</a>.
+  {{/}}
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 page.render({
   users: {
     jill: {
@@ -959,20 +959,20 @@ page.render({
   }
 , link: 'http://derbyjs.com/'
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 page.render
   users:
     jill:
       favorite: 'turtles'
   link: 'http://derbyjs.com/'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 I like <a href="http://derbyjs.com/">turtles</a>.
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Bindings
 
@@ -1003,27 +1003,27 @@ since the path may be defined later.
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   Holler: <input value="{message}"><h1>{message}</h1>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.set('message', 'Yo, dude.');
 page.render();
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.set 'message', 'Yo, dude.'
 page.render()
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 Holler: <input value="Yo, dude." id="$0"><h1 id="$1">Yo, dude.</h1>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Note that the value in the model at render time is inserted into the HTML, as with a non-bound template tag. In addition, Derby establishes an event listener for the input element that sets the value of `message` whenever the user modifies the text of the input element. It also sets up a listeners for both the input and the h1 element to update their displayed values whenever `message` changes.
 
@@ -1035,27 +1035,27 @@ If a bound template tag or section is not fully contained by an HTML element, De
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   Welcome to our {adjective} city!
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.set('adjective', 'funny');
 page.render();
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.set 'adjective', 'funny'
 page.render()
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 Welcome to our <!--$0-->funny<!--$$0--> city!
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 
 ### Relative model paths and aliases
@@ -1066,42 +1066,42 @@ Yet, a template might need to define how each item in an array should be rendere
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <ul>{#each items}<app:item>{/}</ul>
 
 <item:>
-  <li><a href="{{"{{"}}url}}">{.name}</a>: ${.price}</li>
-{% endhighlight %}
+  <li><a href="{{url}}">{.name}</a>: ${.price}</li>
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.set('items', [
   { name: 'Can', price: 5.99, url: '/p/0' }
 , { name: 'Fin', price: 10.99, url: '/p/1' }
 , { name: 'Bot', price: 24.95, url: '/p/2' }
 ]);
 page.render();
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.set 'items', [
   { name: 'Can', price: 5.99, url: '/p/0' }
   { name: 'Fin', price: 10.99, url: '/p/1' }
   { name: 'Bot', price: 24.95, url: '/p/2' }
 ]
 page.render()
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <ul id="$0">
   <li><a href="/p/0" id="$1">Can</a>: $<!--$2-->5.99<!--$$2--></li>
   <li><a href="/p/1" id="$3">Fin</a>: $<!--$4-->10.99<!--$$4--></li>
   <li><a href="/p/2" id="$5">Bot</a>: $<!--$6-->24.95<!--$$6--></li>
 </ul>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 In the above example, note that the `url` is not bound, and it does not start with a dot. Since the context will be set to the array item at render time, this will render the value correctly, but it will not update if the value changes. `.name` and `.price` start with a dot, because they are bound to paths in the model relative to the item being rendered. Whenever the name or the price of an item changes, the appropriate fields will be updated in realtime. In addition, the entire list is bound. If a new item is added, an item is removed, or the items are reordered, the list will be updated in realtime.
 
@@ -1109,7 +1109,7 @@ Aliases to a specific scope may be defined, enabling relative model path referen
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <h2>Toys in use:</h2>
   {#each toys as :toy}
@@ -1123,31 +1123,31 @@ Aliases to a specific scope may be defined, enabling relative model path referen
   {/}
 
 <toyStatus:>
-  <p>{{"{{"}}name}} on the {:toy.location}</p>
-{% endhighlight %}
+  <p>{{name}} on the {:toy.location}</p>
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.set('toys', [
   { name: 'Ball', location: 'floor', inUse: true }
 , { name: 'Blocks', location: 'shelf' }
 , { name: 'Truck', location: 'shelf' }
 ]);
 page.render();
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.set 'toys', [
   { name: 'Ball', location: 'floor', inUse: true }
   { name: 'Blocks', location: 'shelf' }
   { name: 'Truck', location: 'shelf' }
 ]
 page.render()
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <h2>Toys in use:</h2>
 <!--$0-->
   <!--$1--><p>Ball on the <!--$2-->floor<!--$$2--></p><!--$$1-->
@@ -1160,7 +1160,7 @@ page.render()
   <p>Blocks on the <!--$7-->shelf<!--$$7--></p>
   <p>Truck on the <!--$8-->shelf<!--$$8--></p>
 <!--$$5-->
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### View helper functions
 
@@ -1170,40 +1170,40 @@ View helper functions are reactive, and they are evaluated when rendering as wel
 
 #### Controller
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // Remove all whitespace from a string
 view.fn('unspace', function(value) {
   return value && value.replace(/\s/g, '')
 })
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # Remove all whitespace from a string
 view.fn 'unspace', (value) ->
   value && value.replace(/\s/g, '')
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Template
 
-{% highlight html %}
-{{"{{"}}#with home}}
+{% highlight html %}{% raw %}
+{{#with home}}
   <h1 style="color:{unspace(.title.color)}">
     Welcome in {.title.color}!
   </h1>
   <select>
     {#each .colors}
       <option selected="{equal(.name, home.title.color)}">
-        {{"{{"}}.name}}
+        {{.name}}
       </option>
     {/}
   </select>
-{{"{{"}}/}}
-{% endhighlight %}
+{{/}}
+{% endraw %}{% endhighlight %}
 
 There are two default view helper functions, `equal` and `not`, that are aways available. It is also possible to define custom view helper functions, such as `unspace` in the example above. The `equal` and `not` functions can act as both getters and setters. In this example, when the page renders, the option with a name equal to the value of `home.title.color` will have a `selected` attribute and the others will not. When the user selects a different option from the drop down, `home.title.color` will be set to the value of the option that is now selected.
 
 Note that helper functions provide enough flexibility to introduce logic into templates, which is considered bad practice. For example:
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <!-- WARNING: Not recommended -->
 {#if lessThan(5, _user.score)}
   <b>Let's try that again!</b>
@@ -1218,7 +1218,7 @@ Note that helper functions provide enough flexibility to introduce logic into te
 {#if isLowScore(_user.score)}
   <b>Let's try that again!</b>
 {/}
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 The first example is basically just straight logic embedded within the template. This is not recommended, because as business rules change (such as changing scoring so that 20 is now a low score), templates should not need to be modified. It is typically better to define constants in the controller code and store them in the model or pass them in as context data. Better still is to define a function specifically for each purpose, as what determines the low score could change entirely to a function of an additional input and no longer a simple cutoff.
 
@@ -1232,20 +1232,20 @@ Any Derby template can be used as a component. They are included like custom HTM
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <app:nav>
 
 <nav:>
-  <ul>{{"{{"}}each navItems}}<app:navItem>{{"{{"}}/}}</ul>
+  <ul>{{each navItems}}<app:navItem>{{/}}</ul>
 
 <navItem:>
-  <li><a href="{{"{{"}}link}}">{{"{{"}}title}}</a></li>
-{% endhighlight %}
+  <li><a href="{{link}}">{{title}}</a></li>
+{% endraw %}{% endhighlight %}
 
 #### Context
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 page.render({
   navItems: [
     { title: 'Home', link '/' }
@@ -1253,25 +1253,25 @@ page.render({
   , { title: 'Contact us', link '/contact' }
   ]
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 page.render
   navItems: [
     { title: 'Home', link '/' }
     { title: 'About', link '/about' }
     { title: 'Contact us', link '/contact' }
   ]
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### Output
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <ul>
   <li><a href="/">Home</a></li>
   <li><a href="/about">About</a></li>
   <li><a href="/contact">Contact us</a></li>
 </ul>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Literal values or variable values can be passed to components. These component attributes are available in template tags, prefixed with an `@` character.
 
@@ -1289,7 +1289,7 @@ Literal values or variable values can be passed to components. These component a
 
 produces the same output as:
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <h1>
     {#if _user.name}
@@ -1298,7 +1298,7 @@ produces the same output as:
       Hello!
     {/}
   </h1>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 By default, all components are void HTML elements. This means that they must only have an opening tag and no closing tag, just like the `<img>` and `<br>` elements. A component can be defined as nonvoid, which means that it must have both a starting and a closing tag. Nonvoid components have access to a special `content` attribute that makes it possible to pass HTML content to the component. For example:
 
@@ -1317,13 +1317,13 @@ By default, all components are void HTML elements. This means that they must onl
 
 produces the same output as:
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   Welcome!
   <button class="fancy">
-    <b>Click me{{"{{"}}#if isUrgent}} now!{{"{{"}}/}}</b>
+    <b>Click me{{#if isUrgent}} now!{{/}}</b>
   </button>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Nonvoid components may also 
 
@@ -1353,7 +1353,7 @@ Internally, Derby only binds each type of event once to the `document` and perfo
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Root:>
   <!-- always called regardless of event bubbling -->
   <html x-capture="mousemove: move">
@@ -1372,24 +1372,24 @@ Internally, Derby only binds each type of event once to the `document` and perfo
 
   <!-- Wait for timeout of 50ms before calling back -->
   <input x-bind="paste/50: afterPaste">
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 It is often useful to relate back a DOM element to the model path that was used to render the item. For example, one might want to remove an item from a list when a button is clicked. Derby extends the `model.at()` method to accept a DOM node or jQuery object. When passed one of these, the method will return a [scoped model](#scoped_models) that is scoped to the context of the closest bound path in the template.
 
 #### Template
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <ul>
     {#each _users}
       <li x-bind="click: upcase">{.name}</li>
     {/}
   </ul>
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### App
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 exports.upcase = function (e, el, next) {
   user = model.at(el);
 
@@ -1398,8 +1398,8 @@ exports.upcase = function (e, el, next) {
 
   user.set('name', user.get('name').toUpperCase());
 }
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 exports.upcase = (e, el, next) ->
   user = model.at el
 
@@ -1407,7 +1407,7 @@ exports.upcase = (e, el, next) ->
   console.log user.path()
 
   user.set 'name', user.get('name').toUpperCase()
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Boolean attributes
 
@@ -1415,21 +1415,21 @@ In HTML, boolean attributes are true when they are included and false when they 
 
 Boolean attribute values can be inverted via the built-in view helper function `not()`.
 
-{% highlight html %}
+{% highlight html %}{% raw %}
 <Body:>
   <!-- Outputs:
     <input type="checkbox" checked>
     - or -
     <input type="checkbox">
   -->
-  <input type="checkbox" checked="{{"{{"}}active}}">
+  <input type="checkbox" checked="{{active}}">
 
   <!-- Bound to model -->
   <input type="checkbox" checked="{active}">
 
   <!-- Inverted value -->
   <input type="checkbox" disabled="{not(active)}">
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Form elements
 
@@ -1580,7 +1580,7 @@ Transitional routes make it possible to use CSS animations, since only the relev
 
 Transitional routes use the same `get`, `post`, `put`, and `del` methods, but they take both a from and to pattern as well as a forward and back callback. Since transitional routes cannot render the entire page but only update data in the model, their callbacks do not have a `page` argument.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 get('/photo/:id', function (page, model, params, next) {
   // Normal page rendering code goes here
   ...
@@ -1603,8 +1603,8 @@ get({from: '/photo/:id', to: '/photo/:id/lightbox'}, {
     model.del('_showLightbox');
   }
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 get '/photo/:id', (page, model, params, next) ->
   # Normal page rendering code goes here
   ...
@@ -1623,7 +1623,7 @@ get from: '/photo/:id', to: '/photo/:id/lightbox',
     model.set '_showLightbox', true
   back: (model, params, next) ->
     model.del '_showLightbox'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Transitional routes support literal string routes and patterned routes with named parameters like `:id` and wildcard captures like `*`. However, they do not support arbitrary regular expressions.
 
@@ -1772,21 +1772,21 @@ More information about configuring Racer to run with various PubSub, database, a
 
 Derby's models are powered by [Racer](http://racerjs.com/). By default, Racer stores data in memory, so nothing will be persisted between server restarts. This is an easy way to get started and prototype an app. Adding persistence merely requires including an adapter for a given database. This is configured when creating the store:
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 derby.use(require('racer-db-mongo'));
 
 app.createStore({
   listen:  server
 , db:      {type: 'Mongo', uri: 'mongodb://localhost/database'}
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 derby.use(require 'racer-db-mongo')
 
 app.createStore
   listen:  server
   db:      {type: 'Mongo', uri: 'mongodb://localhost/database'}
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Each of the db adapters are separate npm modules. As with all npm modules, each adapter should be added as a dependency within a project's `package.json` file. After adding a new dependency, be sure to re-run `$ npm install`.
 
@@ -1797,7 +1797,7 @@ Racer paths are translated into database collections and documents using a natur
 
 All synced paths (anything that doesn't start with an underscore) must follow this convention. In other words, all model data stored at the first two path segments should be an object and not a string, number, or other primitive type.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // Examples:
 model.set('todos.id_0.completed', true);
 model.set('rooms.lobby.messages.5.text', 'Call me');
@@ -1815,8 +1815,8 @@ model.set('app.title', 'Hi there');  // WARNING INVALID
 // However, any type may be stored at any private path, which
 // starts with an underscore and is not synced back to the server
 model.set('_title', 'Hi there');     // OK
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # Examples:
 model.set 'todos.id_0.completed', true
 model.set 'rooms.lobby.messages.5.text', 'Call me'
@@ -1832,11 +1832,11 @@ model.set 'app.title', 'Hi there'  # WARNING INVALID
 // However, any type may be stored at any private path, which
 // starts with an underscore and is not synced back to the server
 model.set '_title', 'Hi there'     # OK
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 The document's id (the second path segment) is automatically added as the `id` property of the document, so that it can be retrieved from the datastore.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.set('meta', {
   app: {
     title: 'Hi there'
@@ -1845,15 +1845,15 @@ model.set('meta', {
 });
 // Logs: {id: 'app', title: 'Hi there', author: 'Erik Mathers'}
 console.log(model.get('meta.app'));
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.set 'meta'
   app:
     title: 'Hi there'
     author: 'Erik Mathers'
 # Logs: {id: 'app', title: 'Hi there', author: 'Erik Mathers'}
 console.log model.get('meta.app')
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ## Creating models
 
@@ -1932,18 +1932,18 @@ All model mutators have an optional callback with the arguments `callback(err, m
 
 Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 var model = store.createModel();
 model.set('cars.DeLorean.DMC12.color', 'silver');
 // Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
 console.log(model.get());
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model = store.createModel()
 model.set 'cars.DeLorean.DMC12.color', 'silver'
 # Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
 console.log model.get()
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 > ### `obj = `model.setNull` ( path, value, [callback] )`
 >
@@ -2099,7 +2099,7 @@ The event callback receives a number of arguments based on the path pattern and 
 
 In path patterns, wildcards (`*`) will only match a single segment in the middle of a path, but they will match a single or multiple path segments at the end of the path. In other words, they are non-greedy in the middle of a pattern and greedy at the end of a pattern.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // Matches only model.push('messages', message)
 model.on('push', 'messages', function (message, messagesLength) {
   ...
@@ -2114,8 +2114,8 @@ model.on('set', 'todos.*.completed', function (todoId, isComplete) {
 model.on('set', '*', function (path, value) {
   ...
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # Matches only model.push('messages', message)
 model.on 'push', 'messages', (message, messagesLength) ->
   ...
@@ -2127,13 +2127,13 @@ model.on 'set', 'todos.*.completed', (todoId, isComplete) ->
 # Matches all set operations
 model.on 'set', '*', (path, value) ->
   ...
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 #### model.pass
 
 This method can be chained before calling a mutator method to pass an argument to model event listeners. Note that this value is only passed to local listeners, and it is not sent to the server or other clients.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // Logs:
 //   'red', undefined
 //   'green', 'hi'
@@ -2143,8 +2143,8 @@ model.on('set', 'color', function (value, out, isLocal, passed) {
 });
 model.set('color', 'red');
 model.pass('hi').set('color', 'green');
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # Logs:
 #   'red', undefined
 #   'green', 'hi'
@@ -2153,7 +2153,7 @@ model.on 'set', 'color', (value, out, isLocal, passed) ->
   console.log value, passed
 model.set 'color', 'red'
 model.pass('hi').set 'color', 'green'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Scoped models
 
@@ -2183,7 +2183,7 @@ accessors, mutators, and event subscribers.
 >
 > **segment:** Returns the last segment for the reference path. This may be useful for getting indices or other properties set at the end of a path
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 room = model.at('_room');
 
 // These are equivalent:
@@ -2201,8 +2201,8 @@ room.push('toys', 'blocks', 'puzzles');
 // When the scoped model points to an array, no subpath
 // argument should be supplied
 room.at('toys').push('cards', 'dominoes');
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 room = model.at '_room'
 
 # These are equivalent:
@@ -2220,7 +2220,7 @@ room.push 'toys', 'blocks', 'puzzles'
 # When the scoped model points to an array, no subpath
 # argument should be supplied
 room.at('toys').push 'cards', 'dominoes'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Note that Derby also extends `model.at` to accept a DOM node as an argument. This is typically used with `e.target` in an event callback. See [x-bind](#dom_event_binding).
 
@@ -2256,12 +2256,12 @@ the doc at 'groups.1', which has a namespace of 'groups'.
 After generating a `Query` instance with `model.query(namespace)`, the query
 instance can begin to add conditions and options via a set of chainable methods.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 var query = model.query('users').where('name').equals('Lars');
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 query = model.query 'users', where: {name: 'Lars'}
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 This will generate a query that finds any documents under the 'users' namespace
 whose 'name' property is equal to 'Lars'. In our example data set of size 3
@@ -2269,7 +2269,7 @@ above, it would find `{id: '1', name: 'Lars'}`.
 
 Here are examples using the other query methods:
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // Find users
 model.query('users')
   // With name 'Gnarls'
@@ -2286,8 +2286,8 @@ model.query('users')
   .where('shoe').within(['nike', 'adidas'])
   // Pagination ftw!
   .skip(10).limit(5);
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # Find users
 model.query 'users',
   where:
@@ -2319,40 +2319,40 @@ model.query 'users',
   # Pagination ftw!
   skip: 10
   limit: 5
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Notice how we can chain query descriptors together to build up our query.
 
 If you happen to know the `id` of the document you want to find, then you can
 use the query method, `byId`. So for example,
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.query('users').byId('1');
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.query 'users', byId: '1'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 This will find the single document `{id: '1', name: 'Lars'}`.
 
 Queries also support pagination. If we want the 11th to 15th users older than
 21, then we could write that as:
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.query('users').where('age').gt(21).skip(10).limit(5);
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.query 'users',
   where:
     age:
       gt: 21
   skip: 10
   limit: 5
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Queries can limit what properties of a document it wants to include or exclude:
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // This will find documents but strip out all properties except
 // 'id', 'name', and 'age' before passing the results back to the app.
 model.query('users').where('age').gte(30).only('id', 'name', 'age');
@@ -2360,8 +2360,8 @@ model.query('users').where('age').gte(30).only('id', 'name', 'age');
 // This will find documents and strip our the given property 'name'
 // before passing the results back to the application.
 model.query('users').where('age').gte(30).except('name');
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # This will find documents but strip out all properties except
 # 'id', 'name', and 'age' before passing the results back to the app.
 model.query 'users',
@@ -2377,24 +2377,24 @@ model.query 'users',
     age:
       gte: 30
   except: 'name'
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Queries can also sort the results it gets:
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // This will sort the results in age-ascending, name-descending order
 model.query('users')
   .where('age').gte(25)
   .sort('age', 'asc', 'name','desc');
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # This will sort the results in age-ascending, name-descending order
 model.query 'users'
   where:
     age:
       gte: 25
   sort: ['age', 'asc', 'name', 'desc']
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### Subscription
 
@@ -2448,7 +2448,7 @@ playerCount for all rooms but no other properties. The scoped model passed to a
 subscribe callback is scoped to the segments up to the first wildcard
 character. For this example, the model would be scoped to `rooms`.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 var roomName = 'lobby';
 model.subscribe('rooms.' + roomName, function (err, room) {
   // Logs: 'rooms.lobby'
@@ -2458,8 +2458,8 @@ model.subscribe('rooms.' + roomName, function (err, room) {
   // from a scoped model
   model.ref('_room', room);
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 roomName = 'lobby'
 model.subscribe "rooms.#{roomName}", (err, room) ->
   # Logs: 'rooms.lobby'
@@ -2468,11 +2468,11 @@ model.subscribe "rooms.#{roomName}", (err, room) ->
   # path pattern for use later. Refs may be created directly
   # from a scoped model
   model.ref '_room', room
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 More complex subscriptions can be specified via [queries](#queries).
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 var query = model.query('posts').where('authorId').equals(userId);
 model.subscribe(query, function (err, posts) {
   // Logs: 'posts'
@@ -2482,8 +2482,8 @@ model.subscribe(query, function (err, posts) {
   // from a scoped model
   model.ref('_posts', posts);
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 query = model.query 'posts'
   where:
     authorId: userId
@@ -2494,7 +2494,7 @@ model.subscribe query, (err, posts) ->
   # path pattern for use later. Refs may be created directly
   # from a scoped model
   model.ref '_posts', posts
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 In addition to `subscribe`, models have a `fetch` method with the same format.
 Like subscribe, fetch populates a model with data from a store based on path
@@ -2528,7 +2528,7 @@ Note that reactive functions must be [pure functions](http://en.wikipedia.org/wi
 
 Reactive functions created on the server are sent to the client as a string and reinitialized when the page loads. If the output of a function is used for rendering, it should be created on the server.
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.set('players', [
   {name: 'John', score: 4000}
 , {name: 'Bill', score: 600}
@@ -2549,8 +2549,8 @@ model.fn('_leaders', 'players', 'cutoff', function (players, cutoff) {
     return a.score - b.score;
   }).slice(0, cutoff - 1);
 });
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.set 'players', [
   {name: 'John', score: 4000}
   {name: 'Bill', score: 600}
@@ -2569,7 +2569,7 @@ model.fn '_leaders', 'players', 'cutoff', (players, cutoff) ->
   # it. The function should not modify the values of its inputs.
   players.slice().sort((a, b) -> a.score - b.score)
     .slice(0, cutoff - 1)
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 ### References
 
@@ -2587,7 +2587,7 @@ References must be declared per model, since calling `model.ref` creates a numbe
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 model.set('colors', {
   red: {hex: '#f00'}
 , green: {hex: '#0f0'}
@@ -2621,8 +2621,8 @@ console.log(model.get('_selectedColor.hex'));
 model.set('selected', 'blue');
 // Logs '#00f'
 console.log(model.get('_selectedColor.hex'));
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 model.set 'colors'
   red: {hex: '#f00'}
   green: {hex: '#0f0'}
@@ -2655,7 +2655,7 @@ console.log model.get('_selectedColor.hex')
 model.set 'selected', 'blue'
 # Logs '#00f'
 console.log model.get('_selectedColor.hex')
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Racer also supports a special reference type created via `model.refList`. This type of reference is useful when a number of objects need to be rendered or manipulated as a list even though they are stored as properties of another object. A reference list supports the same mutator methods as an array, so it can be bound in a view template just like an array.
 
@@ -2669,7 +2669,7 @@ Racer also supports a special reference type created via `model.refList`. This t
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
 
-{% highlight javascript %}
+{% highlight html %}{% raw %}
 // refLists may only consist of objects with an id that matches
 // their property on their parent
 model.set('colors', {
@@ -2688,8 +2688,8 @@ model.push('_myColors', {hex: '#ff0', id: 'yellow'});
 //   {hex: '#ff0', id: 'yellow'}
 // ]
 console.log(model.get('_myColors'));
-{% endhighlight %}
-{% highlight coffeescript %}
+{% endraw %}{% endhighlight %}
+{% highlight html %}{% raw %}
 # refLists may only consist of objects with an id that matches
 # their property on their parent
 model.set 'colors',
@@ -2707,6 +2707,6 @@ model.push '_myColors', {hex: '#ff0', id: 'yellow'}
 #   {hex: '#ff0', id: 'yellow'}
 # ]
 console.log model.get('_myColors')
-{% endhighlight %}
+{% endraw %}{% endhighlight %}
 
 Note that if objects are added to a refList without an `id` property, a unique id from [`model.id()`](#guids) will be automatically added to the object.
