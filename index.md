@@ -118,7 +118,7 @@ headers:
 applications that run in both Node.js and browsers.</p>
 
 <h3 class="javascript">hello.js</h3>
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 var hello = require('derby').createApp(module)
   , view = hello.view
   , get = hello.get;
@@ -138,7 +138,7 @@ get('/', function (page, model) {
 {% endraw %}{% endhighlight %}
 
 <h3 class="javascript">server.js</h3>
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 var express = require('express')
   , expressApp = express()
   , server = require('http').createServer(expressApp);
@@ -157,7 +157,7 @@ server.listen(3000);
 {% endraw %}{% endhighlight %}
 
 <h3 class="coffeescript">hello.coffee</h3>
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 {view, get} = require('derby').createApp module
 
 # Templates define both HTML and model <- -> view bindings
@@ -172,7 +172,7 @@ get '/', (page, model) ->
 {% endraw %}{% endhighlight %}
 
 <h3 class="coffeescript">server.coffee</h3>
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 express = require 'express'
 expressApp = express()
 server = require('http').createServer expressApp
@@ -534,13 +534,13 @@ number of pre-defined names. Pages usually define at least a `Title` and `Body`
 template. Templates may be created programmatically via the `view.make()`
 method:
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 var view = require('derby').createApp(module).view;
 
 view.make('Body', '<h1>Howdy!</h1>');
 {% endraw %}{% endhighlight %}
 
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 {view} = require('derby').createApp module
 
 view.make 'Body', '<h1>Howdy!</h1>'
@@ -688,12 +688,12 @@ Namespaces are separated by colons, and a namespace can be passed to the
 {% endraw %}{% endhighlight %}
 
 #### Context
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 page.render('home', {
   year: 2012
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 page.render 'home',
   year: 2012
 {% endraw %}{% endhighlight %}
@@ -847,10 +847,10 @@ The `unescaped` keyword may be used to insert a value without escaping.
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 page.render({ name: 'Parker', location: '<b>500 ft</b> away' });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 page.render name: 'Parker', location: '<b>500 ft</b> away'
 {% endraw %}{% endhighlight %}
 
@@ -900,7 +900,7 @@ other values are truthy.
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 page.render({
   visited: true
 , users: [
@@ -912,7 +912,7 @@ page.render({
   }
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 page.render
   visited: true
   users: [
@@ -950,7 +950,7 @@ anything in the parent scope.
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 page.render({
   users: {
     jill: {
@@ -960,7 +960,7 @@ page.render({
 , link: 'http://derbyjs.com/'
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 page.render
   users:
     jill:
@@ -1010,11 +1010,11 @@ since the path may be defined later.
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.set('message', 'Yo, dude.');
 page.render();
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.set 'message', 'Yo, dude.'
 page.render()
 {% endraw %}{% endhighlight %}
@@ -1042,11 +1042,11 @@ If a bound template tag or section is not fully contained by an HTML element, De
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.set('adjective', 'funny');
 page.render();
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.set 'adjective', 'funny'
 page.render()
 {% endraw %}{% endhighlight %}
@@ -1076,7 +1076,7 @@ Yet, a template might need to define how each item in an array should be rendere
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.set('items', [
   { name: 'Can', price: 5.99, url: '/p/0' }
 , { name: 'Fin', price: 10.99, url: '/p/1' }
@@ -1084,7 +1084,7 @@ model.set('items', [
 ]);
 page.render();
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.set 'items', [
   { name: 'Can', price: 5.99, url: '/p/0' }
   { name: 'Fin', price: 10.99, url: '/p/1' }
@@ -1128,7 +1128,7 @@ Aliases to a specific scope may be defined, enabling relative model path referen
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.set('toys', [
   { name: 'Ball', location: 'floor', inUse: true }
 , { name: 'Blocks', location: 'shelf' }
@@ -1136,7 +1136,7 @@ model.set('toys', [
 ]);
 page.render();
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.set 'toys', [
   { name: 'Ball', location: 'floor', inUse: true }
   { name: 'Blocks', location: 'shelf' }
@@ -1170,13 +1170,13 @@ View helper functions are reactive, and they are evaluated when rendering as wel
 
 #### Controller
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // Remove all whitespace from a string
 view.fn('unspace', function(value) {
   return value && value.replace(/\s/g, '')
 })
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # Remove all whitespace from a string
 view.fn 'unspace', (value) ->
   value && value.replace(/\s/g, '')
@@ -1245,7 +1245,7 @@ Any Derby template can be used as a component. They are included like custom HTM
 
 #### Context
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 page.render({
   navItems: [
     { title: 'Home', link '/' }
@@ -1254,7 +1254,7 @@ page.render({
   ]
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 page.render
   navItems: [
     { title: 'Home', link '/' }
@@ -1389,7 +1389,7 @@ It is often useful to relate back a DOM element to the model path that was used 
 
 #### App
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 exports.upcase = function (e, el, next) {
   user = model.at(el);
 
@@ -1399,7 +1399,7 @@ exports.upcase = function (e, el, next) {
   user.set('name', user.get('name').toUpperCase());
 }
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 exports.upcase = (e, el, next) ->
   user = model.at el
 
@@ -1580,7 +1580,7 @@ Transitional routes make it possible to use CSS animations, since only the relev
 
 Transitional routes use the same `get`, `post`, `put`, and `del` methods, but they take both a from and to pattern as well as a forward and back callback. Since transitional routes cannot render the entire page but only update data in the model, their callbacks do not have a `page` argument.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 get('/photo/:id', function (page, model, params, next) {
   // Normal page rendering code goes here
   ...
@@ -1604,7 +1604,7 @@ get({from: '/photo/:id', to: '/photo/:id/lightbox'}, {
   }
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 get '/photo/:id', (page, model, params, next) ->
   # Normal page rendering code goes here
   ...
@@ -1772,7 +1772,7 @@ More information about configuring Racer to run with various PubSub, database, a
 
 Derby's models are powered by [Racer](http://racerjs.com/). By default, Racer stores data in memory, so nothing will be persisted between server restarts. This is an easy way to get started and prototype an app. Adding persistence merely requires including an adapter for a given database. This is configured when creating the store:
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 derby.use(require('racer-db-mongo'));
 
 app.createStore({
@@ -1780,7 +1780,7 @@ app.createStore({
 , db:      {type: 'Mongo', uri: 'mongodb://localhost/database'}
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 derby.use(require 'racer-db-mongo')
 
 app.createStore
@@ -1797,7 +1797,7 @@ Racer paths are translated into database collections and documents using a natur
 
 All synced paths (anything that doesn't start with an underscore) must follow this convention. In other words, all model data stored at the first two path segments should be an object and not a string, number, or other primitive type.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // Examples:
 model.set('todos.id_0.completed', true);
 model.set('rooms.lobby.messages.5.text', 'Call me');
@@ -1816,7 +1816,7 @@ model.set('app.title', 'Hi there');  // WARNING INVALID
 // starts with an underscore and is not synced back to the server
 model.set('_title', 'Hi there');     // OK
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # Examples:
 model.set 'todos.id_0.completed', true
 model.set 'rooms.lobby.messages.5.text', 'Call me'
@@ -1836,7 +1836,7 @@ model.set '_title', 'Hi there'     # OK
 
 The document's id (the second path segment) is automatically added as the `id` property of the document, so that it can be retrieved from the datastore.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.set('meta', {
   app: {
     title: 'Hi there'
@@ -1846,7 +1846,7 @@ model.set('meta', {
 // Logs: {id: 'app', title: 'Hi there', author: 'Erik Mathers'}
 console.log(model.get('meta.app'));
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.set 'meta'
   app:
     title: 'Hi there'
@@ -1932,13 +1932,13 @@ All model mutators have an optional callback with the arguments `callback(err, m
 
 Models allow getting and setting to nested undefined paths. Getting such a path returns `undefined`. Setting such a path first sets each undefined or null parent to an empty object.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 var model = store.createModel();
 model.set('cars.DeLorean.DMC12.color', 'silver');
 // Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
 console.log(model.get());
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model = store.createModel()
 model.set 'cars.DeLorean.DMC12.color', 'silver'
 # Logs: { cars: { DeLorean: { DMC12: { color: 'silver' }}}}
@@ -2099,7 +2099,7 @@ The event callback receives a number of arguments based on the path pattern and 
 
 In path patterns, wildcards (`*`) will only match a single segment in the middle of a path, but they will match a single or multiple path segments at the end of the path. In other words, they are non-greedy in the middle of a pattern and greedy at the end of a pattern.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // Matches only model.push('messages', message)
 model.on('push', 'messages', function (message, messagesLength) {
   ...
@@ -2115,7 +2115,7 @@ model.on('set', '*', function (path, value) {
   ...
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # Matches only model.push('messages', message)
 model.on 'push', 'messages', (message, messagesLength) ->
   ...
@@ -2133,7 +2133,7 @@ model.on 'set', '*', (path, value) ->
 
 This method can be chained before calling a mutator method to pass an argument to model event listeners. Note that this value is only passed to local listeners, and it is not sent to the server or other clients.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // Logs:
 //   'red', undefined
 //   'green', 'hi'
@@ -2144,7 +2144,7 @@ model.on('set', 'color', function (value, out, isLocal, passed) {
 model.set('color', 'red');
 model.pass('hi').set('color', 'green');
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # Logs:
 #   'red', undefined
 #   'green', 'hi'
@@ -2183,7 +2183,7 @@ accessors, mutators, and event subscribers.
 >
 > **segment:** Returns the last segment for the reference path. This may be useful for getting indices or other properties set at the end of a path
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 room = model.at('_room');
 
 // These are equivalent:
@@ -2202,7 +2202,7 @@ room.push('toys', 'blocks', 'puzzles');
 // argument should be supplied
 room.at('toys').push('cards', 'dominoes');
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 room = model.at '_room'
 
 # These are equivalent:
@@ -2256,10 +2256,10 @@ the doc at 'groups.1', which has a namespace of 'groups'.
 After generating a `Query` instance with `model.query(namespace)`, the query
 instance can begin to add conditions and options via a set of chainable methods.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 var query = model.query('users').where('name').equals('Lars');
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 query = model.query 'users', where: {name: 'Lars'}
 {% endraw %}{% endhighlight %}
 
@@ -2269,7 +2269,7 @@ above, it would find `{id: '1', name: 'Lars'}`.
 
 Here are examples using the other query methods:
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // Find users
 model.query('users')
   // With name 'Gnarls'
@@ -2287,7 +2287,7 @@ model.query('users')
   // Pagination ftw!
   .skip(10).limit(5);
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # Find users
 model.query 'users',
   where:
@@ -2326,10 +2326,10 @@ Notice how we can chain query descriptors together to build up our query.
 If you happen to know the `id` of the document you want to find, then you can
 use the query method, `byId`. So for example,
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.query('users').byId('1');
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.query 'users', byId: '1'
 {% endraw %}{% endhighlight %}
 
@@ -2338,10 +2338,10 @@ This will find the single document `{id: '1', name: 'Lars'}`.
 Queries also support pagination. If we want the 11th to 15th users older than
 21, then we could write that as:
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.query('users').where('age').gt(21).skip(10).limit(5);
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.query 'users',
   where:
     age:
@@ -2352,7 +2352,7 @@ model.query 'users',
 
 Queries can limit what properties of a document it wants to include or exclude:
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // This will find documents but strip out all properties except
 // 'id', 'name', and 'age' before passing the results back to the app.
 model.query('users').where('age').gte(30).only('id', 'name', 'age');
@@ -2361,7 +2361,7 @@ model.query('users').where('age').gte(30).only('id', 'name', 'age');
 // before passing the results back to the application.
 model.query('users').where('age').gte(30).except('name');
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # This will find documents but strip out all properties except
 # 'id', 'name', and 'age' before passing the results back to the app.
 model.query 'users',
@@ -2381,13 +2381,13 @@ model.query 'users',
 
 Queries can also sort the results it gets:
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // This will sort the results in age-ascending, name-descending order
 model.query('users')
   .where('age').gte(25)
   .sort('age', 'asc', 'name','desc');
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # This will sort the results in age-ascending, name-descending order
 model.query 'users'
   where:
@@ -2448,7 +2448,7 @@ playerCount for all rooms but no other properties. The scoped model passed to a
 subscribe callback is scoped to the segments up to the first wildcard
 character. For this example, the model would be scoped to `rooms`.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 var roomName = 'lobby';
 model.subscribe('rooms.' + roomName, function (err, room) {
   // Logs: 'rooms.lobby'
@@ -2459,7 +2459,7 @@ model.subscribe('rooms.' + roomName, function (err, room) {
   model.ref('_room', room);
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 roomName = 'lobby'
 model.subscribe "rooms.#{roomName}", (err, room) ->
   # Logs: 'rooms.lobby'
@@ -2472,7 +2472,7 @@ model.subscribe "rooms.#{roomName}", (err, room) ->
 
 More complex subscriptions can be specified via [queries](#queries).
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 var query = model.query('posts').where('authorId').equals(userId);
 model.subscribe(query, function (err, posts) {
   // Logs: 'posts'
@@ -2483,7 +2483,7 @@ model.subscribe(query, function (err, posts) {
   model.ref('_posts', posts);
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 query = model.query 'posts'
   where:
     authorId: userId
@@ -2528,7 +2528,7 @@ Note that reactive functions must be [pure functions](http://en.wikipedia.org/wi
 
 Reactive functions created on the server are sent to the client as a string and reinitialized when the page loads. If the output of a function is used for rendering, it should be created on the server.
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.set('players', [
   {name: 'John', score: 4000}
 , {name: 'Bill', score: 600}
@@ -2550,7 +2550,7 @@ model.fn('_leaders', 'players', 'cutoff', function (players, cutoff) {
   }).slice(0, cutoff - 1);
 });
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.set 'players', [
   {name: 'John', score: 4000}
   {name: 'Bill', score: 600}
@@ -2587,7 +2587,7 @@ References must be declared per model, since calling `model.ref` creates a numbe
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 model.set('colors', {
   red: {hex: '#f00'}
 , green: {hex: '#0f0'}
@@ -2622,7 +2622,7 @@ model.set('selected', 'blue');
 // Logs '#00f'
 console.log(model.get('_selectedColor.hex'));
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 model.set 'colors'
   red: {hex: '#f00'}
   green: {hex: '#0f0'}
@@ -2669,7 +2669,7 @@ Racer also supports a special reference type created via `model.refList`. This t
 >
 > **fn:** Returns the function that is stored in the model to represent the reference. This function should not be used directly
 
-{% highlight html %}{% raw %}
+{% highlight javascript %}{% raw %}
 // refLists may only consist of objects with an id that matches
 // their property on their parent
 model.set('colors', {
@@ -2689,7 +2689,7 @@ model.push('_myColors', {hex: '#ff0', id: 'yellow'});
 // ]
 console.log(model.get('_myColors'));
 {% endraw %}{% endhighlight %}
-{% highlight html %}{% raw %}
+{% highlight coffeescript %}{% raw %}
 # refLists may only consist of objects with an id that matches
 # their property on their parent
 model.set 'colors',
