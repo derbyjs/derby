@@ -67,13 +67,13 @@ ready (model) ->
 
 APP_JS = '''
 var derby = require('derby')
-  , <<app>> = derby.createApp(module)
+derby.use(require('../../ui'))
+var <<app>> = derby.createApp(module)
   , get = <<app>>.get
   , view = <<app>>.view
   , ready = <<app>>.ready
   , start = +new Date()
 
-derby.use(require('../../ui'))
 
 
 // ROUTES //
