@@ -10,8 +10,8 @@ derby = require '../../lib/derby'
 
 APP_COFFEE = '''
 derby = require 'derby'
-{get, view, ready} = derby.createApp module
 derby.use(require '../../ui')
+{get, view, ready} = derby.createApp module
 
 
 ## ROUTES ##
@@ -67,13 +67,13 @@ ready (model) ->
 
 APP_JS = '''
 var derby = require('derby')
-  , <<app>> = derby.createApp(module)
+derby.use(require('../../ui'))
+var <<app>> = derby.createApp(module)
   , get = <<app>>.get
   , view = <<app>>.view
   , ready = <<app>>.ready
   , start = +new Date()
 
-derby.use(require('../../ui'))
 
 
 // ROUTES //
