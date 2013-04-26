@@ -10,8 +10,8 @@ derby = require '../../lib/derby'
 
 APP_COFFEE = '''
 derby = require 'derby'
-{get, view, ready} = derby.createApp module
 derby.use(require '../../ui')
+{get, view, ready} = derby.createApp module
 
 
 ## ROUTES ##
