@@ -712,26 +712,32 @@ highlights each type of template tag appropriately.
 
 A simple Handlebars template:
 
-    Hello {{name}}
-    You have just won ${{value}}!
-    {{#if inCalifornia}}
+{% highlight html %}{% raw %}
+Hello {{name}}
+You have just won ${{value}}!
+{{#if inCalifornia}}
     Well, ${{taxedValue}}, after taxes.
-    {{/if}}
+{{/if}}
+{% endraw %}{% endhighlight %}
 
 Given the following data context:
 
-    {
-      name: "Chris",
-      value: 10000,
-      taxedValue: 10000 - (10000 * 0.4),
-      inCalifornia: true
-    }
+{% highlight javascript %}{% raw %}
+{
+    name: "Chris",
+    value: 10000,
+    taxedValue: 10000 - (10000 * 0.4),
+    inCalifornia: true
+}
+{% endraw %}{% endhighlight %}
 
 Will produce the following:
 
-    Hello Chris
-    You have just won $10000!
-    Well, $6000.0, after taxes.
+{% highlight html %}{% raw %}
+Hello Chris
+You have just won $10000!
+Well, $6000.0, after taxes.
+{% endraw %}{% endhighlight %}
 
 Semantic templates better enforce separation of logic from presentation by
 restricting the ability to embed logic within views. Instead of conditional
@@ -1116,7 +1122,7 @@ Aliases to a specific scope may be defined, enabling relative model path referen
     {/}
   {/}
   <h2>All toys:</h2>
-  {each toys as :toy}
+  {#each toys as :toy}
     <app:toyStatus>
   {/}
 
