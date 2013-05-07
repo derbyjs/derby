@@ -14,10 +14,10 @@ describe 'View.render', ->
 describe 'View', ->
   view = model = null
 
-  beforeEach (done) ->
+  beforeEach () ->
     view = new View
     model = new Model
-    view._init model, false, done
+    view._init model
 
   it 'supports rendering a string literal view', ->
     view.make 'test', """
