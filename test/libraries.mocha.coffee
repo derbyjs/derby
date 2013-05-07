@@ -9,10 +9,10 @@ describe 'Component libraries', ->
   derby.use ui
 
   view = null
-  beforeEach (done) ->
+  beforeEach () ->
     view = new View(derby._libraries)
     model = new Model
-    view._init model, false, done
+    view._init model, false
 
   it 'supports void components from libraries', ->
     view.make 'test', 'give me a <ui:box>'

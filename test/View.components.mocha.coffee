@@ -5,10 +5,10 @@ View = require '../lib/View.server'
 describe 'App HTML components', ->
   view = model = null
 
-  beforeEach (done) ->
+  beforeEach () ->
     view = new View
     model = new Model
-    view._init model, false, done
+    view._init model, false
 
   it 'supports void components', ->
     view.make 'test', 'say "<app:test2>"'

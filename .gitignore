@@ -3,3 +3,4 @@ node_modules
 test-output.tmp
 *swp
 *un~
+public/gen/
