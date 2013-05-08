@@ -4,11 +4,12 @@ View = require '../lib/View.server'
 
 describe 'View.render', ->
 
-  it 'supports view.render with no defined views', ->
+  it 'supports view.render with no defined views', (done) ->
     view = new View
     res = new ResMock
     res.onEnd = (html) ->
-      expect(html).to.match /^<!DOCTYPE html><meta charset=utf-8><title>.*<\/title><script>.*<\/script><script.*><\/script>$/
+      expect(html).to.match /^<!DOCTYPE html><head><meta charset=utf-8><title>.*<\/title><\/head>(<!--[^-]+-->)*<script.*><\/script>$/
+      done()
     view.render res
 
 describe 'View', ->
