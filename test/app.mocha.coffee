@@ -1,3 +1,4 @@
+require '..'  #Initialize Derby stuff
 {expect, calls} = require 'racer/test/util'
 app = require '../lib/app'
 
