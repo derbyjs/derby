@@ -13,8 +13,8 @@ expressApp = module.exports = express()
 if process.env.REDIS_HOST
   redis = require('redis').createClient process.env.REDIS_PORT, process.env.REDIS_HOST
   redis.auth process.env.REDIS_PASSWORD
-else if process.env.OPENREDIS_URL
-  redisUrl = require('url').parse process.env.OPENREDIS_URL
+else if process.env.REDISCLOUD_URL
+  redisUrl = require('url').parse process.env.REDISCLOUD_URL
   redis = require('redis').createClient redisUrl.port, redisUrl.hostname
   redis.auth redisUrl.auth.split(":")[1]
 else
