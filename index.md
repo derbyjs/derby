@@ -360,7 +360,7 @@ The Node installer will also install [npm](http://npmjs.org/).
 
 Install Derby with:
 
-    $ npm install -g derby@0.5
+    $ npm install -g derby
 
 You will also need to install and start [Redis 2.6](http://redis.io/download)
 and [MongoDB](http://www.mongodb.org/downloads).
