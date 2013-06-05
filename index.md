@@ -1423,7 +1423,7 @@ produces the same output as:
   </button>
 {% endraw %}{% endhighlight %}
 
-Nonvoid components may also 
+Nonvoid components may also
 
 ### Component libraries
 
@@ -1488,7 +1488,7 @@ It is often useful to relate back a DOM element to the model path that was used 
 #### App
 
 {% highlight javascript %}{% raw %}
-exports.upcase = function (e, el, next) {
+app.fn('upcase', function (e, el, next) {
   user = model.at(el);
 
   // Logs something like "_page.users.3"
@@ -1498,7 +1498,7 @@ exports.upcase = function (e, el, next) {
 }
 {% endraw %}{% endhighlight %}
 {% highlight coffeescript %}{% raw %}
-exports.upcase = (e, el, next) ->
+app.fn 'upcase', (e, el, next) ->
   user = model.at el
 
   # Logs something like "_page.users.3"
