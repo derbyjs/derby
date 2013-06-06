@@ -2590,7 +2590,7 @@ The filter's value can also be retrieved directly via `filter.get()`.
 
 > ### `results = `filter.get` ( )`
 >
-> *results:** Returns an array of results matching the filter
+> **results:** Returns an array of results matching the filter
 
 ### Reactive functions
 
