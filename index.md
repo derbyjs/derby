@@ -765,35 +765,34 @@ syntax highlighting of Derby templates. You might want to also try our [Clean
 color theme](https://github.com/codeparty/clean-textmate), which
 highlights each type of template tag appropriately.
 
-{% raw %}
 A simple Handlebars template:
 
-{% highlight html %}{% raw %}
-Hello {{name}}
-You have just won ${{value}}!
-{{#if inCalifornia}}
-    Well, ${{taxedValue}}, after taxes.
-{{/if}}
-{% endraw %}{% endhighlight %}
+{% raw %}
+    Hello {{name}}
+    You have just won ${{value}}!
+    {{#if inCalifornia}}
+        Well, ${{taxedValue}}, after taxes.
+    {{/if}}
+{% endraw %}
 
 Given the following data context:
 
-{% highlight javascript %}{% raw %}
-{
-    name: "Chris",
-    value: 10000,
-    taxedValue: 10000 - (10000 * 0.4),
-    inCalifornia: true
-}
-{% endraw %}{% endhighlight %}
+{% raw %}
+    {
+        name: "Chris",
+        value: 10000,
+        taxedValue: 10000 - (10000 * 0.4),
+        inCalifornia: true
+    }
+{% endraw %}
 
 Will produce the following:
 
-{% highlight html %}{% raw %}
-Hello Chris
-You have just won $10000!
-Well, $6000.0, after taxes.
-{% endraw %}{% endhighlight %}
+{% raw %}
+    Hello Chris
+    You have just won $10000!
+    Well, $6000.0, after taxes.
+{% endraw %}
 
 Semantic templates better enforce separation of logic from presentation by
 restricting the ability to embed logic within views. Instead of conditional
@@ -1174,9 +1173,11 @@ Aliases to a specific scope may be defined, enabling relative model path referen
 <Body:>
   <h2>Toys in use:</h2>
   {#each toys as :toy}
-    {#if :toy.inUse}
-      <app:toyStatus>
-    {/}
+    <div>
+      {#if :toy.inUse}
+        <app:toyStatus>
+      {/}
+    </div>
   {/}
   <h2>All toys:</h2>
   {#each toys as :toy}
