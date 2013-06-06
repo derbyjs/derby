@@ -2558,7 +2558,8 @@ app.on('model', function(model) {
 app.get('/expensive-pants', function(page, model, params, next) {
   model.subscribe('pants', function(err) {
     if (err) return next(err);
-    var filter = model.filter('pants', 'expensiveItem').sort('priceSort');
+    var filter = model.filter('pants', 'expensiveItem')
+      .sort('priceSort');
     filter.ref '_page.expensivePants';
     page.render('pants');
   });
