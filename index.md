@@ -1,4 +1,4 @@
----
+no---
 layout: default
 version: 0.5.3
 headers:
@@ -1425,8 +1425,6 @@ produces the same output as:
     <b>Click me{{#if isUrgent}} now!{{/}}</b>
   </button>
 {% endraw %}{% endhighlight %}
-
-Nonvoid components may also 
 
 ### Component libraries
 
