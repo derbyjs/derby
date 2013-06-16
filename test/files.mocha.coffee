@@ -26,3 +26,13 @@ describe 'files.css', ->
       process.nextTick ->
         expect(contents).to.equal expected
         done()
+
+  it "should compile sass", (done) ->
+    derby.configure "all", ->
+      derby.set "styles", ["sass"]
+    expected = fs.readFileSync __dirname + "/fixtures/styles/app/expected.scss.css", 'utf8'
+
+    files.css __dirname + "/fixtures", "app", false, (err, contents) ->
+      process.nextTick ->
+        expect(contents).to.equal expected
+        done()
