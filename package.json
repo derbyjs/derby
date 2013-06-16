@@ -31,5 +31,6 @@
     "mocha": "*",
     "sinon": "*"
   },
-  "optionalDependencies": {}
+  "optionalDependencies": {},
+  "engines": { "node": ">=0.10.0" }
 }
