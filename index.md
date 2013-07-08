@@ -1,6 +1,6 @@
 ---
 layout: default
-version: 0.5.5
+version: 0.5.7
 headers:
   - text: Introduction
     type: h1
@@ -395,6 +395,10 @@ The first time you use Heroku, run:
 
     $ heroku login
 
+If not done in the login step, you may also need to upload a public key with:
+
+    $ heroku keys:add
+
 Form then on, all you have to do to get a new Derby project deployed to Heroku
 is initialize it as a Git repo,
 
@@ -418,6 +422,8 @@ Note that while Derby supports multiple servers, it currently requires that
 clients repeatedly connect to the same server. Heroku does not support sticky
 sessions or WebSockets, so it isn't possible to use more than one dyno. You'll
 have to use a different hosting option to scale your app.
+
+For more info, see Heroku's [Getting Started](https://devcenter.heroku.com/articles/quickstart) and [Node.js](https://devcenter.heroku.com/articles/nodejs) guides.
 
 ## Using existing data
 
