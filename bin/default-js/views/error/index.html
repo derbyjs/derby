@@ -1,0 +1,33 @@
+<import: src="./403">
+<import: src="./404">
+<import: src="./500">
+
+<!--
+  This is a static template file, so it doesn't have an associated app.
+  It is rendered by the server via a staticPages renderer.
+
+  Since static pages don't include the Derby client library, they can't have
+  bound variables that automatically update. However, they do support initial
+  template tag rendering from a context object and/or model.
+-->
+
+<Head:>
+  <!-- This script is needed for Chrome, which doesn't go to the server
+  to get the page when the user clicks back if using push/pop state -->
+  <script>
+    window.onpopstate = function(e) {
+      var method = e.state && e.state.$method;
+      if (!method) return;
+      if (method === 'get') {
+        window.location = window.location;
+      } else {
+        window.history.back();
+      }
+    };
+  </script>
+
+<Title:>
+  Unknown error
+
+<Body:>
+  <h1>Unknown error</h1>

@@ -1,0 +1,18 @@
+<connectionAlert:>
+  <div class="ui-connection">
+    {#unless equal($connection.state, 'connected')}
+      <p class="alert">
+        {#if equal($connection.state, 'stopped')}
+          Unable to reconnect &ndash; <a x-bind="click: reload">Reload</a>
+        {else}
+          <span>{sentenceCase($connection.state)}</span>
+          <span>
+            <!-- a :self alias is automatically created per component -->
+            {#unless :self.hideReconnect}
+              &sp;&ndash; <a x-bind="click: reconnect">Reconnect</a>
+            {/}
+          </span>
+        {/}
+      </p>
+    {/}
+  </div>

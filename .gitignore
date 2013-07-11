@@ -1,5 +1,3 @@
-/bin/lib
+.DS_Store
+*.swp
 node_modules
-test-output.tmp
-*swp
-*un~
