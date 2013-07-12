@@ -2510,7 +2510,7 @@ This value is only passed to local listeners, and it is not sent to the server o
 //   'red', {}
 //   'green', {message: 'hi'}
 
-model.on('set', 'color', function (value, out, isLocal, passed) {
+model.on('change', 'color', function (value, previous, passed) {
   console.log(value, passed);
 });
 model.set('color', 'red');
@@ -2521,7 +2521,7 @@ model.pass({message: 'hi'}).set('color', 'green');
 #   'red', {}
 #   'green', {message: 'hi'}
 
-model.on 'set', 'color', (value, out, isLocal, passed) ->
+model.on 'change', 'color', (value, previous, passed) ->
   console.log value, passed
 model.set 'color', 'red'
 model.pass({message: 'hi'}).set 'color', 'green'
