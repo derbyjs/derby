@@ -1432,8 +1432,6 @@ produces the same output as:
   </button>
 {% endraw %}{% endhighlight %}
 
-Nonvoid components may also 
-
 ### Component libraries
 
 Documentation is forthcoming. Until then, please see the [Widgets example](https://github.com/codeparty/derby-examples/tree/master/widgets) for usage and the [Boot source](https://github.com/codeparty/derby-ui-boot).
