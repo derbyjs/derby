@@ -642,8 +642,8 @@ case-insensitive, Derby template names are also case insensitive. Thus, `Body`,
 
 Note that template files don't contain boilerplate HTML, such as doctype
 definitions, stylesheets, and script includes. By default, Derby includes these
-items in an order optimized for fast load times. Also to optimize load time, it
-sends pages a number of chunks:
+items in an order optimized for fast page load times. Also to optimize load time, it
+sends pages in a number of chunks:
 
 #### First chunk
 
@@ -704,7 +704,7 @@ imported as `pageName`.
 Templates defined in a parent namespace are inherited unless they are
 overridden by a template with the same name in the child namespace. Thus, it
 often makes sense to place common page elements in a main file that imports a
-number of other files and override the part of the page that is different.
+number of other files and overrides the part of the page that is different.
 
 Template components are referenced relative to their current namespace.
 Namespaces are separated by colons, and a namespace can be passed to the
@@ -803,9 +803,9 @@ Will produce the following:
 {% endraw %}
 
 Semantic templates better enforce separation of logic from presentation by
-restricting the ability to embed logic within views. Instead of conditional
-statements and loops, there is a small set of template tags. During rendering,
-data are passed to the template, and template tags are replaced with the
+restricting the ability to embed logic within views. Instead of allowing
+arbitrary code, it provides a small set of template tags. During rendering,
+data is passed to the template, and template tags are replaced with the
 appropriate values. This data is often referred to as the "context."
 
 With Handlebars, application code generates a context object before rendering
@@ -879,7 +879,7 @@ and `<li>` that might not require a closing tag. The rules around how tags are
 automatically closed are complex, and there are certain cases where template
 sections may be included within an unexpected element.
 
-HTML attribute values only need to be quoted if they are the empty string or if
+According to standards, HTML attribute values only need to be quoted if they are the empty string or if
 they contain a space, equals sign, or greater than sign. Since Derby templates
 are parsed as HTML first, any of these characters within a template tag require
 an attribute to be escaped. Using **quotes around all attribute values** is
@@ -900,7 +900,7 @@ needed.
 ### Variables
 
 Variables insert a value from the context or model with a given name. If the
-name isn't found, nothing will be inserted. Values are HTML escaped by default.
+name isn't found, nothing will be inserted. Values are HTML-escaped by default.
 The `unescaped` keyword may be used to insert a value without escaping.
 
 #### Template
@@ -935,7 +935,7 @@ page.render name: 'Parker', location: '<b>500 ft</b> away'
 
 Sections set the scope of the context for their contents. In the case of `if`,
 `unless`, `else if`, `else`, and `each`, they also cause their contents to be
-conditionally rendered. `with` is used to only set the scope and always render.
+conditionally rendered. `with` is used to only set the scope and always renders.
 In Handlebars, sections begin and end with the same block type, but Derby
 requires only an ending slash.
 
@@ -1093,11 +1093,11 @@ page.render()
 Holler: <input value="Yo, dude." id="$0"><h1 id="$1">Yo, dude.</h1>
 {% endraw %}{% endhighlight %}
 
-Note that the value in the model at render time is inserted into the HTML, as with a non-bound template tag. In addition, Derby establishes an event listener for the input element that sets the value of `message` whenever the user modifies the text of the input element. It also sets up a listeners for both the input and the h1 element to update their displayed values whenever `message` changes.
+Note that the value in the model at render time is inserted into the HTML, as with a non-bound template tag. In addition, Derby establishes an event listener on the `<input>` element that sets the value of `message` whenever the user modifies the text of the `<input>` element. It also sets up listeners on `message` that update the displayed values of both the `<input>` and the `<h1>` elements whenever `message` changes.
 
-Rather than re-rendering the entire template when a value changes, only the individual elements are updated. In the case of the input, its `value` property is set; in the case of the h1, its `innerHTML` is set. Since neither of these elements have an `id` attribute specified in the template, Derby automatically creates ids for them. All DOM ids created by Derby begin with a dollar sign ($). If an element already has an id, Derby will use that instead.
+Rather than re-rendering the entire template when a value changes, only the individual elements are updated. In the case of the `<input>`, its `value` property is set; in the case of the `<h1>`, its `innerHTML` is set. Since neither of these elements have an `id` attribute specified in the template, Derby automatically creates ids for them. All DOM ids created by Derby begin with a dollar sign (`$`). If an element already has an id, Derby will use that instead.
 
-Derby associates all DOM event listeners with an `id`, because getting objects by id is a fast DOM operation, it makes dealing with DOM events more efficient, and event listeners continue working even if other scripts modify the DOM unexpectedly. Derby internally tracks events via ids, allowing it to render pages on the server and then re-establish the same event listeners on the client efficiently.
+Derby associates all DOM event listeners with an `id`, because getting objects by `id` is a fast DOM operation, it makes dealing with DOM events more efficient, and event listeners continue working even if other scripts modify the DOM unexpectedly. Derby internally tracks events via ids, allowing it to render pages on the server and then re-establish the same event listeners on the client efficiently.
 
 If a bound template tag or section is not fully contained by an HTML element, Derby will wrap the template by placing comment markers before and after the location of the template. Comments are used, because they are valid in any location. A number of HTML elements have restrictions that make it impossible to wrap a template in an additional element. For example, `<tr>` elements may only contain `<td>` and `<th>` elements.
 
@@ -1171,7 +1171,7 @@ page.render()
 </ul>
 {% endraw %}{% endhighlight %}
 
-In the above example, note that the `url` is not bound, and it does not start with a dot. Since the context will be set to the array item at render time, this will render the value correctly, but it will not update if the value changes. `.name` and `.price` start with a dot, because they are bound to paths in the model relative to the item being rendered. Whenever the name or the price of an item changes, the appropriate fields will be updated in realtime. In addition, the entire list is bound. If a new item is added, an item is removed, or the items are reordered, the list will be updated in realtime.
+In the above example, note that the `url` is not bound, and it does not start with a dot. Since the context will be set to the array item at render time, this will render the value of `url` correctly, but it will not update if the value changes. `.name` and `.price` start with a dot, because they are bound to paths in the model relative to the item being rendered. Whenever the name or the price of an item changes, the appropriate fields will be updated in realtime. In addition, the entire list is bound. If a new item is added, an item is removed, or the items are reordered, the list will be updated in realtime.
 
 Aliases to a specific scope may be defined, enabling relative model path references within nested sections. Aliases begin with a colon (`:`), and can be defined at the end of a section tag with the `as` keyword.
 
@@ -1267,9 +1267,9 @@ view.fn 'unspace', (value) ->
 </select>
 {% endraw %}{% endhighlight %}
 
-There are a handful of default view helper functions listed below. It is also possible to define custom view helper functions, such as `unspace` in the example above. The `equal` and `not` functions can act as both getters and setters. In this example, when the page renders, the option with a name equal to the value of `home.title.color` will have a `selected` attribute and the others will not. When the user selects a different option from the drop down, `home.title.color` will be set to the value of the option that is now selected.
+There are a handful of default view helper functions listed below. It is also possible to define custom view helper functions, such as `unspace` in the example above. The `equal` and `not` functions can act as both getters and setters. In this example, when the page renders, `equal` will act as a getter, and the option with a name equal to the value of `home.title.color` will have a `selected` attribute and the others will not. When the user selects a different option from the drop down, `equal` will act as a setter, and `home.title.color` will be set to the name of the option that is now selected.
 
-#### Defaul view helper functions
+#### Default view helper functions
 
 The default view helpers are:
 
@@ -1355,18 +1355,18 @@ Any Derby template can be used as a component. They are included like custom HTM
 {% highlight javascript %}{% raw %}
 page.render({
   navItems: [
-    { title: 'Home', link '/' }
-  , { title: 'About', link '/about' }
-  , { title: 'Contact us', link '/contact' }
+    { title: 'Home', link: '/' }
+  , { title: 'About', link: '/about' }
+  , { title: 'Contact us', link: '/contact' }
   ]
 });
 {% endraw %}{% endhighlight %}
 {% highlight coffeescript %}{% raw %}
 page.render
   navItems: [
-    { title: 'Home', link '/' }
-    { title: 'About', link '/about' }
-    { title: 'Contact us', link '/contact' }
+    { title: 'Home', link: '/' }
+    { title: 'About', link: '/about' }
+    { title: 'Contact us', link: '/contact' }
   ]
 {% endraw %}{% endhighlight %}
 
@@ -1452,7 +1452,7 @@ The `x-capture` attribute may be used if the handler should *always* be called w
 
 If the click event is bound on an `<a>` tag without an `href` attribute, Derby will add the attributes `href="#"` and `onclick="return false"` automatically. If the submit event is bound on a `<form>` tag, `onsubmit="return false"` will be added to prevent a default redirect action.
 
-Event bindings can also delay the callback's execution after a timeout. This can be useful when handling events like paste, which is fired before new content is inserted. The value of the delay in milliseconds is included after the name of the event, such as `x-bind="paste/0: afterPaste"`.
+Event bindings can also delay the callback's execution after a timeout. This can be useful when handling events like paste, which is fired before new content is inserted. The value of the delay in milliseconds is included after the name of the event, such as `x-bind="paste/50: afterPaste"`.
 
 Internally, Derby only binds each type of event once to the `document` and performs event delegation. It uses element ids to keep track of which elements should be bound to which events. Thus, much like with model-view bindings, Derby will add an automatically generated `id` attribute to an element that uses `x-bind` if it does not already have an id.
 
@@ -1598,7 +1598,7 @@ Apps may also be rendered within server only Express routes. In this case, it is
 >
 > **status:** *(optional)* Number specifying the HTTP status code. 200 by default.
 
-For creating error pages and other static pages, Derby provides a `staticPages` object that renders a template and script file specified by name. Typically, this is used without a model object, but it is possible to supply a model object that is used for rendering only. See [Static pages](#static_pages).
+For creating error pages and other static pages, Derby provides a `staticPages` object that renders a template and style file specified by name. Typically, this is used without a model object, but it is possible to supply a model object that is used for rendering only. See [Static pages](#static_pages).
 
 ## app.view
 
@@ -1620,7 +1620,7 @@ Note that calling `view.make()` only renders the template; it does not include t
 
 This method is intended solely for server use and has no effect when called in the browser.
 
-Scripts should be included inline in the page if needed to properly render the page. For example, a script might adjust the layout based on the window size, or it might autofocus a sign in box in browsers that don't support the HTML5 autofocus attribute.
+Scripts should be included inline in the page if needed to properly render the page. For example, a script might adjust the layout based on the window size, or it might autofocus a sign-in box in browsers that don't support the HTML5 autofocus attribute.
 
 Usually, it is preferable to place such scripts in a separate file called `inline.js` in the same directory as the app. This file will be automatically inlined when the app is created. Calling `view.inline()` directly does the same thing, but it is redundant to send the script inline and also include it in the app's external script file.
 
@@ -1787,7 +1787,7 @@ For convenience, the navigational methods of [`window.history`](https://develope
 
 ## User events
 
-Derby automates a great deal of user event handling via [model-view binding](#bindings). This should be used for any data that is tied directly to an element's attribute or HTML content. For example, as users interact with an `<input>`, value and checked properties will be updated. In addition, the `selected` attribute of `<option>` elements and edits to the innerHTML of `contenteditable` elements will update bound model objects.
+Derby automates a great deal of user event handling via [model-view binding](#bindings). This should be used for any data that is tied directly to an element's attribute or HTML content. For example, as users interact with an `<input>`, value and checked properties will be updated. In addition, the `selected` attribute of `<option>` elements and edits to the `innerHTML` of `contenteditable` elements will update bound model objects.
 
 For other types of user events, such as `click` or `dragover`, Derby's [`x-bind`](#dom_event_binding) attribute can be used to tie DOM events on a specific element to a callback function in the controller. Such functions must be exported on the app module.
 
@@ -1882,7 +1882,7 @@ Racer paths are translated into database collections and documents using a natur
 
     collection.documentId.documentProperty
 
-LiveDB Mongo will add `_type`, and `_v` properties to Mongo documents for internal use. It will strip out these properties as well as `_id` when it returns the document from Mongo. If a document is an object, it will be stored as the Mongo document directly. If it is another type, it will be nested under a property on the Mongo document caleld `_data`.
+LiveDB Mongo will add `_type`, and `_v` properties to Mongo documents for internal use. It will strip out these properties as well as `_id` when it returns the document from Mongo. If a document is an object, it will be stored as the Mongo document directly. If it is another type, it will be nested under a property on the Mongo document called `_data`.
 
 It is not possible to set or drop an entire collection, or get the list of collections via the Racer API.
 
