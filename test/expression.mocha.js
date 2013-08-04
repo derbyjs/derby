@@ -13,6 +13,11 @@ var fns = {
       return a - b;
     }
   }
+, greeting: {
+    get: function() {
+      return 'Hi.'
+    }
+  }
 }
 var contextMeta = new expressions.ContextMeta(fns);
 
@@ -139,6 +144,11 @@ describe('Expression::get', function() {
     expect(expression.get(context)).to.eql(13);
   });
 
+  it('gets an fn expression with no args', function() {
+    var expression = expressions.createPathExpression('greeting()');
+    expect(expression.get(context)).to.eql('Hi.');
+  });
+
   it('gets an fn expression with relative paths', function() {
     var expression = expressions.createPathExpression('plus(.0, .1)');
     var withExpression = expressions.createPathExpression('_nums');
@@ -153,14 +163,21 @@ describe('Expression::get', function() {
     expect(expression.get(childContext)).to.eql(14);
   });
 
-  it('gets an fn expression with bracket paths', function() {
+  it('gets an fn expression containing bracket paths', function() {
     var expression = expressions.createPathExpression('plus(_nums[_first], _nums[_second])');
     expect(expression.get(context)).to.eql(10);
   });
 
+  it('gets a bracket path containing an fn expression', function() {
+    var expression = expressions.createPathExpression('_keys[minus(_nums.2, _nums.0)]');
+    expect(expression.get(context)).to.eql('green');
+  });
+
   it('gets nested fn expressions', function() {
     var expression = expressions.createPathExpression('plus(_nums.0, minus(_nums.3, _nums.2))');
+    var expression2 = expressions.createPathExpression('plus(minus(_nums.3, _nums.2), _nums.1)');
     expect(expression.get(context)).to.eql(6);
+    expect(expression2.get(context)).to.eql(15);
   });
 
 });
