@@ -181,3 +181,16 @@ describe('Expression::get', function() {
   });
 
 });
+
+describe('Expression::dependencies', function() {
+
+  it('gets simple path dependencies', function() {
+    var expression = expressions.createPathExpression('_colors.green.name');
+    expect(expression.dependencies(context)).to.eql([['_colors', 'green', 'name']]);
+  });
+
+  it('gets bracket dependencies');
+
+  it('gets fn dependencies');
+
+});
