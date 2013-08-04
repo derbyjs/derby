@@ -38,6 +38,7 @@ var context = new expressions.Context(null, {
 , _key: 'green'
 , _channel: 0
 , _variation: 'light'
+, _variationHex: 'light.hex'
 , _keys: ['red', 'green']
 , _index: 1
 
@@ -97,9 +98,11 @@ describe('Expression::resolve', function() {
     var expression = expressions.createPathExpression('_colors[_key].rgb[_channel]');
     var expression2 = expressions.createPathExpression('_colors[_key][_variation]');
     var expression3 = expressions.createPathExpression('_colors[_key][_variation].hex');
-    expect(expression.resolve(context)).to.eql(['_colors', 'green', 'rgb', 0]);
+    var expression4 = expressions.createPathExpression('_colors[_key][_variationHex]');
+    expect(expression.resolve(context)).to.eql(['_colors', 'green', 'rgb', '0']);
     expect(expression2.resolve(context)).to.eql(['_colors', 'green', 'light']);
     expect(expression3.resolve(context)).to.eql(['_colors', 'green', 'light', 'hex']);
+    expect(expression4.resolve(context)).to.eql(['_colors', 'green', 'light', 'hex']);
   });
 
   it('resolves nested square brackets', function() {
@@ -189,7 +192,31 @@ describe('Expression::dependencies', function() {
     expect(expression.dependencies(context)).to.eql([['_colors', 'green', 'name']]);
   });
 
-  it('gets bracket dependencies');
+  it('gets bracket dependencies', function() {
+    var expression = expressions.createPathExpression('_colors[_key].name');
+    var expression2 = expressions.createPathExpression('_colors[_key].rgb[_channel]');
+    var expression3 = expressions.createPathExpression('_colors[_key][_variation].hex');
+    var expression4 = expressions.createPathExpression('_colors[_keys[_index]].name');
+    expect(expression.dependencies(context)).to.eql([
+      ['_colors', 'green', 'name']
+    , ['_key']
+    ]);
+    expect(expression2.dependencies(context)).to.eql([
+      ['_colors', 'green', 'rgb', '0']
+    , ['_key']
+    , ['_channel']
+    ]);
+    expect(expression3.dependencies(context)).to.eql([
+      ['_colors', 'green', 'light', 'hex']
+    , ['_key']
+    , ['_variation']
+    ]);
+    expect(expression4.dependencies(context)).to.eql([
+      ['_colors', 'green', 'name']
+    , ['_keys', '1']
+    , ['_index']
+    ]);
+  });
 
   it('gets fn dependencies');
 
