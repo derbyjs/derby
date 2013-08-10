@@ -77,7 +77,7 @@ describe('Expression::resolve', function() {
     var expression = expressions.createPathExpression(':color');
     var expression2 = expressions.createPathExpression(':color.name');
     var withExpression = expressions.createPathExpression('_colors.green');
-    var childContext = context.child(withExpression, ':color');
+    var childContext = context.child(withExpression, {}, ':color');
     expect(expression.resolve(childContext)).to.eql(['_colors', 'green']);
     expect(expression2.resolve(childContext)).to.eql(['_colors', 'green', 'name']);
   });
@@ -128,7 +128,7 @@ describe('Expression::get', function() {
   it('gets an alias path expression', function() {
     var expression = expressions.createPathExpression(':color.name');
     var withExpression = expressions.createPathExpression('_colors.green');
-    var childContext = context.child(withExpression, ':color');
+    var childContext = context.child(withExpression, {}, ':color');
     expect(expression.get(childContext)).to.eql('Green');
   });
 
@@ -159,7 +159,7 @@ describe('Expression::get', function() {
   it('gets an fn expression with alias paths', function() {
     var expression = expressions.createPathExpression('plus(:nums.1, :nums.2)');
     var withExpression = expressions.createPathExpression('_nums');
-    var childContext = context.child(withExpression, ':nums');
+    var childContext = context.child(withExpression, {}, ':nums');
     expect(expression.get(childContext)).to.eql(14);
   });
 
@@ -178,6 +178,17 @@ describe('Expression::get', function() {
     var expression2 = expressions.createPathExpression('plus(minus(_nums.3, _nums.2), _nums.1)');
     expect(expression.get(context)).to.eql(6);
     expect(expression2.get(context)).to.eql(15);
+  });
+
+  it('gets a relative path expression with relative/nested contexts with different data', function() {
+    var expression = expressions.createPathExpression('.green.name');
+    var withExpression = expressions.createPathExpression('_colors');
+    var childContext = context.child(withExpression, {
+        green: {
+            name: 'Not green'
+        }
+    });
+    expect(expression.get(childContext)).to.eql('Not green');
   });
 
 });
