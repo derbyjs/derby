@@ -20,7 +20,7 @@ var fns = {
     }
   }
 }
-var contextMeta = new expressions.ContextMeta(fns);
+var contextMeta = new expressions.ContextMeta({fns: fns});
 var data = {
   _page: {
     colors: {
@@ -48,10 +48,10 @@ var data = {
   , second: 3
   }
 };
-var context = new expressions.Context(null, data, contextMeta);
+var context = new expressions.Context(contextMeta, data);
 var model = new Model();
 model.setEach('_page', data._page);
-var modelContext = new expressions.ModelContext(null, model, contextMeta);
+var modelContext = new expressions.ModelContext(contextMeta, model);
 
 describe('Expression::resolve', function() {
 
