@@ -10,8 +10,8 @@ var expressApp = module.exports = express();
 
 var mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/project';
 var store = derby.createStore({
-  db: liveDbMongo(mongoUrl + '?auto_reconnect', safe: true)
-, redis: require('redis').createClient();
+  db: liveDbMongo(mongoUrl + '?auto_reconnect', {safe: true})
+, redis: require('redis').createClient()
 });
 
 function createUserId(req, res, next) {
