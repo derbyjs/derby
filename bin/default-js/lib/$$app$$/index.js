@@ -44,6 +44,6 @@ app.fn('list.add', function(e, el) {
 });
 
 app.fn('list.remove', function(e) {
-  var id = e.get(':item.id');
-  this.model.del('items.' + id);
+  var item = e.get(':item');
+  this.model.del('items.' + item.id);
 });
