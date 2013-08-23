@@ -8,11 +8,11 @@ var error = require('./error');
 
 var expressApp = module.exports = express();
 
-// Get Mongo configuration
-var mongoUrl = process.env.MONGO_URL || process.env.MONGOHQ_URL ||
-  'mongodb://localhost:27017/project';
-
-var store = makeStore();
+var mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/project';
+var store = derby.createStore({
+  db: liveDbMongo(mongoUrl + '?auto_reconnect', safe: true)
+, redis: require('redis').createClient();
+});
 
 function createUserId(req, res, next) {
   var model = req.getModel();
@@ -59,26 +59,3 @@ expressApp
 expressApp.all('*', function(req, res, next) {
   next('404: ' + req.url);
 });
-
-//configure the backend for racer
-function makeStore() {
-  // Get Redis configuration
-  if (process.env.REDIS_HOST) {
-    var redis = require('redis').createClient(process.env.REDIS_PORT, process.env.REDIS_HOST);
-    redis.auth(process.env.REDIS_PASSWORD);
-  } else if (process.env.REDISCLOUD_URL) {
-    var redisUrl = require('url').parse(process.env.REDISCLOUD_URL);
-    var redis = require('redis').createClient(redisUrl.port, redisUrl.hostname);
-    redis.auth(redisUrl.auth.split(":")[1]);
-  } else {
-    var redis = require('redis').createClient();
-  }
-  redis.select(process.env.REDIS_DB || 1);
-
-  // The store creates models and syncs data
-  var store = derby.createStore({
-    db: liveDbMongo(mongoUrl + '?auto_reconnect', {safe: true})
-  , redis: redis
-  });
-  return store;
-}

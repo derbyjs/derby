@@ -9,15 +9,10 @@ error = require './error.coffee'
 
 expressApp = module.exports = express()
 
-# Get Mongo configuration
-mongoUrl = process.env.MONGO_URL || process.env.MONGOHQ_URL ||
-  'mongodb://localhost:27017/project'
-redis = require('redis').createClient()
-
-# The store creates models and syncs data
+mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/project'
 store = derby.createStore
   db: liveDbMongo(mongoUrl + '?auto_reconnect', safe: true)
-  redis: redis
+  redis: require('redis').createClient()
 
 store.on 'bundle', (browserify) ->
   # Add support for directly requiring coffeescript in browserify bundles
