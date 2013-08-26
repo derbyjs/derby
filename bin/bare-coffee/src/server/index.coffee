@@ -11,8 +11,9 @@ expressApp = module.exports = express()
 
 mongoUrl = process.env.MONGO_URL || 'mongodb://localhost:27017/project'
 store = derby.createStore
-  db: liveDbMongo(mongoUrl + '?auto_reconnect', safe: true)
-  redis: require('redis').createClient()
+  db:
+    db: liveDbMongo(mongoUrl + '?auto_reconnect', safe: true)
+    redis: require('redis').createClient()
 
 store.on 'bundle', (browserify) ->
   # Add support for directly requiring coffeescript in browserify bundles

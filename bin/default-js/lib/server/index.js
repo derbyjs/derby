@@ -25,10 +25,10 @@ var mongoUrl = process.env.MONGO_URL || process.env.MONGOHQ_URL ||
   'mongodb://localhost:27017/project';
 
 // The store creates models and syncs data
-var store = derby.createStore({
+var store = derby.createStore({db: {
   db: liveDbMongo(mongoUrl + '?auto_reconnect', {safe: true})
 , redis: redis
-});
+}});
 
 function createUserId(req, res, next) {
   var model = req.getModel();
@@ -67,7 +67,7 @@ expressApp
   // Create an express middleware from the app's routes
   .use($$app$$.router())
   .use(expressApp.router)
-  .use(error())
+  .use(error());
 
 
 // SERVER-SIDE ROUTES //
