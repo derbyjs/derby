@@ -67,7 +67,7 @@ expressApp
   // Create an express middleware from the app's routes
   .use($$app$$.router())
   .use(expressApp.router)
-  .use(error())
+  .use(error());
 
 
 // SERVER-SIDE ROUTES //
