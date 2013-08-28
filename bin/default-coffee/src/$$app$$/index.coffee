@@ -40,5 +40,5 @@ app.fn 'list.add', (e, el) ->
   @model.add 'items', newItem
 
 app.fn 'list.remove', (e) ->
-  id = e.get ':item.id'
-  @model.del 'items.' + id
+  item = e.get ':item'
+  @model.del 'items.' + item.id

@@ -16,7 +16,6 @@
     "livedb-mongo": "~0.2.0",
     "racer-browserchannel": "~0.1.0",
     "connect-mongo": "~0.3.2",
-    "derby-ui-boot": "0.1.x",
     "coffeeify": "~0.4.0",
     "coffee-script": "~1.6.2"
   },

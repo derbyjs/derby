@@ -112,7 +112,7 @@ function walkSync(start, callback) {
   }
 }
 
-function createProject(dir, app, useCoffee) {
+function createProject(dir, app, template, useCoffee) {
   var dirPath = path.resolve(process.cwd(), dir);
   var project = path.basename(dirPath);
   if (!project) throw new Error('Cannot create project at ' + dirPath);
@@ -123,7 +123,7 @@ function createProject(dir, app, useCoffee) {
 
   // Copy default project files to specified destination
   mkdir(dirPath);
-  var startDir = (useCoffee) ? '/default-coffee' : '/default-js';
+  var startDir = (useCoffee) ? '/' + template + '-coffee' : '/' + template + '-js';
   var start = path.join(__dirname, '..', startDir);
   walkSync(start, function(dir, dirs, files) {
     var base = dirPath + render(dir, ctx).slice(start.length) + '/';
@@ -159,7 +159,7 @@ function createProject(dir, app, useCoffee) {
   });
 }
 
-function newProject(dir, app) {
+function newProject(dir, app, template) {
   if (dir == null) dir = '.';
   if (app == null) app = 'app';
 
@@ -176,11 +176,11 @@ function newProject(dir, app) {
       program.confirm('  Destination is not empty. Continue? ', function(ok) {
         if (!ok) abort();
         process.stdin.destroy();
-        createProject(dir, app, useCoffee);
+        createProject(dir, app, template, useCoffee);
       });
       return;
     }
-    createProject(dir, app, useCoffee);
+    createProject(dir, app, template, useCoffee);
   });
 }
 
@@ -195,7 +195,20 @@ program
     '\nCreate a new Derby project. If no directory name is specified, or the\n' +
     'name `.` is used, the project will be created in the current directory.\n' +
     'A name for the default app may be specified optionally.')
-  .action(newProject);
+  .action(function(dir, app) {
+    newProject(dir, app, "default");
+  });
+
+program
+  .command('bare [dir] [app]')
+  .description(
+    '\nCreate a bare Derby project. If no directory name is specified, or the\n' +
+    'name `.` is used, the project will be created in the current directory.\n' +
+    'A name for the default app may be specified optionally.')
+  .action(function(dir, app) {
+    newProject(dir, app, "bare");
+  });
+
 
 program.parse(process.argv);
 
