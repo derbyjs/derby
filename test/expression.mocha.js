@@ -227,7 +227,7 @@ describe('Expression::dependencies', function() {
     ]);
     expect(expression4.dependencies(context)).to.eql([
       ['_page', 'colors', 'green', 'name']
-    , ['_page', 'keys', 1]
+    , ['_page', 'keys', '1']
     , ['_page', 'index']
     ]);
   });
@@ -238,26 +238,25 @@ describe('Expression::dependencies', function() {
     var expression3 = expressions.createPathExpression('plus(_page.nums[_page.first], _page.nums[_page.second])');
     var expression4 = expressions.createPathExpression('_page.keys[minus(_page.nums.2, _page.nums.0)]');
     expect(expression.dependencies(context)).to.eql([
-      ['_page', 'nums', 0, '*']
-    , ['_page', 'nums', 1, '*']
+      ['_page', 'nums', '0', '*']
+    , ['_page', 'nums', '1', '*']
     ]);
     expect(expression2.dependencies(context)).to.eql([
-      ['_page', 'nums', 0, '*']
-    , ['_page', 'nums', 3, '*']
-    , ['_page', 'nums', 2, '*']
+      ['_page', 'nums', '0', '*']
+    , ['_page', 'nums', '3', '*']
+    , ['_page', 'nums', '2', '*']
     ]);
     expect(expression3.dependencies(context)).to.eql([
-      ['_page', 'nums', 2, '*']
+      ['_page', 'nums', '2', '*']
     , ['_page', 'first']
-    , ['_page', 'nums', 3, '*']
+    , ['_page', 'nums', '3', '*']
     , ['_page', 'second']
     ]);
     expect(expression4.dependencies(context)).to.eql([
-      ['_page', 'keys', 1]
-    , ['_page', 'nums', 2, '*']
-    , ['_page', 'nums', 0, '*']
+      ['_page', 'keys', '1']
+    , ['_page', 'nums', '2', '*']
+    , ['_page', 'nums', '0', '*']
     ]);
   });
 
 });
-
