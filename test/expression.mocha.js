@@ -49,10 +49,11 @@ var data = {
   , second: 3
   }
 };
-var context = new expressions.Context(contextMeta, data);
+var objectModel = new expressions.ObjectModel(data);
+var context = new expressions.Context(contextMeta, objectModel);
 var model = new Model();
 model.setEach('_page', data._page);
-var modelContext = new expressions.ModelContext(contextMeta, model);
+var modelContext = new expressions.Context(contextMeta, model);
 
 describe('Expression::resolve', function() {
 
@@ -81,7 +82,8 @@ describe('Expression::resolve', function() {
     var expression = createPathExpression('#color');
     var expression2 = createPathExpression('#color.name');
     var withExpression = createPathExpression('_page.colors.green');
-    var childContext = context.child(withExpression, '#color');
+    withExpression.as = '#color';
+    var childContext = context.child(withExpression);
     expect(expression.resolve(childContext)).to.eql(['_page', 'colors', 'green']);
     expect(expression2.resolve(childContext)).to.eql(['_page', 'colors', 'green', 'name']);
   });
@@ -145,7 +147,8 @@ describe('Expression::get', function() {
     it('gets an alias path expression', function() {
       var expression = createPathExpression('#color.name');
       var withExpression = createPathExpression('_page.colors.green');
-      var childContext = context.child(withExpression, '#color');
+      withExpression.as = '#color';
+      var childContext = context.child(withExpression);
       expect(expression.get(childContext)).to.eql('Green');
     });
 
@@ -176,7 +179,8 @@ describe('Expression::get', function() {
     it('gets an fn expression with alias paths', function() {
       var expression = createPathExpression('plus(#nums[1], #nums[2])');
       var withExpression = createPathExpression('_page.nums');
-      var childContext = context.child(withExpression, '#nums');
+      withExpression.as = '#nums';
+      var childContext = context.child(withExpression);
       expect(expression.get(childContext)).to.eql(14);
     });
 
