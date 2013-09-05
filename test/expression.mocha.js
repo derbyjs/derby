@@ -132,16 +132,56 @@ describe('Expression::get', function() {
   });
 
   function getTests(context) {
+    it('gets literal values', function() {
+      // Numbers
+      expect(createPathExpression('0').get()).equal(0);
+      expect(createPathExpression('1.5').get()).equal(1.5);
+      expect(createPathExpression('1.1e3').get()).equal(1100);
+      expect(createPathExpression('0xff').get()).equal(255);
+      // Boolean
+      expect(createPathExpression('true').get()).equal(true);
+      expect(createPathExpression('false').get()).equal(false);
+      // Strings
+      expect(createPathExpression('""').get()).equal('');
+      expect(createPathExpression("'Howdy'").get()).equal('Howdy');
+      // Regular Expression
+      var re = createPathExpression('/([0-9]+)/').get();
+      expect(re).to.be.a(RegExp);
+      expect(re.source).equal('([0-9]+)');
+      // Other
+      expect(createPathExpression('null').get()).equal(null);
+    });
+
+    it('gets `undefined` as a literal', function() {
+      // `undefined` is a top-level property in JavaScript, but esprima-derby
+      // parses it as a literal like `null` instead
+      expect(createPathExpression('undefined').get()).equal(undefined);
+    });
+
+    it('gets literals modified by a unary operator', function() {
+      expect(createPathExpression('!null').get()).equal(true);
+      expect(createPathExpression('-2.3').get()).equal(-2.3);
+      expect(createPathExpression('+"4"').get()).equal(4);
+      expect(createPathExpression('~0').get()).equal(-1);
+      expect(createPathExpression('typeof 0').get()).equal('number');
+    });
+
+    it('gets literals modified by nested unary operators', function() {
+      // Nested unary operators
+      expect(createPathExpression('~-1').get()).equal(0);
+      expect(createPathExpression('typeof !!""').get()).equal('boolean');
+    });
+
     it('gets a simple path expression', function() {
       var expression = createPathExpression('_page.colors.green.name');
-      expect(expression.get(context)).to.eql('Green');
+      expect(expression.get(context)).to.equal('Green');
     });
 
     it('gets a relative path expression', function() {
       var expression = createPathExpression('this.green.name');
       var withExpression = createPathExpression('_page.colors');
       var childContext = context.child(withExpression);
-      expect(expression.get(childContext)).to.eql('Green');
+      expect(expression.get(childContext)).to.equal('Green');
     });
 
     it('gets an alias path expression', function() {
@@ -149,31 +189,31 @@ describe('Expression::get', function() {
       var withExpression = createPathExpression('_page.colors.green');
       withExpression.as = '#color';
       var childContext = context.child(withExpression);
-      expect(expression.get(childContext)).to.eql('Green');
+      expect(expression.get(childContext)).to.equal('Green');
     });
 
     it('gets a square brackets expression', function() {
       var expression = createPathExpression('_page.colors[_page.key].name');
       var expression2 = createPathExpression('_page.colors[_page.key][_page.variation].hex');
-      expect(expression.get(context)).to.eql('Green');
-      expect(expression2.get(context)).to.eql('#90ee90');
+      expect(expression.get(context)).to.equal('Green');
+      expect(expression2.get(context)).to.equal('#90ee90');
     });
 
     it('gets an fn expression', function() {
       var expression = createPathExpression('plus(_page.nums[0], _page.nums[1])');
-      expect(expression.get(context)).to.eql(13);
+      expect(expression.get(context)).to.equal(13);
     });
 
     it('gets an fn expression with no args', function() {
       var expression = createPathExpression('greeting()');
-      expect(expression.get(context)).to.eql('Hi.');
+      expect(expression.get(context)).to.equal('Hi.');
     });
 
     it('gets an fn expression with relative paths', function() {
       var expression = createPathExpression('plus(this[0], this[1])');
       var withExpression = createPathExpression('_page.nums');
       var childContext = context.child(withExpression);
-      expect(expression.get(childContext)).to.eql(13);
+      expect(expression.get(childContext)).to.equal(13);
     });
 
     it('gets an fn expression with alias paths', function() {
@@ -181,24 +221,24 @@ describe('Expression::get', function() {
       var withExpression = createPathExpression('_page.nums');
       withExpression.as = '#nums';
       var childContext = context.child(withExpression);
-      expect(expression.get(childContext)).to.eql(14);
+      expect(expression.get(childContext)).to.equal(14);
     });
 
     it('gets an fn expression containing bracket paths', function() {
       var expression = createPathExpression('plus(_page.nums[_page.first], _page.nums[_page.second])');
-      expect(expression.get(context)).to.eql(10);
+      expect(expression.get(context)).to.equal(10);
     });
 
     it('gets a bracket path containing an fn expression', function() {
       var expression = createPathExpression('_page.keys[minus(_page.nums[2], _page.nums[0])]');
-      expect(expression.get(context)).to.eql('green');
+      expect(expression.get(context)).to.equal('green');
     });
 
     it('gets nested fn expressions', function() {
       var expression = createPathExpression('plus(_page.nums[0], minus(_page.nums[3], _page.nums[2]))');
       var expression2 = createPathExpression('plus(minus(_page.nums[3], _page.nums[2]), _page.nums[1])');
-      expect(expression.get(context)).to.eql(6);
-      expect(expression2.get(context)).to.eql(15);
+      expect(expression.get(context)).to.equal(6);
+      expect(expression2.get(context)).to.equal(15);
     });
   }
 
