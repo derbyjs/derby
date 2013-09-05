@@ -23,7 +23,8 @@
     "commander": "~1.1.1",
     "mkdirp": "~0.3.5",
     "MD5": "~1.0.1",
-    "async": "~0.2.8"
+    "async": "~0.2.8",
+    "esprima-derby": "~1.0.4"
   },
   "devDependencies": {
     "coffee-script": "*",
