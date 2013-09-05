@@ -172,6 +172,28 @@ describe('Expression::get', function() {
       expect(createPathExpression('typeof !!""').get()).equal('boolean');
     });
 
+    it('gets literals modified by a boolean operator', function() {
+      expect(createPathExpression('false || null').get()).equal(null);
+      expect(createPathExpression('"" && 3').get()).equal("");
+      expect(createPathExpression('1 + 1').get()).equal(2);
+      expect(createPathExpression('4 - 3').get()).equal(1);
+      expect(createPathExpression('1 > 0').get()).equal(true);
+    });
+
+    it('gets literals modified by nested boolean expressions', function() {
+      expect(createPathExpression('2*2*2*2').get()).equal(16);
+      expect(createPathExpression('true && true && 0 && true').get()).equal(0);
+    });
+
+    it('gets literals modified by a conditional operator', function() {
+      expect(createPathExpression('(true) ? "yes" : "no"').get()).equal('yes');
+      expect(createPathExpression('0 ? "yes" : "no"').get()).equal('no');
+    });
+
+    it('gets literals modified in mixed nested operators', function() {
+      expect(createPathExpression('(1 < 0) ? null : (2 == "2") ? !!23 : false').get()).equal(true);
+    });
+
     it('gets a simple path expression', function() {
       var expression = createPathExpression('_page.colors.green.name');
       expect(expression.get(context)).to.equal('Green');
