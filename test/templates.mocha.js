@@ -17,8 +17,14 @@ describe('Parse and render literal HTML', function() {
   var literalTests = {
     'empty string': ''
   , 'empty div': '<div></div>'
+  , 'div with attributes': '<div class="page home" title="Home"></div>'
+  , 'text': 'Hi.'
+  , 'conditional comment': '<!--[if IE 6]>Yikes!<![endif]-->'
+  , 'div containing text': '<div> </div>'
   , 'nested divs': '<div><div></div></div>'
   , 'sibling divs': '<div></div><div></div>'
+  , 'input': '<input type="text">'
+  , 'void and nonvoid elements': '<div><img><br><b>Hi</b></div><br><div></div>'
   }
 
   for (var name in literalTests) {
