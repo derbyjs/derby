@@ -206,13 +206,13 @@ describe('Expression::get', function() {
       expect(createPathExpression('1.5').get()).equal(1.5);
       expect(createPathExpression('1.1e3').get()).equal(1100);
       expect(createPathExpression('0xff').get()).equal(255);
-      // Boolean
+      // Booleans
       expect(createPathExpression('true').get()).equal(true);
       expect(createPathExpression('false').get()).equal(false);
       // Strings
       expect(createPathExpression('""').get()).equal('');
       expect(createPathExpression("'Howdy'").get()).equal('Howdy');
-      // Regular Expression
+      // Regular Expressions
       var re = createPathExpression('/([0-9]+)/').get();
       expect(re).to.be.a(RegExp);
       expect(re.source).equal('([0-9]+)');
@@ -279,6 +279,32 @@ describe('Expression::get', function() {
     it('gets expressions modified by a conditional operator', function() {
       var expression = createPathExpression('(_page.key === "green") ? _page.colors.green.name : "Other"');
       expect(expression.get(context)).to.equal("Green");
+    });
+
+    it('gets array literals', function() {
+      expect(createPathExpression('[]').get()).eql([]);
+      expect(createPathExpression('[0, 2, 1]').get()).eql([0, 2, 1]);
+      expect(createPathExpression('[[0, 1], [1, 0]]').get()).eql([[0, 1], [1, 0]]);
+    });
+
+    it('gets object literals', function() {
+      expect(createPathExpression('{}').get()).eql({});
+      expect(createPathExpression('{foo: 0, bar: 1}').get()).eql({foo: 0, bar: 1});
+      expect(createPathExpression('{foo: 0, bar: {"!": "baz"}}').get()).eql({foo: 0, bar: {'!': 'baz'}});
+    });
+
+    it('gets nested array and object literals', function() {
+      expect(createPathExpression('[{arr: [{}, {}]}, []]').get()).eql([{arr: [{}, {}]}, []]);
+    });
+
+    it('gets array literals containing paths', function() {
+      var expression = createPathExpression('[_page.nums[0], 99, [_page.nums[1]], 13]');
+      expect(expression.get(context)).to.eql([2, 99, [11], 13]);
+    });
+
+    it('gets object literals containing paths', function() {
+      var expression = createPathExpression('{foo: _page.nums[0], bar: {"!": _page.nums[1], baz: "Hi"}}');
+      expect(expression.get(context)).to.eql({foo: 2, bar: {'!': 11, baz: 'Hi'}});
     });
   }
 
