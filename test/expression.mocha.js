@@ -3,24 +3,23 @@ var Model = require('racer').Model;
 var expect = testUtil.expect;
 var expressions = require('../lib/expressions');
 var createPathExpression = require('../lib/createPathExpression');
+var fns = require('../lib/defaultFns');
 
-var fns = {
-  plus: {
-    get: function(a, b) {
-      return a + b;
-    }
+fns.plus = {
+  get: function(a, b) {
+    return a + b;
   }
-, minus: {
-    get: function(a, b) {
-      return a - b;
-    }
+};
+fns.minus = {
+  get: function(a, b) {
+    return a - b;
   }
-, greeting: {
-    get: function() {
-      return 'Hi.'
-    }
+};
+fns.greeting = {
+  get: function() {
+    return 'Hi.'
   }
-}
+};
 var contextMeta = new expressions.ContextMeta({fns: fns});
 var data = {
   _page: {
@@ -132,68 +131,6 @@ describe('Expression::get', function() {
   });
 
   function getTests(context) {
-    it('gets literal values', function() {
-      // Numbers
-      expect(createPathExpression('0').get()).equal(0);
-      expect(createPathExpression('1.5').get()).equal(1.5);
-      expect(createPathExpression('1.1e3').get()).equal(1100);
-      expect(createPathExpression('0xff').get()).equal(255);
-      // Boolean
-      expect(createPathExpression('true').get()).equal(true);
-      expect(createPathExpression('false').get()).equal(false);
-      // Strings
-      expect(createPathExpression('""').get()).equal('');
-      expect(createPathExpression("'Howdy'").get()).equal('Howdy');
-      // Regular Expression
-      var re = createPathExpression('/([0-9]+)/').get();
-      expect(re).to.be.a(RegExp);
-      expect(re.source).equal('([0-9]+)');
-      // Other
-      expect(createPathExpression('null').get()).equal(null);
-    });
-
-    it('gets `undefined` as a literal', function() {
-      // `undefined` is a top-level property in JavaScript, but esprima-derby
-      // parses it as a literal like `null` instead
-      expect(createPathExpression('undefined').get()).equal(undefined);
-    });
-
-    it('gets literals modified by a unary operator', function() {
-      expect(createPathExpression('!null').get()).equal(true);
-      expect(createPathExpression('-2.3').get()).equal(-2.3);
-      expect(createPathExpression('+"4"').get()).equal(4);
-      expect(createPathExpression('~0').get()).equal(-1);
-      expect(createPathExpression('typeof 0').get()).equal('number');
-    });
-
-    it('gets literals modified by nested unary operators', function() {
-      // Nested unary operators
-      expect(createPathExpression('~-1').get()).equal(0);
-      expect(createPathExpression('typeof !!""').get()).equal('boolean');
-    });
-
-    it('gets literals modified by a boolean operator', function() {
-      expect(createPathExpression('false || null').get()).equal(null);
-      expect(createPathExpression('"" && 3').get()).equal("");
-      expect(createPathExpression('1 + 1').get()).equal(2);
-      expect(createPathExpression('4 - 3').get()).equal(1);
-      expect(createPathExpression('1 > 0').get()).equal(true);
-    });
-
-    it('gets literals modified by nested boolean expressions', function() {
-      expect(createPathExpression('2*2*2*2').get()).equal(16);
-      expect(createPathExpression('true && true && 0 && true').get()).equal(0);
-    });
-
-    it('gets literals modified by a conditional operator', function() {
-      expect(createPathExpression('(true) ? "yes" : "no"').get()).equal('yes');
-      expect(createPathExpression('0 ? "yes" : "no"').get()).equal('no');
-    });
-
-    it('gets literals modified in mixed nested operators', function() {
-      expect(createPathExpression('(1 < 0) ? null : (2 == "2") ? !!23 : false').get()).equal(true);
-    });
-
     it('gets a simple path expression', function() {
       var expression = createPathExpression('_page.colors.green.name');
       expect(expression.get(context)).to.equal('Green');
@@ -262,6 +199,87 @@ describe('Expression::get', function() {
       expect(expression.get(context)).to.equal(6);
       expect(expression2.get(context)).to.equal(15);
     });
+
+    it('gets literal values', function() {
+      // Numbers
+      expect(createPathExpression('0').get()).equal(0);
+      expect(createPathExpression('1.5').get()).equal(1.5);
+      expect(createPathExpression('1.1e3').get()).equal(1100);
+      expect(createPathExpression('0xff').get()).equal(255);
+      // Boolean
+      expect(createPathExpression('true').get()).equal(true);
+      expect(createPathExpression('false').get()).equal(false);
+      // Strings
+      expect(createPathExpression('""').get()).equal('');
+      expect(createPathExpression("'Howdy'").get()).equal('Howdy');
+      // Regular Expression
+      var re = createPathExpression('/([0-9]+)/').get();
+      expect(re).to.be.a(RegExp);
+      expect(re.source).equal('([0-9]+)');
+      // Other
+      expect(createPathExpression('null').get()).equal(null);
+    });
+
+    it('gets `undefined` as a literal', function() {
+      // `undefined` is a top-level property in JavaScript, but esprima-derby
+      // parses it as a literal like `null` instead
+      expect(createPathExpression('undefined').get()).equal(undefined);
+    });
+
+    it('gets literals modified by a unary operator', function() {
+      expect(createPathExpression('!null').get()).equal(true);
+      expect(createPathExpression('-2.3').get()).equal(-2.3);
+      expect(createPathExpression('+"4"').get()).equal(4);
+      expect(createPathExpression('~0').get()).equal(-1);
+      expect(createPathExpression('typeof 0').get()).equal('number');
+    });
+
+    it('gets literals modified by nested unary operators', function() {
+      // Nested unary operators
+      expect(createPathExpression('~-1').get()).equal(0);
+      expect(createPathExpression('typeof !!""').get()).equal('boolean');
+    });
+
+    it('gets literals modified by a boolean operator', function() {
+      expect(createPathExpression('false || null').get()).equal(null);
+      expect(createPathExpression('"" && 3').get()).equal("");
+      expect(createPathExpression('1 + 1').get()).equal(2);
+      expect(createPathExpression('4 - 3').get()).equal(1);
+      expect(createPathExpression('1 > 0').get()).equal(true);
+    });
+
+    it('gets literals modified by nested boolean expressions', function() {
+      expect(createPathExpression('2*2*2*2').get()).equal(16);
+      expect(createPathExpression('true && true && 0 && true').get()).equal(0);
+    });
+
+    it('gets literals modified by a conditional operator', function() {
+      expect(createPathExpression('(true) ? "yes" : "no"').get()).equal('yes');
+      expect(createPathExpression('0 ? "yes" : "no"').get()).equal('no');
+    });
+
+    it('gets literals modified in mixed nested operators', function() {
+      expect(createPathExpression('(1 < 0) ? null : (2 == "2") ? !!23 : false').get()).equal(true);
+    });
+
+    it('gets expressions modified by a unary operator', function() {
+      var expression = createPathExpression('!_page.first');
+      expect(expression.get(context)).to.equal(false);
+      var expression = createPathExpression('!!_page.colors[_page.key].name');
+      expect(expression.get(context)).to.equal(true);
+      var expression = createPathExpression('typeof greeting()');
+      expect(expression.get(context)).to.equal('string');
+    });
+
+    it('gets expressions modified by a boolean operator', function() {
+      var expression = createPathExpression('_page.nums[0] + _page.nums[1]');
+      expect(expression.get(context)).to.equal(13);
+    });
+
+    it('gets expressions modified by a conditional operator', function() {
+      var expression = createPathExpression('(_page.key === "green") ? _page.colors.green.name : "Other"');
+      expect(expression.get(context)).to.equal("Green");
+    });
   }
 
 });
@@ -323,6 +341,61 @@ describe('Expression::dependencies', function() {
       ['_page', 'keys', 1]
     , ['_page', 'nums', 2, '*']
     , ['_page', 'nums', 0, '*']
+    ]);
+  });
+
+  it('gets literal dependencies', function() {
+    var expression = createPathExpression('34');
+    expect(expression.dependencies(context)).to.equal(undefined);
+  });
+
+  it('gets dependencies of operators on paths', function() {
+    var expression = createPathExpression('_page.nums[0] + _page.nums[1]');
+    var expression2 = createPathExpression('_page.nums[0] + (_page.nums[3] - _page.nums[2])');
+    var expression3 = createPathExpression('_page.nums[_page.first] + _page.nums[_page.second]');
+    var expression4 = createPathExpression('_page.keys[_page.nums[2] - _page.nums[0]]');
+    expect(expression.dependencies(context)).to.eql([
+      ['_page', 'nums', 0, '*']
+    , ['_page', 'nums', 1, '*']
+    ]);
+    expect(expression2.dependencies(context)).to.eql([
+      ['_page', 'nums', 0, '*']
+    , ['_page', 'nums', 3, '*']
+    , ['_page', 'nums', 2, '*']
+    ]);
+    expect(expression3.dependencies(context)).to.eql([
+      ['_page', 'nums', 2, '*']
+    , ['_page', 'first']
+    , ['_page', 'nums', 3, '*']
+    , ['_page', 'second']
+    ]);
+    expect(expression4.dependencies(context)).to.eql([
+      ['_page', 'keys', 1]
+    , ['_page', 'nums', 2, '*']
+    , ['_page', 'nums', 0, '*']
+    ]);
+  });
+
+  it('gets dependencies of operators on mixed literals and paths', function() {
+    var expression = createPathExpression('_page.nums[0] + 3');
+    var expression2 = createPathExpression('_page.nums[0] + (100 - _page.nums[2])');
+    var expression3 = createPathExpression('_page.nums[2] + _page.nums[_page.second]');
+    var expression4 = createPathExpression('_page.keys[_page.nums[2] - 2]');
+    expect(expression.dependencies(context)).to.eql([
+      ['_page', 'nums', 0, '*']
+    ]);
+    expect(expression2.dependencies(context)).to.eql([
+      ['_page', 'nums', 0, '*']
+    , ['_page', 'nums', 2, '*']
+    ]);
+    expect(expression3.dependencies(context)).to.eql([
+      ['_page', 'nums', 2, '*']
+    , ['_page', 'nums', 3, '*']
+    , ['_page', 'second']
+    ]);
+    expect(expression4.dependencies(context)).to.eql([
+      ['_page', 'keys', 1]
+    , ['_page', 'nums', 2, '*']
     ]);
   });
 
