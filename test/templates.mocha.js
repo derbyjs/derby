@@ -6,6 +6,7 @@ var templates = require('../lib/templates');
 
 var data = {
   _page: {
+    greeting: 'Howdy!'
   }
 };
 var objectModel = new expressions.ObjectModel(data);
@@ -32,10 +33,17 @@ describe('Parse and render literal HTML', function() {
   }
   function test(name, source) {
     it(name, function() {
-      var source = literalTests[name];
       var template = templates.createTemplate(source);
       expect(template.get()).equal(source);
     });
   }
 });
 
+describe('Parse and render dynamic text and blocks', function() {
+
+  it('Value within text', function() {
+    var template = templates.createTemplate('Say, "{{_page.greeting}}"');
+    expect(template.get(context)).equal('Say, "Howdy!"');
+  });
+
+});
