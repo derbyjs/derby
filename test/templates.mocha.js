@@ -7,6 +7,9 @@ var templates = require('../lib/templates');
 var data = {
   _page: {
     greeting: 'Howdy!'
+  , zero: 0
+  , yep: true
+  , nope: false
   }
 };
 var objectModel = new expressions.ObjectModel(data);
@@ -41,9 +44,31 @@ describe('Parse and render literal HTML', function() {
 
 describe('Parse and render dynamic text and blocks', function() {
 
+  function test(source, expected) {
+    var template = templates.createTemplate(source);
+    expect(template.get(context)).equal(expected);
+  }
+
   it('Value within text', function() {
-    var template = templates.createTemplate('Say, "{{_page.greeting}}"');
-    expect(template.get(context)).equal('Say, "Howdy!"');
+    test('Say, "{{_page.greeting}}"', 'Say, "Howdy!"');
+  });
+
+  it('If block', function() {
+    test('{{if _page.yep}}yes{{/if}}', 'yes');
+    test('{{if _page.nope}}yes{{/if}}', '');
+    test('{{if nothing}}yes{{/if}}', '');
+  });
+
+  it('Unless block', function() {
+    test('{{unless _page.yep}}yes{{/unless}}', '');
+    test('{{unless _page.nope}}yes{{/unless}}', 'yes');
+    test('{{unless nothing}}yes{{/unless}}', 'yes');
+  });
+
+  it('If else block', function() {
+    test('{{if _page.yep}}yes{{else}}no{{/if}}', 'yes');
+    test('{{if _page.nope}}yes{{else}}no{{/if}}', 'no');
+    test('{{if nothing}}yes{{else}}no{{/if}}', 'no');
   });
 
 });
