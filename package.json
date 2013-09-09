@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "dom-shim": "~0.1.1",
-    "html-util": "~0.1.5",
+    "html-util": "git://github.com/codeparty/html.git#master",
     "tracks": "~0.3.2",
     "racer": "0.5.9",
     "chokidar": "~0.6.2",

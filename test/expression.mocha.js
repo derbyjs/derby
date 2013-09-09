@@ -462,7 +462,7 @@ describe('Expression::truthy', function() {
     expect(templates.createExpression('unless {foo: 0}').truthy()).equal(false);
   });
 
-  it.only('gets always truthy value for else block', function() {
+  it('gets always truthy value for else block', function() {
     templates.createExpression('else')
     expect(templates.createExpression('else').truthy()).equal(true);
   });
