@@ -66,6 +66,7 @@ describe('Expression::resolve', function() {
     var expression = createPathExpression('this');
     expect(expression.resolve(context)).to.eql([]);
     var withExpression = createPathExpression('_page.colors');
+    withExpression.meta = new expressions.ExpressionMeta();
     var childContext = context.child(withExpression);
     expect(expression.resolve(childContext)).to.eql(['_page', 'colors']);
   });
@@ -74,6 +75,7 @@ describe('Expression::resolve', function() {
     var expression = createPathExpression('this.green');
     expect(expression.resolve(context)).to.eql(['green']);
     var withExpression = createPathExpression('_page.colors');
+    withExpression.meta = new expressions.ExpressionMeta();
     var childContext = context.child(withExpression);
     expect(expression.resolve(childContext)).to.eql(['_page', 'colors', 'green']);
   });
@@ -82,7 +84,8 @@ describe('Expression::resolve', function() {
     var expression = createPathExpression('#color');
     var expression2 = createPathExpression('#color.name');
     var withExpression = createPathExpression('_page.colors.green');
-    withExpression.as = '#color';
+    withExpression.meta = new expressions.ExpressionMeta();
+    withExpression.meta.as = '#color';
     var childContext = context.child(withExpression);
     expect(expression.resolve(childContext)).to.eql(['_page', 'colors', 'green']);
     expect(expression2.resolve(childContext)).to.eql(['_page', 'colors', 'green', 'name']);
@@ -140,6 +143,7 @@ describe('Expression::get', function() {
     it('gets a relative path expression', function() {
       var expression = createPathExpression('this.green.name');
       var withExpression = createPathExpression('_page.colors');
+      withExpression.meta = new expressions.ExpressionMeta();
       var childContext = context.child(withExpression);
       expect(expression.get(childContext)).to.equal('Green');
     });
@@ -147,7 +151,8 @@ describe('Expression::get', function() {
     it('gets an alias path expression', function() {
       var expression = createPathExpression('#color.name');
       var withExpression = createPathExpression('_page.colors.green');
-      withExpression.as = '#color';
+      withExpression.meta = new expressions.ExpressionMeta();
+      withExpression.meta.as = '#color';
       var childContext = context.child(withExpression);
       expect(expression.get(childContext)).to.equal('Green');
     });
@@ -172,6 +177,7 @@ describe('Expression::get', function() {
     it('gets an fn expression with relative paths', function() {
       var expression = createPathExpression('plus(this[0], this[1])');
       var withExpression = createPathExpression('_page.nums');
+      withExpression.meta = new expressions.ExpressionMeta();
       var childContext = context.child(withExpression);
       expect(expression.get(childContext)).to.equal(13);
     });
@@ -179,7 +185,8 @@ describe('Expression::get', function() {
     it('gets an fn expression with alias paths', function() {
       var expression = createPathExpression('plus(#nums[1], #nums[2])');
       var withExpression = createPathExpression('_page.nums');
-      withExpression.as = '#nums';
+      withExpression.meta = new expressions.ExpressionMeta();
+      withExpression.meta.as = '#nums';
       var childContext = context.child(withExpression);
       expect(expression.get(childContext)).to.equal(14);
     });
