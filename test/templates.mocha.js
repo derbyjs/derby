@@ -12,6 +12,7 @@ var data = {
   , nope: false
   , nada: null
   , letters: ['A', 'B', 'C']
+  , emptyList: []
   , matrix: [[0, 1], [1, 0]]
   }
 };
@@ -101,6 +102,12 @@ describe('Parse and render dynamic text and blocks', function() {
     test('{{each [1, _page.zero, 3]}}{{this * 2}}{{/each}}', '206');
     test('{{each [2, 1, 0]}}{{_page.letters[this]}}{{/each}}', 'CBA');
     test('{{each _page.matrix[1]}}{{this}}:{{/each}}', '1:0:');
+  });
+
+  it('Each else block', function() {
+    test('{{each _page.letters}}{{this}}:{{else}}Nada{{/each}}', 'A:B:C:');
+    test('{{each _page.emptyList}}{{this}}:{{else}}Nada{{/each}}', 'Nada');
+    test('{{each nothing}}{{this}}:{{else}}Nada{{/each}}', 'Nada');
   });
 
   it('Nested each blocks', function() {
