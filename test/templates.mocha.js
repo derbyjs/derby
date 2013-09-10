@@ -12,6 +12,7 @@ var data = {
   , nope: false
   , nada: null
   , letters: ['A', 'B', 'C']
+  , matrix: [[0, 1], [1, 0]]
   }
 };
 var objectModel = new expressions.ObjectModel(data);
@@ -99,6 +100,11 @@ describe('Parse and render dynamic text and blocks', function() {
     test('{{each [1, 2, 3]}}{{this * 2}}{{/each}}', '246');
     test('{{each [1, _page.zero, 3]}}{{this * 2}}{{/each}}', '206');
     test('{{each [2, 1, 0]}}{{_page.letters[this]}}{{/each}}', 'CBA');
+    test('{{each _page.matrix[1]}}{{this}}:{{/each}}', '1:0:');
+  });
+
+  it('Nested each blocks', function() {
+    test('{{each _page.matrix}}{{each this}}{{this}}.{{/each}};{{/each}}', '0.1.;1.0.;');
   });
 
 });
