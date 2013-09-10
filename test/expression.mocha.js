@@ -21,6 +21,20 @@ fns.greeting = {
     return 'Hi.'
   }
 };
+fns.keys = {
+  get: function(object) {
+    var keys = [];
+    for (key in object) {
+      keys.push(key);
+    }
+    return keys;
+  }
+};
+fns.passThrough = {
+  get: function(value) {
+    return value;
+  }
+};
 var contextMeta = new expressions.ContextMeta({fns: fns});
 var data = {
   _page: {
@@ -191,6 +205,20 @@ describe('Expression::get', function() {
       expect(expression.get(childContext)).to.equal(14);
     });
 
+    it('gets a property of an fn expression', function() {
+      var expression = createPathExpression('keys(_page.colors)[0]');
+      var expression2 = createPathExpression('passThrough(_page.colors).green');
+      expect(expression.get(context)).to.equal('green');
+      expect(expression2.get(context)).to.equal(data._page.colors.green);
+    });
+
+    it('gets square bracket paths of an fn expression', function() {
+      var expression = createPathExpression('keys(_page.colors)[_page.channel]');
+      var expression2 = createPathExpression('passThrough(_page.colors).green[_page.variation].hex');
+      expect(expression.get(context)).to.equal('green');
+      expect(expression2.get(context)).to.equal('#90ee90');
+    });
+
     it('gets an fn expression containing bracket paths', function() {
       var expression = createPathExpression('plus(_page.nums[_page.first], _page.nums[_page.second])');
       expect(expression.get(context)).to.equal(10);
@@ -231,7 +259,7 @@ describe('Expression::get', function() {
     it('gets `undefined` as a literal', function() {
       // `undefined` is a top-level property in JavaScript, but esprima-derby
       // parses it as a literal like `null` instead
-      expect(createPathExpression('undefined').get(context)).equal(undefined);
+      expect(createPathExpression('undefined').get(context)).equal(void 0);
     });
 
     it('gets literals modified by a unary operator', function() {
