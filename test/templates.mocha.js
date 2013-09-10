@@ -96,7 +96,9 @@ describe('Parse and render dynamic text and blocks', function() {
 
   it('Each block', function() {
     test('{{each _page.letters}}{{this}}:{{/each}}', 'A:B:C:');
-    // test('{{each [1, 2, 3]}}{{this * 2}}{{/each}}', '246');
+    test('{{each [1, 2, 3]}}{{this * 2}}{{/each}}', '246');
+    test('{{each [1, _page.zero, 3]}}{{this * 2}}{{/each}}', '206');
+    test('{{each [2, 1, 0]}}{{_page.letters[this]}}{{/each}}', 'CBA');
   });
 
 });
