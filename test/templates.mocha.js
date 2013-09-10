@@ -104,7 +104,30 @@ describe('Parse and render dynamic text and blocks', function() {
   });
 
   it('Nested each blocks', function() {
-    test('{{each _page.matrix}}{{each this}}{{this}}.{{/each}};{{/each}}', '0.1.;1.0.;');
+    test(
+      '{{each _page.matrix}}' +
+        '{{each this}}' +
+          '{{this}}.' +
+        '{{/each}};' +
+      '{{/each}}'
+    , '0.1.;1.0.;'
+    );
+    test(
+      '{{each _page.matrix}}' +
+        '{{each this}}' +
+          '{{each _page.matrix}}' +
+            '{{each this}}' +
+              '{{this}}!' +
+            '{{/each}}|' +
+          '{{/each}}' +
+          '{{this}}.' +
+        '{{/each}};' +
+      '{{/each}}'
+    , '0!1!|1!0!|0.' +
+      '0!1!|1!0!|1.;' +
+      '0!1!|1!0!|1.' +
+      '0!1!|1!0!|0.;'
+    );
   });
 
 });
