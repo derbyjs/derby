@@ -238,64 +238,64 @@ describe('Expression::get', function() {
 
     it('gets literal values', function() {
       // Numbers
-      expect(createPathExpression('0').get(context)).equal(0);
-      expect(createPathExpression('1.5').get(context)).equal(1.5);
-      expect(createPathExpression('1.1e3').get(context)).equal(1100);
-      expect(createPathExpression('0xff').get(context)).equal(255);
+      expect(createPathExpression('0').get()).equal(0);
+      expect(createPathExpression('1.5').get()).equal(1.5);
+      expect(createPathExpression('1.1e3').get()).equal(1100);
+      expect(createPathExpression('0xff').get()).equal(255);
       // Booleans
-      expect(createPathExpression('true').get(context)).equal(true);
-      expect(createPathExpression('false').get(context)).equal(false);
+      expect(createPathExpression('true').get()).equal(true);
+      expect(createPathExpression('false').get()).equal(false);
       // Strings
-      expect(createPathExpression('""').get(context)).equal('');
-      expect(createPathExpression("'Howdy'").get(context)).equal('Howdy');
+      expect(createPathExpression('""').get()).equal('');
+      expect(createPathExpression("'Howdy'").get()).equal('Howdy');
       // Regular Expressions
-      var re = createPathExpression('/([0-9]+)/').get(context);
+      var re = createPathExpression('/([0-9]+)/').get();
       expect(re).to.be.a(RegExp);
       expect(re.source).equal('([0-9]+)');
       // Other
-      expect(createPathExpression('null').get(context)).equal(null);
+      expect(createPathExpression('null').get()).equal(null);
     });
 
     it('gets `undefined` as a literal', function() {
       // `undefined` is a top-level property in JavaScript, but esprima-derby
       // parses it as a literal like `null` instead
-      expect(createPathExpression('undefined').get(context)).equal(void 0);
+      expect(createPathExpression('undefined').get()).equal(void 0);
     });
 
     it('gets literals modified by a unary operator', function() {
-      expect(createPathExpression('!null').get(context)).equal(true);
-      expect(createPathExpression('-2.3').get(context)).equal(-2.3);
-      expect(createPathExpression('+"4"').get(context)).equal(4);
-      expect(createPathExpression('~0').get(context)).equal(-1);
-      expect(createPathExpression('typeof 0').get(context)).equal('number');
+      expect(createPathExpression('!null').get()).equal(true);
+      expect(createPathExpression('-2.3').get()).equal(-2.3);
+      expect(createPathExpression('+"4"').get()).equal(4);
+      expect(createPathExpression('~0').get()).equal(-1);
+      expect(createPathExpression('typeof 0').get()).equal('number');
     });
 
     it('gets literals modified by nested unary operators', function() {
       // Nested unary operators
-      expect(createPathExpression('~-1').get(context)).equal(0);
-      expect(createPathExpression('typeof !!""').get(context)).equal('boolean');
+      expect(createPathExpression('~-1').get()).equal(0);
+      expect(createPathExpression('typeof !!""').get()).equal('boolean');
     });
 
     it('gets literals modified by a boolean operator', function() {
-      expect(createPathExpression('false || null').get(context)).equal(null);
-      expect(createPathExpression('"" && 3').get(context)).equal("");
-      expect(createPathExpression('1 + 1').get(context)).equal(2);
-      expect(createPathExpression('4 - 3').get(context)).equal(1);
-      expect(createPathExpression('1 > 0').get(context)).equal(true);
+      expect(createPathExpression('false || null').get()).equal(null);
+      expect(createPathExpression('"" && 3').get()).equal("");
+      expect(createPathExpression('1 + 1').get()).equal(2);
+      expect(createPathExpression('4 - 3').get()).equal(1);
+      expect(createPathExpression('1 > 0').get()).equal(true);
     });
 
     it('gets literals modified by nested boolean expressions', function() {
-      expect(createPathExpression('2*2*2*2').get(context)).equal(16);
-      expect(createPathExpression('true && true && 0 && true').get(context)).equal(0);
+      expect(createPathExpression('2*2*2*2').get()).equal(16);
+      expect(createPathExpression('true && true && 0 && true').get()).equal(0);
     });
 
     it('gets literals modified by a conditional operator', function() {
-      expect(createPathExpression('(true) ? "yes" : "no"').get(context)).equal('yes');
-      expect(createPathExpression('0 ? "yes" : "no"').get(context)).equal('no');
+      expect(createPathExpression('(true) ? "yes" : "no"').get()).equal('yes');
+      expect(createPathExpression('0 ? "yes" : "no"').get()).equal('no');
     });
 
     it('gets literals modified in mixed nested operators', function() {
-      expect(createPathExpression('(1 < 0) ? null : (2 == "2") ? !!23 : false').get(context)).equal(true);
+      expect(createPathExpression('(1 < 0) ? null : (2 == "2") ? !!23 : false').get()).equal(true);
     });
 
     it('gets expressions modified by a unary operator', function() {
@@ -318,19 +318,19 @@ describe('Expression::get', function() {
     });
 
     it('gets array literals', function() {
-      expect(createPathExpression('[]').get(context)).eql([]);
-      expect(createPathExpression('[0, 2, 1]').get(context)).eql([0, 2, 1]);
-      expect(createPathExpression('[[0, 1], [1, 0]]').get(context)).eql([[0, 1], [1, 0]]);
+      expect(createPathExpression('[]').get()).eql([]);
+      expect(createPathExpression('[0, 2, 1]').get()).eql([0, 2, 1]);
+      expect(createPathExpression('[[0, 1], [1, 0]]').get()).eql([[0, 1], [1, 0]]);
     });
 
     it('gets object literals', function() {
-      expect(createPathExpression('{}').get(context)).eql({});
-      expect(createPathExpression('{foo: 0, bar: 1}').get(context)).eql({foo: 0, bar: 1});
-      expect(createPathExpression('{foo: 0, bar: {"!": "baz"}}').get(context)).eql({foo: 0, bar: {'!': 'baz'}});
+      expect(createPathExpression('{}').get()).eql({});
+      expect(createPathExpression('{foo: 0, bar: 1}').get()).eql({foo: 0, bar: 1});
+      expect(createPathExpression('{foo: 0, bar: {"!": "baz"}}').get()).eql({foo: 0, bar: {'!': 'baz'}});
     });
 
     it('gets nested array and object literals', function() {
-      expect(createPathExpression('[{arr: [{}, {}]}, []]').get(context)).eql([{arr: [{}, {}]}, []]);
+      expect(createPathExpression('[{arr: [{}, {}]}, []]').get()).eql([{arr: [{}, {}]}, []]);
     });
 
     it('gets array literals containing paths', function() {
@@ -466,40 +466,40 @@ describe.skip('Expression::dependencies', function() {
 describe('Expression::truthy', function() {
 
   it('gets standard truthy value for if block', function() {
-    expect(templates.createExpression('if false').truthy(context)).equal(false);
-    expect(templates.createExpression('if undefined').truthy(context)).equal(false);
-    expect(templates.createExpression('if null').truthy(context)).equal(false);
-    expect(templates.createExpression('if ""').truthy(context)).equal(false);
-    expect(templates.createExpression('if []').truthy(context)).equal(false);
+    expect(templates.createExpression('if false').truthy()).equal(false);
+    expect(templates.createExpression('if undefined').truthy()).equal(false);
+    expect(templates.createExpression('if null').truthy()).equal(false);
+    expect(templates.createExpression('if ""').truthy()).equal(false);
+    expect(templates.createExpression('if []').truthy()).equal(false);
 
-    expect(templates.createExpression('if true').truthy(context)).equal(true);
-    expect(templates.createExpression('if 0').truthy(context)).equal(true);
-    expect(templates.createExpression('if 1').truthy(context)).equal(true);
-    expect(templates.createExpression('if "Hi"').truthy(context)).equal(true);
-    expect(templates.createExpression('if [0]').truthy(context)).equal(true);
-    expect(templates.createExpression('if {}').truthy(context)).equal(true);
-    expect(templates.createExpression('if {foo: 0}').truthy(context)).equal(true);
+    expect(templates.createExpression('if true').truthy()).equal(true);
+    expect(templates.createExpression('if 0').truthy()).equal(true);
+    expect(templates.createExpression('if 1').truthy()).equal(true);
+    expect(templates.createExpression('if "Hi"').truthy()).equal(true);
+    expect(templates.createExpression('if [0]').truthy()).equal(true);
+    expect(templates.createExpression('if {}').truthy()).equal(true);
+    expect(templates.createExpression('if {foo: 0}').truthy()).equal(true);
   });
 
   it('gets inverse truthy value for unless block', function() {
-    expect(templates.createExpression('unless false').truthy(context)).equal(true);
-    expect(templates.createExpression('unless undefined').truthy(context)).equal(true);
-    expect(templates.createExpression('unless null').truthy(context)).equal(true);
-    expect(templates.createExpression('unless ""').truthy(context)).equal(true);
-    expect(templates.createExpression('unless []').truthy(context)).equal(true);
+    expect(templates.createExpression('unless false').truthy()).equal(true);
+    expect(templates.createExpression('unless undefined').truthy()).equal(true);
+    expect(templates.createExpression('unless null').truthy()).equal(true);
+    expect(templates.createExpression('unless ""').truthy()).equal(true);
+    expect(templates.createExpression('unless []').truthy()).equal(true);
 
-    expect(templates.createExpression('unless true').truthy(context)).equal(false);
-    expect(templates.createExpression('unless 0').truthy(context)).equal(false);
-    expect(templates.createExpression('unless 1').truthy(context)).equal(false);
-    expect(templates.createExpression('unless "Hi"').truthy(context)).equal(false);
-    expect(templates.createExpression('unless [0]').truthy(context)).equal(false);
-    expect(templates.createExpression('unless {}').truthy(context)).equal(false);
-    expect(templates.createExpression('unless {foo: 0}').truthy(context)).equal(false);
+    expect(templates.createExpression('unless true').truthy()).equal(false);
+    expect(templates.createExpression('unless 0').truthy()).equal(false);
+    expect(templates.createExpression('unless 1').truthy()).equal(false);
+    expect(templates.createExpression('unless "Hi"').truthy()).equal(false);
+    expect(templates.createExpression('unless [0]').truthy()).equal(false);
+    expect(templates.createExpression('unless {}').truthy()).equal(false);
+    expect(templates.createExpression('unless {foo: 0}').truthy()).equal(false);
   });
 
   it('gets always truthy value for else block', function() {
     templates.createExpression('else')
-    expect(templates.createExpression('else').truthy(context)).equal(true);
+    expect(templates.createExpression('else').truthy()).equal(true);
   });
 
 });

@@ -1,9 +1,8 @@
 var testUtil = require('racer/test/util');
 var expect = testUtil.expect;
-var defaultFns = require('../lib/defaultFns');
 var expressions = require('../lib/expressions');
 var templates = require('../lib/templates');
-var View = require('../lib/View');
+var Views = require('../lib/views').Views;
 
 var data = {
   _page: {
@@ -18,7 +17,7 @@ var data = {
   }
 };
 var objectModel = new expressions.ObjectModel(data);
-var contextMeta = new expressions.ContextMeta({fns: defaultFns});
+var contextMeta = new expressions.ContextMeta({});
 var context = new expressions.Context(contextMeta, objectModel);
 
 describe('Parse and render literal HTML', function() {
@@ -140,19 +139,21 @@ describe('Parse and render dynamic text and blocks', function() {
 
 });
 
-describe.only('View', function() {
+describe.only('Views', function() {
 
   it('Can register and find a view', function() {
-    var view = new View();
-    view.register('app:body', '<div></div>');
-    expect(view.find('body').get(context)).equal('<div></div>');
+    var views = new Views();
+    views.register('app:body', '<div></div>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div></div>');
   });
 
   it('Includes views via {{view}}', function() {
-    var view = new View();
-    view.register('app:body', '{{view "page"}}');
-    view.register('app:page', '<div></div>')
-    expect(view.find('body').get(context)).equal('<div></div>');
+    var views = new Views();
+    views.register('app:body', '{{view "page"}}');
+    views.register('app:page', '<div></div>')
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div></div>');
   });
 
 });
