@@ -1,7 +1,7 @@
 var testUtil = require('racer/test/util');
 var expect = testUtil.expect;
 var expressions = require('../lib/expressions');
-var templates = require('../lib/templates');
+var parsing = require('../lib/parsing');
 var Views = require('../lib/views').Views;
 
 var data = {
@@ -41,7 +41,7 @@ describe('Parse and render literal HTML', function() {
   }
   function test(name, source) {
     it(name, function() {
-      var template = templates.createTemplate(source);
+      var template = parsing.createTemplate(source);
       expect(template.get()).equal(source);
     });
   }
@@ -50,7 +50,7 @@ describe('Parse and render literal HTML', function() {
 describe('Parse and render dynamic text and blocks', function() {
 
   function test(source, expected) {
-    var template = templates.createTemplate(source);
+    var template = parsing.createTemplate(source);
     expect(template.get(context)).equal(expected);
   }
 
@@ -140,7 +140,7 @@ describe('Parse and render dynamic text and blocks', function() {
 
 });
 
-describe.only('Views', function() {
+describe('Views', function() {
 
   it('Can register and find a view', function() {
     var views = new Views();
@@ -168,13 +168,13 @@ describe.only('Views', function() {
     expect(view.getTemplate().get(context)).equal('<div></div>');
   });
 
-  it('Includes a literal view with arguments via {{view}}', function() {
+  it.skip('Includes a literal view with arguments via {{view}}', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body', '{{view "section", {text: "Hi"}}}');
     views.register('app:section', '<div>{{@text}}</div>')
     var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div></div>');
+    expect(view.getTemplate().get(context)).equal('<div>Hi</div>');
   });
 
 });
