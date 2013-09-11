@@ -285,11 +285,6 @@ describe('Expression::get', function() {
       expect(createPathExpression('1 > 0').get()).equal(true);
     });
 
-    it('gets literals modified by a sequence operator', function() {
-      expect(createPathExpression('1, 2, 3').get()).equal(3);
-      expect(createPathExpression('0, null').get()).equal(null);
-    });
-
     it('gets literals modified by nested boolean expressions', function() {
       expect(createPathExpression('2*2*2*2').get()).equal(16);
       expect(createPathExpression('true && true && 0 && true').get()).equal(0);
@@ -352,6 +347,11 @@ describe('Expression::get', function() {
     it('gets sequence expressions containing paths', function() {
       var expression = createPathExpression('_page.nums[0], 5, _page.nums[1]');
       expect(expression.get(context)).to.eql(11);
+    });
+
+    it('gets a property of a sequence expression', function() {
+      var expression = createPathExpression('(null, _page.colors).green.name');
+      expect(expression.get(context)).to.eql('Green');
     });
   }
 
