@@ -3,36 +3,37 @@ var Model = require('racer').Model;
 var expect = testUtil.expect;
 var expressions = require('../lib/expressions');
 var createPathExpression = require('../lib/createPathExpression');
-var templates = require('../lib/templates');
-var fns = require('../lib/defaultFns');
+var parsing = require('../lib/parsing');
 
-fns.plus = {
-  get: function(a, b) {
-    return a + b;
-  }
-};
-fns.minus = {
-  get: function(a, b) {
-    return a - b;
-  }
-};
-fns.greeting = {
-  get: function() {
-    return 'Hi.'
-  }
-};
-fns.keys = {
-  get: function(object) {
-    var keys = [];
-    for (key in object) {
-      keys.push(key);
+var fns = {
+  plus: {
+    get: function(a, b) {
+      return a + b;
     }
-    return keys;
-  }
-};
-fns.passThrough = {
-  get: function(value) {
-    return value;
+  },
+  minus: {
+    get: function(a, b) {
+      return a - b;
+    }
+  },
+  greeting: {
+    get: function() {
+      return 'Hi.'
+    }
+  },
+  keys: {
+    get: function(object) {
+      var keys = [];
+      for (key in object) {
+        keys.push(key);
+      }
+      return keys;
+    }
+  },
+  passThrough: {
+    get: function(value) {
+      return value;
+    }
   }
 };
 var contextMeta = new expressions.ContextMeta({fns: fns});
@@ -284,6 +285,11 @@ describe('Expression::get', function() {
       expect(createPathExpression('1 > 0').get()).equal(true);
     });
 
+    it('gets literals modified by a sequence operator', function() {
+      expect(createPathExpression('1, 2, 3').get()).equal(3);
+      expect(createPathExpression('0, null').get()).equal(null);
+    });
+
     it('gets literals modified by nested boolean expressions', function() {
       expect(createPathExpression('2*2*2*2').get()).equal(16);
       expect(createPathExpression('true && true && 0 && true').get()).equal(0);
@@ -341,6 +347,11 @@ describe('Expression::get', function() {
     it('gets object literals containing paths', function() {
       var expression = createPathExpression('{foo: _page.nums[0], bar: {"!": _page.nums[1], baz: "Hi"}}');
       expect(expression.get(context)).to.eql({foo: 2, bar: {'!': 11, baz: 'Hi'}});
+    });
+
+    it('gets sequence expressions containing paths', function() {
+      var expression = createPathExpression('_page.nums[0], 5, _page.nums[1]');
+      expect(expression.get(context)).to.eql(11);
     });
   }
 
@@ -466,40 +477,40 @@ describe.skip('Expression::dependencies', function() {
 describe('Expression::truthy', function() {
 
   it('gets standard truthy value for if block', function() {
-    expect(templates.createExpression('if false').truthy()).equal(false);
-    expect(templates.createExpression('if undefined').truthy()).equal(false);
-    expect(templates.createExpression('if null').truthy()).equal(false);
-    expect(templates.createExpression('if ""').truthy()).equal(false);
-    expect(templates.createExpression('if []').truthy()).equal(false);
+    expect(parsing.createExpression('if false').truthy()).equal(false);
+    expect(parsing.createExpression('if undefined').truthy()).equal(false);
+    expect(parsing.createExpression('if null').truthy()).equal(false);
+    expect(parsing.createExpression('if ""').truthy()).equal(false);
+    expect(parsing.createExpression('if []').truthy()).equal(false);
 
-    expect(templates.createExpression('if true').truthy()).equal(true);
-    expect(templates.createExpression('if 0').truthy()).equal(true);
-    expect(templates.createExpression('if 1').truthy()).equal(true);
-    expect(templates.createExpression('if "Hi"').truthy()).equal(true);
-    expect(templates.createExpression('if [0]').truthy()).equal(true);
-    expect(templates.createExpression('if {}').truthy()).equal(true);
-    expect(templates.createExpression('if {foo: 0}').truthy()).equal(true);
+    expect(parsing.createExpression('if true').truthy()).equal(true);
+    expect(parsing.createExpression('if 0').truthy()).equal(true);
+    expect(parsing.createExpression('if 1').truthy()).equal(true);
+    expect(parsing.createExpression('if "Hi"').truthy()).equal(true);
+    expect(parsing.createExpression('if [0]').truthy()).equal(true);
+    expect(parsing.createExpression('if {}').truthy()).equal(true);
+    expect(parsing.createExpression('if {foo: 0}').truthy()).equal(true);
   });
 
   it('gets inverse truthy value for unless block', function() {
-    expect(templates.createExpression('unless false').truthy()).equal(true);
-    expect(templates.createExpression('unless undefined').truthy()).equal(true);
-    expect(templates.createExpression('unless null').truthy()).equal(true);
-    expect(templates.createExpression('unless ""').truthy()).equal(true);
-    expect(templates.createExpression('unless []').truthy()).equal(true);
+    expect(parsing.createExpression('unless false').truthy()).equal(true);
+    expect(parsing.createExpression('unless undefined').truthy()).equal(true);
+    expect(parsing.createExpression('unless null').truthy()).equal(true);
+    expect(parsing.createExpression('unless ""').truthy()).equal(true);
+    expect(parsing.createExpression('unless []').truthy()).equal(true);
 
-    expect(templates.createExpression('unless true').truthy()).equal(false);
-    expect(templates.createExpression('unless 0').truthy()).equal(false);
-    expect(templates.createExpression('unless 1').truthy()).equal(false);
-    expect(templates.createExpression('unless "Hi"').truthy()).equal(false);
-    expect(templates.createExpression('unless [0]').truthy()).equal(false);
-    expect(templates.createExpression('unless {}').truthy()).equal(false);
-    expect(templates.createExpression('unless {foo: 0}').truthy()).equal(false);
+    expect(parsing.createExpression('unless true').truthy()).equal(false);
+    expect(parsing.createExpression('unless 0').truthy()).equal(false);
+    expect(parsing.createExpression('unless 1').truthy()).equal(false);
+    expect(parsing.createExpression('unless "Hi"').truthy()).equal(false);
+    expect(parsing.createExpression('unless [0]').truthy()).equal(false);
+    expect(parsing.createExpression('unless {}').truthy()).equal(false);
+    expect(parsing.createExpression('unless {foo: 0}').truthy()).equal(false);
   });
 
   it('gets always truthy value for else block', function() {
-    templates.createExpression('else')
-    expect(templates.createExpression('else').truthy()).equal(true);
+    parsing.createExpression('else')
+    expect(parsing.createExpression('else').truthy()).equal(true);
   });
 
 });
