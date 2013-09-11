@@ -3,6 +3,7 @@ var expect = testUtil.expect;
 var defaultFns = require('../lib/defaultFns');
 var expressions = require('../lib/expressions');
 var templates = require('../lib/templates');
+var View = require('../lib/View');
 
 var data = {
   _page: {
@@ -135,6 +136,23 @@ describe('Parse and render dynamic text and blocks', function() {
       '0!1!|1!0!|1.' +
       '0!1!|1!0!|0.;'
     );
+  });
+
+});
+
+describe.only('View', function() {
+
+  it('Can register and find a view', function() {
+    var view = new View();
+    view.register('app:body', '<div></div>');
+    expect(view.find('body').get(context)).equal('<div></div>');
+  });
+
+  it('Includes views via {{view}}', function() {
+    var view = new View();
+    view.register('app:body', '{{view "page"}}');
+    view.register('app:page', '<div></div>')
+    expect(view.find('body').get(context)).equal('<div></div>');
   });
 
 });
