@@ -154,7 +154,7 @@ describe('Views', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body', '{{view "section"}}');
-    views.register('app:section', '<div></div>')
+    views.register('app:section', '<div></div>');
     var view = views.find('body');
     expect(view.getTemplate().get(context)).equal('<div></div>');
   });
@@ -163,16 +163,16 @@ describe('Views', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body', '{{view _page.view}}');
-    views.register('app:section', '<div></div>')
+    views.register('app:section', '<div></div>');
     var view = views.find('body');
     expect(view.getTemplate().get(context)).equal('<div></div>');
   });
 
-  it.skip('Includes a literal view with arguments via {{view}}', function() {
+  it('Includes a literal view with arguments via {{view}}', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body', '{{view "section", {text: "Hi"}}}');
-    views.register('app:section', '<div>{{@text}}</div>')
+    views.register('app:section', '<div>{{@text}}</div>');
     var view = views.find('body');
     expect(view.getTemplate().get(context)).equal('<div>Hi</div>');
   });
