@@ -14,6 +14,7 @@ var data = {
   , letters: ['A', 'B', 'C']
   , emptyList: []
   , matrix: [[0, 1], [1, 0]]
+  , view: 'section'
   }
 };
 var objectModel = new expressions.ObjectModel(data);
@@ -143,15 +144,35 @@ describe.only('Views', function() {
 
   it('Can register and find a view', function() {
     var views = new Views();
+    context.meta.views = views;
     views.register('app:body', '<div></div>');
     var view = views.find('body');
     expect(view.getTemplate().get(context)).equal('<div></div>');
   });
 
-  it('Includes views via {{view}}', function() {
+  it('Includes a literal view via {{view}}', function() {
     var views = new Views();
-    views.register('app:body', '{{view "page"}}');
-    views.register('app:page', '<div></div>')
+    context.meta.views = views;
+    views.register('app:body', '{{view "section"}}');
+    views.register('app:section', '<div></div>')
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div></div>');
+  });
+
+  it('Includes a dynamic view via {{view}}', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '{{view _page.view}}');
+    views.register('app:section', '<div></div>')
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div></div>');
+  });
+
+  it('Includes a literal view with arguments via {{view}}', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '{{view "section", {text: "Hi"}}}');
+    views.register('app:section', '<div>{{@text}}</div>')
     var view = views.find('body');
     expect(view.getTemplate().get(context)).equal('<div></div>');
   });
