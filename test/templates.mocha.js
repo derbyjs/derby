@@ -168,13 +168,22 @@ describe('Views', function() {
     expect(view.getTemplate().get(context)).equal('<div></div>');
   });
 
-  it('Includes a literal view with arguments via {{view}}', function() {
+  it('Includes a view with literal arguments via {{view}}', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body', '{{view "section", {text: "Hi"}}}');
     views.register('app:section', '<div>{{@text}}</div>');
     var view = views.find('body');
     expect(view.getTemplate().get(context)).equal('<div>Hi</div>');
+  });
+
+  it('Includes a view with dynamic arguments via {{view}}', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '{{view "section", {text: _page.greeting}}}');
+    views.register('app:section', '<div>{{@text}}</div>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div>Howdy!</div>');
   });
 
 });
