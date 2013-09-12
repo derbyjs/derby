@@ -219,4 +219,23 @@ describe('View insertion', function() {
     expect(view.getTemplate().get(context)).equal('<div><b>Hi</b></div>');
   });
 
+  it('content can be overridden', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<view name="section" content="Stuff"><b>Hi</b></view>');
+    views.register('app:section', '<div>{{@content}}</div>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div>Stuff</div>');
+  });
+
+  it('parent content can be passed through', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<view name="section"><b>Hi</b></view>');
+    views.register('app:section', '<div><view name="paragraph" content="{{@content}}"></view></div>');
+    views.register('app:paragraph', '<p>{{@content}}</p>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div><p><b>Hi</b></p></div>');
+  });
+
 });
