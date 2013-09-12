@@ -1,8 +1,8 @@
 var testUtil = require('racer/test/util');
 var expect = testUtil.expect;
-var defaultFns = require('../lib/defaultFns');
 var expressions = require('../lib/expressions');
-var templates = require('../lib/templates');
+var parsing = require('../lib/parsing');
+var Views = require('../lib/views').Views;
 
 var data = {
   _page: {
@@ -12,10 +12,13 @@ var data = {
   , nope: false
   , nada: null
   , letters: ['A', 'B', 'C']
+  , emptyList: []
+  , matrix: [[0, 1], [1, 0]]
+  , view: 'section'
   }
 };
 var objectModel = new expressions.ObjectModel(data);
-var contextMeta = new expressions.ContextMeta({fns: defaultFns});
+var contextMeta = new expressions.ContextMeta({});
 var context = new expressions.Context(contextMeta, objectModel);
 
 describe('Parse and render literal HTML', function() {
@@ -38,7 +41,7 @@ describe('Parse and render literal HTML', function() {
   }
   function test(name, source) {
     it(name, function() {
-      var template = templates.createTemplate(source);
+      var template = parsing.createTemplate(source);
       expect(template.get()).equal(source);
     });
   }
@@ -47,7 +50,7 @@ describe('Parse and render literal HTML', function() {
 describe('Parse and render dynamic text and blocks', function() {
 
   function test(source, expected) {
-    var template = templates.createTemplate(source);
+    var template = parsing.createTemplate(source);
     expect(template.get(context)).equal(expected);
   }
 
@@ -96,7 +99,143 @@ describe('Parse and render dynamic text and blocks', function() {
 
   it('Each block', function() {
     test('{{each _page.letters}}{{this}}:{{/each}}', 'A:B:C:');
-    // test('{{each [1, 2, 3]}}{{this * 2}}{{/each}}', '246');
+    test('{{each [1, 2, 3]}}{{this * 2}}{{/each}}', '246');
+    test('{{each [1, _page.zero, 3]}}{{this * 2}}{{/each}}', '206');
+    test('{{each [2, 1, 0]}}{{_page.letters[this]}}{{/each}}', 'CBA');
+    test('{{each _page.matrix[1]}}{{this}}:{{/each}}', '1:0:');
+  });
+
+  it('Each else block', function() {
+    test('{{each _page.letters}}{{this}}:{{else}}Nada{{/each}}', 'A:B:C:');
+    test('{{each _page.emptyList}}{{this}}:{{else}}Nada{{/each}}', 'Nada');
+    test('{{each nothing}}{{this}}:{{else}}Nada{{/each}}', 'Nada');
+  });
+
+  it('Nested each blocks', function() {
+    test(
+      '{{each _page.matrix}}' +
+        '{{each this}}' +
+          '{{this}}.' +
+        '{{/each}};' +
+      '{{/each}}'
+    , '0.1.;1.0.;'
+    );
+    test(
+      '{{each _page.matrix}}' +
+        '{{each this}}' +
+          '{{each _page.matrix}}' +
+            '{{each this}}' +
+              '{{this}}!' +
+            '{{/each}}|' +
+          '{{/each}}' +
+          '{{this}}.' +
+        '{{/each}};' +
+      '{{/each}}'
+    , '0!1!|1!0!|0.' +
+      '0!1!|1!0!|1.;' +
+      '0!1!|1!0!|1.' +
+      '0!1!|1!0!|0.;'
+    );
+  });
+
+});
+
+describe('View insertion', function() {
+
+  it('can register and find a view', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<div></div>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div></div>');
+  });
+
+  describe('inserts a literal view', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div></div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div></div>');
+      });
+    }
+    test('{{view "section"}}');
+    test('<view name="section"></view>');
+  });
+
+  describe('inserts a dynamic view', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div></div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div></div>');
+      });
+    }
+    test('{{view _page.view}}');
+    test('<view name="{{_page.view}}"></view>');
+  });
+
+  describe('inserts a view with literal arguments', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div>{{@text}}</div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div>Hi</div>');
+      });
+    }
+    test('{{view "section", {text: "Hi"}}}');
+    test('<view name="section" text="Hi"></view>');
+  });
+
+  describe('inserts a view with dynamic arguments', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div>{{@text}}</div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div>Howdy!</div>');
+      });
+    }
+    test('{{view "section", {text: _page.greeting}}}');
+    test('<view name="section" text="{{_page.greeting}}"></view>');
+  });
+
+  it('passes HTML inside <view> as {{@content}}', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<view name="section"><b>Hi</b></view>');
+    views.register('app:section', '<div>{{@content}}</div>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div><b>Hi</b></div>');
+  });
+
+  it('content can be overridden', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<view name="section" content="Stuff"><b>Hi</b></view>');
+    views.register('app:section', '<div>{{@content}}</div>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div>Stuff</div>');
+  });
+
+  it('parent content can be passed through', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<view name="section"><b>Hi</b></view>');
+    views.register('app:section', '<div><view name="paragraph" content="{{@content}}"></view></div>');
+    views.register('app:paragraph', '<p>{{@content}}</p>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div><p><b>Hi</b></p></div>');
   });
 
 });
