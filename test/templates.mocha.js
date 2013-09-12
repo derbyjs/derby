@@ -140,9 +140,9 @@ describe('Parse and render dynamic text and blocks', function() {
 
 });
 
-describe('Views', function() {
+describe('View insertion', function() {
 
-  it('Can register and find a view', function() {
+  it('can register and find a view', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body', '<div></div>');
@@ -150,40 +150,64 @@ describe('Views', function() {
     expect(view.getTemplate().get(context)).equal('<div></div>');
   });
 
-  it('Includes a literal view via {{view}}', function() {
-    var views = new Views();
-    context.meta.views = views;
-    views.register('app:body', '{{view "section"}}');
-    views.register('app:section', '<div></div>');
-    var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div></div>');
+  describe('inserts a literal view', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div></div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div></div>');
+      });
+    }
+    test('{{view "section"}}');
+    test('<view name="section"></view>');
   });
 
-  it('Includes a dynamic view via {{view}}', function() {
-    var views = new Views();
-    context.meta.views = views;
-    views.register('app:body', '{{view _page.view}}');
-    views.register('app:section', '<div></div>');
-    var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div></div>');
+  describe('inserts a dynamic view', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div></div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div></div>');
+      });
+    }
+    test('{{view _page.view}}');
+    test('<view name="{{_page.view}}"></view>');
   });
 
-  it('Includes a view with literal arguments via {{view}}', function() {
-    var views = new Views();
-    context.meta.views = views;
-    views.register('app:body', '{{view "section", {text: "Hi"}}}');
-    views.register('app:section', '<div>{{@text}}</div>');
-    var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div>Hi</div>');
+  describe('inserts a view with literal arguments', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div>{{@text}}</div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div>Hi</div>');
+      });
+    }
+    test('{{view "section", {text: "Hi"}}}');
+    test('<view name="section" text="Hi"></view>');
   });
 
-  it('Includes a view with dynamic arguments via {{view}}', function() {
-    var views = new Views();
-    context.meta.views = views;
-    views.register('app:body', '{{view "section", {text: _page.greeting}}}');
-    views.register('app:section', '<div>{{@text}}</div>');
-    var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div>Howdy!</div>');
+  describe('inserts a view with dynamic arguments', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div>{{@text}}</div>');
+        var view = views.find('body');
+        expect(view.getTemplate().get(context)).equal('<div>Howdy!</div>');
+      });
+    }
+    test('{{view "section", {text: _page.greeting}}}');
+    test('<view name="section" text="{{_page.greeting}}"></view>');
   });
 
 });
