@@ -121,7 +121,7 @@ describe('Expression::resolve', function() {
     expect(expression.resolve(context)).to.eql(['_page', 'colors', 'green', 'rgb', 0]);
     expect(expression2.resolve(context)).to.eql(['_page', 'colors', 'green', 'light']);
     expect(expression3.resolve(context)).to.eql(['_page', 'colors', 'green', 'light', 'hex']);
-    expect(expression4.resolve(context)).to.eql(['_page', 'colors', 'green', 'light', 'hex']);
+    expect(expression4.resolve(context)).to.eql(['_page', 'colors', 'green', 'light.hex']);
   });
 
   it('resolves nested square brackets', function() {
