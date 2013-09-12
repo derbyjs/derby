@@ -210,4 +210,13 @@ describe('View insertion', function() {
     test('<view name="section" text="{{_page.greeting}}"></view>');
   });
 
+  it('passes HTML inside <view> as {{@content}}', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<view name="section"><b>Hi</b></view>');
+    views.register('app:section', '<div>{{@content}}</div>');
+    var view = views.find('body');
+    expect(view.getTemplate().get(context)).equal('<div><b>Hi</b></div>');
+  });
+
 });
