@@ -147,7 +147,7 @@ describe('View insertion', function() {
     context.meta.views = views;
     views.register('app:body', '<div></div>');
     var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div></div>');
+    expect(view.get(context)).equal('<div></div>');
   });
 
   describe('inserts a literal view', function() {
@@ -158,7 +158,7 @@ describe('View insertion', function() {
         views.register('app:body', source);
         views.register('app:section', '<div></div>');
         var view = views.find('body');
-        expect(view.getTemplate().get(context)).equal('<div></div>');
+        expect(view.get(context)).equal('<div></div>');
       });
     }
     test('{{view "section"}}');
@@ -173,7 +173,7 @@ describe('View insertion', function() {
         views.register('app:body', source);
         views.register('app:section', '<div></div>');
         var view = views.find('body');
-        expect(view.getTemplate().get(context)).equal('<div></div>');
+        expect(view.get(context)).equal('<div></div>');
       });
     }
     test('{{view _page.view}}');
@@ -188,7 +188,7 @@ describe('View insertion', function() {
         views.register('app:body', source);
         views.register('app:section', '<div>{{@text}}</div>');
         var view = views.find('body');
-        expect(view.getTemplate().get(context)).equal('<div>Hi</div>');
+        expect(view.get(context)).equal('<div>Hi</div>');
       });
     }
     test('{{view "section", {text: "Hi"}}}');
@@ -203,7 +203,7 @@ describe('View insertion', function() {
         views.register('app:body', source);
         views.register('app:section', '<div>{{@text}}</div>');
         var view = views.find('body');
-        expect(view.getTemplate().get(context)).equal('<div>Howdy!</div>');
+        expect(view.get(context)).equal('<div>Howdy!</div>');
       });
     }
     test('{{view "section", {text: _page.greeting}}}');
@@ -216,7 +216,7 @@ describe('View insertion', function() {
     views.register('app:body', '<view name="section"><b>Hi</b></view>');
     views.register('app:section', '<div>{{@content}}</div>');
     var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div><b>Hi</b></div>');
+    expect(view.get(context)).equal('<div><b>Hi</b></div>');
   });
 
   it('content can be overridden', function() {
@@ -225,7 +225,7 @@ describe('View insertion', function() {
     views.register('app:body', '<view name="section" content="Stuff"><b>Hi</b></view>');
     views.register('app:section', '<div>{{@content}}</div>');
     var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div>Stuff</div>');
+    expect(view.get(context)).equal('<div>Stuff</div>');
   });
 
   it('parent content can be passed through', function() {
@@ -235,7 +235,16 @@ describe('View insertion', function() {
     views.register('app:section', '<div><view name="paragraph" content="{{@content}}"></view></div>');
     views.register('app:paragraph', '<p>{{@content}}</p>');
     var view = views.find('body');
-    expect(view.getTemplate().get(context)).equal('<div><p><b>Hi</b></p></div>');
+    expect(view.get(context)).equal('<div><p><b>Hi</b></p></div>');
+  });
+
+  it('views can define child attribute tags', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body', '<view name="section"><title><b>Hi</b></title>More text</view>');
+    views.register('app:section', '<h3>{{@title}}</h3><div>{{@content}}</div>', {attributes: 'title'});
+    var view = views.find('body');
+    expect(view.get(context)).equal('<h3><b>Hi</b></h3><div>More text</div>');
   });
 
 });
