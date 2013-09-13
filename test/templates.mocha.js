@@ -238,13 +238,44 @@ describe('View insertion', function() {
     expect(view.get(context)).equal('<div><p><b>Hi</b></p></div>');
   });
 
-  it('views can define child attribute tags', function() {
+  it('views can define custom child attribute tags', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body', '<view name="section"><title><b>Hi</b></title>More text</view>');
     views.register('app:section', '<h3>{{@title}}</h3><div>{{@content}}</div>', {attributes: 'title'});
     var view = views.find('body');
     expect(view.get(context)).equal('<h3><b>Hi</b></h3><div>More text</div>');
+  });
+
+  it.only('views can define custom child section tags', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body'
+    , '<view name="tabs">' +
+        '<pane title="One"><b>Hi</b></pane>' +
+        '<pane title="Two">Ho</pane>' +
+      '</view>'
+    );
+    views.register('app:tabs'
+    , '<ul>' +
+        '{{each @pane}}' +
+          '<li>{{this.title}}</li>' +
+        '{{/each}}' +
+      '</ul>' +
+      '{{each @pane}}' +
+        '<div>{{this.content}}</div>' +
+      '{{/each}}'
+    , {sections: 'pane'}
+    );
+    var view = views.find('body');
+    expect(view.get(context)).equal(
+      '<ul>' +
+        '<li>One</li>' +
+        '<li>Two</li>' +
+      '</ul>' +
+      '<div><b>Hi</b></div>' +
+      '<div>Ho</div>'
+    );
   });
 
 });
