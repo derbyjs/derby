@@ -247,7 +247,42 @@ describe('View insertion', function() {
     expect(view.get(context)).equal('<h3><b>Hi</b></h3><div>More text</div>');
   });
 
-  it.only('views can define custom child section tags', function() {
+  it('views can define custom child attribute tags', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body'
+    , '<view name="section">' +
+        '<title><b>Hi</b></title>' +
+        'More text' +
+      '</view>'
+    );
+    views.register('app:section'
+    , '<h3>{{@title}}</h3>' +
+      '<div>{{@content}}</div>'
+    , {attributes: 'title'}
+    );
+    var view = views.find('body');
+    expect(view.get(context)).equal('<h3><b>Hi</b></h3><div>More text</div>');
+  });
+
+  it('views support generic attribute tags', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body'
+    , '<view name="section">' +
+        '<attribute name="title"><b>Hi</b></attribute>' +
+        'More text' +
+      '</view>'
+    );
+    views.register('app:section'
+    , '<h3>{{@title}}</h3>' +
+      '<div>{{@content}}</div>'
+    );
+    var view = views.find('body');
+    expect(view.get(context)).equal('<h3><b>Hi</b></h3><div>More text</div>');
+  });
+
+  it('views can define custom child array tags', function() {
     var views = new Views();
     context.meta.views = views;
     views.register('app:body'
@@ -265,7 +300,37 @@ describe('View insertion', function() {
       '{{each @pane}}' +
         '<div>{{this.content}}</div>' +
       '{{/each}}'
-    , {sections: 'pane'}
+    , {arrays: 'pane'}
+    );
+    var view = views.find('body');
+    expect(view.get(context)).equal(
+      '<ul>' +
+        '<li>One</li>' +
+        '<li>Two</li>' +
+      '</ul>' +
+      '<div><b>Hi</b></div>' +
+      '<div>Ho</div>'
+    );
+  });
+
+  it('views support generic array tags', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body'
+    , '<view name="tabs">' +
+        '<array name="pane" title="One"><b>Hi</b></array>' +
+        '<array name="pane" title="Two">Ho</array>' +
+      '</view>'
+    );
+    views.register('app:tabs'
+    , '<ul>' +
+        '{{each @pane}}' +
+          '<li>{{this.title}}</li>' +
+        '{{/each}}' +
+      '</ul>' +
+      '{{each @pane}}' +
+        '<div>{{this.content}}</div>' +
+      '{{/each}}'
     );
     var view = views.find('body');
     expect(view.get(context)).equal(
