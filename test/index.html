@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<body>
+
+<script type="text/template" data-name="body">
+  <div>{{message.text}} Hi</div>
+</script>
+
+<script src="derby-standalone.js"></script>
+<script>
+var app = derby.createApp();
+var page = app.createPage();
+
+var templates = document.querySelectorAll('script[type="text/template"]');
+for (var i = templates.length; i--;) {
+  var template = templates[i];
+  app.views.register(template.getAttribute('data-name'), template.innerHTML, {
+    attributes: template.getAttribute('data-attributes')
+  , arrays: template.getAttribute('data-arrays')
+  });
+}
+
+</script>

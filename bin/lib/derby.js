@@ -3,7 +3,8 @@ var program = require('commander');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
 var path = require('path');
-var derby = require('../../lib/derby');
+// var derby = require('../../lib/derby');
+var bundle = require('racer/lib/bundle');
 
 printUsage = true;
 
@@ -184,8 +185,23 @@ function newProject(dir, app) {
   });
 }
 
+function build() {
+  printUsage = false;
+
+  var bundleOptions = {
+    minify: program.minify
+  , configure: function(b) {
+      b.add(__dirname + '/../../lib/standalone');
+    }
+  }
+  bundle(bundleOptions, function(err, code, map) {
+    if (err) throw err;
+    fs.writeFile('derby-standalone.js', code);
+  });
+}
+
 program
-  .version(derby.version)
+  // .version(derby.version)
   .option('-c, --coffee', 'create files using CoffeeScript')
   .option('-n, --noinstall', 'do not run `npm install`');
 
@@ -196,6 +212,11 @@ program
     'name `.` is used, the project will be created in the current directory.\n' +
     'A name for the default app may be specified optionally.')
   .action(newProject);
+
+program
+  .option('-m, --minify')
+  .command('build')
+  .action(build);
 
 program.parse(process.argv);
 
