@@ -2,7 +2,7 @@ var testUtil = require('racer/test/util');
 var expect = testUtil.expect;
 var expressions = require('../lib/expressions');
 var parsing = require('../lib/parsing');
-var Views = require('../lib/views').Views;
+var Views = require('../lib/Views');
 
 var data = {
   _page: {
