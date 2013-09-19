@@ -202,6 +202,21 @@ describe('View insertion', function() {
     test('<view name="section" text="Hi"></view>');
   });
 
+  describe('dashed html view arguments become camel cased', function() {
+    function test(source) {
+      it(source, function() {
+        var views = new Views();
+        context.meta.views = views;
+        views.register('app:body', source);
+        views.register('app:section', '<div>{{@messageText}}</div>');
+        var view = views.find('body');
+        expect(view.get(context)).equal('<div>Hi</div>');
+      });
+    }
+    test('{{view "section", {messageText: "Hi"}}}');
+    test('<view name="section" message-text="Hi"></view>');
+  });
+
   describe('inserts a view with dynamic arguments', function() {
     function test(source) {
       it(source, function() {
