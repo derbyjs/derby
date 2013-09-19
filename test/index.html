@@ -3,7 +3,7 @@
 <body>
 
 <script type="text/template" data-name="paragraph">
-  <p>{{@content}}</p>
+  <p><input type="radio" checked="{{@content}}"> {{@content}}</p>
 </script>
 
 <script type="text/template" data-name="pane-inside">
@@ -13,7 +13,9 @@
 <script type="text/template" data-name="body">
   <tabs>
     <pane title="One"><view name="pane-inside"><b>Hi</b></view></pane>
-    <pane title="Two"><view name="pane-inside">Ho</view></pane>
+    <pane title="Two"><view name="pane-inside" content="{{true}}">Ho</view></pane>
+    <pane title="Three"><view name="pane-inside" content="{{false}}">Ho</view></pane>
+    <pane title="Four"><view name="pane-inside" content="{{xxxx}}"></view></pane>
   </tabs>
 </script>
 
