@@ -26,8 +26,10 @@ var mongoUrl = process.env.MONGO_URL || process.env.MONGOHQ_URL ||
 
 // The store creates models and syncs data
 var store = derby.createStore({
-  db: liveDbMongo(mongoUrl + '?auto_reconnect', {safe: true})
-, redis: redis
+  db: {
+    db: liveDbMongo(mongoUrl + '?auto_reconnect', {safe: true})
+  , redis: redis
+  }
 });
 
 function createUserId(req, res, next) {
