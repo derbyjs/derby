@@ -24,7 +24,7 @@ var fns = {
   keys: {
     get: function(object) {
       var keys = [];
-      for (key in object) {
+      for (var key in object) {
         keys.push(key);
       }
       return keys;
