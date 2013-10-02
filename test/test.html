@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Derby Tests</title>
+<link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+<body>
+
+<div id="mocha"></div>
+<script src="../node_modules/expect.js/expect.js"></script>
+<script src="../node_modules/mocha/mocha.js"></script>
+<script>mocha.setup('bdd')</script>
+
+<script type="text/template" data-name="paragraph">
+  <p><input type="radio" checked="{{@content}}"> {{@content}}</p>
+</script>
+
+<script type="text/template" data-name="pane-inside">
+  <view name="paragraph" content="{{@content}}"></view>
+</script>
+
+<script type="text/template" data-name="body">
+  <tabs>
+    <pane title="One"><view name="pane-inside"><b>Hi</b></view></pane>
+    <pane title="Two"><view name="pane-inside" content="{{true}}">Ho</view></pane>
+    <pane title="Three"><view name="pane-inside" content="{{false}}">Ho</view></pane>
+    <pane title="Four"><view name="pane-inside" content="{{xxxx}}"></view></pane>
+  </tabs>
+</script>
+
+<script type="text/template" data-name="tabs" data-element="tabs" data-arrays="pane">
+  <ul>
+    {{each @pane}}
+      <li>{{this.title}}</li>
+    {{/each}}
+  </ul>
+  {{each @pane}}
+    <div>{{this.content}}</div>
+  {{/each}}
+</script>
+
+<script src="browser-standalone.js"></script>
+
+<script>
+  mocha.checkLeaks();
+  mocha.run();
+</script>

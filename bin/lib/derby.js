@@ -188,15 +188,28 @@ function newProject(dir, app) {
 function build() {
   printUsage = false;
 
+  var dir = path.dirname(path.dirname(__dirname));
+
   var bundleOptions = {
     minify: program.minify
   , configure: function(b) {
-      b.add(__dirname + '/../../lib/standalone');
+      b.add(dir + '/lib/standalone');
     }
   }
   bundle(bundleOptions, function(err, code, map) {
     if (err) throw err;
-    fs.writeFile('derby-standalone.js', code);
+    fs.writeFile(dir + '/derby-standalone.js', code);
+  });
+
+  var bundleOptions = {
+    minify: program.minify
+  , configure: function(b) {
+      b.add(dir + '/test/browser');
+    }
+  }
+  bundle(bundleOptions, function(err, code, map) {
+    if (err) throw err;
+    fs.writeFile(dir + '/test/browser-standalone.js', code);
   });
 }
 
