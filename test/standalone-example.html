@@ -1,13 +1,6 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<title>Derby Tests</title>
-<link rel="stylesheet" href="../node_modules/mocha/mocha.css">
+<meta charset="utf8">
 <body>
-
-<div id="mocha"></div>
-<script src="../node_modules/expect.js/expect.js"></script>
-<script src="../node_modules/mocha/mocha.js"></script>
-<script>mocha.setup('bdd')</script>
 
 <script type="text/template" data-name="paragraph">
   <p><input type="radio" checked="{{@content}}"> {{@content}}</p>
@@ -26,7 +19,7 @@
   </tabs>
 </script>
 
-<script type="text/template" data-name="tabs" data-element="tabs" data-arrays="pane">
+<script type="text/template" data-element="tabs" data-arrays="pane">
   <ul>
     {{each @pane}}
       <li>{{this.title}}</li>
@@ -37,9 +30,16 @@
   {{/each}}
 </script>
 
-<script src="browser-standalone.js"></script>
-
+<script src="http://localhost:7777/derby-standalone.js"></script>
 <script>
-  mocha.checkLeaks();
-  mocha.run();
+var app = derby.createApp();
+var page = app.createPage();
+
+var templates = document.querySelectorAll('script[type="text/template"]');
+for (var i = 0; i < templates.length; i++) {
+  var template = templates[i];
+  app.views.register(template.dataset.name, template.innerHTML, template.dataset);
+}
+
+document.body.appendChild(page.getFragment('body'));
 </script>

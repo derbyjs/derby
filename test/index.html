@@ -1,45 +1,17 @@
 <!DOCTYPE html>
-<meta charset="utf8">
+<meta charset="utf-8">
+<title>Derby Tests</title>
+<link rel="stylesheet" href="mocha.css">
 <body>
 
-<script type="text/template" data-name="paragraph">
-  <p><input type="radio" checked="{{@content}}"> {{@content}}</p>
-</script>
+<div id="mocha"></div>
+<script src="expect.js"></script>
+<script src="mocha.js"></script>
+<script>mocha.setup('bdd')</script>
 
-<script type="text/template" data-name="pane-inside">
-  <view name="paragraph" content="{{@content}}"></view>
-</script>
+<script src="/test/browser.js"></script>
 
-<script type="text/template" data-name="body">
-  <tabs>
-    <pane title="One"><view name="pane-inside"><b>Hi</b></view></pane>
-    <pane title="Two"><view name="pane-inside" content="{{true}}">Ho</view></pane>
-    <pane title="Three"><view name="pane-inside" content="{{false}}">Ho</view></pane>
-    <pane title="Four"><view name="pane-inside" content="{{xxxx}}"></view></pane>
-  </tabs>
-</script>
-
-<script type="text/template" data-element="tabs" data-arrays="pane">
-  <ul>
-    {{each @pane}}
-      <li>{{this.title}}</li>
-    {{/each}}
-  </ul>
-  {{each @pane}}
-    <div>{{this.content}}</div>
-  {{/each}}
-</script>
-
-<script src="derby-standalone.js"></script>
 <script>
-var app = derby.createApp();
-var page = app.createPage();
-
-var templates = document.querySelectorAll('script[type="text/template"]');
-for (var i = 0; i < templates.length; i++) {
-  var template = templates[i];
-  app.views.register(template.dataset.name, template.innerHTML, template.dataset);
-}
-
-document.body.appendChild(page.getFragment('body'));
+  mocha.checkLeaks();
+  mocha.run();
 </script>
