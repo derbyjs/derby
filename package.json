@@ -27,6 +27,7 @@
     "esprima-derby": "~1.0.4"
   },
   "devDependencies": {
+    "express": "~3.4.1",
     "coffee-script": "*",
     "expect.js": "*",
     "mocha": "*",
