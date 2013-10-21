@@ -1,7 +1,7 @@
 {
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "homepage": "http://derbyjs.com/",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "dom-shim": "~0.1.1",
     "html-util": "~0.1.5",
     "tracks": "~0.3.2",
-    "racer": "0.5.10",
+    "racer": "0.5.11",
     "chokidar": "~0.6.2",
     "stylus": "~0.32.1",
     "less": "~1.3.3",
