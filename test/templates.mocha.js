@@ -365,4 +365,42 @@ describe('View insertion', function() {
     );
   });
 
+  it('views inside an each pass through alias context', function() {
+    var views = new Views();
+    context.meta.views = views;
+    views.register('app:body'
+    , '<ol>' +
+        '{{each _page.matrix as #row}}' +
+          '<view name="row"></view>' +
+        '{{/each}}' +
+      '</ol>'
+    );
+    views.register('app:row'
+    , '<li>' +
+        '<ol>' +
+          '{{each #row as #item}}' +
+            '<li>{{#item}}</li>' +
+          '{{/each}}' +
+        '</ol>' +
+      '</li>'
+    );
+    var view = views.find('body');
+    expect(view.get(context)).equal(
+      '<ol>' +
+        '<li>' +
+          '<ol>' +
+            '<li>0</li>' +
+            '<li>1</li>' +
+          '</ol>' +
+        '</li>' +
+        '<li>' +
+          '<ol>' +
+            '<li>1</li>' +
+            '<li>0</li>' +
+          '</ol>' +
+        '</li>' +
+      '</ol>'
+    );
+  });
+
 });
