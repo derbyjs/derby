@@ -11,6 +11,9 @@
   "bin": {
     "derby": "./bin/derby"
   },
+  "scripts": {
+    "test": "mocha --recursive test"
+  },
   "dependencies": {
     "dom-shim": "~0.1.1",
     "html-util": "git://github.com/codeparty/html.git#master",
@@ -24,7 +27,8 @@
     "mkdirp": "~0.3.5",
     "MD5": "~1.0.1",
     "async": "~0.2.8",
-    "esprima-derby": "~1.0.4"
+    "esprima-derby": "*",
+    "saddle": "0.0.2"
   },
   "devDependencies": {
     "express": "~3.4.1",

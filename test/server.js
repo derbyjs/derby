@@ -1,7 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var express = require('express');
-var bundle = require('racer/lib/bundle');
+var bundle = require('racer/lib/Model/bundle');
 
 var app = express();
 

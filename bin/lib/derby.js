@@ -4,7 +4,7 @@ var mkdirp = require('mkdirp');
 var fs = require('fs');
 var path = require('path');
 // var derby = require('../../lib/derby');
-var bundle = require('racer/lib/bundle');
+var bundle = require('racer/lib/Model/bundle');
 
 printUsage = true;
 
