@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "dom-shim": "~0.1.1",
-    "html-util": "git://github.com/codeparty/html.git#master",
+    "html-util": "git://github.com/codeparty/html.git#0.6",
     "tracks": "~0.3.2",
     "racer": "0.5.9",
     "chokidar": "~0.6.2",
