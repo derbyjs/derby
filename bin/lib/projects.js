@@ -111,26 +111,30 @@ function create(argv, dir, app, useCoffee) {
   });
 }
 
-module.create = function newProject(argv, dir, app) {
-  if (dir == null) dir = '.';
-  if (app == null) app = 'app';
+exports.create = function(argv, dir, app) {
 
-  printUsage = false;
-  
+  dir = dir || '.';
+  app = app || 'app';
+
   var useCoffee = argv.coffee;
   var type = useCoffee ? 'CoffeeScript ' : '';
   var directory = dir === '.' ? 'the current directory' : dir;
-  
-  console.log(
-    '\n  Creating %s project in %s with the application %s\n', 
-    type, directory, app
-  );
-  
+
+  console.log(dir, app)
+  process.exit(0);
+
   emptyDirectory(dir, function(empty) {
-    if (!empty) {
-      console.error('Destination not empty.');
+
+    if (!empty && !argv.f) {
+      console.error('Destination not empty. Use -f to force.');
       process.exit(1);
     }
+
+    console.log(
+      '\n  Creating %s project in %s with the application %s\n', 
+      type, directory, app
+    );
+
     create(argv, dir, app, useCoffee);
   });
 }

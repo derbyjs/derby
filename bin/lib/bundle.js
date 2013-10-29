@@ -2,7 +2,7 @@ var fs = require('fs');
 var browserify = require('browserify');
 var uglify = require('uglify-js');
 
-function bundle(argv, sourcefiles, targetfile, cb) {
+module.exports = function bundle(argv, sourcefiles, targetfile, cb) {
   
   var isProduction = argv.env == 'production';
   var b = browserify();

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 var args = require('optimist');
+var path = require('path');
 
 var projects = require('./lib/projects');
 var bundle = require('./lib/bundle');
@@ -17,20 +18,17 @@ args.usage('derby [options]')
   .alias('e', 'env')
   .default('e', process.env.NODE_ENV)
   .describe('e', 'Specify the environment to use')
-  
+ 
+  .alias('h', 'help')
+  .describe('h', 'This help information')
+
   .describe('coffee', 'Create files using CoffeeScript')
   .describe('no-install', 'Do not run `npm install`');
 
-if (argv.h) {
-
-  console.log(args.help());
-  process.exit(1);
-}
-else if (argv.c) {
+if (argv.c) {
 
   var dir = argv._[0];
   var app = argv._[1];
-
   projects.create(argv, dir, app);
 }
 else if (argv.b || argv.bundle) {
@@ -63,4 +61,8 @@ else if (argv.b || argv.bundle) {
     console.log('Built standalone for browser to %s', browserOutput);
   });
 }
+else {
 
+  console.log(args.help());
+  process.exit(1);
+}
