@@ -28,7 +28,9 @@
     "async": "~0.2.8",
     "esprima-derby": "*",
     "saddle": "0.0.2",
-    "optimist": "~0.6.0"
+    "optimist": "~0.6.0",
+    "browserify": "~2.35.0",
+    "uglify-js": "~2.4.1"
   },
   "devDependencies": {
     "express": "~3.4.1",

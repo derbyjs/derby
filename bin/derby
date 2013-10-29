@@ -1,22 +1,25 @@
 #!/usr/bin/env node
 var args = require('optimist');
 
-var projects = require('../lib/derby');
-var bundle = requie('../lib/projects');
+var projects = require('./lib/projects');
+var bundle = require('./lib/bundle');
 
 var argv = args.argv;
 
 args.usage('derby [options]')
 
   .alias('c', 'create')
-  .describe('create', 'Create projcets from project templates')
+  .describe('c', 'Create projcets from project templates')
 
   .alias('b', 'bundle')
-  .describe('bundle', 'Bundle derby for client-side only use')
+  .describe('b', 'Bundle derby for client-side only use')
 
   .alias('e', 'env')
-  .default('env', process.env.NODE_ENV)
-  .describe('env', 'Specify the environment to use');
+  .default('e', process.env.NODE_ENV)
+  .describe('e', 'Specify the environment to use')
+  
+  .describe('coffee', 'Create files using CoffeeScript')
+  .describe('no-install', 'Do not run `npm install`');
 
 if (argv.h) {
 
@@ -25,7 +28,10 @@ if (argv.h) {
 }
 else if (argv.c) {
 
-  projects.create(argv);
+  var dir = argv._[0];
+  var app = argv._[1];
+
+  projects.create(argv, dir, app);
 }
 else if (argv.b || argv.bundle) {
 
@@ -36,10 +42,10 @@ else if (argv.b || argv.bundle) {
   var dir = path.dirname(__dirname);
   console.log('Building...');
 
-  var serverInputs = [dir + '/lib/standalone')];
+  var serverInputs = [dir + '/lib/standalone'];
   var serverOutput = dir + '/derby-standalone.js';
 
-  var browserInputs = [dir + '/test/browser')];
+  var browserInputs = [dir + '/test/browser'];
   var browserOutput = dir + '/test/browser-standalone.js';
 
   function die(msg) {

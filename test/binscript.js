@@ -1,9 +1,15 @@
 
 var assert = require('assert');
 
-describe('Binscript::options', function() {
+describe('Binscript::Create a Project', function() {
 
-  it('should display help', function() {
+  it('', function() {
+  });
+});
+
+describe('Binscript::Bundle the client code', function() {
+
+  it('', function() {
   });
 });
 

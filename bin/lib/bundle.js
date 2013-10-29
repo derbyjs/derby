@@ -12,7 +12,7 @@ function bundle(argv, sourcefiles, targetfile, cb) {
   });
 
   var opts = {
-    debug: argv.debug == null && !isProduction;
+    debug: argv.debug == null && !isProduction
   };
   
   function write(code) {
