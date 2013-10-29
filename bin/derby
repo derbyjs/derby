@@ -1,2 +1,60 @@
 #!/usr/bin/env node
-require('./lib/derby');
+var args = require('optimist');
+
+var projects = require('../lib/derby');
+var bundle = requie('../lib/projects');
+
+var argv = args.argv;
+
+args.usage('derby [options]')
+
+  .alias('c', 'create')
+  .describe('create', 'Create projcets from project templates')
+
+  .alias('b', 'bundle')
+  .describe('bundle', 'Bundle derby for client-side only use')
+
+  .alias('e', 'env')
+  .default('env', process.env.NODE_ENV)
+  .describe('env', 'Specify the environment to use');
+
+if (argv.h) {
+
+  console.log(args.help());
+  process.exit(1);
+}
+else if (argv.c) {
+
+  projects.create(argv);
+}
+else if (argv.b || argv.bundle) {
+
+  if (argv.min || argv.minify) {
+    argv.m = true;
+  }
+
+  var dir = path.dirname(__dirname);
+  console.log('Building...');
+
+  var serverInputs = [dir + '/lib/standalone')];
+  var serverOutput = dir + '/derby-standalone.js';
+
+  var browserInputs = [dir + '/test/browser')];
+  var browserOutput = dir + '/test/browser-standalone.js';
+
+  function die(msg) {
+    console.error(msg);
+    process.exit(1);
+  }
+
+  bundle(argv, serverInputs, serverOutput, function(err) {
+    if (err) die(err);
+    console.log('Built standalone for server to %s', serverOutput);
+  });
+
+  bundle(argv, browserInputs, browserOutput, function(err) {
+    if (err) die(err);
+    console.log('Built standalone for browser to %s', browserOutput);
+  });
+}
+

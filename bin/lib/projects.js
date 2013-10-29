@@ -1,5 +1,4 @@
 var exec = require('child_process').exec;
-var program = require('commander');
 var mkdirp = require('mkdirp');
 var fs = require('fs');
 var path = require('path');
@@ -185,34 +184,6 @@ function newProject(dir, app) {
   });
 }
 
-function build() {
-  printUsage = false;
-
-  var dir = path.dirname(path.dirname(__dirname));
-
-  var bundleOptions = {
-    minify: program.minify
-  , configure: function(b) {
-      b.add(dir + '/lib/standalone');
-    }
-  }
-  bundle(bundleOptions, function(err, code, map) {
-    if (err) throw err;
-    fs.writeFile(dir + '/derby-standalone.js', code);
-  });
-
-  var bundleOptions = {
-    minify: program.minify
-  , configure: function(b) {
-      b.add(dir + '/test/browser');
-    }
-  }
-  bundle(bundleOptions, function(err, code, map) {
-    if (err) throw err;
-    fs.writeFile(dir + '/test/browser-standalone.js', code);
-  });
-}
-
 program
   // .version(derby.version)
   .option('-c, --coffee', 'create files using CoffeeScript')
@@ -231,6 +202,3 @@ program
   .command('build')
   .action(build);
 
-program.parse(process.argv);
-
-if (printUsage) console.log('\n  See `derby --help` for usage\n');
