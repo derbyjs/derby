@@ -1,6 +1,7 @@
-var exec = require('child_process').exec;
+var spawn = require('child_process').spawn;
 var mkdirp = require('mkdirp');
 var fs = require('fs');
+var psexit = require('psexit');
 var path = require('path');
 
 function emptyDirectory(path, callback) {
@@ -12,12 +13,12 @@ function emptyDirectory(path, callback) {
 
 function mkdir(path) {
   mkdirp.sync(path, '0755');
-  console.log('created: %s', path);
+  //console.log('created: %s', path);
 }
 
 function write(path, text) {
   fs.writeFileSync(path, text);
-  console.log('created: %s', path);
+  // console.log('created: %s', path);
 }
 
 function render(template, ctx) {
@@ -61,9 +62,12 @@ function walkSync(start, callback) {
 }
 
 function create(argv, dir, app, useCoffee) {
+  
   var dirPath = path.resolve(process.cwd(), dir);
   var project = path.basename(dirPath);
+  
   if (!project) throw new Error('Cannot create project at ' + dirPath);
+  
   var ctx = {
     app: app
   , project: project
@@ -86,7 +90,7 @@ function create(argv, dir, app, useCoffee) {
   });
 
   function logComplete() {
-    var message = '\n  Project created!' + '\n\n  Try it out:';
+    var message = '\n\n  Project created!' + '\n\n  Try it out:';
     if (dir !== '.') {
       message += '\n    $ cd ' + dir;
     }
@@ -102,26 +106,35 @@ function create(argv, dir, app, useCoffee) {
     return logComplete();
   }
 
-  process.chdir(dir);
-  console.log('\n  Installing dependencies. This may take a little while...');
-  exec('npm install', function(err, stdout, stderr) {
-    if (err) return console.error(stderr);
-    if (stdout) process.stdout.write('.');
+  var spinner = ['|', '/', '-', '\\'];
+  spinnerIndex = 0;
+
+  function spin() {
+     process.stdout.write(
+      '\r' + (spinner[spinnerIndex++] || 
+      spinner[spinnerIndex = 0, spinnerIndex++])
+    );
+  }
+
+  console.log(
+    'Installing dependencies for %s. ' +
+    'Performance can vary depending on your network', app);
+  var cp = spawn('npm', ['install'], { cwd: dir });
+
+  cp.stdout.on('data', spin);
+  cp.stderr.on('data', spin);
+
+  psexit(cp, function (err, data) {
     logComplete();
   });
 }
 
 exports.create = function(argv, dir, app) {
 
-  dir = dir || '.';
+  dir = path.resolve(process.cwd(), dir || '.');
   app = app || 'app';
 
-  var useCoffee = argv.coffee;
-  var type = useCoffee ? 'CoffeeScript ' : '';
-  var directory = dir === '.' ? 'the current directory' : dir;
-
-  console.log(dir, app)
-  process.exit(0);
+  var useCoffee = argv.coffee ? 'CoffeeScript' : false;
 
   emptyDirectory(dir, function(empty) {
 
@@ -131,8 +144,8 @@ exports.create = function(argv, dir, app) {
     }
 
     console.log(
-      '\n  Creating %s project in %s with the application %s\n', 
-      type, directory, app
+      'Creating project %s in %s', 
+      app, dir === '.' ? 'the current directory' : dir
     );
 
     create(argv, dir, app, useCoffee);

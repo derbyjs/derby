@@ -3,6 +3,9 @@ var fs = require('fs');
 var path = require('path');
 var assert = require('better-assert');
 
+var bin = path.resolve(__dirname + '/../bin');
+console.log(bin)
+
 describe('A sanity Test', function() {
   it('should pass', function() {
     assert(true);
@@ -11,29 +14,30 @@ describe('A sanity Test', function() {
 
 describe('Help output', function() {
   it('Should be produced when no arguments are passed to the process', function(done) {
-     exec('derby', { cwd: cwd }, function (err, stdout, stderr) {
-       assert(!err && !stderr);
+     exec('derby', { cwd: bin }, function (err, stdout, stderr) {
+       assert(stdout.length > 0);
+       done();
      });
   });
 });
 
 describe('Help output', function() {
   it('Should be produced when -h passed to the process', function(done) {
-     exec('derby -h', { cwd: cwd }, function (err, stdout, stderr) {
-       assert(!err && !stderr);
+     exec('derby -h', { cwd: bin }, function (err, stdout, stderr) {
+       assert(stdout.length > 0);
+       done();
      });
   });
 });
 
 describe('The binscript bundler feature', function() {
 
-  var cwd = __dirname + '/../bin';
 
   it('should bundle two files', function(done) {
 
     exec(
       'derby -b', 
-      { cwd: cwd },
+      { cwd: bin },
       function (err, stdout, stderr) {
 
         assert(!err && !stderr);
@@ -53,8 +57,18 @@ describe('The binscript bundler feature', function() {
 });
 
 describe('The binscript project feature', function() {
-  it('should produce a boilerplate project', function() {
-    assert(true);
+  it('should produce a boilerplate project', function(done) {
+
+   exec(
+    'derby -c ' + __dirname + '/fixtures/foo foo --no-install', 
+    { cwd: bin },
+    function (err, stdout, stderr) {
+      assert(fs.statSync(__dirname + '/fixtures/foo/lib'));
+      assert(fs.statSync(__dirname + '/fixtures/foo/styles'));
+      assert(fs.statSync(__dirname + '/fixtures/foo/ui'));
+      assert(fs.statSync(__dirname + '/fixtures/foo/views'));
+      done();
+    });
   });
 });
 

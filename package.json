@@ -30,7 +30,8 @@
     "saddle": "0.0.2",
     "optimist": "~0.6.0",
     "browserify": "~2.35.0",
-    "uglify-js": "~2.4.1"
+    "uglify-js": "~2.4.1",
+    "psexit": "~1.0.0"
   },
   "devDependencies": {
     "express": "~3.4.1",
@@ -45,4 +46,3 @@
     "node": ">=0.10.0"
   }
 }
-

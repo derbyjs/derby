@@ -10,7 +10,7 @@ var argv = args.argv;
 args.usage('derby [options]')
 
   .alias('c', 'create')
-  .describe('c', 'Create projcets from project templates')
+  .describe('c', 'Specify a path in which to create a projcet')
 
   .alias('b', 'bundle')
   .describe('b', 'Bundle derby for client-side only use')
@@ -27,8 +27,8 @@ args.usage('derby [options]')
 
 if (argv.c) {
 
-  var dir = argv._[0];
-  var app = argv._[1];
+  var dir = argv.c;
+  var app = argv._[0];
   projects.create(argv, dir, app);
 }
 else if (argv.b || argv.bundle) {
