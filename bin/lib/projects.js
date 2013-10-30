@@ -94,7 +94,7 @@ function create(argv, dir, app, useCoffee) {
     if (dir !== '.') {
       message += '\n    $ cd ' + dir;
     }
-    if (argv['no-install']) {
+    if (argv['noinstall']) {
       message += '\n    $ npm install';
     }
     message += '\n    $ npm start';
@@ -102,7 +102,7 @@ function create(argv, dir, app, useCoffee) {
     console.log(message);
   };
 
-  if (argv['no-install']) {
+  if (argv['noinstall']) {
     return logComplete();
   }
 

@@ -23,7 +23,7 @@ args.usage('derby [options]')
   .describe('h', 'This help information')
 
   .describe('coffee', 'Create files using CoffeeScript')
-  .describe('no-install', 'Do not run `npm install`');
+  .describe('noinstall', 'Do not run `npm install`');
 
 if (argv.c) {
 

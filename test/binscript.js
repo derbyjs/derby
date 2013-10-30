@@ -2,9 +2,16 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 var path = require('path');
 var assert = require('better-assert');
+var rimraf = require('rimraf');
 
 var bin = path.resolve(__dirname + '/../bin');
-console.log(bin)
+
+before(function(done) {
+  rimraf(__dirname + '/fixtures/foo', function(err) {
+    assert(!err);
+    done();
+  });
+});
 
 describe('A sanity Test', function() {
   it('should pass', function() {
@@ -31,7 +38,6 @@ describe('Help output', function() {
 });
 
 describe('The binscript bundler feature', function() {
-
 
   it('should bundle two files', function(done) {
 
@@ -60,7 +66,7 @@ describe('The binscript project feature', function() {
   it('should produce a boilerplate project', function(done) {
 
    exec(
-    'derby -c ' + __dirname + '/fixtures/foo foo --no-install', 
+    'derby -c ' + __dirname + '/fixtures/foo foo --noinstall', 
     { cwd: bin },
     function (err, stdout, stderr) {
       assert(fs.statSync(__dirname + '/fixtures/foo/lib'));
@@ -71,4 +77,5 @@ describe('The binscript project feature', function() {
     });
   });
 });
+
 
