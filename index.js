@@ -4,5 +4,5 @@
  *
  */
 
-var Derby = require('./Derby');
+var Derby = require('./lib/Derby');
 var derby = module.exports = new Derby();
