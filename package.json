@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git://github.com/codeparty/derby.git"
   },
-  "main": "./lib/index.js",
+  "main": "./index.js",
   "bin": {
     "derby": "./bin/derby"
   },
@@ -17,6 +17,7 @@
   "dependencies": {
     "derby-html-parser": "*",
     "derby-expressions": "*",
+    "derby-templates": "*",
     "html-util": "git://github.com/codeparty/html.git#0.6",
     "tracks": "~0.3.2",
     "racer": "~0.5.11",

@@ -6,6 +6,3 @@
 
 var Derby = require('./Derby');
 var derby = module.exports = new Derby();
-
-// Include template and expression parsing
-derby.util.serverRequire('derby-html-parser');
