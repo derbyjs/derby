@@ -30,15 +30,15 @@ app.component('tabs', require('./tabs'));
 ```
 <tabs: arrays="pane" element="tabs">
   <ul class="tabs-nav">
-    {{each @pane}}
-      <li class="{{if selectedIndex === $index}}active{{/if}}">
-        <a on="click: select($index)">{{this.title}}</a>
+    {{each @pane as #pane, #i}}
+      <li class="{{if selectedIndex === #i}}active{{/if}}">
+        <a on="click: select(#i)">{{#pane.title}}</a>
       </li>
     {{/each}}
   </ul>
-  {{each @pane}}
-    <div class="tabs-pane{{if selectedIndex === $index}} active{{/if}}">
-      {{this.content}}
+  {{each @pane as #pane, #i}}
+    <div class="tabs-pane{{if selectedIndex === #i}} active{{/if}}">
+      {{#pane.content}}
     </div>
   {{/each}}
 ```
@@ -109,11 +109,11 @@ module.exports = class Tabs
 
 <todos-list:>
   <ul>
-    {{each @items as #item}}
+    {{each @items as #item, #i}}
       <li>
         <input type="checkbox" checked="{{#item.checked}}">
         {{#item.text}}
-        <button type="button" on="click: remove($index)">Delete</button>
+        <button type="button" on="click: remove(#i)">Delete</button>
       </li>
     {{/each}}
   </ul>
