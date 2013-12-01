@@ -2,7 +2,7 @@
 
 Components are views with self-contained JavaScript functionality. They enable creating reusable UI pieces, similar to creating custom HTML elements. In addition, they are the recommended way to break up complex applications into modular parts. It's helpful to break up application features into components, even if only used in a single place.
 
-Each component has a scoped model in its own namespace. Data or references to the containing model are passed in via view attributes. This structure is similar to the Model View ModelView (MVVM) pattern, where a component's scoped model is essentially a ViewModel.
+Each component has a scoped model in its own namespace. Data or references to the containing model are passed in via view attributes. This structure is similar to the Model View ViewModel (MVVM) pattern, where a component's scoped model is essentially a ViewModel.
 
 ## Tabs Example
 
