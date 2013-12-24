@@ -1,27 +1,26 @@
+var expect = require('expect.js');
 var EventModel = require('../lib/eventmodel');
-var ObjectModel = require('../lib/expressions').ObjectModel;
-var assert = require('assert');
 
 describe('eventmodel', function() {
   beforeEach(function() {
-    this.data = {
-      x: 1,
-      list: [1,2,3],
-      objList: [
-        {url:'/0', listName:'one'},
-        {url:'/1', listName:'two'},
-        {url:'/2', listName:'three'}
-      ]
+    this.model = {
+      data: {
+        x: 1,
+        list: [1,2,3],
+        objList: [
+          {url:'/0', listName:'one'},
+          {url:'/1', listName:'two'},
+          {url:'/2', listName:'three'}
+        ]
+      }
     };
-
-    this.model = new ObjectModel(this.data);
     this.em = new EventModel();
 
     var self = this;
 
     // This is a helper to update the data model and trigger EM bindings in one go.
     this.set = function(segments, value) {
-      var d = self.data;
+      var d = self.model.data;
       for (var i = 0; i < segments.length - 1; i++) {
         d = d[segments[i]];
       }
@@ -52,28 +51,28 @@ describe('eventmodel', function() {
       this.em.addBinding(['x'], this.binding);
       this.set(['x'], 10);
 
-      assert.equal(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
     });
 
     it('updates a fixed list element binding', function() { 
       this.em.addBinding(['list', 1], this.binding);
       this.set(['list', 1], 10);
 
-      assert.equal(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
     });
 
     it('updates bound children when the parent is replaced', function() {
       this.em.addBinding(['list', 1], this.binding);
       this.set(['list'], [4,5,6]);
 
-      assert.equal(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
     });
 
     it('lets you bind to places with currently undefined values', function() {
       this.em.addBinding(['list', 10], this.binding);
       this.set(['list', 10], 'hi');
 
-      assert.equal(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
     });
   });
 
@@ -92,7 +91,7 @@ describe('eventmodel', function() {
 
       this.set(['x'], 0);
 
-      assert.equal(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
     });
 
     it('updates a binding if the resolved path changes', function() {
@@ -100,13 +99,13 @@ describe('eventmodel', function() {
       this.em.addBinding(['list', ref], this.binding);
 
       this.set(['list', 1], 10);
-      assert.equal(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
     });
 
     it('reuses the array reference if we call arrayLookup again', function() {
       var ref1 = this.em.arrayLookup(this.model, ['list'], ['x']);
       var ref2 = this.em.arrayLookup(this.model, ['list'], ['x']);
-      assert.strictEqual(ref1, ref2);
+      expect(ref1).equal(ref2);
     });
 
     it('reuses the array reference if we call arrayLookup after moving the inner value', function() {
@@ -115,7 +114,7 @@ describe('eventmodel', function() {
       this.set(['x', 0]);
       var ref2 = this.em.arrayLookup(this.model, ['list'], ['x']);
       
-      assert.strictEqual(ref1, ref2);
+      expect(ref1).equal(ref2);
     });
 
     it('reuses the array reference if we call arrayLookup after moving the outer value', function() {
@@ -124,7 +123,7 @@ describe('eventmodel', function() {
       this.set(['list', 1], 10);
       var ref2 = this.em.arrayLookup(this.model, ['list'], ['x']);
       
-      assert.strictEqual(ref1, ref2);
+      expect(ref1).equal(ref2);
     });
 
     it('allows chained references', function() {
@@ -137,26 +136,26 @@ describe('eventmodel', function() {
       this.em.addBinding(['objList', ref2, 'listName'], this.binding);
 
       this.set(['objList', 2, 'listName'], 'internet');
-      assert.strictEqual(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
 
       this.set(['list', 1], 0);
-      assert.strictEqual(this.updateCalled, 2);
+      expect(this.updateCalled).equal(2);
 
       this.set(['x'], 0);
-      assert.strictEqual(this.updateCalled, 3);
+      expect(this.updateCalled).equal(3);
 
       // Going back out again to make sure that all the bindings have been updated correctly.
       this.set(['list', 0], 0);
-      assert.strictEqual(this.updateCalled, 4);
+      expect(this.updateCalled).equal(4);
 
       this.set(['objList', 0, 'listName'], 'superman');
-      assert.strictEqual(this.updateCalled, 5);
+      expect(this.updateCalled).equal(5);
 
       // Some things that should not update the binding.
       this.set(['objList', 2, 'listName'], 'blah');
       this.set(['objList', 1, 'listName'], 'superduper');
       this.set(['list', 1], 1);
-      assert.strictEqual(this.updateCalled, 5);
+      expect(this.updateCalled).equal(5);
     });
 
     it('lets you bind to a property in an object', function() {
@@ -166,32 +165,32 @@ describe('eventmodel', function() {
       this.em.addBinding(['objList', 1, ref], this.binding);
 
       this.set(['objList', 1, 'url'], 'http://example.com');
-      assert.strictEqual(this.updateCalled, 1);
+      expect(this.updateCalled).equal(1);
 
       this.set(['x'], 'listName');
-      assert.strictEqual(this.updateCalled, 2);
+      expect(this.updateCalled).equal(2);
     });
   });
 
 
   describe('expandSegments', function() {
     it('passes through primitive values', function() {
-      assert.deepEqual(EventModel.expandSegments([1, 2, 3, 'a', 'b', 'c']), [1, 2, 3, 'a', 'b', 'c']);
+      expect(EventModel.expandSegments([1, 2, 3, 'a', 'b', 'c'])).eql([1, 2, 3, 'a', 'b', 'c']);
     });
     
     it('expands item contexts', function() {
       // I'm not making a real context object because I shouldn't need to - ...
       var context = {item:5}
-      assert.deepEqual(EventModel.expandSegments(['a', context, 'b']), ['a', 5, 'b']);
+      expect(EventModel.expandSegments(['a', context, 'b'])).eql(['a', 5, 'b']);
     });
     
     it('expands array references', function() {
       var ref = this.em.arrayLookup(this.model, ['objList'], ['x']);
-      assert.deepEqual(EventModel.expandSegments(['objList', ref, 'url']), ['objList', 1, 'url']);
+      expect(EventModel.expandSegments(['objList', ref, 'url'])).eql(['objList', 1, 'url']);
 
       this.set(['x'], 2);
 
-      assert.deepEqual(EventModel.expandSegments(['objList', ref, 'url']), ['objList', 2, 'url']);
+      expect(EventModel.expandSegments(['objList', ref, 'url'])).eql(['objList', 2, 'url']);
     });
  
   });
