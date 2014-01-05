@@ -15,8 +15,7 @@
     "test": "mocha --recursive test --timeout 5000 --bail --colors --reporter spec --debug"
   },
   "dependencies": {
-    "derby-html-parser": "git://github.com/codeparty/derby-html-parser.git",
-    "derby-expressions": "git://github.com/codeparty/derby-expressions.git",
+    "derby-parsing": "git://github.com/codeparty/derby-parsing.git",
     "derby-templates": "git://github.com/codeparty/derby-templates.git",
     "html-util": "git://github.com/codeparty/html.git#0.6",
     "tracks": "git://github.com/codeparty/tracks.git#0.6",
