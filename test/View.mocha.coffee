@@ -513,3 +513,12 @@ describe 'View', ->
         And a new line
       </script>
       '''
+  it 'correctly parses an empty HTML node', ->
+    url = 'path/to/a/resource.png'
+    view.make 'test', '''
+      <source src="{{url}}"/>
+      '''
+
+    expect(view.get 'test', {url: url}).to.equal '''
+      <source src="path/to/a/resource.png"/>
+      '''
