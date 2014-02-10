@@ -112,7 +112,19 @@ function walkSync(start, callback) {
   }
 }
 
-function createProject(dir, app, template, useCoffee) {
+function getDirPostFix(program) {
+  if (program.coffee)
+    return 'coffee';
+  if (program.livescript)
+    return 'livescript';
+  return 'js';
+}
+
+function calcStartDir(template, program) {  
+  return '/' + template + '-' + getDirPostFix(program)
+}
+
+function createProject(dir, app, template, program) {
   var dirPath = path.resolve(process.cwd(), dir);
   var project = path.basename(dirPath);
   if (!project) throw new Error('Cannot create project at ' + dirPath);
@@ -123,7 +135,8 @@ function createProject(dir, app, template, useCoffee) {
 
   // Copy default project files to specified destination
   mkdir(dirPath);
-  var startDir = (useCoffee) ? '/' + template + '-coffee' : '/' + template + '-js';
+  var startDir = calcStartDir(template, program);
+
   var start = path.join(__dirname, '..', startDir);
   walkSync(start, function(dir, dirs, files) {
     var base = dirPath + render(dir, ctx).slice(start.length) + '/';
@@ -159,13 +172,23 @@ function createProject(dir, app, template, useCoffee) {
   });
 }
 
+
+function getType(program) {
+  if (program.coffee)
+    return 'CoffeeScript';
+  if (program.livescript)
+    return 'LiveScript';
+  return '';
+}
+
 function newProject(dir, app, template) {
   if (dir == null) dir = '.';
   if (app == null) app = 'app';
 
   printUsage = false;
-  var useCoffee = program.coffee;
-  var type = useCoffee ? 'CoffeeScript ' : '';
+
+  var type = getType(program);
+
   var directory = style('bold', dir === '.' ? 'the current directory' : dir);
   console.log(
     '\n  Creating ' + type + 'project in ' + directory +
@@ -176,17 +199,18 @@ function newProject(dir, app, template) {
       program.confirm('  Destination is not empty. Continue? ', function(ok) {
         if (!ok) abort();
         process.stdin.destroy();
-        createProject(dir, app, template, useCoffee);
+        createProject(dir, app, template, program);
       });
       return;
     }
-    createProject(dir, app, template, useCoffee);
+    createProject(dir, app, template, program);
   });
 }
 
 program
   .version(derby.version)
   .option('-c, --coffee', 'create files using CoffeeScript')
+  .option('-l, --livescript', 'create files using LiveScript')
   .option('-n, --noinstall', 'do not run `npm install`');
 
 program
