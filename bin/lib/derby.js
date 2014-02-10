@@ -191,7 +191,7 @@ function newProject(dir, app, template) {
 
   var directory = style('bold', dir === '.' ? 'the current directory' : dir);
   console.log(
-    '\n  Creating ' + type + 'project in ' + directory +
+    '\n  Creating ' + type + ' project in ' + directory +
     ' with the application ' + style('bold', app) + '\n'
   );
   emptyDirectory(dir, function(empty) {
