@@ -20,7 +20,7 @@
     "html-util": "git://github.com/codeparty/html.git#0.6",
     "tracks": "git://github.com/codeparty/tracks.git#0.6",
     "racer": "~0.5.13",
-    "chokidar": "~0.8.0",
+    "chokidar": "~0.8.1",
     "less": "~1.5.1",
     "stylus": "~0.32.1",
     "nib": "~1.0.1",
