@@ -1,6 +1,8 @@
 # Components
 
-Components are views with self-contained JavaScript functionality. They enable creating reusable UI pieces, similar to creating custom HTML elements. In addition, they are the recommended way to break up complex applications into modular parts. It's helpful to break up application features into components, even if only used in a single place.
+Derby components are views associated with a controller. The controller is a JavaScript object that is created whenever an instance of the view is rendered.
+
+Components enable creating reusable UI pieces, similar to creating custom HTML elements. In addition, they are the recommended way to break up complex applications into modular parts. It's helpful to break up application features into components, even if only used in a single place.
 
 Each component has a scoped model in its own namespace. Data or references to the containing model are passed in via view attributes. This structure is similar to the Model View ViewModel (MVVM) pattern, where a component's scoped model is essentially a ViewModel.
 
@@ -32,7 +34,7 @@ app.component('tabs', require('./tabs'));
   <ul class="tabs-nav">
     {{each @pane as #pane, #i}}
       <li class="{{if selectedIndex === #i}}active{{/if}}">
-        <a on="click: select(#i)">{{#pane.title}}</a>
+        <a on-click="select(#i)">{{#pane.title}}</a>
       </li>
     {{/each}}
   </ul>
@@ -91,7 +93,7 @@ module.exports = class Tabs
 <Body:>
   <view
     name="todos-new"
-    on="submit: list.add()"
+    on-submit="list.add()"
     label="Add todo"
     autofocus>
   </view>
@@ -102,7 +104,7 @@ module.exports = class Tabs
   </view>
 
 <todos-new:>
-  <form on="submit: submit()">
+  <form on-submit="submit()">
     <input type="text" value="{{value}}" placeholder="{{@placeholder}}" autofocus="{{@autofocus}}">
     <button type="submit">{{@label}}</button>
   </form>
@@ -113,7 +115,7 @@ module.exports = class Tabs
       <li>
         <input type="checkbox" checked="{{#item.checked}}">
         {{#item.text}}
-        <button type="button" on="click: remove(#i)">Delete</button>
+        <button type="button" on-click="remove(#i)">Delete</button>
       </li>
     {{/each}}
   </ul>
