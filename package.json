@@ -15,11 +15,11 @@
     "test": "mocha --recursive test --timeout 5000 --bail --colors --reporter spec --debug"
   },
   "dependencies": {
-    "derby-parsing": "git://github.com/codeparty/derby-parsing.git",
-    "derby-templates": "git://github.com/codeparty/derby-templates.git",
-    "html-util": "git://github.com/codeparty/html.git#0.6",
-    "tracks": "git://github.com/codeparty/tracks.git#0.6",
-    "racer": "~0.5.13",
+    "derby-parsing": "~0.1.0",
+    "derby-templates": "~0.1.0",
+    "html-util": "~0.2.0",
+    "tracks": "~0.4.0",
+    "racer": "~0.5.14",
     "chokidar": "~0.8.1",
     "less": "~1.5.1",
     "stylus": "~0.32.1",
