@@ -15,15 +15,15 @@
     "test": "mocha --recursive test --timeout 5000 --bail --colors --reporter spec --debug"
   },
   "dependencies": {
-    "derby-parsing": "~0.1.0",
-    "derby-templates": "~0.1.0",
-    "html-util": "~0.2.0",
+    "derby-parsing": "~0.1.1",
+    "derby-templates": "~0.1.1",
+    "html-util": "~0.2.1",
     "tracks": "~0.4.0",
     "racer": "~0.5.14",
     "chokidar": "~0.8.1",
-    "less": "~1.5.1",
-    "stylus": "~0.32.1",
-    "nib": "~1.0.1",
+    "less": "~1.6.3",
+    "stylus": "~0.42.2",
+    "nib": "~1.0.2",
     "through": "~2.3.4"
   },
   "devDependencies": {
