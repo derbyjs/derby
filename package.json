@@ -24,6 +24,7 @@
     "less": "~1.6.3",
     "stylus": "~0.42.2",
     "nib": "~1.0.2",
+    "derby-jade": "~0.6.0",
     "through": "~2.3.4"
   },
   "devDependencies": {
