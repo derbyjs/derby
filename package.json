@@ -27,6 +27,10 @@
     "through": "~2.3.4"
   },
   "devDependencies": {
+    "rimraf": "~2.2",
+    "better-assert": "~1.0",
+    "coffee-script": "~1.7",
+    "express": "~3.0",
     "expect.js": "*",
     "mocha": "*"
   },
