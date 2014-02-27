@@ -1,6 +1,8 @@
+--bail
+--recursive
 --colors
 --reporter spec
---timeout 1200
+--timeout 5000
 --growl
 --debug
 --compilers coffee:coffee-script

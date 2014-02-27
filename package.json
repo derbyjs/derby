@@ -12,7 +12,7 @@
     "derby": "./bin/derby"
   },
   "scripts": {
-    "test": "mocha --recursive test --timeout 5000 --bail --colors --reporter spec --debug"
+    "test": "./node_modules/.bin/mocha"
   },
   "dependencies": {
     "derby-parsing": "~0.1.1",
