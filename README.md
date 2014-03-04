@@ -23,7 +23,7 @@ Racer, on the other hand, will not be changed substantially. Racer is much more 
 If you have feedback, ideas, or suggestions, please message the [Google Group](http://groups.google.com/group/derbyjs) or create an Issue. If you are interested in contributing, please reach out to [Nate](https://github.com/nateps).
 
 ## MIT License
-Copyright (c) 2011 by Nate Smith and Brian Noguchi
+Copyright (c) 2011-2014 by Nate Smith and Brian Noguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
