@@ -1,6 +1,2 @@
---colors
 --reporter spec
---timeout 1200
---growl
---debug
---compilers coffee:coffee-script
+--bail

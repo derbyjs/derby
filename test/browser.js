@@ -1,2 +1,1 @@
-require('./expression.mocha.js');
-require('./templates.mocha.js');
+require('derby-templates');

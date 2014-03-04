@@ -1,6 +1,3 @@
 .DS_Store
 *.swp
 node_modules
-derby-standalone.js
-test/browser-standalone.js
-
