@@ -5,10 +5,9 @@ var bundle = require('racer/lib/Model/bundle');
 
 var app = express();
 
-app
-  .use(express.static('../node_modules/mocha'))
-  .use(express.static('../node_modules/expect.js'))
-  .use(express.static(__dirname))
+app.use(express.static('../node_modules/mocha'));
+app.use(express.static('../node_modules/expect.js'));
+app.use(express.static(__dirname));
 
 app.get('/test/:filename', function(req, res, next) {
   var file = __dirname + '/' + req.params.filename;

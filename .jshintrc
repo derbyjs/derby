@@ -10,5 +10,9 @@
   "trailing": true,
   "shadow": true,
   "expr": true,
-  "boss": true
+  "boss": true,
+  "globals": {
+    "window": false,
+    "document": false
+  }
 }
