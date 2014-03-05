@@ -8,9 +8,6 @@
     "url": "git://github.com/codeparty/derby.git"
   },
   "main": "index.js",
-  "bin": {
-    "derby": "./bin/derby"
-  },
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js"
   },
