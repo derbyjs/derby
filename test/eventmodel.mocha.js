@@ -27,7 +27,7 @@ describe('eventmodel', function() {
       d[segments[segments.length - 1]] = value;
 
       self.em.set(segments);
-    }
+    };
 
     // Lots of these tests need to check that a binding is called. This isn't
     // bound or anything, but its really handy code.
