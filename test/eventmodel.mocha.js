@@ -54,7 +54,7 @@ describe('eventmodel', function() {
       expect(this.updateCalled).equal(1);
     });
 
-    it('updates a fixed list element binding', function() { 
+    it('updates a fixed list element binding', function() {
       this.em.addBinding(['list', 1], this.binding);
       this.set(['list', 1], 10);
 
@@ -113,7 +113,7 @@ describe('eventmodel', function() {
 
       this.set(['x', 0]);
       var ref2 = this.em.arrayLookup(this.model, ['list'], ['x']);
-      
+
       expect(ref1).equal(ref2);
     });
 
@@ -122,7 +122,7 @@ describe('eventmodel', function() {
 
       this.set(['list', 1], 10);
       var ref2 = this.em.arrayLookup(this.model, ['list'], ['x']);
-      
+
       expect(ref1).equal(ref2);
     });
 
