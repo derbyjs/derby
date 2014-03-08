@@ -171,28 +171,5 @@ describe('eventmodel', function() {
       expect(this.updateCalled).equal(2);
     });
   });
-
-
-  describe('expandSegments', function() {
-    it('passes through primitive values', function() {
-      expect(EventModel.expandSegments([1, 2, 3, 'a', 'b', 'c'])).eql([1, 2, 3, 'a', 'b', 'c']);
-    });
-    
-    it('expands item contexts', function() {
-      // I'm not making a real context object because I shouldn't need to - ...
-      var context = {item:5}
-      expect(EventModel.expandSegments(['a', context, 'b'])).eql(['a', 5, 'b']);
-    });
-    
-    it('expands array references', function() {
-      var ref = this.em.arrayLookup(this.model, ['objList'], ['x']);
-      expect(EventModel.expandSegments(['objList', ref, 'url'])).eql(['objList', 1, 'url']);
-
-      this.set(['x'], 2);
-
-      expect(EventModel.expandSegments(['objList', ref, 'url'])).eql(['objList', 2, 'url']);
-    });
- 
-  });
 });
 
