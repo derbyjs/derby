@@ -40,40 +40,42 @@ createUserId = (req, res, next) ->
   model.set '_session.userId', userId
   next()
 
-expressApp
-  .use(express.favicon())
-  # Gzip dynamically
-  .use(express.compress())
-  # Respond to requests for application script bundles
-  .use($$app$$.scripts store)
-  # Serve static files from the public directory
-  # .use(express.static __dirname + '/../../public')
+# Create session store for express session middleware
+sessionStore = new MongoStore {url: mongoUrl, safe: true}, (mongoStore, err) ->
+	expressApp
+		.use(express.favicon())
+		# Gzip dynamically
+		.use(express.compress())
+		# Respond to requests for application script bundles
+		.use($$app$$.scripts store)
+		# Serve static files from the public directory
+		# .use(express.static __dirname + '/../../public')
 
-  # Add browserchannel client-side scripts to model bundles created by store,
-  # and return middleware for responding to remote client messages
-  .use(racerBrowserChannel store)
-  # Add req.getModel() method
-  .use(store.modelMiddleware())
+		# Add browserchannel client-side scripts to model bundles created by store,
+		# and return middleware for responding to remote client messages
+		.use(racerBrowserChannel store)
+		# Add req.getModel() method
+		.use(store.modelMiddleware())
 
-  # Parse form data
-  # .use(express.bodyParser())
-  # .use(express.methodOverride())
+		# Parse form data
+		# .use(express.bodyParser())
+		# .use(express.methodOverride())
 
-  # Session middleware
-  .use(express.cookieParser())
-  .use(express.session
-    secret: process.env.SESSION_SECRET || 'YOUR SECRET HERE'
-    store: new MongoStore(url: mongoUrl, safe: true)
-  )
-  .use(createUserId)
+		# Session middleware
+		.use(express.cookieParser())
+		.use(express.session
+			secret: process.env.SESSION_SECRET || 'YOUR SECRET HERE'
+			store: sessionStore
+		)
+		.use(createUserId)
 
-  # Create an express middleware from the app's routes
-  .use($$app$$.router())
-  .use(expressApp.router)
-  .use(error())
+		# Create an express middleware from the app's routes
+		.use($$app$$.router())
+		.use(expressApp.router)
+		.use(error())
 
 
-# SERVER-SIDE ROUTES #
+	# SERVER-SIDE ROUTES #
 
-expressApp.all '*', (req, res, next) ->
-  next '404: ' + req.url
+	expressApp.all '*', (req, res, next) ->
+		next '404: ' + req.url
