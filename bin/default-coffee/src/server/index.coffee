@@ -41,7 +41,7 @@ createUserId = (req, res, next) ->
   next()
 
 # Create session store for express session middleware
-sessionStore = new MongoStore {url: mongoUrl, safe: true}, (mongoStore, err) ->
+sessionStore = new MongoStore {url: mongoUrl, safe: true}, (mongoStore) ->
   expressApp
     .use(express.favicon())
     # Gzip dynamically
