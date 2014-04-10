@@ -27,7 +27,7 @@ describe('eventmodel', function() {
       d[segments[segments.length - 1]] = value;
 
       self.em.set(segments);
-    }
+    };
 
     // Lots of these tests need to check that a binding is called. This isn't
     // bound or anything, but its really handy code.
@@ -54,7 +54,7 @@ describe('eventmodel', function() {
       expect(this.updateCalled).equal(1);
     });
 
-    it('updates a fixed list element binding', function() { 
+    it('updates a fixed list element binding', function() {
       this.em.addBinding(['list', 1], this.binding);
       this.set(['list', 1], 10);
 
@@ -113,7 +113,7 @@ describe('eventmodel', function() {
 
       this.set(['x', 0]);
       var ref2 = this.em.arrayLookup(this.model, ['list'], ['x']);
-      
+
       expect(ref1).equal(ref2);
     });
 
@@ -122,7 +122,7 @@ describe('eventmodel', function() {
 
       this.set(['list', 1], 10);
       var ref2 = this.em.arrayLookup(this.model, ['list'], ['x']);
-      
+
       expect(ref1).equal(ref2);
     });
 
@@ -170,29 +170,6 @@ describe('eventmodel', function() {
       this.set(['x'], 'listName');
       expect(this.updateCalled).equal(2);
     });
-  });
-
-
-  describe('expandSegments', function() {
-    it('passes through primitive values', function() {
-      expect(EventModel.expandSegments([1, 2, 3, 'a', 'b', 'c'])).eql([1, 2, 3, 'a', 'b', 'c']);
-    });
-    
-    it('expands item contexts', function() {
-      // I'm not making a real context object because I shouldn't need to - ...
-      var context = {item:5}
-      expect(EventModel.expandSegments(['a', context, 'b'])).eql(['a', 5, 'b']);
-    });
-    
-    it('expands array references', function() {
-      var ref = this.em.arrayLookup(this.model, ['objList'], ['x']);
-      expect(EventModel.expandSegments(['objList', ref, 'url'])).eql(['objList', 1, 'url']);
-
-      this.set(['x'], 2);
-
-      expect(EventModel.expandSegments(['objList', ref, 'url'])).eql(['objList', 2, 'url']);
-    });
- 
   });
 });
 
