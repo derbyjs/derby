@@ -21,7 +21,8 @@
     "less": "~1.6.3",
     "stylus": "^0.43.1",
     "nib": "~1.0.2",
-    "through": "~2.3.4"
+    "through": "~2.3.4",
+    "resolve": "^0.6.3"
   },
   "devDependencies": {
     "expect.js": "~0.3.1",
