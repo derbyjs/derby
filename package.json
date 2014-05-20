@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "derby-parsing": "~0.1.4",
-    "derby-templates": "~0.1.4",
+    "derby-templates": "~0.1.5",
     "html-util": "~0.2.1",
     "tracks": "~0.4.1",
     "racer": "^0.6.0-alpha3",
