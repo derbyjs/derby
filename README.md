@@ -14,16 +14,12 @@ Examples here: **https://github.com/codeparty/derby-examples**
 
 ## Major updates coming soon!
 
-The current version of Derby is really buggy. We know this, and the next version (0.6) is going to be the first beta quality release.
-
-0.6 is a complete rewrite that will funadamentally change a lot of things internally. 0.6 will increase performance, reduce memory leaks, and improve stability. There will be a number of API changes, but they will be straightforward for current Derby apps. Most of the changes are simplifications that will clean up awkward limitiations of the current version. This next release is where all of our current efforts are, and we aren't planning on fixing any issues with the current version of Derby.
-
-Racer, on the other hand, will not be changed substantially. Racer is much more stable, and any issues with Racer should be submitted (especially if you write a failing test! :-).
+0.6 was a complete rewrite that funadamentally changed a lot of things internally. 0.6 increases performance, reduces memory leaks, and improves stability. The docs are still being updated. There have been many API changes, but they are straightforward for current Derby apps. Most of the changes are simplifications that will clean up awkward limitiations of the previous version.
 
 If you have feedback, ideas, or suggestions, please message the [Google Group](http://groups.google.com/group/derbyjs) or create an Issue. If you are interested in contributing, please reach out to [Nate](https://github.com/nateps).
 
 ## MIT License
-Copyright (c) 2011-2014 by Nate Smith and Brian Noguchi
+Copyright (c) 2011-2014 by Nate Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
