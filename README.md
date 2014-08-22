@@ -1,4 +1,4 @@
-[![build status](https://secure.travis-ci.org/codeparty/derby.png)](http://travis-ci.org/codeparty/derby)
+[![build status](https://api.travis-ci.org/derbyjs/derby.png)](http://travis-ci.org/derbyjs/derby)
 
 # Derby
 
