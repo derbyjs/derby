@@ -12,8 +12,8 @@
     "test": "./node_modules/.bin/mocha test/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js"
   },
   "dependencies": {
-    "derby-parsing": "^0.2.0",
-    "derby-templates": "^0.1.7",
+    "derby-parsing": "^0.2.2",
+    "derby-templates": "^0.1.13",
     "html-util": "~0.2.1",
     "tracks": "^0.5.0",
     "racer": "0.6.0-alpha24",
