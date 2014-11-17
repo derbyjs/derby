@@ -26,8 +26,7 @@
     "express": "^4.10.2",
     "jshint": "^2.5.10",
     "mocha": "^2.0.1",
-    "browserify": "^6.3.2",
-    "mochify": "^1.9.0"
+    "browserify": "^6.3.2"
   },
   "optionalDependencies": {},
   "engines": {}
