@@ -1,5 +1,5 @@
 var expect = require('expect.js');
-var EventModel = require('../lib/eventmodel');
+var EventModel = require('../../lib/eventmodel');
 
 describe('eventmodel', function() {
   beforeEach(function() {
