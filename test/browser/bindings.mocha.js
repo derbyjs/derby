@@ -4,6 +4,75 @@ var derby = new DerbyStandalone();
 require('derby-parsing');
 
 describe('bindings', function() {
+  describe('dynamic view instances', function() {
+    it('simple dynamic view', function() {
+      var app = derby.createApp();
+      app.views.register('Body', '<view is="{{_page.view}}" optional></view>');
+      app.views.register('one', 'One');
+      app.views.register('two', 'Two');
+      var page = app.createPage();
+      var view = page.model.at('_page.view');
+      view.set('one');
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'One');
+      view.set('two');
+      expectHtml(fragment, 'Two');
+      view.del();
+      expectHtml(fragment, '');
+      view.set('one');
+      expectHtml(fragment, 'One');
+    });
+    it('bracketed dynamic view', function() {
+      var app = derby.createApp();
+      app.views.register('Body', '<view is="{{_page.names[_page.index]}}" optional></view>');
+      app.views.register('one', 'One');
+      app.views.register('two', 'Two');
+      app.views.register('three', 'Three');
+      var page = app.createPage();
+      page.model.set('_page.names', ['one', 'two']);
+      var index = page.model.at('_page.index');
+      index.set(0);
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'One');
+      index.set(1);
+      expectHtml(fragment, 'Two');
+      index.del();
+      expectHtml(fragment, '');
+      index.set(0);
+      expectHtml(fragment, 'One');
+      page.model.set('_page.names', ['two', 'one']);
+      expectHtml(fragment, 'Two');
+      page.model.unshift('_page.names', 'three');
+      expectHtml(fragment, 'Three');
+    });
+    it('only renders if the expression value changes', function() {
+      var app = derby.createApp();
+      var count = 0;
+      app.proto.count = function() {
+        return count++;
+      };
+      app.proto.lower = function(value) {
+        return value.toLowerCase();
+      };
+      app.views.register('Body', '<view is="{{lower(_page.view)}}"></view>');
+      app.views.register('one', 'One {{count()}}');
+      app.views.register('two', 'Two {{count()}}');
+      var page = app.createPage();
+      var view = page.model.at('_page.view');
+      view.set('one');
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'One 0');
+      view.set('two');
+      expectHtml(fragment, 'Two 1');
+      view.set('TWO');
+      expectHtml(fragment, 'Two 1');
+      view.set('ONE');
+      expectHtml(fragment, 'One 2');
+      view.set('one');
+      expectHtml(fragment, 'One 2');
+    });
+  });
+
   function testArray(itemTemplate, itemData) {
     it('each on path', function() {
       var app = derby.createApp();
