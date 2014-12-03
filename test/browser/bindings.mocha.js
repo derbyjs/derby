@@ -131,8 +131,9 @@ describe('bindings', function() {
     function testEach(app) {
       var page = app.createPage();
       var items = page.model.at('_page.items');
-      items.set(itemData.slice(0,2));
       var fragment = page.getFragment('Body');
+      expectHtml(fragment, '<ul></ul>');
+      items.insert(0, itemData.slice(0, 2));
       expectHtml(fragment,
         '<ul><li>0. One One</li><li>1. Two Two</li></ul>'
       );
@@ -143,6 +144,26 @@ describe('bindings', function() {
       items.unshift(itemData[3]);
       expectHtml(fragment,
         '<ul><li>0. Four Four</li><li>1. One One</li><li>2. Two Two</li><li>3. Three Three</li></ul>'
+      );
+      items.remove(1, 2);
+      expectHtml(fragment,
+        '<ul><li>0. Four Four</li><li>1. Three Three</li></ul>'
+      );
+      items.shift();
+      expectHtml(fragment,
+        '<ul><li>0. Three Three</li></ul>'
+      );
+      items.pop();
+      expectHtml(fragment,
+        '<ul></ul>'
+      );
+      items.pop();
+      expectHtml(fragment,
+        '<ul></ul>'
+      );
+      items.push(itemData[0]);
+      expectHtml(fragment,
+        '<ul><li>0. One One</li></ul>'
       );
     }
   }
