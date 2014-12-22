@@ -4,6 +4,79 @@ var derby = new DerbyStandalone();
 require('derby-parsing');
 
 describe('bindings', function() {
+
+  describe('bracket dependencies', function() {
+    it('bracket inner dependency change', function() {
+      var app = derby.createApp();
+      app.views.register('Body', '{{_page.doc[_page.key]}}');
+      var page = app.createPage();
+      var doc = page.model.at('_page.doc');
+      var key = page.model.at('_page.key');
+      doc.set({
+        one: 'hi',
+        two: 'bye'
+      });
+      key.set('one');
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'hi');
+      key.set('two');
+      expectHtml(fragment, 'bye');
+      key.del();
+      expectHtml(fragment, '');
+      key.set('one');
+      expectHtml(fragment, 'hi');
+    });
+
+    it('bracket outer dependency change', function() {
+      var app = derby.createApp();
+      app.views.register('Body', '{{_page.doc[_page.key]}}');
+      var page = app.createPage();
+      var doc = page.model.at('_page.doc');
+      var key = page.model.at('_page.key');
+      doc.set({
+        one: 'hi',
+        two: 'bye'
+      });
+      key.set('one');
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'hi');
+      doc.set('one', 'hello')
+      expectHtml(fragment, 'hello');
+      doc.set({
+        one: 'heyo'
+      });
+      expectHtml(fragment, 'heyo');
+      doc.del();
+      expectHtml(fragment, '');
+    });
+
+    it('bracket inner then outer dependency change', function() {
+      var app = derby.createApp();
+      app.views.register('Body', '{{_page.doc[_page.key]}}');
+      var page = app.createPage();
+      var doc = page.model.at('_page.doc');
+      var key = page.model.at('_page.key');
+      doc.set({
+        one: 'hi',
+        two: 'bye'
+      });
+      key.set('one');
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'hi');
+      key.set('two');
+      expectHtml(fragment, 'bye');
+      doc.set({
+        one: 'heyo',
+        two: 'later'
+      });
+      expectHtml(fragment, 'later');
+      doc.set('two', 'adios');
+      expectHtml(fragment, 'adios');
+      key.set('one');
+      expectHtml(fragment, 'heyo');
+    });
+  });
+
   describe('dynamic view instances', function() {
     it('simple dynamic view', function() {
       var app = derby.createApp();
