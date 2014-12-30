@@ -80,7 +80,9 @@ describe('bindings', function() {
   describe('dynamic view instances', function() {
     it('simple dynamic view', function() {
       var app = derby.createApp();
-      app.views.register('Body', '<view is="{{_page.view}}" optional></view>');
+      app.views.register('Body',
+        '<view is="{{_page.view}}" optional></view>'
+      );
       app.views.register('one', 'One');
       app.views.register('two', 'Two');
       var page = app.createPage();
@@ -97,7 +99,9 @@ describe('bindings', function() {
     });
     it('bracketed dynamic view', function() {
       var app = derby.createApp();
-      app.views.register('Body', '<view is="{{_page.names[_page.index]}}" optional></view>');
+      app.views.register('Body',
+        '<view is="{{_page.names[_page.index]}}" optional></view>'
+      );
       app.views.register('one', 'One');
       app.views.register('two', 'Two');
       app.views.register('three', 'Three');
@@ -143,6 +147,27 @@ describe('bindings', function() {
       expectHtml(fragment, 'One 2');
       view.set('one');
       expectHtml(fragment, 'One 2');
+    });
+  });
+
+  describe('nested blocks', function() {
+    it('each containing if', function() {
+      var app = derby.createApp();
+      app.views.register('Body',
+        '{{each _page.items as #item}}' +
+          '{{if _page.toggle}}' +
+            '{{#item}}.' +
+          '{{/if}}' +
+        '{{/each}}'
+      );
+      var page = app.createPage();
+      var items = page.model.at('_page.items');
+      var toggle = page.model.at('_page.toggle');
+      var fragment = page.getFragment('Body');
+      items.set(['one', 'two', 'three']);
+      toggle.set(true);
+      items.move(2, 1);
+      expectHtml(fragment, 'one.three.two.');
     });
   });
 
@@ -192,13 +217,54 @@ describe('bindings', function() {
     it('each on attribute', function() {
       var app = derby.createApp();
       app.views.register('Body',
-        '<view is="list" items="{{_page.items}}" />'
+        '<view is="list" items="{{_page.items}}"></view>'
       );
       app.views.register('list',
         '<ul>' +
           '{{each @items as #item, #i}}' + itemTemplate + '{{/each}}' +
         '</ul>'
       );
+      testEach(app);
+    });
+    it('each containing withs', function() {
+      var app = derby.createApp();
+      app.views.register('Body',
+        '<ul>' +
+          '{{each _page.items as #item, #i}}' +
+            '{{with this}}' +
+              '{{with this}}' +
+                '{{with this}}' +
+                  itemTemplate +
+                '{{/with}}' +
+              '{{/with}}' +
+            '{{/with}}' +
+          '{{/each}}' +
+        '</ul>'
+      );
+      testEach(app);
+    });
+    it('each containing view instance', function() {
+      var app = derby.createApp();
+      app.views.register('Body',
+        '<ul>' +
+          '{{each _page.items as #item, #i}}' +
+            '<view is="item"></view>' +
+          '{{/each}}' +
+        '</ul>'
+      );
+      app.views.register('item', itemTemplate);
+      testEach(app);
+    });
+    it('each containing view instance containing with', function() {
+      var app = derby.createApp();
+      app.views.register('Body',
+        '<ul>' +
+          '{{each _page.items as #item, #i}}' +
+            '<view is="item"></view>' +
+          '{{/each}}' +
+        '</ul>'
+      );
+      app.views.register('item', '{{with this}}' + itemTemplate + '{{/with}}');
       testEach(app);
     });
     function testEach(app) {
