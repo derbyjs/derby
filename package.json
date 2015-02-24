@@ -29,5 +29,18 @@
     "browserify": "^6.3.2"
   },
   "optionalDependencies": {},
-  "engines": {}
+  "engines": {},
+  "testling": {
+    "harness": "mocha-bdd",
+    "files": "test/*/*.mocha.js",
+    "browsers": [
+      "ie/9..latest",
+      "chrome/latest",
+      "firefox/latest",
+      "opera/latest",
+      "iphone/6",
+      "ipad/6",
+      "android-browser/latest"
+    ]
+  }
 }
