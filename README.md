@@ -1,3 +1,4 @@
+[![browser support](https://ci.testling.com/derbyjs/derby.png)](https://ci.testling.com/derbyjs/derby)
 [![build status](https://api.travis-ci.org/derbyjs/derby.png)](http://travis-ci.org/derbyjs/derby)
 
 # Derby
