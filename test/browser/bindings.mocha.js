@@ -330,7 +330,8 @@ function expectHtml(fragment, html) {
 
 function fragmentHtml(fragment) {
   var clone = document.importNode(fragment, true);
-  var treeWalker = document.createTreeWalker(clone, NodeFilter.SHOW_COMMENT);
+  // last two arguments for createTreeWalker are required in IE unfortunately
+  var treeWalker = document.createTreeWalker(clone, NodeFilter.SHOW_COMMENT, null, false);
   var toRemove = [];
   for (var node; node = treeWalker.nextNode();) {
     toRemove.push(node);
