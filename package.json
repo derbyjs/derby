@@ -9,7 +9,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/all/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js"
+    "test": "./node_modules/.bin/jshint lib/*.js test/*.js && ./node_modules/.bin/mocha test/all/*.mocha.js"
   },
   "dependencies": {
     "derby-parsing": "^0.3.2",
