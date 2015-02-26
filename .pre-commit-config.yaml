@@ -1,0 +1,11 @@
+- repo: git://github.com/pre-commit/mirrors-jshint
+  sha: 'v2.5.11'
+  hooks:
+  - id: jshint
+- repo: git://github.com/pre-commit/pre-commit-hooks
+  sha: 'v0.4.0'
+  hooks:
+  - id: check-added-large-files
+  - id: check-json
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
