@@ -150,6 +150,33 @@ describe('bindings', function() {
     });
   });
 
+  describe('basic blocks', function() {
+    it('each else', function() {
+      var app = derby.createApp();
+      app.views.register('Body',
+        '{{each _page.items}}' +
+          '{{this}}.' +
+        '{{else}}' +
+          'otherwise' +
+        '{{/each}}'
+      );
+      var page = app.createPage();
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'otherwise');
+      var items = page.model.at('_page.items');
+      items.set(['one', 'two', 'three']);
+      expectHtml(fragment, 'one.two.three.');
+      items.set([]);
+      expectHtml(fragment, 'otherwise');
+      items.insert(0, ['one', 'two', 'three']);
+      expectHtml(fragment, 'one.two.three.');
+      items.remove(0, 2);
+      expectHtml(fragment, 'three.');
+      items.remove(0, 1);
+      expectHtml(fragment, 'otherwise');
+    });
+  });
+
   describe('nested blocks', function() {
     it('each containing if', function() {
       var app = derby.createApp();
