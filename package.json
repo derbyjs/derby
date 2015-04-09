@@ -17,7 +17,7 @@
     "html-util": "~0.2.1",
     "tracks": "^0.5.0",
     "racer": "0.6.0-alpha32",
-    "chokidar": "^0.12.6",
+    "chokidar": "^1.0.0",
     "through": "~2.3.4",
     "resolve": "^0.6.3"
   },
