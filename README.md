@@ -20,7 +20,7 @@ Examples here: **https://github.com/codeparty/derby-examples**
 If you have feedback, ideas, or suggestions, please message the [Google Group](http://groups.google.com/group/derbyjs) or create an Issue. If you are interested in contributing, please reach out to [Nate](https://github.com/nateps).
 
 ## MIT License
-Copyright (c) 2011-2014 by Nate Smith
+Copyright (c) 2011-2015 by Nate Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
