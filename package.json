@@ -1,7 +1,7 @@
 {
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
-  "version": "0.6.0-alpha51",
+  "version": "0.6.0-alpha52",
   "homepage": "http://derbyjs.com/",
   "repository": {
     "type": "git",
