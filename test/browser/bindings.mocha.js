@@ -150,6 +150,46 @@ describe('bindings', function() {
   });
 
   describe('basic blocks', function() {
+    it('if', function() {
+      var app = derby.createApp();
+      app.views.register('Body',
+        '{{if _page.nested.value}}' +
+          '{{this}}.' +
+        '{{else}}' +
+          'otherwise' +
+        '{{/if}}'
+      );
+      var page = app.createPage();
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'otherwise');
+      var value = page.model.at('_page.nested.value');
+      value.set(true);
+      expectHtml(fragment, 'true.');
+      value.set(false);
+      expectHtml(fragment, 'otherwise');
+      value.set('hello');
+      expectHtml(fragment, 'hello.');
+    });
+    it('unless', function() {
+      var app = derby.createApp();
+      app.views.register('Body',
+        '{{unless _page.nested.value}}' +
+          'nada' +
+        '{{else}}' +
+          'otherwise' +
+        '{{/unless}}'
+      );
+      var page = app.createPage();
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, 'nada');
+      var value = page.model.at('_page.nested.value');
+      value.set(true);
+      expectHtml(fragment, 'otherwise');
+      value.set(false);
+      expectHtml(fragment, 'nada');
+      value.set('hello');
+      expectHtml(fragment, 'otherwise');
+    });
     it('each else', function() {
       var app = derby.createApp();
       app.views.register('Body',
