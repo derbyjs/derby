@@ -16,7 +16,7 @@
     "derby-templates": "^0.3.3",
     "html-util": "^0.2.1",
     "tracks": "^0.5.0",
-    "racer": "0.6.0-alpha41",
+    "racer": "0.6.0-alpha42",
     "chokidar": "^0.12.6",
     "through": "^2.3.4",
     "resolve": "^0.6.3"
