@@ -1,6 +1,13 @@
 [![browser support](https://ci.testling.com/derbyjs/derby.png)](https://ci.testling.com/derbyjs/derby)
 [![build status](https://api.travis-ci.org/derbyjs/derby.png)](http://travis-ci.org/derbyjs/derby)
 
+# Changes in this fork
+
+- support for local component styles
+- support for subcomponents
+- support for components written in LiveScript
+
+
 # Derby
 
 The Derby MVC framework makes it easy to write realtime, collaborative applications that run in both Node.js and browsers.

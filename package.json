@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "chokidar": "^1.2.0",
-    "derby-parsing": "^0.4.1",
-    "derby-templates": "^0.3.3",
+    "derby-parsing": "michael-brade/derby-parsing",
+    "derby-templates": "michael-brade/derby-templates",
     "html-util": "^0.2.1",
-    "racer": "^0.7.0",
+    "racer": "michael-brade/racer",
     "resolve": "^1.1.6",
     "through": "^2.3.4",
     "tracks": "^0.5.0"
