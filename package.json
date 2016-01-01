@@ -1,47 +1,32 @@
 {
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
-  "version": "0.6.0-alpha62",
+  "version": "0.8.0",
   "homepage": "http://derbyjs.com/",
   "repository": {
     "type": "git",
-    "url": "git://github.com/codeparty/derby.git"
+    "url": "git://github.com/derbyjs/derby.git"
   },
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/mocha test/all/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js"
   },
   "dependencies": {
+    "chokidar": "^1.2.0",
     "derby-parsing": "^0.4.1",
     "derby-templates": "^0.3.3",
     "html-util": "^0.2.1",
-    "tracks": "^0.5.0",
-    "racer": "0.6.0-alpha45",
-    "chokidar": "^0.12.6",
+    "racer": "^0.8.0",
+    "resolve": "^1.1.6",
     "through": "^2.3.4",
-    "resolve": "^0.6.3"
+    "tracks": "^0.5.0"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
-    "express": "^4.10.2",
-    "jshint": "^2.5.10",
-    "mocha": "^2.0.1",
-    "browserify": "^6.3.2"
+    "express": "^4.13.3",
+    "jshint": "^2.8.0",
+    "mocha": "^2.3.3",
+    "browserify": "^11.2.0"
   },
-  "optionalDependencies": {},
-  "engines": {},
-  "testling": {
-    "harness": "mocha-bdd",
-    "files": "test/*/*.mocha.js",
-    "browsers": [
-      "ie/9..latest",
-      "chrome/latest",
-      "firefox/latest",
-      "opera/latest",
-      "safari/latest",
-      "iphone/6..latest",
-      "ipad/6..latest",
-      "android-browser/latest"
-    ]
-  }
+  "optionalDependencies": {}
 }
