@@ -30,7 +30,7 @@ app.component('tabs', require('./tabs'));
 
 ### tabs.html
 ```
-<tabs: arrays="pane" element="tabs">
+<tabs: arrays="pane" tag="tabs">
   <ul class="tabs-nav">
     {{each @pane as #pane, #i}}
       <li class="{{if selectedIndex === #i}}active{{/if}}">
@@ -92,13 +92,13 @@ module.exports = class Tabs
 ```
 <Body:>
   <view
-    name="todos-new"
+    is="todos-new"
     on-submit="list.add()"
     label="Add todo"
     autofocus>
   </view>
   <view
-    name="todos-list"
+    is="todos-list"
     as="list"
     items="{{_page.items}}">
   </view>
