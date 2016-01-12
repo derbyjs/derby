@@ -5,7 +5,7 @@
   "homepage": "http://derbyjs.com/",
   "repository": {
     "type": "git",
-    "url": "git://github.com/codeparty/derby.git"
+    "url": "git://github.com/derbyjs/derby.git"
   },
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,14 @@
     "mocha": "^2.3.3",
     "browserify": "^11.2.0"
   },
-  "optionalDependencies": {}
+  "optionalDependencies": {},
+  "bugs": {
+    "url": "https://github.com/derbyjs/derby/issues"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "author": "Nate Smith",
+  "license": "MIT"
 }

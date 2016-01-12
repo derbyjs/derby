@@ -11,7 +11,7 @@ Derby applications load immediately and can be indexed by search engines, becaus
 
 See docs here: **http://derbyjs.com/**
 
-Examples here: **https://github.com/codeparty/derby-examples**
+Examples here: **https://github.com/derbyjs/derby-examples**
 
 ## Major updates coming soon!
 
