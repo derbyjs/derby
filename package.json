@@ -1,7 +1,7 @@
 {
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "homepage": "http://derbyjs.com/",
   "repository": {
     "type": "git",
@@ -28,5 +28,14 @@
     "mocha": "^2.3.3",
     "browserify": "^11.2.0"
   },
-  "optionalDependencies": {}
+  "optionalDependencies": {},
+  "bugs": {
+    "url": "https://github.com/derbyjs/derby/issues"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "author": "Nate Smith",
+  "license": "MIT"
 }
