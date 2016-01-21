@@ -1,7 +1,7 @@
 # Derby change history
 
 Racer provides the model and data synchronization for Derby. It's versions are updated along with Derby versions. See change history for Racer as well:
-https://github.com/codeparty/racer/blob/master/History.md
+https://github.com/derbyjs/racer/blob/master/History.md
 
 ## 0.3.14
 This release includes a great deal of work making components and templating more full featured and performant
@@ -35,7 +35,7 @@ Mostly just bug fixes
 ## 0.3.12
 The API for creating stores and sessions has changed in support of adding auth. Generating a new starter server via `derby new` is recommended
 
-- There is no longer an app.createStore() method, and the derby.createStore() method must be used in combination with the store.modelMiddleware(). There is now a req.getModel() method added by the modelMiddleware. 
+- There is no longer an app.createStore() method, and the derby.createStore() method must be used in combination with the store.modelMiddleware(). There is now a req.getModel() method added by the modelMiddleware.
 - Bugs in bracketed path interpolation in templates have been fixed, and the syntax has been updated to work more like javascript property accessors. The syntax is now `<h1>{users[_userId].name}</h1>`
 - The component type is now passed as a second argument to init and create events instead of being available as a property of the component. Within the same library, the namespaces is now correctly sent as 'lib:'
 - Add `log` and `path` view helper functions for debugging
