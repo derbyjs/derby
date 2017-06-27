@@ -14,7 +14,7 @@ Attaching bindings failed, because HTML structure does not match client renderin
 
 When the page is rendered server side and is sent down to the client, Derby it will ensure that both HTML structures are exactly the same before attaching. If they don't match that is usually because the browser's parser attempts to gracefully handle invalid HTML that you may have introduced by mistake. For example, the following syntax is valid XML syntax but invalid HTML:
 
-```
+```html
 <p>
   <div>
   </div>
@@ -23,7 +23,7 @@ When the page is rendered server side and is sent down to the client, Derby it w
 
 Browsers will effectively turn this into:
 
-```
+```html
 <p></p>
 <div></div>
 ```
@@ -36,7 +36,7 @@ source: https://www.w3.org/TR/html401/struct/text.html#edef-P
 
 The same goes for HTML tables where:
 
-```
+```html
 <table>
   <td></td>
 </table>
@@ -44,7 +44,7 @@ The same goes for HTML tables where:
 
 ... may be rendered by a browser as:
 
-```
+```html
 <table>
   <tbody>
     <tr>
