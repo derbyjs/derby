@@ -61,4 +61,3 @@ Here are a few common possibilities:
 * sorting lists on in `init()` might cause the output to be non-deterministic (like alphabetizing / capitalization). Basically a data "bug" would end-up generated different HTML.
 * putting links in links, which has undefined behavior in HTML
 * inserting a conditional `<div>` such as `{{if thisIsTrue}}<div>stuff</div>{{/if}}` without restarting the server
-* Having a value with extra whitespace around it. Some browsers will split the string and generate multiple text nodes.
