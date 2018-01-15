@@ -15,7 +15,7 @@ Examples here: **https://github.com/derbyjs/derby-examples**
 
 ## Major updates coming soon!
 
-0.6 was a complete rewrite that funadamentally changed a lot of things internally. 0.6 increases performance, reduces memory leaks, and improves stability. The docs are still being updated. There have been many API changes, but they are straightforward for current Derby apps. Most of the changes are simplifications that will clean up awkward limitiations of the previous version.
+0.6 was a complete rewrite that fundamentally changed a lot of things internally. 0.6 increases performance, reduces memory leaks, and improves stability. The docs are still being updated. There have been many API changes, but they are straightforward for current Derby apps. Most of the changes are simplifications that will clean up awkward limitations of the previous version.
 
 If you have feedback, ideas, or suggestions, please message the [Google Group](http://groups.google.com/group/derbyjs) or create an Issue. If you are interested in contributing, please reach out to [Nate](https://github.com/nateps).
 

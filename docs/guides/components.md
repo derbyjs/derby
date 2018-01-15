@@ -30,7 +30,7 @@ app.component('tabs', require('./tabs'));
 
 ### tabs.html
 ```
-<tabs: arrays="pane" element="tabs">
+<tabs: arrays="pane" tag="tabs">
   <ul class="tabs-nav">
     {{each @pane as #pane, #i}}
       <li class="{{if selectedIndex === #i}}active{{/if}}">
