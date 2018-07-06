@@ -22,11 +22,11 @@
     "tracks": "^0.5.0"
   },
   "devDependencies": {
+    "browserify": "^16.2.2",
     "expect.js": "^0.3.1",
     "express": "^4.13.3",
-    "jshint": "^2.8.0",
-    "mocha": "^2.3.3",
-    "browserify": "^11.2.0"
+    "jshint": "^2.9.5",
+    "mocha": "^5.2.0"
   },
   "optionalDependencies": {},
   "bugs": {
