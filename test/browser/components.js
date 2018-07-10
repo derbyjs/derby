@@ -221,10 +221,14 @@ describe('components', function() {
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
-          '<attribute is="message" within>{{if show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
+          '<attribute is="message" within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
         '</view>'
       );
-      this.app.views.register('swatch', '<div>{{message}}</div>');
+      this.app.views.register('swatch',
+        '{{with show as #show}}' +
+          '<div>{{message}}</div>' +
+        '{{/with}}'
+      );
       function Swatch() {}
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
@@ -236,24 +240,27 @@ describe('components', function() {
       expect(this.page.model.get('$components._1.message')).a(templates.Template);
     });
 
-    it('updates within expression attribute', function() {
+    it('updates within expression attribute by making it a template', function() {
       this.app = derby.createApp();
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
-          '<attribute is="message" within>{{show ? "Show me!" : "Hide me."}}</attribute>' +
+          '<attribute is="message" within>{{#show ? "Show me!" : "Hide me."}}</attribute>' +
         '</view>'
       );
-      this.app.views.register('swatch', '<div>{{message}}</div>');
+      this.app.views.register('swatch',
+        '{{with show as #show}}' +
+          '<div>{{message}}</div>' +
+        '{{/with}}'
+      );
       function Swatch() {}
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       expectHtml(fragment, '<div>Hide me.</div>');
-      expect(this.page.model.get('$components._1.message')).equal('Hide me.');
+      expect(this.page.model.get('$components._1.message')).a(templates.Template);
       this.page.model.set('$components._1.show', true);
       expectHtml(fragment, '<div>Show me!</div>');
-      expect(this.page.model.get('$components._1.message')).equal('Show me!');
     });
 
     it('updates array within template attribute', function() {
@@ -261,14 +268,16 @@ describe('components', function() {
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
-          '<item within>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
-          '<item>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+          '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+          '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
         '</view>'
       );
       this.app.views.register('swatch',
-        '{{each items as #item}}' +
-          '{{#item.content}}' +
-        '{{/each}}',
+        '{{with show as #show}}' +
+          '{{each items as #item}}' +
+            '{{#item.content}}' +
+          '{{/each}}' +
+        '{{/with}}',
         {arrays: 'item/items'}
       );
       function Swatch() {}
@@ -283,19 +292,21 @@ describe('components', function() {
       expectHtml(fragment, 'Show me!Hide me.');
     });
 
-    it('updates array within expression attribute', function() {
+    it('updates array within expression attribute by making it a template', function() {
       this.app = derby.createApp();
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
-          '<item within>{{show ? "Show me!" : "Hide me."}}</item>' +
-          '<item>{{show ? "Show me!" : "Hide me."}}</item>' +
+          '<item within>{{#show ? "Show me!" : "Hide me."}}</item>' +
+          '<item>{{#show ? "Show me!" : "Hide me."}}</item>' +
         '</view>'
       );
       this.app.views.register('swatch',
-        '{{each items as #item}}' +
-          '{{#item.content}}' +
-        '{{/each}}',
+        '{{with show as #show}}' +
+          '{{each items as #item}}' +
+            '{{#item.content}}' +
+          '{{/each}}' +
+        '{{/with}}',
         {arrays: 'item/items'}
       );
       function Swatch() {}
@@ -303,16 +314,11 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       expectHtml(fragment, 'Hide me.Hide me.');
-      expect(this.page.model.get('$components._1.items')).eql([
-        {content: 'Hide me.'},
-        {content: 'Hide me.'}
-      ]);
+      expect(this.page.model.get('$components._1.items').length).equal(2);
+      expect(this.page.model.get('$components._1.items')[0].content).a(templates.Template);
+      expect(this.page.model.get('$components._1.items')[1].content).equal('Hide me.')
       this.page.model.set('$components._1.show', true);
       expectHtml(fragment, 'Show me!Hide me.');
-      expect(this.page.model.get('$components._1.items')).eql([
-        {content: 'Show me!'},
-        {content: 'Hide me.'}
-      ]);
     });
 
   });
