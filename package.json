@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "chokidar": "^1.2.0",
-    "derby-parsing": "^0.7.2",
+    "derby-parsing": "^0.7.3",
     "derby-templates": "^0.7.0",
     "html-util": "^0.2.1",
     "racer": "^0.9.0",
