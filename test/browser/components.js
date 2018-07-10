@@ -1,3 +1,4 @@
+var templates = require('derby-templates').templates;
 var util = require('./util');
 var derby = util.derby;
 var expectHtml = util.expectHtml;
@@ -164,7 +165,7 @@ describe('components', function() {
       expectHtml(fragment, '<div style="color: lightgray">color: lightgray</div>');
     });
 
-    it('updates model when template attribute changes 2', function() {
+    it('updates when template attribute is updated to new value inside component model', function() {
       this.app = derby.createApp();
       this.page = this.app.createPage();
       this.page.model.set('_page.color', 'blue');
@@ -187,8 +188,131 @@ describe('components', function() {
       expect(this.page.model.get('_page.color')).equal('blue');
       this.page.model.set('$components._1.value', previous);
       expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
-      var previous = this.page.model.set('$components._1.value', 'gray');
-      expectHtml(fragment, '<div style="background-color: gray">gray</div>');
+    });
+
+    it('updates within template content', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.page.model.set('_page.width', 10);
+      this.page.model.set('_page.color', 'blue');
+      this.app.views.register('Body',
+        '<view is="swatch" width="{{_page.width}}" within>' +
+          'light{{#color}}' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{with #root._page.color as #color}}' +
+          '<div style="width: {{width}}px; background-color: {{content}}">' +
+            '{{content}}' +
+          '</div>' +
+        '{{/with}}'
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      expectHtml(fragment, '<div style="width: 10px; background-color: lightblue">lightblue</div>');
+      this.page.model.set('_page.color', 'green');
+      expectHtml(fragment, '<div style="width: 10px; background-color: lightgreen">lightgreen</div>');
+    });
+
+    it('updates within template attribute', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<attribute is="message" within>{{if show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
+        '</view>'
+      );
+      this.app.views.register('swatch', '<div>{{message}}</div>');
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(this.page.model.get('$components._1.message')).a(templates.Template);
+      this.page.model.set('$components._1.show', true);
+      expectHtml(fragment, '<div>Show me!</div>');
+      expect(this.page.model.get('$components._1.message')).a(templates.Template);
+    });
+
+    it('updates within expression attribute', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<attribute is="message" within>{{show ? "Show me!" : "Hide me."}}</attribute>' +
+        '</view>'
+      );
+      this.app.views.register('swatch', '<div>{{message}}</div>');
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(this.page.model.get('$components._1.message')).equal('Hide me.');
+      this.page.model.set('$components._1.show', true);
+      expectHtml(fragment, '<div>Show me!</div>');
+      expect(this.page.model.get('$components._1.message')).equal('Show me!');
+    });
+
+    it('updates array within template attribute', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<item within>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+          '<item>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{each items as #item}}' +
+          '{{#item.content}}' +
+        '{{/each}}',
+        {arrays: 'item/items'}
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(this.page.model.get('$components._1.items').length).equal(2);
+      expect(this.page.model.get('$components._1.items')[0].content).a(templates.Template);
+      expect(this.page.model.get('$components._1.items')[1].content).a(templates.Template);
+      this.page.model.set('$components._1.show', true);
+      expectHtml(fragment, 'Show me!Hide me.');
+    });
+
+    it('updates array within expression attribute', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<item within>{{show ? "Show me!" : "Hide me."}}</item>' +
+          '<item>{{show ? "Show me!" : "Hide me."}}</item>' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{each items as #item}}' +
+          '{{#item.content}}' +
+        '{{/each}}',
+        {arrays: 'item/items'}
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(this.page.model.get('$components._1.items')).eql([
+        {content: 'Hide me.'},
+        {content: 'Hide me.'}
+      ]);
+      this.page.model.set('$components._1.show', true);
+      expectHtml(fragment, 'Show me!Hide me.');
+      expect(this.page.model.get('$components._1.items')).eql([
+        {content: 'Show me!'},
+        {content: 'Hide me.'}
+      ]);
     });
 
   });
