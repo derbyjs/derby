@@ -182,11 +182,12 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
       expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
-      var previous = this.page.model.set('$components._1.value', 'gray');
+      var previous = swatch.model.set('value', 'gray');
       expectHtml(fragment, '<div style="background-color: gray">gray</div>');
       expect(this.page.model.get('_page.color')).equal('blue');
-      this.page.model.set('$components._1.value', previous);
+      swatch.model.set('value', previous);
       expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
     });
 
@@ -226,6 +227,31 @@ describe('components', function() {
       );
       this.app.views.register('swatch',
         '{{with show as #show}}' +
+          '<div>{{@message}}</div>' +
+        '{{/with}}'
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
+      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(swatch.model.get('message')).a(templates.Template);
+      swatch.model.set('show', true);
+      expectHtml(fragment, '<div>Show me!</div>');
+      expect(swatch.model.get('message')).a(templates.Template);
+    });
+
+    it('updates within template attribute in model', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<attribute is="message" within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{with show as #show}}' +
           '<div>{{message}}</div>' +
         '{{/with}}'
       );
@@ -233,11 +259,12 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
       expectHtml(fragment, '<div>Hide me.</div>');
-      expect(this.page.model.get('$components._1.message')).a(templates.Template);
-      this.page.model.set('$components._1.show', true);
+      expect(swatch.model.get('message')).a(templates.Template);
+      swatch.model.set('show', true);
       expectHtml(fragment, '<div>Show me!</div>');
-      expect(this.page.model.get('$components._1.message')).a(templates.Template);
+      expect(swatch.model.get('message')).a(templates.Template);
     });
 
     it('updates within expression attribute by making it a template', function() {
@@ -257,13 +284,75 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
       expectHtml(fragment, '<div>Hide me.</div>');
-      expect(this.page.model.get('$components._1.message')).a(templates.Template);
-      this.page.model.set('$components._1.show', true);
+      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.getAttribute('message')).equal('Hide me.');
+      swatch.model.set('show', true);
       expectHtml(fragment, '<div>Show me!</div>');
+      // getAttribute works, but the rendering context is just inside the
+      // component, so the alias is not defined
+      expect(swatch.getAttribute('message')).equal('Hide me.');
+    });
+
+    it('updates within attribute bound to component model path', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<attribute is="message" within>{{if show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
+        '</view>'
+      );
+      this.app.views.register('swatch', '<div>{{message}}</div>');
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
+      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.getAttribute('message')).equal('Hide me.');
+      swatch.model.set('show', true);
+      expectHtml(fragment, '<div>Show me!</div>');
+      expect(swatch.getAttribute('message')).equal('Show me!');
     });
 
     it('updates array within template attribute', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+          '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{with show as #show}}' +
+          '{{each @items as #item}}' +
+            '{{#item.content}}' +
+          '{{/each}}' +
+        '{{/with}}',
+        {arrays: 'item/items'}
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
+      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(swatch.getAttribute('items')).eql([
+        {content: 'Hide me.'},
+        {content: 'Hide me.'},
+      ]);
+      swatch.model.set('show', true);
+      expectHtml(fragment, 'Show me!Hide me.');
+      expect(swatch.getAttribute('items')).eql([
+        {content: 'Hide me.'},
+        {content: 'Hide me.'},
+      ]);
+    });
+
+    it('updates array within template attribute in model', function() {
       this.app = derby.createApp();
       this.page = this.app.createPage();
       this.app.views.register('Body',
@@ -284,12 +373,46 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
       expectHtml(fragment, 'Hide me.Hide me.');
-      expect(this.page.model.get('$components._1.items').length).equal(2);
-      expect(this.page.model.get('$components._1.items')[0].content).a(templates.Template);
-      expect(this.page.model.get('$components._1.items')[1].content).a(templates.Template);
-      this.page.model.set('$components._1.show', true);
+      expect(swatch.model.get('items').length).equal(2);
+      expect(swatch.model.get('items')[0].content).a(templates.Template);
+      expect(swatch.model.get('items')[1].content).a(templates.Template);
+      swatch.model.set('show', true);
       expectHtml(fragment, 'Show me!Hide me.');
+    });
+
+    it('updates array within attribute bound to component model path', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<item within>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+          '<item>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{each @items as #item}}' +
+          '{{#item.content}}' +
+        '{{/each}}',
+        {arrays: 'item/items'}
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
+      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(swatch.getAttribute('items')).eql([
+        {content: 'Hide me.'},
+        {content: 'Hide me.'},
+      ]);
+      swatch.model.set('show', true);
+      expectHtml(fragment, 'Show me!Hide me.');
+      expect(swatch.getAttribute('items')).eql([
+        {content: 'Show me!'},
+        {content: 'Hide me.'},
+      ]);
     });
 
     it('updates array within expression attribute by making it a template', function() {
@@ -313,11 +436,12 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
       expectHtml(fragment, 'Hide me.Hide me.');
-      expect(this.page.model.get('$components._1.items').length).equal(2);
-      expect(this.page.model.get('$components._1.items')[0].content).a(templates.Template);
-      expect(this.page.model.get('$components._1.items')[1].content).equal('Hide me.')
-      this.page.model.set('$components._1.show', true);
+      expect(swatch.model.get('items').length).equal(2);
+      expect(swatch.model.get('items')[0].content).a(templates.Template);
+      expect(swatch.model.get('items')[1].content).equal('Hide me.')
+      swatch.model.set('show', true);
       expectHtml(fragment, 'Show me!Hide me.');
     });
 
