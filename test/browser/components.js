@@ -191,6 +191,42 @@ describe('components', function() {
       expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
     });
 
+    it('renders template attribute passed through component and partial with correct context', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.page.model.set('_page.color', 'blue');
+      // `Body` uses the `picture-exhibit` component, passing in the `swatch` template as a
+      // `@content` attribute. `swatch` refers to a top-level model path, `_page.color`.
+      this.app.views.register('Body',
+        '<view is="picture-exhibit" label="Blue Swatch"><view is="swatch"></view></view>'
+      );
+      this.app.views.register('swatch',
+        '<div style="background-color: {{_page.color}}">{{_page.color}}</div>'
+      );
+      // `picture-exhibit` passes `@content` through as a content attribute to `picture-frame`,
+      // a simple partial. `picture-frame` then renders the content attribute that got passed
+      // all the way through. The value of `@content` is a `swatch` template, and the rendering
+      // should use the top-level context, as the usage of `swatch` didn't use `within`.
+      this.app.views.register('picture-exhibit',
+        '<view is="picture-frame">{{@content}}</view>' +
+        '<label>{{@label}}</label>'
+      );
+      this.app.views.register('picture-frame',
+        '<div class="picture-frame">{{@content}}</div>'
+      );
+
+      function PictureExhibit() {}
+      this.app.component('picture-exhibit', PictureExhibit);
+
+      var fragment = this.page.getFragment('Body');
+      expectHtml(fragment,
+        '<div class="picture-frame">' +
+          '<div style="background-color: blue">blue</div>' +
+        '</div>' +
+        '<label>Blue Swatch</label>'
+      );
+    });
+
     it('updates within template content', function() {
       this.app = derby.createApp();
       this.page = this.app.createPage();
@@ -330,6 +366,43 @@ describe('components', function() {
         '{{with show as #show}}' +
           '{{each @items as #item}}' +
             '{{#item.content}}' +
+          '{{/each}}' +
+        '{{/with}}',
+        {arrays: 'item/items'}
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
+      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(swatch.getAttribute('items')).eql([
+        {content: 'Hide me.'},
+        {content: 'Hide me.'},
+      ]);
+      swatch.model.set('show', true);
+      expectHtml(fragment, 'Show me!Hide me.');
+      expect(swatch.getAttribute('items')).eql([
+        {content: 'Hide me.'},
+        {content: 'Hide me.'},
+      ]);
+    });
+
+    it('updates array within template attribute with content alias', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+          '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{with show as #show}}' +
+          '{{each @items as #item}}' +
+            '{{with #item.content as #itemContent}}' +
+              '{{#itemContent}}' +
+            '{{/with}}' +
           '{{/each}}' +
         '{{/with}}',
         {arrays: 'item/items'}
