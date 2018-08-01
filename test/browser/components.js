@@ -382,6 +382,39 @@ describe('components', function() {
       expectHtml(fragment, 'Show me!Hide me.');
     });
 
+    it('updates array within template attribute in model from partial', function() {
+      this.app = derby.createApp();
+      this.page = this.app.createPage();
+      this.app.views.register('Body',
+        '<view is="swatch">' +
+          '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+          '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
+        '</view>'
+      );
+      this.app.views.register('swatch',
+        '{{with show as #show}}' +
+          '<view is="swatch-items"></view>' +
+        '{{/with}}',
+        {arrays: 'item/items'}
+      );
+      this.app.views.register('swatch-items',
+        '{{each items as #item}}' +
+          '{{#item.content}}' +
+        '{{/each}}'
+      );
+      function Swatch() {}
+      this.Swatch = Swatch;
+      this.app.component('swatch', Swatch);
+      var fragment = this.page.getFragment('Body');
+      var swatch = this.page._components._1;
+      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(swatch.model.get('items').length).equal(2);
+      expect(swatch.model.get('items')[0].content).a(templates.Template);
+      expect(swatch.model.get('items')[1].content).a(templates.Template);
+      swatch.model.set('show', true);
+      expectHtml(fragment, 'Show me!Hide me.');
+    });
+
     it('updates array within attribute bound to component model path', function() {
       this.app = derby.createApp();
       this.page = this.app.createPage();
