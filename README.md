@@ -1,4 +1,3 @@
-[![browser support](https://ci.testling.com/derbyjs/derby.png)](https://ci.testling.com/derbyjs/derby)
 [![build status](https://api.travis-ci.org/derbyjs/derby.png)](http://travis-ci.org/derbyjs/derby)
 
 # Derby
@@ -13,14 +12,12 @@ See docs here: **http://derbyjs.com/**
 
 Examples here: **https://github.com/derbyjs/derby-examples**
 
-## Major updates coming soon!
-
-0.6 was a complete rewrite that fundamentally changed a lot of things internally. 0.6 increases performance, reduces memory leaks, and improves stability. The docs are still being updated. There have been many API changes, but they are straightforward for current Derby apps. Most of the changes are simplifications that will clean up awkward limitations of the previous version.
+## Getting in touch
 
 If you have feedback, ideas, or suggestions, please message the [Google Group](http://groups.google.com/group/derbyjs) or create an Issue. If you are interested in contributing, please reach out to [Nate](https://github.com/nateps).
 
 ## MIT License
-Copyright (c) 2011-2017 by Nate Smith
+Copyright (c) 2011-2018 by Nate Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
