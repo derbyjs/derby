@@ -388,4 +388,48 @@ describe('bindings', function() {
       'Four'
     ]);
   });
+  // Racer model listeners could mutate the model, causing changed mutations.
+  // These events queue up in the model's mutator event queue. Derby knows
+  // when to re-evaluate bindings by registering catch-all model listeners.
+
+  // If a first event triggers a listener that causes a mutation on the same
+  // path, and if Derby's listeners were to participate in the event queue,
+  // then the model would get mutated before Derby can update bindings
+  // in response to the first event. That would mean incorrect UI updates.
+
+  // For example, say an array starts with [A]. First, we insert B at index 0,
+  // then inside a listener on the array, we insert C at index 0. The final
+  // state of the array is [C, B, A]. However, if the model gets mutated to
+  // the final state before Derby can update its bindings in response to the
+  // first insert, then the UI would end up showing [C, C, A].
+
+  // This is solved by having Derby register its catch-all listeners using
+  // the *Immediate events, which operate outside the mutator event queue.
+  it('array chained insertions at index 0', function() {
+    var Model = require('racer').Model;
+
+    var app = derby.createApp();
+    app.views.register('Body',
+      '<ul>' +
+        '{{each _data.items as #item}}' +
+          '<li>{{#item}}</li>' +
+        '{{/each}}' +
+      '</ul>'
+    );
+    app.model.set('$derbyFlags.immediateModelListeners', true);
+    app.model.on('insert', '_data.items', function(index, values) {
+      if (values[0] == 'B') {
+        app.model.insert('_data.items', 0, 'C');
+      }
+    });
+
+    var page = app.createPage();
+    var $items = page.model.at('_data.items');
+    $items.set(['A']);
+
+    var fragment = page.getFragment('Body');
+    expectHtml(fragment, '<ul><li>A</li></ul>');
+    $items.insert(0, 'B');
+    expectHtml(fragment, '<ul><li>C</li><li>B</li><li>A</li></ul>');
+  });
 });
