@@ -432,4 +432,33 @@ describe('bindings', function() {
     $items.insert(0, 'B');
     expectHtml(fragment, '<ul><li>C</li><li>B</li><li>A</li></ul>');
   });
+
+  it('mutation with number path segments', function() {
+    // The Page sets up model listeners that call into event model listeners,
+    // which handle binding updates. The event model expects that any numeric
+    // path segments it receives have been cast into JS numbers, which the
+    // Racer model doesn't necessarily guarantee.
+    var app = derby.createApp();
+    app.views.register('Body',
+      '<ul>' +
+        '{{each _data.items as #item}}' +
+          '<li>{{#item.label}}</li>' +
+        '{{/each}}' +
+      '</ul>'
+    );
+    app.model.set('$derbyFlags.immediateModelListeners', true);
+    var page = app.createPage();
+    var $items = page.model.at('_data.items');
+    $items.set([
+      {label: 'Red', hexCode: '#ff0000'},
+      {label: 'Green', hexCode: '#00ff00'},
+      {label: 'Blue', hexCode: '#0000ff'},
+    ]);
+
+    var fragment = page.getFragment('Body');
+    expectHtml(fragment, '<ul><li>Red</li><li>Green</li><li>Blue</li></ul>');
+    // Test mutation with a numeric path segment.
+    app.model.set('_data.items.1.label', 'Verde');
+    expectHtml(fragment, '<ul><li>Red</li><li>Verde</li><li>Blue</li></ul>');
+  });
 });
