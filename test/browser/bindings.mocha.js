@@ -406,8 +406,6 @@ describe('bindings', function() {
   // This is solved by having Derby register its catch-all listeners using
   // the *Immediate events, which operate outside the mutator event queue.
   it('array chained insertions at index 0', function() {
-    var Model = require('racer').Model;
-
     var app = derby.createApp();
     app.views.register('Body',
       '<ul>' +
