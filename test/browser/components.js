@@ -6,6 +6,269 @@ var expectHtml = util.expectHtml;
 
 describe('components', function() {
 
+  describe('bind', function() {
+    it('calls a function with `this` being the component and passed in arguments', function() {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box"></view>');
+      app.views.register('box', '<div>{{area}}</div>');
+      var getArea = function(scale) {
+        expect(this).instanceof(Box);
+        return this.width * this.height * scale;
+      };
+      function Box() {}
+      Box.prototype.init = function() {
+        this.width = 3;
+        this.height = 4;
+      };
+      Box.prototype.create = function() {
+        var bound = this.bind(getArea);
+        var area = bound(10);
+        this.model.set('area', area);
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+      expectHtml(fragment, '<div>120</div>');
+    });
+  });
+
+  describe('debounce and throttle', function() {
+    function test(getFn, options) {
+      options = options || {};
+
+      it('calls a function once with `this` being the component', function(done) {
+        var app = derby.createApp();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
+        app.views.register('box', '<div></div>');
+        var called = false;
+        var update = function() {
+          expect(this).instanceof(Box);
+          called = true;
+          // Will error if called more than once:
+          done();
+        };
+        function Box() {}
+        Box.prototype.create = function() {
+          this.update = getFn.call(this, update);
+        };
+        app.component('box', Box);
+        var fragment = page.getFragment('Body');
+        var box = page.box;
+        box.update();
+        box.update();
+        box.update();
+        expect(called).equal(false);
+      });
+
+      it('resets and calls again', function(done) {
+        var app = derby.createApp();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
+        app.views.register('box', '<div></div>');
+        var called = false;
+        var box;
+        var update = function(cb) {
+          expect(this).instanceof(Box);
+          if (called) {
+            done();
+          } else {
+            called = true;
+            if (options.async) {
+              cb();
+              box.update();
+            } else {
+              box.update();
+            }
+          }
+        };
+        function Box() {}
+        Box.prototype.create = function() {
+          this.update = getFn.call(this, update);
+        };
+        app.component('box', Box);
+        var fragment = page.getFragment('Body');
+        box = page.box;
+        box.update();
+        box.update();
+        box.update();
+      });
+
+      it('calls with the most recent arguments', function(done) {
+        var app = derby.createApp();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
+        app.views.register('box', '<div></div>');
+        var called = false;
+        var box;
+        var update = function(letter, number, cb) {
+          expect(this).instanceof(Box);
+          if (called) {
+            expect(letter).equal('e');
+            expect(number).equal(5);
+            done();
+          } else {
+            expect(letter).equal('c');
+            expect(number).equal(3);
+            called = true;
+            if (options.async) {
+              cb();
+              box.update('d', 4);
+              box.update('e', 5);
+            } else {
+              box.update('d', 4);
+              box.update('e', 5);
+            }
+          }
+        };
+        function Box() {}
+        Box.prototype.create = function() {
+          this.update = getFn.call(this, update);
+        };
+        app.component('box', Box);
+        var fragment = page.getFragment('Body');
+        box = page.box;
+        box.update('a', 1);
+        box.update('b', 2);
+        box.update('c', 3);
+      });
+    }
+    describe('debounce default delay', function() {
+      test(function(update) {
+        return this.debounce(update);
+      });
+    });
+    describe('debounce milliseconds delay value', function() {
+      test(function(update) {
+        return this.debounce(update, 10);
+      });
+    });
+    describe('debounceAsync default delay', function() {
+      test(function(update) {
+        return this.debounceAsync(update);
+      }, {async: true});
+    });
+    describe('debounceAsync milliseconds delay value', function() {
+      test(function(update) {
+        return this.debounceAsync(update, 10);
+      }, {async: true});
+    });
+    describe('throttle default delay', function() {
+      test(function(update) {
+        return this.throttle(update);
+      });
+    });
+    describe('throttle milliseconds delay value', function() {
+      test(function(update) {
+        return this.throttle(update, 10);
+      });
+    });
+    describe('throttle with alternative delay function', function() {
+      test(function(update) {
+        return this.throttle(update, process.nextTick);
+      });
+    });
+    it('debounceAsync does not apply arguments if callback has only one argument', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box" as="box"></view>');
+      app.views.register('box', '<div></div>');
+      var called = false;
+      var update = function(cb) {
+        expect(cb).a('function');
+        if (called) {
+          done();
+        } else {
+          called = true;
+          cb();
+          page.box.update('foo');
+        }
+      };
+      function Box() {}
+      Box.prototype.create = function() {
+        this.update = this.debounceAsync(update);
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+      page.box.update('a', 1);
+    });
+    it('debounceAsync debounces until the async call completes', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box"></view>');
+      app.views.register('box', '<div></div>');
+      var calls = 0;
+      var intervalCount = 0;
+      var interval;
+      var update = function(cb) {
+        if (calls === 0) {
+          expect(intervalCount).equal(1);
+        } else if (calls < 5) {
+          // 17 / 7 ~= 2.4
+          expect(intervalCount).within(2, 3);
+        } else {
+          clearInterval(interval);
+          return done();
+        }
+        calls++;
+        intervalCount = 0;
+        setTimeout(cb, 17);
+      };
+      function Box() {}
+      Box.prototype.create = function() {
+        var debounced = this.debounceAsync(update);
+        interval = setInterval(function() {
+          intervalCount++;
+          debounced();
+          debounced();
+          setTimeout(debounced, 0);
+          setTimeout(debounced, 0);
+        }, 7);
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+    });
+    it('throttle calls no more frequently than delay', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box"></view>');
+      app.views.register('box', '<div></div>');
+      var delay = 10;
+      var calls = 0;
+      var tickCount = 0;
+      var timeout;
+      var previous;
+      var update = function() {
+        calls++;
+        var now = +new Date();
+        if (calls < 20) {
+          if (previous) {
+            expect(now - previous).least(delay);
+          }
+        } else {
+          expect(tickCount).above(calls);
+          clearTimeout(timeout);
+          return done();
+        }
+        previous = now;
+      };
+      function Box() {}
+      Box.prototype.create = function() {
+        var debounced = this.throttle(update, delay);
+        var tick = function() {
+          timeout = setTimeout(function() {
+            tickCount++;
+            debounced();
+            tick();
+          }, Math.random() * delay * 1.5);
+        };
+        tick();
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+    });
+  });
+
   describe('dependencies', function() {
     it('gets dependencies rendered inside of components', function() {
       var app = derby.createApp();
