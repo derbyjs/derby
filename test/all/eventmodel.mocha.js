@@ -1,4 +1,4 @@
-var expect = require('expect.js');
+var expect = require('chai').expect;
 var EventModel = require('../../lib/eventmodel');
 
 describe('eventmodel', function() {

@@ -1,3 +1,4 @@
+var expect = require('chai').expect;
 var templates = require('derby-templates').templates;
 var util = require('./util');
 var derby = util.derby;
@@ -272,10 +273,10 @@ describe('components', function() {
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
       expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
       expectHtml(fragment, '<div>Show me!</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.model.get('message')).instanceof(templates.Template);
     });
 
     it('updates within template attribute in model', function() {
@@ -297,10 +298,10 @@ describe('components', function() {
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
       expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
       expectHtml(fragment, '<div>Show me!</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.model.get('message')).instanceof(templates.Template);
     });
 
     it('updates within expression attribute by making it a template', function() {
@@ -322,7 +323,7 @@ describe('components', function() {
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
       expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
       swatch.model.set('show', true);
       expectHtml(fragment, '<div>Show me!</div>');
@@ -346,7 +347,7 @@ describe('components', function() {
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
       expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
       swatch.model.set('show', true);
       expectHtml(fragment, '<div>Show me!</div>');
@@ -449,8 +450,8 @@ describe('components', function() {
       var swatch = this.page._components._1;
       expectHtml(fragment, 'Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
-      expect(swatch.model.get('items')[0].content).a(templates.Template);
-      expect(swatch.model.get('items')[1].content).a(templates.Template);
+      expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
+      expect(swatch.model.get('items')[1].content).instanceof(templates.Template);
       swatch.model.set('show', true);
       expectHtml(fragment, 'Show me!Hide me.');
     });
@@ -482,8 +483,8 @@ describe('components', function() {
       var swatch = this.page._components._1;
       expectHtml(fragment, 'Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
-      expect(swatch.model.get('items')[0].content).a(templates.Template);
-      expect(swatch.model.get('items')[1].content).a(templates.Template);
+      expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
+      expect(swatch.model.get('items')[1].content).instanceof(templates.Template);
       swatch.model.set('show', true);
       expectHtml(fragment, 'Show me!Hide me.');
     });
@@ -545,7 +546,7 @@ describe('components', function() {
       var swatch = this.page._components._1;
       expectHtml(fragment, 'Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
-      expect(swatch.model.get('items')[0].content).a(templates.Template);
+      expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
       expect(swatch.model.get('items')[1].content).equal('Hide me.')
       swatch.model.set('show', true);
       expectHtml(fragment, 'Show me!Hide me.');

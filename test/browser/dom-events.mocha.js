@@ -1,4 +1,4 @@
-var expect = require('expect.js');
+var expect = require('chai').expect;
 var util = require('./util');
 var derby = util.derby;
 var expectHtml = util.expectHtml;

@@ -1,4 +1,4 @@
-var expect = require('expect.js');
+var expect = require('chai').expect;
 var DerbyStandalone = require('../../lib/DerbyStandalone');
 var derby = new DerbyStandalone();
 require('derby-parsing');
