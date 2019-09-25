@@ -12,7 +12,7 @@
     "test": "./node_modules/.bin/mocha test/all/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js"
   },
   "dependencies": {
-    "chokidar": "^1.2.0",
+    "chokidar": "^3.1.1",
     "derby-parsing": "^0.7.6",
     "derby-templates": "^0.7.3",
     "html-util": "^0.2.1",
