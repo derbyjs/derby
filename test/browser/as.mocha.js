@@ -1,4 +1,4 @@
-var expect = require('expect.js');
+var expect = require('chai').expect;
 var util = require('./util');
 var derby = util.derby;
 var expectHtml = util.expectHtml;
@@ -21,7 +21,7 @@ describe('as', function() {
     app.component('item', Item);
     var page = app.createPage();
     var fragment = page.getFragment('Body');
-    expect(page.nested[0]).an(Item);
+    expect(page.nested[0]).instanceof(Item);
     expectHtml(page.nested[0].markerNode.nextSibling, '<div></div>');
     expectHtml(fragment, '<div></div>');
   });
@@ -43,20 +43,20 @@ describe('as', function() {
     ]);
     var fragment = page.getFragment('Body');
 
-    expect(page.nested.map).only.keys('a', 'b', 'c');
+    expect(page.nested.map).all.keys('a', 'b', 'c');
     expectHtml(page.nested.map.a, '<li>A</li>');
     expectHtml(page.nested.map.b, '<li>B</li>');
     expectHtml(page.nested.map.c, '<li>C</li>');
     expectHtml(fragment, '<ul><li>A</li><li>B</li><li>C</li></ul>');
 
     page.model.remove('_page.items', 1);
-    expect(page.nested.map).only.keys('a', 'c');
+    expect(page.nested.map).all.keys('a', 'c');
     expectHtml(page.nested.map.a, '<li>A</li>');
     expectHtml(page.nested.map.c, '<li>C</li>');
     expectHtml(fragment, '<ul><li>A</li><li>C</li></ul>');
 
     page.model.unshift('_page.items', {id: 'd', text: 'D'});
-    expect(page.nested.map).only.keys('a', 'c', 'd');
+    expect(page.nested.map).all.keys('a', 'c', 'd');
     expectHtml(page.nested.map.a, '<li>A</li>');
     expectHtml(page.nested.map.c, '<li>C</li>');
     expectHtml(page.nested.map.d, '<li>D</li>');
@@ -89,28 +89,28 @@ describe('as', function() {
     ]);
     var fragment = page.getFragment('Body');
 
-    expect(page.nested.map).only.keys('a', 'b', 'c');
-    expect(page.nested.map.a).an(Item);
-    expect(page.nested.map.b).an(Item);
-    expect(page.nested.map.c).an(Item);
+    expect(page.nested.map).all.keys('a', 'b', 'c');
+    expect(page.nested.map.a).instanceof(Item);
+    expect(page.nested.map.b).instanceof(Item);
+    expect(page.nested.map.c).instanceof(Item);
     expectHtml(page.nested.map.a.markerNode.nextSibling, '<li>A</li>');
     expectHtml(page.nested.map.b.markerNode.nextSibling, '<li>B</li>');
     expectHtml(page.nested.map.c.markerNode.nextSibling, '<li>C</li>');
     expectHtml(fragment, '<ul><li>A</li><li>B</li><li>C</li></ul>');
 
     page.model.remove('_page.items', 1);
-    expect(page.nested.map).only.keys('a', 'c');
-    expect(page.nested.map.a).an(Item);
-    expect(page.nested.map.c).an(Item);
+    expect(page.nested.map).all.keys('a', 'c');
+    expect(page.nested.map.a).instanceof(Item);
+    expect(page.nested.map.c).instanceof(Item);
     expectHtml(page.nested.map.a.markerNode.nextSibling, '<li>A</li>');
     expectHtml(page.nested.map.c.markerNode.nextSibling, '<li>C</li>');
     expectHtml(fragment, '<ul><li>A</li><li>C</li></ul>');
 
     page.model.unshift('_page.items', {id: 'd', text: 'D'});
-    expect(page.nested.map).only.keys('a', 'c', 'd');
-    expect(page.nested.map.a).an(Item);
-    expect(page.nested.map.c).an(Item);
-    expect(page.nested.map.d).an(Item);
+    expect(page.nested.map).all.keys('a', 'c', 'd');
+    expect(page.nested.map.a).instanceof(Item);
+    expect(page.nested.map.c).instanceof(Item);
+    expect(page.nested.map.d).instanceof(Item);
     expectHtml(page.nested.map.a.markerNode.nextSibling, '<li>A</li>');
     expectHtml(page.nested.map.c.markerNode.nextSibling, '<li>C</li>');
     expectHtml(page.nested.map.d.markerNode.nextSibling, '<li>D</li>');
@@ -187,9 +187,9 @@ describe('as', function() {
 
     expect(page.nested.list).an('array');
     expect(page.nested.list).length(3);
-    expect(page.nested.list[0]).an(Item);
-    expect(page.nested.list[1]).an(Item);
-    expect(page.nested.list[2]).an(Item);
+    expect(page.nested.list[0]).instanceof(Item);
+    expect(page.nested.list[1]).instanceof(Item);
+    expect(page.nested.list[2]).instanceof(Item);
     expectHtml(page.nested.list[0].markerNode.nextSibling, '<li>A</li>');
     expectHtml(page.nested.list[1].markerNode.nextSibling, '<li>B</li>');
     expectHtml(page.nested.list[2].markerNode.nextSibling, '<li>C</li>');
@@ -197,17 +197,17 @@ describe('as', function() {
 
     page.model.remove('_page.items', 1);
     expect(page.nested.list).length(2);
-    expect(page.nested.list[0]).an(Item);
-    expect(page.nested.list[1]).an(Item);
+    expect(page.nested.list[0]).instanceof(Item);
+    expect(page.nested.list[1]).instanceof(Item);
     expectHtml(page.nested.list[0].markerNode.nextSibling, '<li>A</li>');
     expectHtml(page.nested.list[1].markerNode.nextSibling, '<li>C</li>');
     expectHtml(fragment, '<ul><li>A</li><li>C</li></ul>');
 
     page.model.unshift('_page.items', {id: 'd', text: 'D'});
     expect(page.nested.list).length(3);
-    expect(page.nested.list[0]).an(Item);
-    expect(page.nested.list[1]).an(Item);
-    expect(page.nested.list[2]).an(Item);
+    expect(page.nested.list[0]).instanceof(Item);
+    expect(page.nested.list[1]).instanceof(Item);
+    expect(page.nested.list[2]).instanceof(Item);
     expectHtml(page.nested.list[0].markerNode.nextSibling, '<li>D</li>');
     expectHtml(page.nested.list[1].markerNode.nextSibling, '<li>A</li>');
     expectHtml(page.nested.list[2].markerNode.nextSibling, '<li>C</li>');
