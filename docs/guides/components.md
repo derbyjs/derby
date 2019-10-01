@@ -63,7 +63,6 @@ module.exports = Tabs;
 
 function Tabs() {}
 Tabs.prototype.view = __dirname + '/tabs.html';
-Tabs.prototype.style = __dirname + '/tabs.styl';
 
 Tabs.prototype.init = function(model) {
   model.setNull('selectedIndex', 0);
@@ -78,7 +77,6 @@ Tabs.prototype.select = function(pane, e) {
 ```
 module.exports = class Tabs
   view: __dirname + '/tabs.html'
-  style: __dirname + '/tabs.styl'
 
   init: (model) ->
     model.setNull 'selectedIndex', 0
