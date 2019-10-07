@@ -6,6 +6,64 @@ var expectHtml = util.expectHtml;
 
 describe('components', function() {
 
+  describe('destroy', function() {
+    it('emits a "destroy" event when the component is removed from the DOM', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body',
+        '{{unless _page.hide}}' +
+          '<view is="box" as="box"></view>' +
+        '{{/unless}}'
+      );
+      app.views.register('box', '<div></div>');
+      function Box() {}
+      app.component('box', Box);
+      page.getFragment('Body');
+
+      expect(page.box).instanceof(Box);
+      page.box.on('destroy', function() {
+        done();
+      });
+      page.model.set('_page.hide', true);
+    });
+
+    it('emits an event declared in the template with `on-destroy`', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body',
+        '{{unless _page.hide}}' +
+          '<view is="box" on-destroy="destroyBox()"></view>' +
+        '{{/unless}}'
+      );
+      app.views.register('box', '<div></div>');
+      function Box() {}
+      app.component('box', Box);
+      page.destroyBox = function() {
+        done();
+      };
+      page.getFragment('Body');
+      page.model.set('_page.hide', true);
+    });
+
+    it('sets `this.isDestroyed` property to true after a component has been fully destroyed', function() {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body',
+        '{{unless _page.hide}}' +
+          '<view is="box" as="box"></view>' +
+        '{{/unless}}'
+      );
+      app.views.register('box', '<div></div>');
+      function Box() {}
+      app.component('box', Box);
+      page.getFragment('Body');
+      var box = page.box;
+      expect(box.isDestroyed).equal(false);
+      page.model.set('_page.hide', true);
+      expect(box.isDestroyed).equal(true);
+    });
+  });
+
   describe('bind', function() {
     it('calls a function with `this` being the component and passed in arguments', function() {
       var app = derby.createApp();
