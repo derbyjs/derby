@@ -1,7 +1,6 @@
 var htmlUtil = require('html-util');
 
 exports.parseViews = function(namespace, file, filename, onImport) {
-  var imports = [];
   var views = [];
   var prefix = (namespace) ? namespace + ':' : '';
 
@@ -51,8 +50,5 @@ exports.parseViews = function(namespace, file, filename, onImport) {
     });
   }
 
-  return {
-    imports: imports,
-    views: views
-  };
+  return views;
 };
