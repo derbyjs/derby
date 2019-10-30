@@ -417,7 +417,6 @@ describe('bindings', function() {
         '{{/each}}' +
       '</ul>'
     );
-    app.model.set('$derbyFlags.immediateModelListeners', true);
     app.model.on('insert', '_data.items', function(index, values) {
       if (values[0] == 'B') {
         app.model.insert('_data.items', 0, 'C');
