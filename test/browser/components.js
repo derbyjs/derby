@@ -1,8 +1,6 @@
 var expect = require('chai').expect;
 var templates = require('derby-templates').templates;
-var util = require('./util');
-var derby = util.derby;
-var expectHtml = util.expectHtml;
+var derby = require('./util').derby;
 
 describe('components', function() {
 
@@ -86,7 +84,7 @@ describe('components', function() {
       };
       app.component('box', Box);
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, '<div>120</div>');
+      expect(fragment).html('<div>120</div>');
     });
   });
 
@@ -401,9 +399,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, '<div style="background-color: blue"></div>');
+      expect(fragment).html('<div style="background-color: blue"></div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, '<div style="background-color: gray"></div>');
+      expect(fragment).html('<div style="background-color: gray"></div>');
     });
 
     it('updates model when expression attribute changes', function() {
@@ -426,9 +424,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, 'lightblue<div style="background-color: lightblue"></div>');
+      expect(fragment).html('lightblue<div style="background-color: lightblue"></div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, 'lightgray<div style="background-color: lightgray"></div>');
+      expect(fragment).html('lightgray<div style="background-color: lightgray"></div>');
     });
 
     it('updates model when template attribute changes', function() {
@@ -451,9 +449,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, 'lightblue<div style="background-color: lightblue"></div>');
+      expect(fragment).html('lightblue<div style="background-color: lightblue"></div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, 'lightgray<div style="background-color: lightgray"></div>');
+      expect(fragment).html('lightgray<div style="background-color: lightgray"></div>');
     });
 
     it('updates view expression', function() {
@@ -480,11 +478,11 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, '<div style="background-color: lightblue">background-color: lightblue</div>');
+      expect(fragment).html('<div style="background-color: lightblue">background-color: lightblue</div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, '<div style="background-color: lightgray">background-color: lightgray</div>');
+      expect(fragment).html('<div style="background-color: lightgray">background-color: lightgray</div>');
       this.page.model.set('_page.view', 'fore');
-      expectHtml(fragment, '<div style="color: lightgray">color: lightgray</div>');
+      expect(fragment).html('<div style="color: lightgray">color: lightgray</div>');
     });
 
     it('updates when template attribute is updated to new value inside component model', function() {
@@ -505,12 +503,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
+      expect(fragment).html('<div style="background-color: lightblue">lightblue</div>');
       var previous = swatch.model.set('value', 'gray');
-      expectHtml(fragment, '<div style="background-color: gray">gray</div>');
+      expect(fragment).html('<div style="background-color: gray">gray</div>');
       expect(this.page.model.get('_page.color')).equal('blue');
       swatch.model.set('value', previous);
-      expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
+      expect(fragment).html('<div style="background-color: lightblue">lightblue</div>');
     });
 
     it('renders template attribute passed through component and partial with correct context', function() {
@@ -541,7 +539,7 @@ describe('components', function() {
       this.app.component('picture-exhibit', PictureExhibit);
 
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment,
+      expect(fragment).html(
         '<div class="picture-frame">' +
           '<div style="background-color: blue">blue</div>' +
         '</div>' +
@@ -570,9 +568,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, '<div style="width: 10px; background-color: lightblue">lightblue</div>');
+      expect(fragment).html('<div style="width: 10px; background-color: lightblue">lightblue</div>');
       this.page.model.set('_page.color', 'green');
-      expectHtml(fragment, '<div style="width: 10px; background-color: lightgreen">lightgreen</div>');
+      expect(fragment).html('<div style="width: 10px; background-color: lightgreen">lightgreen</div>');
     });
 
     it('updates within template attribute', function() {
@@ -593,10 +591,10 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
+      expect(fragment).html('<div>Show me!</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
     });
 
@@ -618,10 +616,10 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
+      expect(fragment).html('<div>Show me!</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
     });
 
@@ -643,11 +641,11 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
+      expect(fragment).html('<div>Show me!</div>');
       // getAttribute works, but the rendering context is just inside the
       // component, so the alias is not defined
       expect(swatch.getAttribute('message')).equal('Hide me.');
@@ -667,11 +665,11 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
+      expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
+      expect(fragment).html('<div>Show me!</div>');
       expect(swatch.getAttribute('message')).equal('Show me!');
     });
 
@@ -697,13 +695,13 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
       ]);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
@@ -734,13 +732,13 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
       ]);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
@@ -769,12 +767,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
       expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
       expect(swatch.model.get('items')[1].content).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
     });
 
     it('updates array within template attribute in model from partial', function() {
@@ -802,12 +800,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
       expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
       expect(swatch.model.get('items')[1].content).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
     });
 
     it('updates array within attribute bound to component model path', function() {
@@ -830,13 +828,13 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
       ]);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Show me!'},
         {content: 'Hide me.'},
@@ -865,12 +863,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
       expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
       expect(swatch.model.get('items')[1].content).equal('Hide me.')
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
     });
 
   });
