@@ -1,9 +1,6 @@
 module.exports = function(domWindow, Assertion) {
-  if (!domWindow) domWindow = window;
-  var domDocument = domWindow.document;
-  var domNode = domWindow.Node;
-
   function removeComments(node) {
+    var domDocument = (domWindow || window).document;
     var clone = domDocument.importNode(node, true);
     // last two arguments for createTreeWalker are required in IE
     // NodeFilter.SHOW_COMMENT === 128
@@ -19,6 +16,7 @@ module.exports = function(domWindow, Assertion) {
   }
 
   function getHtml(node, parentTag) {
+    var domDocument = (domWindow || window).document;
     var el = domDocument.createElement(parentTag || 'ins');
     var clone = domDocument.importNode(node, true);
     el.appendChild(clone);
@@ -30,6 +28,7 @@ module.exports = function(domWindow, Assertion) {
       var obj = this._obj;
       var includeComments = options && options.includeComments;
       var parentTag = options && options.parentTag;
+      var domNode = (domWindow || window).Node;
 
       new Assertion(obj).instanceOf(domNode);
       new Assertion(expected).is.a('string');
