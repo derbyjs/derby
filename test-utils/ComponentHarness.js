@@ -29,6 +29,17 @@ ComponentHarness.prototype.setup = function(source) {
   return this;
 };
 ComponentHarness.prototype.getInstance = function() {
+  // HACK: Implement getting an instance as a side-effect of HTML rendering.
+  // This code relies on the fact that while rendering HTML, components are
+  // instantiated, and a reference is kept on page._components. Since we just
+  // created the page, we can reliably return the first component.
+  //
+  // The more standard means for getting a reference to a component controller
+  // would be to add a hooks in the view with `as=` or `on-init=`. However,
+  // we want the developer to pass this view in, so they can supply whatever
+  // harness context they like.
+  //
+  // This may need to be updated if the internal workings of Derby change.
   var page = this._createPage();
   page.get('$harness');
   return page._components._1;
