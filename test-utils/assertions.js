@@ -17,6 +17,12 @@ module.exports = function(domWindow, Assertion) {
 
   function getHtml(node, parentTag) {
     var domDocument = (domWindow || window).document;
+    // We use the <ins> element, because it has a transparent content model:
+    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Transparent_content_model
+    //
+    // In practice, DOM validity isn't enforced by browsers when using
+    // appendChild and innerHTML, so specifying a valid parentTag for the node
+    // should not be necessary
     var el = domDocument.createElement(parentTag || 'ins');
     var clone = domDocument.importNode(node, true);
     el.appendChild(clone);
