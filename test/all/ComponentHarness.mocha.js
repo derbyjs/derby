@@ -31,7 +31,7 @@ describe('ComponentHarness', function() {
       function Box() {}
       Box.view = {
         is: 'box',
-        source: '<div class="box"></div>'
+        source: '<index:><div class="box"></div>'
       };
       var html = new ComponentHarness('<view is="box" />', Box).getHtml();
       expect(html).equal('<div class="box"></div>');
@@ -45,7 +45,7 @@ describe('ComponentHarness', function() {
       function Box() {}
       Box.view = {
         is: 'box',
-        source: '<div class="box"></div>'
+        source: '<index:><div class="box"></div>'
       };
       var fragment = new ComponentHarness('<view is="box" />', Box).getFragment();
       expect(fragment).instanceof(DocumentFragment);
