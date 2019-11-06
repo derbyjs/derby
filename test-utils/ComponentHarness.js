@@ -54,6 +54,13 @@ ComponentHarness.prototype.renderDom = function() {
     page.fragment = page.getFragment('$harness');
   });
 };
+ComponentHarness.prototype.attachTo = function(parentNode, node) {
+  return this._get(function(page) {
+    var view = page.getView('$harness');
+    var targetNode = node || parentNode.firstChild;
+    view.attachTo(parentNode, targetNode, page.context);
+  });
+};
 ComponentHarness.prototype._get = function(render) {
   var page = new this.app.Page(this.app, this.model);
   render(page);

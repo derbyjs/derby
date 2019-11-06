@@ -1,3 +1,5 @@
+var ComponentHarness = require('./ComponentHarness');
+
 module.exports = function(domWindow, Assertion) {
   function removeComments(node) {
     var domDocument = (domWindow || window).document;
@@ -48,6 +50,42 @@ module.exports = function(domWindow, Assertion) {
         'expected to not have HTML #{act}',
         expected,
         html
+      );
+    });
+
+    Assertion.addMethod('render', function(expected, options) {
+      var harness = this._obj;
+      var domDocument = (domWindow || window).document;
+      var parentTag = (options && options.parentTag) || 'ins';
+
+      new Assertion(harness).instanceOf(ComponentHarness);
+      new Assertion(expected).is.a('string');
+
+      // Check HTML matches expected value
+      var html = harness.renderHtml().html;
+      new Assertion(html).equal(expected);
+
+      // Check DOM rendering is also equivalent
+      var fragment = harness.renderDom().fragment;
+      new Assertion(fragment).html(expected, options);
+
+      // Try attaching. Attachment will throw an error if HTML doesn't match
+      var el = domDocument.createElement(parentTag);
+      el.innerHTML = html;
+      var attachError;
+      try {
+        harness.attachTo(el);
+      } catch (err) {
+        attachError = err;
+      }
+
+      this.assert(
+        !attachError,
+        'expected success attaching to #{exp} but got #{act}.\n' +
+          (attachError && attachError.message),
+        'expected render to fail but matched #{exp}',
+        expected,
+        el.innerHTML
       );
     });
   }

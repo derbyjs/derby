@@ -156,6 +156,38 @@ describe('ComponentHarness', function() {
       expect(box.myClown).instanceof(Clown);
     });
   });
+
+  describe('render assertion', function() {
+    if (typeof document === 'undefined') return;
+
+    it('checks component HTML, DOM, and attachment rendering', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source: '<index:><div class="box"></div>'
+      };
+      var harness = new ComponentHarness('<view is="box" />', Box);
+      expect(harness).to.render('<div class="box"></div>');
+    });
+
+    it('fails to attach due to invalid HTML', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source: '<index:><p><div></div></p>'
+      };
+      var harness = new ComponentHarness('<view is="box" />', Box);
+      expect(harness).not.to.render('<p><div></div></p>');
+    });
+
+    it('passes with blank view', function() {
+      function Box() {}
+      Box.view = {is: 'box'};
+      var harness = new ComponentHarness('<view is="box" />', Box);
+      expect(harness).to.render('');
+    });
+  });
+
   describe('setup', function() {
     it('can be called after instantiation to configure a harness', function() {
       function Box() {}
