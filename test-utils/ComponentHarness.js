@@ -28,6 +28,22 @@ ComponentHarness.prototype.setup = function(source) {
   }
   return this;
 };
+ComponentHarness.prototype.skip = function() {
+  for (var i = 0; i < arguments.length; i++) {
+    var name = arguments[i];
+    this.app.views.register(name, '');
+  }
+  return this;
+};
+ComponentHarness.prototype.mock = function() {
+  for (var i = 0; i < arguments.length; i++) {
+    var arg = arguments[i];
+    var options = (typeof arg === 'string') ? {is: arg} : arg;
+    var mock = createMock(options);
+    this.app.component(mock);
+  }
+  return this;
+};
 ComponentHarness.prototype.renderHtml = function() {
   return this._get(function(page) {
     page.html = page.get('$harness');
@@ -55,3 +71,40 @@ ComponentHarness.prototype._get = function(render) {
   page.component = page._components._1;
   return page;
 };
+ComponentHarness.createMock = createMock;
+
+function createMock(options) {
+  var as = options.as || options.is;
+  var asArray = options.asArray;
+
+  function ComponentMock() {}
+  ComponentMock.view = {
+    is: options.is,
+    file: options.file,
+    source: options.source,
+    dependencies: options.dependencies
+  };
+  ComponentMock.prototype.init = (asArray) ?
+    function() {
+      var page = this.page;
+      var component = this;
+      if (page[asArray]) {
+        page[asArray].push(this);
+      } else {
+        page[asArray] = [this];
+      }
+      this.on('destroy', function() {
+        var index = page[asArray].indexOf(component);
+        if (index === -1) return;
+        page[asArray].splice(index, 1);
+      });
+    } :
+    function() {
+      var page = this.page;
+      page[as] = this;
+      this.on('destroy', function() {
+        page[as] = undefined;
+      });
+    };
+  return ComponentMock;
+}
