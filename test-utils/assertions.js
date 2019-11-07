@@ -55,14 +55,21 @@ module.exports = function(domWindow, Assertion) {
 
     Assertion.addMethod('render', function(expected, options) {
       var harness = this._obj;
+      if (expected && typeof expected === 'object') {
+        options = expected;
+        expected = null;
+      }
       var domDocument = (domWindow || window).document;
       var parentTag = (options && options.parentTag) || 'ins';
 
       new Assertion(harness).instanceOf(ComponentHarness);
-      new Assertion(expected).is.a('string');
 
       // Check HTML matches expected value
       var html = harness.renderHtml().html;
+      // Use the HTML as the expected value if null. This allows the user to
+      // test that all modes of rendering will be equivalent
+      if (expected == null) expected = html;
+      new Assertion(expected).is.a('string');
       new Assertion(html).equal(expected);
 
       // Check DOM rendering is also equivalent
@@ -72,6 +79,7 @@ module.exports = function(domWindow, Assertion) {
       // Try attaching. Attachment will throw an error if HTML doesn't match
       var el = domDocument.createElement(parentTag);
       el.innerHTML = html;
+      var innerHTML = el.innerHTML;
       var attachError;
       try {
         harness.attachTo(el);
@@ -79,13 +87,14 @@ module.exports = function(domWindow, Assertion) {
         attachError = err;
       }
 
+      // TODO: Would be nice to add a diff of the expected and actual HTML
       this.assert(
         !attachError,
         'expected success attaching to #{exp} but got #{act}.\n' +
           (attachError && attachError.message),
         'expected render to fail but matched #{exp}',
         expected,
-        el.innerHTML
+        innerHTML
       );
     });
   }

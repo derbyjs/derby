@@ -160,7 +160,37 @@ describe('ComponentHarness', function() {
   describe('render assertion', function() {
     if (typeof document === 'undefined') return;
 
-    it('checks component HTML, DOM, and attachment rendering', function() {
+    it('checks equivalence of HTML, DOM, and attachment rendering', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source: '<index:><div class="box"></div>'
+      };
+      var harness = new ComponentHarness('<view is="box" />', Box);
+      expect(harness).to.render();
+    });
+
+    it('fails because of non-equivalent invalid HTML', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source: '<index:><p><div></div></p>'
+      };
+      var harness = new ComponentHarness('<view is="box" />', Box);
+      expect(harness).not.to.render();
+    });
+
+    it('fails because of non-equivalent optional HTML element', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source: '<index:><table><tr><td></td></tr></table>'
+      };
+      var harness = new ComponentHarness('<view is="box" />', Box);
+      expect(harness).not.to.render();
+    });
+
+    it('checks harness HTML, DOM, and attachment rendering against html', function() {
       function Box() {}
       Box.view = {
         is: 'box',
@@ -272,7 +302,7 @@ describe('ComponentHarness', function() {
         source:
           '<index:>' +
             '<div class="clown mock"></div>'
-      }
+      };
       var html = new ComponentHarness('<view is="box" />', Box, ClownMock).renderHtml().html;
       expect(html).equal('<div class="box"><div class="clown mock"></div></div>');
     });
