@@ -155,6 +155,37 @@ describe('ComponentHarness', function() {
       var box = new ComponentHarness('<view is="box" />', Box, Clown).renderDom().component;
       expect(box.myClown).instanceof(Clown);
     });
+
+    it('will update fragments dynamically', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box {{if open}}open{{/if}}"></div>'
+      };
+      var page = new ComponentHarness('<view is="box" />', Box).renderDom();
+      var fragment = page.fragment;
+      var component = page.component;
+      expect(fragment).html('<div class="box "></div>');
+      component.model.set('open', true);
+      expect(fragment).html('<div class="box open"></div>');
+    });
+
+    it('will update nodes dynamically', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div as="container" class="box {{if open}}open{{/if}}"></div>'
+      };
+      var component = new ComponentHarness('<view is="box" />', Box).renderDom().component;
+      var container = component.container;
+      expect(container.className).equal('box ');
+      component.model.set('open', true);
+      expect(container.className).equal('box open');
+    });
   });
 
   describe('render assertion', function() {
