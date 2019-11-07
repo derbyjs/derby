@@ -28,19 +28,20 @@ ComponentHarness.prototype.setup = function(source) {
   }
   return this;
 };
-ComponentHarness.prototype.skip = function() {
+
+ComponentHarness.prototype.stub = function() {
   for (var i = 0; i < arguments.length; i++) {
     var name = arguments[i];
     this.app.views.register(name, '');
   }
   return this;
 };
-ComponentHarness.prototype.mock = function() {
+ComponentHarness.prototype.stubComponent = function() {
   for (var i = 0; i < arguments.length; i++) {
     var arg = arguments[i];
     var options = (typeof arg === 'string') ? {is: arg} : arg;
-    var mock = createMock(options);
-    this.app.component(mock);
+    var Stub = createStubComponent(options);
+    this.app.component(Stub);
   }
   return this;
 };
@@ -78,20 +79,20 @@ ComponentHarness.prototype._get = function(render) {
   page.component = page._components._1;
   return page;
 };
-ComponentHarness.createMock = createMock;
+ComponentHarness.createStubComponent = createStubComponent;
 
-function createMock(options) {
+function createStubComponent(options) {
   var as = options.as || options.is;
   var asArray = options.asArray;
 
-  function ComponentMock() {}
-  ComponentMock.view = {
+  function StubComponent() {}
+  StubComponent.view = {
     is: options.is,
     file: options.file,
     source: options.source,
     dependencies: options.dependencies
   };
-  ComponentMock.prototype.init = (asArray) ?
+  StubComponent.prototype.init = (asArray) ?
     function() {
       var page = this.page;
       var component = this;
@@ -113,5 +114,5 @@ function createMock(options) {
         page[as] = undefined;
       });
     };
-  return ComponentMock;
+  return StubComponent;
 }

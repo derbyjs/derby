@@ -308,111 +308,7 @@ describe('ComponentHarness', function() {
     });
   });
 
-  describe('mock', function() {
-    it('defines an empty view and creates a property on page by name', function() {
-      function Box() {}
-      Box.view = {
-        is: 'box',
-        source:
-          '<index:>' +
-            '<div class="box">' +
-              '<view is="clown" expression="happy" />' +
-            '</div>'
-      };
-      var page = new ComponentHarness('<view is="box" />', Box)
-        .mock('clown').renderHtml();
-      expect(page.html).equal('<div class="box"></div>');
-      expect(page.clown.model.get('expression')).equal('happy');
-    });
-
-    it('supports as option', function() {
-      function Box() {}
-      Box.view = {
-        is: 'box',
-        source:
-          '<index:>' +
-            '<div class="box">' +
-              '<view is="clown" expression="happy" />' +
-            '</div>'
-      };
-      var page = new ComponentHarness('<view is="box" />', Box)
-        .mock({is: 'clown', as: 'myClown'}).renderHtml();
-      expect(page.html).equal('<div class="box"></div>');
-      expect(page.myClown.model.get('expression')).equal('happy');
-    });
-
-    it('supports asArray option', function() {
-      function Box() {}
-      Box.view = {
-        is: 'box',
-        source:
-          '<index:>' +
-            '<div class="box">' +
-              '<view is="clown" expression="happy" />' +
-              '<view is="clown" expression="sad" />' +
-            '</div>'
-      };
-      var page = new ComponentHarness('<view is="box" />', Box)
-        .mock({is: 'clown', asArray: 'clowns'}).renderHtml();
-      expect(page.html).equal('<div class="box"></div>');
-      expect(page.clowns.length).equal(2);
-      expect(page.clowns[0].model.get('expression')).equal('happy');
-      expect(page.clowns[1].model.get('expression')).equal('sad');
-    });
-
-    it('can be created via static createMock() method', function() {
-      function Box() {}
-      Box.view = {
-        is: 'box',
-        source:
-          '<index:>' +
-            '<div class="box">' +
-              '<view is="clown" expression="happy" />' +
-            '</div>'
-      };
-      var ClownMock = ComponentHarness.createMock({is: 'clown'});
-      var page = new ComponentHarness('<view is="box" />', Box, ClownMock).renderHtml();
-      expect(page.html).equal('<div class="box"></div>');
-      expect(page.clown.model.get('expression')).equal('happy');
-    });
-
-    it('can supply options to createMock() method', function() {
-      function Box() {}
-      Box.view = {
-        is: 'box',
-        source:
-          '<index:>' +
-            '<div class="box">' +
-              '<view is="clown" expression="happy" />' +
-            '</div>'
-      };
-      var ClownMock = ComponentHarness.createMock({is: 'clown', as: 'myClown'});
-      var page = new ComponentHarness('<view is="box" />', Box, ClownMock).renderHtml();
-      expect(page.html).equal('<div class="box"></div>');
-      expect(page.myClown.model.get('expression')).equal('happy');
-    });
-
-    it('can supply source to createMock() method', function() {
-      function Box() {}
-      Box.view = {
-        is: 'box',
-        source:
-          '<index:>' +
-            '<div class="box">' +
-              '<view is="clown" expression="happy" />' +
-            '</div>'
-      };
-      var ClownMock = ComponentHarness.createMock({
-        is: 'clown',
-        source: '<index:><div class="mock clown"></div>'
-      });
-      var page = new ComponentHarness('<view is="box" />', Box, ClownMock).renderHtml();
-      expect(page.html).equal('<div class="box"><div class="mock clown"></div></div>');
-      expect(page.clown.model.get('expression')).equal('happy');
-    });
-  });
-
-  describe('skip', function() {
+  describe('stub', function() {
     it('defines empty views by name', function() {
       function Box() {}
       Box.view = {
@@ -426,7 +322,7 @@ describe('ComponentHarness', function() {
             '</div>'
       };
       var html = new ComponentHarness('<view is="box" />', Box)
-        .skip('clown', 'ball', 'puppy').renderHtml().html;
+        .stub('clown', 'ball', 'puppy').renderHtml().html;
       expect(html).equal('<div class="box"></div>');
     });
 
@@ -448,8 +344,115 @@ describe('ComponentHarness', function() {
             '</div>',
         dependencies: [Clown]
       };
-      var html = new ComponentHarness('<view is="box" />', Box).skip('clown').renderHtml().html;
+      var html = new ComponentHarness('<view is="box" />', Box)
+        .stub('clown').renderHtml().html;
       expect(html).equal('<div class="box"></div>');
+    });
+  });
+
+  describe('stubComponent', function() {
+    it('defines an empty view and creates a property on page by name', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" expression="happy" />' +
+              '<view is="ball" type="bouncy" />' +
+            '</div>'
+      };
+      var page = new ComponentHarness('<view is="box" />', Box)
+        .stubComponent('clown', 'ball').renderHtml();
+      expect(page.html).equal('<div class="box"></div>');
+      expect(page.clown.model.get('expression')).equal('happy');
+      expect(page.ball.model.get('type')).equal('bouncy');
+    });
+
+    it('supports `as` option', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" expression="happy" />' +
+            '</div>'
+      };
+      var page = new ComponentHarness('<view is="box" />', Box)
+        .stubComponent({is: 'clown', as: 'myClown'}).renderHtml();
+      expect(page.html).equal('<div class="box"></div>');
+      expect(page.myClown.model.get('expression')).equal('happy');
+    });
+
+    it('supports `asArray` option', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" expression="happy" />' +
+              '<view is="clown" expression="sad" />' +
+            '</div>'
+      };
+      var page = new ComponentHarness('<view is="box" />', Box)
+        .stubComponent({is: 'clown', asArray: 'clowns'}).renderHtml();
+      expect(page.html).equal('<div class="box"></div>');
+      expect(page.clowns.length).equal(2);
+      expect(page.clowns[0].model.get('expression')).equal('happy');
+      expect(page.clowns[1].model.get('expression')).equal('sad');
+    });
+
+    it('can be created via static createStubComponent() method', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" expression="happy" />' +
+            '</div>'
+      };
+      var ClownStub = ComponentHarness.createStubComponent({is: 'clown'});
+      var page = new ComponentHarness('<view is="box" />', Box, ClownStub).renderHtml();
+      expect(page.html).equal('<div class="box"></div>');
+      expect(page.clown.model.get('expression')).equal('happy');
+    });
+
+    it('can supply options to createStubComponent() method', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" expression="happy" />' +
+            '</div>'
+      };
+      var ClownStub = ComponentHarness.createStubComponent({is: 'clown', as: 'myClown'});
+      var page = new ComponentHarness('<view is="box" />', Box, ClownStub).renderHtml();
+      expect(page.html).equal('<div class="box"></div>');
+      expect(page.myClown.model.get('expression')).equal('happy');
+    });
+
+    it('can supply source to createStubComponent() method', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" expression="happy" />' +
+            '</div>'
+      };
+      var ClownStub = ComponentHarness.createStubComponent({
+        is: 'clown',
+        source: '<index:><div class="stub clown"></div>'
+      });
+      var page = new ComponentHarness('<view is="box" />', Box, ClownStub).renderHtml();
+      expect(page.html).equal('<div class="box"><div class="stub clown"></div></div>');
+      expect(page.clown.model.get('expression')).equal('happy');
     });
   });
 });
