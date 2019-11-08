@@ -309,6 +309,144 @@ describe('ComponentHarness', function() {
       expect(html).equal('<div class="box"><div class="clown"></div></div>');
     });
 
+    it('throws error when overriding a view', function() {
+      function Clown() {}
+      Clown.view = {
+        is: 'clown',
+        source:
+          '<index:>' +
+            '<div class="clown"></div>'
+      };
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" />' +
+            '</div>',
+        dependencies: [Clown]
+      };
+      var harness = new ComponentHarness('<view is="box" />');
+      harness.app.views.register('clown', '');
+      expect(function() {
+        harness.app.component(Box);
+      }).to.throw(Error);
+    });
+
+    it('throws error when overriding a component', function() {
+      function ConflictingClown() {}
+      ConflictingClown.view = {is: 'clown'};
+      function Clown() {}
+      Clown.view = {
+        is: 'clown',
+        source:
+          '<index:>' +
+            '<div class="clown"></div>'
+      };
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" />' +
+            '</div>',
+        dependencies: [Clown]
+      };
+      expect(function() {
+        new ComponentHarness('<view is="box" />', ConflictingClown, Box);
+      }).to.throw(Error);
+    });
+
+    it('gets overridden without error', function() {
+      function ConflictingClown() {}
+      ConflictingClown.view = {is: 'clown'};
+      function Clown() {}
+      Clown.view = {
+        is: 'clown',
+        source:
+          '<index:>' +
+            '<div class="clown"></div>'
+      };
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" />' +
+            '</div>',
+        dependencies: [Clown]
+      };
+      var html = new ComponentHarness(
+        '<view is="box" />', Box, ConflictingClown
+      ).renderHtml().html;
+      expect(html).equal('<div class="box"></div>');
+    });
+
+    it('allows two components to share a dependency', function() {
+      function Clown() {}
+      Clown.view = {
+        is: 'clown',
+        source:
+          '<index:>' +
+            '<div class="clown"></div>'
+      };
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" />' +
+            '</div>',
+        dependencies: [Clown]
+      };
+      function Car() {}
+      Car.view = {
+        is: 'car',
+        source:
+          '<index:>' +
+            '<div class="car">' +
+              '<view is="clown" />' +
+            '</div>',
+        dependencies: [Clown]
+      };
+
+      var html = new ComponentHarness(
+        '<view is="box" /><view is="car" />', Box, Car
+      ).renderHtml().html;
+      expect(html).equal(
+        '<div class="box"><div class="clown"></div></div>' +
+        '<div class="car"><div class="clown"></div></div>'
+      );
+    });
+
+    it('handles circular dependencies', function() {
+      function Clown() {}
+      Clown.view = {
+        is: 'clown',
+        source:
+          '<index:>' +
+            '<div class="clown"></div>' +
+            '<view is="box" clownless />',
+        dependencies: [Box]
+      };
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '{{unless clownless}}<view is="clown" />{{/unless}}' +
+            '</div>',
+        dependencies: [Clown]
+      };
+      var html = new ComponentHarness('<view is="box" />', Box).renderHtml().html;
+      expect(html).equal('<div class="box"><div class="clown"></div><div class="box"></div></div>');
+    });
+
     it('overrides component dependency with custom mock', function() {
       function Clown() {}
       Clown.view = {
