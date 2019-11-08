@@ -1,7 +1,5 @@
 var expect = require('chai').expect;
-var util = require('./util');
-var derby = util.derby;
-var expectHtml = util.expectHtml;
+var derby = require('./util').derby;
 
 describe('forms', function() {
 
@@ -22,7 +20,7 @@ describe('forms', function() {
       var text = page.model.at('_page.text');
       text.set('Hi');
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, '<textarea>Hi</textarea>');
+      expect(fragment).html('<textarea>Hi</textarea>');
       var textarea = fragment.firstChild;
       expect(textarea.value).equal('Hi');
       var textNode = textarea.firstChild;
