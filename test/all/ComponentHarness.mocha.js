@@ -1,3 +1,4 @@
+var Component = require('../../lib/components').Component;
 var expect = require('chai').expect;
 var ComponentHarness = require('../../test-utils').ComponentHarness;
 
@@ -185,6 +186,60 @@ describe('ComponentHarness', function() {
       expect(container.className).equal('box ');
       component.model.set('open', true);
       expect(container.className).equal('box open');
+    });
+
+    it('removes reference to stub components on destroy', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '{{unless hideClown}}' +
+                '<view is="clown" />' +
+              '{{/unless}}' +
+            '</div>'
+      };
+      var page = new ComponentHarness('<view is="box" />', Box)
+        .stubComponent('clown').renderDom();
+      var model = page.component.model;
+      expect(page.clown).instanceof(Component);
+      model.set('hideClown', true);
+      expect(page.clown).equal(undefined);
+      model.set('hideClown', false);
+      expect(page.clown).instanceof(Component);
+    });
+
+    it('removes stub components from array on destroy', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '{{if showHappy}}' +
+                '<view is="clown" expression="happy" />' +
+              '{{/if}}' +
+              '{{if showSad}}' +
+                '<view is="clown" expression="sad" />' +
+              '{{/if}}' +
+            '</div>'
+      };
+      var page = new ComponentHarness('<view is="box" show-happy />', Box)
+        .stubComponent({is: 'clown', asArray: 'clowns'}).renderDom();
+      var clowns = page.clowns;
+      var model = page.component.model;
+      expect(clowns.length).equal(1);
+      expect(clowns[0].model.get('expression')).equal('happy');
+      model.set('showSad', true);
+      expect(clowns.length).equal(2);
+      expect(clowns[0].model.get('expression')).equal('happy');
+      expect(clowns[1].model.get('expression')).equal('sad');
+      model.set('showHappy', false);
+      expect(clowns.length).equal(1);
+      expect(clowns[0].model.get('expression')).equal('sad');
+      model.set('showSad', false);
+      expect(clowns.length).equal(0);
     });
   });
 
