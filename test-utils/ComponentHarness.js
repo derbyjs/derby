@@ -1,7 +1,9 @@
 var qs = require('qs');  // Picked up transiently via the "tracks" dependency.
-var Model = require('racer').Model;
+var racer = require('racer');
+var Model = racer.Model;
 var nodeUrl = require('url');
 var App = require('../lib/App');
+var EventModel = require('../lib/EventModel');
 var filesUtil = require('../lib/files');
 require('../parsing');
 
@@ -9,6 +11,18 @@ function HarnessApp() {
   App.call(this);
 }
 HarnessApp.prototype = Object.create(App.prototype);
+// App.server.js overrides the base App#createPage.
+// To allow DOM-based testing to work on the server, too, restore the base implementation.
+HarnessApp.prototype.createPage = function() {
+  var page = new this.Page(this, this.model);
+  if (racer.util.isServer) {
+    // Run base `Page#_addListeners` code, which gets overridden with a no-op in Page.server.js.
+    page._eventModel = new EventModel();
+    page._addModelListeners(page._eventModel);
+    page._addContextListeners(page._eventModel);
+  }
+  return page;
+};
 // Stub out App.prototype._init(), which does setup for loading views
 // from files on the server and loading serialized views and data
 // on the client
@@ -36,7 +50,10 @@ module.exports = ComponentHarness;
  */
 function ComponentHarness() {
   this.app = new HarnessApp();
+  // TODO: Make `this.model` private and use `defineProperty` to sync it and `this.app.model`?
   this.model = new Model();
+  this.app.model = this.model;
+
   if (arguments.length > 0) {
     this.setup.apply(this, arguments);
   }
@@ -144,7 +161,7 @@ ComponentHarness.prototype._get = function(render, options) {
   options = options || {};
   var url = options.url || '';
 
-  var page = new this.app.Page(this.app, this.model);
+  var page = this.app.createPage();
   // Set `page.params`, which is usually created in tracks during `Page#render`:
   // https://github.com/derbyjs/tracks/blob/master/lib/index.js
   page.params = {
