@@ -3,6 +3,8 @@ var ComponentHarness = require('../test-utils/ComponentHarness');
 
 exports.createRunner = function createRunner() {
   var runner = new DomTestRunner();
+  // Set up Chai assertion chain methods: `#html` and `#render`
+  registerAssertions(runner, require('chai').Assertion);
 
   beforeEach(function() {
     runner.harness = new ComponentHarness();
@@ -14,12 +16,6 @@ exports.createRunner = function createRunner() {
   } else {
     mochaHooksForBrowser(runner);
   }
-
-  // This block contains setup that requires a `window`.
-  beforeEach(function() {
-    // Set up Chai assertion chain methods: `#html` and `#render`
-    registerAssertions(runner.window, require('chai').Assertion);
-  });
 
   return runner;
 };
