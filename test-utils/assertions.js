@@ -65,7 +65,7 @@ module.exports = function(domWindow, Assertion) {
       new Assertion(harness).instanceOf(ComponentHarness);
 
       // Check HTML matches expected value
-      var html = harness.renderHtml().html;
+      var html = harness.renderHtml(options).html;
       // Use the HTML as the expected value if null. This allows the user to
       // test that all modes of rendering will be equivalent
       if (expected == null) expected = html;
@@ -73,7 +73,7 @@ module.exports = function(domWindow, Assertion) {
       new Assertion(html).equal(expected);
 
       // Check DOM rendering is also equivalent
-      var fragment = harness.renderDom().fragment;
+      var fragment = harness.renderDom(options).fragment;
       new Assertion(fragment).html(expected, options);
 
       // Try attaching. Attachment will throw an error if HTML doesn't match
