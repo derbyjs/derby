@@ -1,3 +1,4 @@
+var util = require('racer').util;
 var registerAssertions = require('./assertions');
 var ComponentHarness = require('./ComponentHarness');
 
@@ -22,7 +23,7 @@ DomTestRunner.prototype.installMochaHooks = function() {
   var _this = this;
 
   // Set up runner's `window` and `document`.
-  if (process && process.argv && process.argv.length) {
+  if (util.isServer) {
     mochaHooksForNode(_this);
   } else {
     mochaHooksForBrowser(_this);
@@ -35,7 +36,7 @@ DomTestRunner.prototype.createHarness = function() {
 
 function mochaHooksForNode(runner) {
   // Use an indirect require so that Browserify doesn't try to bundle JSDOM.
-  var JSDOM = require('racer').util.serverRequire(module, 'jsdom').JSDOM;
+  var JSDOM = util.serverRequire(module, 'jsdom').JSDOM;
 
   var nodeGlobal = global;
   // Keep a direct reference so that we're absolutely sure we clean up our own JSDOM.
