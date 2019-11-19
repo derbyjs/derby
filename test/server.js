@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var async = require('async');
 var browserify = require('browserify');
 var express = require('express');
 
@@ -9,7 +10,9 @@ expressApp.use(express.static(__dirname + '/../node_modules/mocha'));
 
 expressApp.get('/test.js', function(req, res, next) {
   var bundle = browserify({debug: true});
-  addScriptsInRelativeDirs(bundle, ['/all', '/dom', '/browser'], function(err) {
+  async.each(['/all', '/dom', '/browser'], function(dir, cb) {
+    addScripts(bundle, __dirname + dir, cb);
+  }, function(err) {
     if (err) return next(err);
     bundle.bundle(function(err, code) {
       if (err) return next(err);
@@ -18,20 +21,6 @@ expressApp.get('/test.js', function(req, res, next) {
     });
   });
 });
-
-function addScriptsInRelativeDirs(bundle, dirs, callback) {
-  var i = 0;
-  (function nextDir() {
-    if (i >= dirs.length) {
-      return callback();
-    }
-    addScripts(bundle, __dirname + dirs[i], function(err) {
-      if (err) return callback(err);
-      i++;
-      nextDir();
-    });
-  })();
-}
 
 function addScripts(bundle, dir, callback) {
   fs.readdir(dir, function(err, files) {
