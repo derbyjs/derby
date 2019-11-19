@@ -3,7 +3,7 @@ var Component = require('../../lib/components').Component;
 var domTestRunner = require('../../test-utils/domTestRunner');
 
 describe('ComponentHarness', function() {
-  var runner = domTestRunner.createRunner();
+  var runner = domTestRunner.install();
 
   describe('renderDom', function() {
     it('returns a page object', function() {

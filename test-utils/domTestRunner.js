@@ -6,7 +6,7 @@ var runner = new DomTestRunner();
 // Set up Chai assertion chain methods: `#html` and `#render`
 registerAssertions(runner, require('chai').Assertion);
 
-exports.createRunner = function createRunner() {
+exports.install = function() {
   runner.installMochaHooks();
   return runner;
 };
@@ -55,6 +55,8 @@ function mochaHooksForNode(runner) {
 
   global.afterEach(function() {
     jsdom.window.close();
+    runner.window = null;
+    runner.document = null;
     delete nodeGlobal.window;
     delete nodeGlobal.document;
   });
@@ -64,5 +66,10 @@ function mochaHooksForBrowser(runner) {
   global.beforeEach(function() {
     runner.window = global.window;
     runner.document = global.window.document;
+  });
+
+  global.afterEach(function() {
+    runner.window = null;
+    runner.document = null;
   });
 }
