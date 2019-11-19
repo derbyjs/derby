@@ -6,7 +6,7 @@ describe('bindings', function() {
 
   describe('bracket dependencies', function() {
     it('bracket inner dependency change', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
       var page = app.createPage();
       var doc = page.model.at('_page.doc');
@@ -27,7 +27,7 @@ describe('bindings', function() {
     });
 
     it('bracket outer dependency change', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
       var page = app.createPage();
       var doc = page.model.at('_page.doc');
@@ -50,7 +50,7 @@ describe('bindings', function() {
     });
 
     it('bracket inner then outer dependency change', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
       var page = app.createPage();
       var doc = page.model.at('_page.doc');
@@ -78,7 +78,7 @@ describe('bindings', function() {
 
   describe('dynamic view instances', function() {
     it('simple dynamic view', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="{{_page.view}}" optional></view>'
       );
@@ -97,7 +97,7 @@ describe('bindings', function() {
       expect(fragment).html('One');
     });
     it('bracketed dynamic view', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="{{_page.names[_page.index]}}" optional></view>'
       );
@@ -122,7 +122,7 @@ describe('bindings', function() {
       expect(fragment).html('Three');
     });
     it('only renders if the expression value changes', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       var count = 0;
       app.proto.count = function() {
         return count++;
@@ -151,7 +151,7 @@ describe('bindings', function() {
 
   describe('basic blocks', function() {
     it('if', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{if _page.nested.value}}' +
           '{{this}}.' +
@@ -171,7 +171,7 @@ describe('bindings', function() {
       expect(fragment).html('hello.');
     });
     it('unless', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{unless _page.nested.value}}' +
           'nada' +
@@ -191,7 +191,7 @@ describe('bindings', function() {
       expect(fragment).html('otherwise');
     });
     it('each else', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{each _page.items}}' +
           '{{this}}.' +
@@ -218,7 +218,7 @@ describe('bindings', function() {
 
   describe('nested blocks', function() {
     it('each containing if', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{each _page.items as #item}}' +
           '{{if _page.toggle}}' +
@@ -239,7 +239,7 @@ describe('bindings', function() {
 
   function testArray(itemTemplate, itemData) {
     it('each on path', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' + itemTemplate + '{{/each}}' +
@@ -248,7 +248,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on alias', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page.items as #items}}' +
           '<ul>' +
@@ -259,7 +259,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on relative path', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page.items}}' +
           '<ul>' +
@@ -270,7 +270,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on relative subpath', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page}}' +
           '<ul>' +
@@ -281,7 +281,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on attribute', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="list" items="{{_page.items}}"></view>'
       );
@@ -293,7 +293,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing withs', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -310,7 +310,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing view instance', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -322,7 +322,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing view instance containing with', function() {
-      var app = runner.harness.app;
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -406,7 +406,7 @@ describe('bindings', function() {
   // This is solved by having Derby register its catch-all listeners using
   // the *Immediate events, which operate outside the mutator event queue.
   it('array chained insertions at index 0', function() {
-    var app = runner.harness.app;
+    var app = runner.createHarness().app;
     app.views.register('Body',
       '<ul>' +
         '{{each _data.items as #item}}' +
@@ -435,7 +435,7 @@ describe('bindings', function() {
     // which handle binding updates. The event model expects that any numeric
     // path segments it receives have been cast into JS numbers, which the
     // Racer model doesn't necessarily guarantee.
-    var app = runner.harness.app;
+    var app = runner.createHarness().app;
     app.views.register('Body',
       '<ul>' +
         '{{each _data.items as #item}}' +

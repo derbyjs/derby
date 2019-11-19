@@ -3,28 +3,35 @@ var ComponentHarness = require('../test-utils/ComponentHarness');
 
 exports.createRunner = function createRunner() {
   var runner = new DomTestRunner();
+
+  runner.installMochaHooks();
+
   // Set up Chai assertion chain methods: `#html` and `#render`
   registerAssertions(runner, require('chai').Assertion);
-
-  beforeEach(function() {
-    runner.harness = new ComponentHarness();
-  });
-
-  // Set up runner's `window` and `document`.
-  if (process && process.argv && process.argv.length) {
-    mochaHooksForNode(runner);
-  } else {
-    mochaHooksForBrowser(runner);
-  }
 
   return runner;
 };
 
+exports.DomTestRunner = DomTestRunner;
 function DomTestRunner() {
-  this.harness = null;
   this.window = null;
   this.document = null;
 }
+
+DomTestRunner.prototype.installMochaHooks = function() {
+  var _this = this;
+
+  // Set up runner's `window` and `document`.
+  if (process && process.argv && process.argv.length) {
+    mochaHooksForNode(_this);
+  } else {
+    mochaHooksForBrowser(_this);
+  }
+};
+
+DomTestRunner.prototype.createHarness = function() {
+  return new ComponentHarness();
+};
 
 function mochaHooksForNode(runner) {
   // Use an indirect require so that Browserify doesn't try to bundle JSDOM.
