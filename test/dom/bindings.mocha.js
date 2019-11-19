@@ -3,7 +3,6 @@ var domTestRunner = require('../../test-utils/domTestRunner');
 
 describe('bindings', function() {
   var runner = domTestRunner.createRunner();
-  debugger;
 
   describe('bracket dependencies', function() {
     it('bracket inner dependency change', function() {
