@@ -20,18 +20,20 @@ function DomTestRunner() {
 }
 
 DomTestRunner.prototype.installMochaHooks = function() {
-  var _this = this;
-
   // Set up runner's `window` and `document`.
   if (util.isServer) {
-    mochaHooksForNode(_this);
+    mochaHooksForNode(this);
   } else {
-    mochaHooksForBrowser(_this);
+    mochaHooksForBrowser(this);
   }
 };
 
 DomTestRunner.prototype.createHarness = function() {
-  return new ComponentHarness();
+  var harness = new ComponentHarness();
+  if (arguments.length > 0) {
+    harness.setup.apply(harness, arguments);
+  }
+  return harness;
 };
 
 function mochaHooksForNode(runner) {
