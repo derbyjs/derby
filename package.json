@@ -9,7 +9,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js"
+    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js"
   },
   "dependencies": {
     "chokidar": "^3.1.1",
@@ -27,7 +27,8 @@
     "express": "^4.13.3",
     "jsdom": "^15.2.0",
     "jshint": "^2.9.5",
-    "mocha": "^6.2.0"
+    "mocha": "^6.2.0",
+    "qs": "^6.9.1"
   },
   "optionalDependencies": {},
   "bugs": {

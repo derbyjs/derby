@@ -415,13 +415,13 @@ describe('bindings', function() {
         '{{/each}}' +
       '</ul>'
     );
-    app.model.on('insert', '_data.items', function(index, values) {
-      if (values[0] == 'B') {
-        app.model.insert('_data.items', 0, 'C');
-      }
-    });
 
     var page = app.createPage();
+    page.model.on('insert', '_data.items', function(index, values) {
+      if (values[0] == 'B') {
+        page.model.insert('_data.items', 0, 'C');
+      }
+    });
     var $items = page.model.at('_data.items');
     $items.set(['A']);
 
@@ -444,7 +444,6 @@ describe('bindings', function() {
         '{{/each}}' +
       '</ul>'
     );
-    app.model.set('$derbyFlags.immediateModelListeners', true);
     var page = app.createPage();
     var $items = page.model.at('_data.items');
     $items.set([
@@ -456,7 +455,7 @@ describe('bindings', function() {
     var fragment = page.getFragment('Body');
     expect(fragment).html('<ul><li>Red</li><li>Green</li><li>Blue</li></ul>');
     // Test mutation with a numeric path segment.
-    app.model.set('_data.items.1.label', 'Verde');
+    page.model.set('_data.items.1.label', 'Verde');
     expect(fragment).html('<ul><li>Red</li><li>Verde</li><li>Blue</li></ul>');
   });
 });

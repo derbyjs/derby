@@ -1,46 +1,32 @@
-var qs = require('qs');  // Picked up transiently via the "tracks" dependency.
-var racer = require('racer');
-var Model = racer.Model;
-var nodeUrl = require('url');
+var qs = require('qs');
+var urlParse = require('url').parse;
+var Model = require('racer').Model;
 var App = require('../lib/App');
-var EventModel = require('../lib/EventModel');
-var filesUtil = require('../lib/files');
-require('../parsing');
+var AppForServer = require('../lib/AppForServer');
 
-function HarnessApp() {
+function AppForHarness(harness) {
   App.call(this);
+  this._harness = harness;
 }
-HarnessApp.prototype = Object.create(App.prototype);
-// App.server.js overrides the base App#createPage.
-// To allow DOM-based testing to work on the server, too, restore the base implementation.
-HarnessApp.prototype.createPage = function() {
-  var page = new this.Page(this, this.model);
-  if (racer.util.isServer) {
-    // Run base `Page#_addListeners` code, which gets overridden with a no-op in Page.server.js.
-    page._eventModel = new EventModel();
-    page._addModelListeners(page._eventModel);
-    page._addContextListeners(page._eventModel);
-  }
-  return page;
+AppForHarness.prototype = Object.create(App.prototype);
+AppForHarness.prototype.constructor = AppForHarness;
+
+AppForHarness.prototype.createPage = function() {
+  return new this.Page(this, this._harness.model);
 };
-// Stub out App.prototype._init(), which does setup for loading views
-// from files on the server and loading serialized views and data
-// on the client
-HarnessApp.prototype._init = function() {
-  // Register default compilers so that HarnessApp can load views/styles from filesystem.
-  // These are normally registered in the App.server.js version of this method.
-  this.styleExtensions = ['.css'];
-  this.viewExtensions = ['.html'];
-  this.compilers = {
-    '.css': filesUtil.cssCompiler,
-    '.html': filesUtil.htmlCompiler,
-  };
+
+// Load views by filename. The client version of this method is a no-op
+AppForHarness.prototype.loadViews = AppForServer.prototype.loadViews;
+
+// `_init()` does setup for loading views from files on the server and loading
+// serialized views and data on the client
+AppForHarness.prototype._init = function() {
+  this._initLoad();
 };
-// Disable file-watching in App by overriding the methods, since the file-watchers keep the Mocha
-// process running after all tests complete.
-HarnessApp.prototype._watchViews = function() {};
-HarnessApp.prototype._watchStyles = function() {};
-HarnessApp.prototype._watchBundle = function() {};
+// Register default compilers so that AppForHarness can load views & styles from
+// the filesystem
+AppForHarness.prototype._initLoad = AppForServer.prototype._initLoad;
+
 
 module.exports = ComponentHarness;
 /**
@@ -49,10 +35,8 @@ module.exports = ComponentHarness;
  * If arguments are provided, then `#setup` is called with the arguments.
  */
 function ComponentHarness() {
-  this.app = new HarnessApp();
-  // TODO: Make `this.model` private and use `defineProperty` to sync it and `this.app.model`?
+  this.app = new AppForHarness(this);
   this.model = new Model();
-  this.app.model = this.model;
 
   if (arguments.length > 0) {
     this.setup.apply(this, arguments);
@@ -166,7 +150,7 @@ ComponentHarness.prototype._get = function(render, options) {
   // https://github.com/derbyjs/tracks/blob/master/lib/index.js
   page.params = {
     url: url,
-    query: qs.parse(nodeUrl.parse(url).query),
+    query: qs.parse(urlParse(url).query),
     body: {},
   };
 
