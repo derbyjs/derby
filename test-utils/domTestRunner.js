@@ -2,14 +2,12 @@ var util = require('racer').util;
 var registerAssertions = require('./assertions');
 var ComponentHarness = require('./ComponentHarness');
 
+var runner = new DomTestRunner();
+// Set up Chai assertion chain methods: `#html` and `#render`
+registerAssertions(runner, require('chai').Assertion);
+
 exports.createRunner = function createRunner() {
-  var runner = new DomTestRunner();
-
   runner.installMochaHooks();
-
-  // Set up Chai assertion chain methods: `#html` and `#render`
-  registerAssertions(runner, require('chai').Assertion);
-
   return runner;
 };
 
