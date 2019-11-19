@@ -1,5 +1,5 @@
-var registerAssertions = require('../test-utils/assertions');
-var ComponentHarness = require('../test-utils/ComponentHarness');
+var registerAssertions = require('./assertions');
+var ComponentHarness = require('./ComponentHarness');
 
 exports.createRunner = function createRunner() {
   var runner = new DomTestRunner();
@@ -41,7 +41,7 @@ function mochaHooksForNode(runner) {
   // Keep a direct reference so that we're absolutely sure we clean up our own JSDOM.
   var jsdom;
 
-  beforeEach(function() {
+  global.beforeEach(function() {
     jsdom = new JSDOM();
     runner.window = jsdom.window;
     runner.document = jsdom.window.document;
@@ -52,7 +52,7 @@ function mochaHooksForNode(runner) {
     require('../lib/documentListeners').add(runner.document);
   });
 
-  afterEach(function() {
+  global.afterEach(function() {
     jsdom.window.close();
     delete nodeGlobal.window;
     delete nodeGlobal.document;
@@ -60,7 +60,7 @@ function mochaHooksForNode(runner) {
 }
 
 function mochaHooksForBrowser(runner) {
-  beforeEach(function() {
+  global.beforeEach(function() {
     runner.window = global.window;
     runner.document = global.window.document;
   });
