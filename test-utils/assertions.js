@@ -101,7 +101,7 @@ module.exports = function(dom, Assertion) {
       this.assert(
         !attachError,
         'expected success attaching to #{exp} but got #{act}.\n' +
-          (attachError && attachError.message),
+          (attachError ? (attachError.message + attachError.stack) : ''),
         'expected render to fail but matched #{exp}',
         expected,
         innerHTML
