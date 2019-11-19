@@ -1,8 +1,18 @@
 var ComponentHarness = require('./ComponentHarness');
 
-module.exports = function(domWindow, Assertion) {
+/**
+ * @param { {window: Window } } [dom] - _optional_ - An object that will have a `window` property
+ *   set during test execution. If not provided, the global `window` will be used.
+ * @param {Assertion} [chai.Assertion] - _optional_ - Chai's Assertion class. If provided, the
+ *   chainable expect methods `#html(expected)` and `#render(expected)` will be added to Chai.
+ */
+module.exports = function(dom, Assertion) {
+  var getWindow = dom ?
+    function() { return dom.window; } :
+    function() { return window; };
+
   function removeComments(node) {
-    var domDocument = (domWindow || window).document;
+    var domDocument = getWindow().document;
     var clone = domDocument.importNode(node, true);
     // last two arguments for createTreeWalker are required in IE
     // NodeFilter.SHOW_COMMENT === 128
@@ -18,7 +28,7 @@ module.exports = function(domWindow, Assertion) {
   }
 
   function getHtml(node, parentTag) {
-    var domDocument = (domWindow || window).document;
+    var domDocument = getWindow().document;
     // We use the <ins> element, because it has a transparent content model:
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Transparent_content_model
     //
@@ -36,7 +46,7 @@ module.exports = function(domWindow, Assertion) {
       var obj = this._obj;
       var includeComments = options && options.includeComments;
       var parentTag = options && options.parentTag;
-      var domNode = (domWindow || window).Node;
+      var domNode = getWindow().Node;
 
       new Assertion(obj).instanceOf(domNode);
       new Assertion(expected).is.a('string');
@@ -59,13 +69,13 @@ module.exports = function(domWindow, Assertion) {
         options = expected;
         expected = null;
       }
-      var domDocument = (domWindow || window).document;
+      var domDocument = getWindow().document;
       var parentTag = (options && options.parentTag) || 'ins';
 
       new Assertion(harness).instanceOf(ComponentHarness);
 
       // Check HTML matches expected value
-      var html = harness.renderHtml().html;
+      var html = harness.renderHtml(options).html;
       // Use the HTML as the expected value if null. This allows the user to
       // test that all modes of rendering will be equivalent
       if (expected == null) expected = html;
@@ -73,7 +83,7 @@ module.exports = function(domWindow, Assertion) {
       new Assertion(html).equal(expected);
 
       // Check DOM rendering is also equivalent
-      var fragment = harness.renderDom().fragment;
+      var fragment = harness.renderDom(options).fragment;
       new Assertion(fragment).html(expected, options);
 
       // Try attaching. Attachment will throw an error if HTML doesn't match
@@ -91,7 +101,7 @@ module.exports = function(domWindow, Assertion) {
       this.assert(
         !attachError,
         'expected success attaching to #{exp} but got #{act}.\n' +
-          (attachError && attachError.message),
+          (attachError ? (attachError.message + attachError.stack) : ''),
         'expected render to fail but matched #{exp}',
         expected,
         innerHTML

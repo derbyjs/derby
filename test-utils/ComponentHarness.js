@@ -1,24 +1,59 @@
+var qs = require('qs');
+var urlParse = require('url').parse;
 var Model = require('racer').Model;
 var App = require('../lib/App');
-require('../parsing');
+var AppForServer = require('../lib/AppForServer');
 
-function HarnessApp() {
+function AppForHarness(harness) {
   App.call(this);
+  this._harness = harness;
 }
-HarnessApp.prototype = Object.create(App.prototype);
-// Disable App.prototype._init(), which does setup for loading views
-// from files on the server and loading serialized views and data
-// on the client
-HarnessApp.prototype._init = function() {};
+AppForHarness.prototype = Object.create(App.prototype);
+AppForHarness.prototype.constructor = AppForHarness;
+
+AppForHarness.prototype.createPage = function() {
+  return new this.Page(this, this._harness.model);
+};
+
+// Load views by filename. The client version of this method is a no-op
+AppForHarness.prototype.loadViews = AppForServer.prototype.loadViews;
+
+// `_init()` does setup for loading views from files on the server and loading
+// serialized views and data on the client
+AppForHarness.prototype._init = function() {
+  this._initLoad();
+};
+// Register default compilers so that AppForHarness can load views & styles from
+// the filesystem
+AppForHarness.prototype._initLoad = AppForServer.prototype._initLoad;
+
 
 module.exports = ComponentHarness;
+/**
+ * Creates a `ComponentHarness`.
+ *
+ * If arguments are provided, then `#setup` is called with the arguments.
+ */
 function ComponentHarness() {
-  this.app = new HarnessApp();
+  this.app = new AppForHarness(this);
   this.model = new Model();
+
   if (arguments.length > 0) {
     this.setup.apply(this, arguments);
   }
 }
+
+/** @typedef { {view: {is: string, source?: string}} } InlineComponent */
+/**
+ * Sets up the harness with a HTML template, which should contain a `<view is="..."/>` for the
+ * component under test, and the components to register for the test.
+ *
+ * @param {string} source - HTML template for the harness page
+ * @param {...(Component | InlineComponent} components - components to register for the test
+ *
+ * @example
+ *   var harness = new ComponentHarness().setup('<view is="dialog"/>', Dialog);
+ */
 ComponentHarness.prototype.setup = function(source) {
   this.app.views.register('$harness', source);
   // Remaining variable arguments are components
@@ -29,6 +64,15 @@ ComponentHarness.prototype.setup = function(source) {
   return this;
 };
 
+/**
+ * Stubs out view names with empty views.
+ *
+ * A view name is a colon-separated string of segments, as used in `<view is="...">`.
+ *
+ * @example
+ *   var harness = new ComponentHarness('<view is="dialog"/>', Dialog)
+ *     .stub('icons:open-icon', 'icons:close-icon');
+ */
 ComponentHarness.prototype.stub = function() {
   for (var i = 0; i < arguments.length; i++) {
     var name = arguments[i];
@@ -36,6 +80,16 @@ ComponentHarness.prototype.stub = function() {
   }
   return this;
 };
+
+/**
+ * Stubs out view names as components.
+ *
+ * This can be used to test the values being bound to ("passed into") child components.
+ *
+ * @example
+ *   var harness = new ComponentHarness('<view is="dialog"/>', Dialog)
+ *     .stubComponent('common:file-picker', {is: 'footer', as: 'stubFooter'});
+ */
 ComponentHarness.prototype.stubComponent = function() {
   for (var i = 0; i < arguments.length; i++) {
     var arg = arguments[i];
@@ -45,16 +99,36 @@ ComponentHarness.prototype.stubComponent = function() {
   }
   return this;
 };
-ComponentHarness.prototype.renderHtml = function() {
+
+/**
+ * @typedef {Object} RenderOptions
+ * @property {string} [url] - Optional URL for the render, used to populate `page.params`
+ */
+/**
+ * Renders the harness into a HTML string, as server-side rendering would do.
+ *
+ * @param {RenderOptions} [options]
+ * @returns { Page & {html: string} } - a `Page` that has a `html` property with the rendered HTML
+ *   string
+ */
+ComponentHarness.prototype.renderHtml = function(options) {
   return this._get(function(page) {
     page.html = page.get('$harness');
-  });
+  }, options);
 };
-ComponentHarness.prototype.renderDom = function() {
+/**
+ * Renders the harness into a `DocumentFragment`, as client-side rendering would do.
+ *
+ * @param {RenderOptions} [options]
+ * @returns { Page & {fragment: DocumentFragment} } a `Page` that has a `fragment` property with the
+ *   rendered `DocumentFragment`
+ */
+ComponentHarness.prototype.renderDom = function(options) {
   return this._get(function(page) {
     page.fragment = page.getFragment('$harness');
-  });
+  }, options);
 };
+
 ComponentHarness.prototype.attachTo = function(parentNode, node) {
   return this._get(function(page) {
     var view = page.getView('$harness');
@@ -62,8 +136,24 @@ ComponentHarness.prototype.attachTo = function(parentNode, node) {
     view.attachTo(parentNode, targetNode, page.context);
   });
 };
-ComponentHarness.prototype._get = function(render) {
-  var page = new this.app.Page(this.app, this.model);
+
+/**
+ * @param {(page: Page) => void} render
+ * @param {RenderOptions} [options]
+ */
+ComponentHarness.prototype._get = function(render, options) {
+  options = options || {};
+  var url = options.url || '';
+
+  var page = this.app.createPage();
+  // Set `page.params`, which is usually created in tracks during `Page#render`:
+  // https://github.com/derbyjs/tracks/blob/master/lib/index.js
+  page.params = {
+    url: url,
+    query: qs.parse(urlParse(url).query),
+    body: {},
+  };
+
   render(page);
   // HACK: Implement getting an instance as a side-effect of rendering. This
   // code relies on the fact that while rendering, components are instantiated,

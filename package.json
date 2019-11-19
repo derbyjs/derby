@@ -9,22 +9,25 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/all/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js"
+    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js"
   },
   "dependencies": {
     "chokidar": "^3.1.1",
     "derby-parsing": "^0.7.6",
     "derby-templates": "^0.7.3",
     "html-util": "^0.2.1",
+    "qs": "^6.0.2",
     "racer": "^0.9.0",
     "resolve": "^1.1.6",
     "through": "^2.3.4",
     "tracks": "^0.5.0"
   },
   "devDependencies": {
+    "async": "^1.5.2",
     "browserify": "^16.2.2",
     "chai": "^4.2.0",
     "express": "^4.13.3",
+    "jsdom": "^15.2.0",
     "jshint": "^2.9.5",
     "mocha": "^6.2.0"
   },
