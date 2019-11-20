@@ -197,4 +197,48 @@ describe('ComponentHarness', function() {
       expect(harness).to.render('');
     });
   });
+
+  describe.only('fake app.history implementation', function() {
+    it('accepts url option', function() {
+      var renderUrl = '/box?size=123';
+      var expectedQueryParams = {size: '123'};
+
+      var harness = runner.createHarness(
+        'url: {{$render.url}} | query: {{JSON.stringify($render.query)}}'
+      );
+      var expectedHtml = 'url: /box?size=123 | query: {"size":"123"}';
+
+      var page = harness.renderHtml({url: renderUrl});
+      expectPageParams(page, renderUrl, expectedQueryParams);
+      expect(page.html).to.equal(expectedHtml);
+
+      page = harness.renderDom({url: renderUrl});
+      expectPageParams(page, renderUrl, expectedQueryParams);
+      expect(page.fragment).html(expectedHtml);
+    });
+
+    it('supports push(url) and replace(url)', function() {
+      var harness = runner.createHarness(
+        'url: {{$render.url}} | query: {{JSON.stringify($render.query)}}'
+      );
+
+      var page = harness.renderDom();
+      expectPageParams(page, '', {});
+
+      var newUrl = '/box?size=123';
+      harness.app.history.push(newUrl);
+      expectPageParams(page, newUrl, {size: '123'});
+      expect(page.fragment).html('url: /box?size=123 | query: {"size":"123"}');
+
+      newUrl = '/sphere?radius=456';
+      harness.app.history.replace(newUrl);
+      expectPageParams(page, newUrl, {radius: '456'});
+      expect(page.fragment).html('url: /sphere?radius=456 | query: {"radius":"456"}');
+    });
+  });
 });
+
+function expectPageParams(page, expectedUrl, expectedQuery) {
+  expect(page).to.have.property('params')
+    .that.deep.includes({url: expectedUrl, query: expectedQuery});
+}
