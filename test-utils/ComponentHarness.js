@@ -148,11 +148,20 @@ ComponentHarness.prototype._get = function(render, options) {
   var page = this.app.createPage();
   // Set `page.params`, which is usually created in tracks during `Page#render`:
   // https://github.com/derbyjs/tracks/blob/master/lib/index.js
-  page.params = {
-    url: url,
-    query: qs.parse(urlParse(url).query),
-    body: {},
-  };
+  function setPageUrl(url) {
+    page.params = {
+      url: url,
+      query: qs.parse(urlParse(url).query),
+      body: {},
+    };
+    // Set "$render.params", "$render.query", "$render.url" based on `page.params`.
+    page._setRenderParams();
+  }
+  setPageUrl(url);
+  // Fake some methods from tracks/lib/History.js.
+  // JSDOM doesn't really support updating the window URL, but this should work for Derby code that
+  // pulls URL info from the model or page.
+  this.app.history = { push: setPageUrl, replace: setPageUrl };
 
   render(page);
   // HACK: Implement getting an instance as a side-effect of rendering. This
