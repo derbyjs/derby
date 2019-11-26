@@ -198,7 +198,7 @@ describe('ComponentHarness', function() {
     });
   });
 
-  describe.only('fake app.history implementation', function() {
+  describe('fake app.history implementation', function() {
     it('accepts url option', function() {
       var renderUrl = '/box?size=123';
       var expectedQueryParams = {size: '123'};
