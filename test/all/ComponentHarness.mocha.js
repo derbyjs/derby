@@ -352,6 +352,27 @@ describe('ComponentHarness', function() {
       expect(html).equal('<div class="box"></div>');
     });
 
+    it('defines non-empty views with array arguments', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="box">' +
+              '<view is="clown" />' +
+              '<view is="ball" />' +
+              '<view is="puppy" />' +
+            '</div>'
+      };
+      var html = new ComponentHarness('<view is="box" />', Box)
+        .stub(
+          'clown',
+          ['ball', '<span class="ball"></span>'],
+          'puppy'
+        ).renderHtml().html;
+      expect(html).equal('<div class="box"><span class="ball"></span></div>');
+    });
+
     it('overrides a component dependency with an empty view', function() {
       function Clown() {}
       Clown.view = {

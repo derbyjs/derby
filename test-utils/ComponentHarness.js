@@ -65,7 +65,7 @@ ComponentHarness.prototype.setup = function(source) {
 };
 
 /**
- * Stubs out view names with empty views.
+ * Stubs out view names with empty view or the provided source.
  *
  * A view name is a colon-separated string of segments, as used in `<view is="...">`.
  *
@@ -75,8 +75,14 @@ ComponentHarness.prototype.setup = function(source) {
  */
 ComponentHarness.prototype.stub = function() {
   for (var i = 0; i < arguments.length; i++) {
-    var name = arguments[i];
-    this.app.views.register(name, '');
+    var arg = arguments[i];
+    if (typeof arg === 'string') {
+      this.app.views.register(arg, '');
+    } else if (Array.isArray(arg)) {
+      this.app.views.register(arg[0], arg[1] || '');
+    } else {
+      throw new Error('each argument must be a view name string or an array of [name, source]');
+    }
   }
   return this;
 };
