@@ -1,5 +1,6 @@
 var expect = require('chai').expect;
 var ComponentHarness = require('../../test-utils').ComponentHarness;
+var derbyTemplates = require('../../templates');
 
 describe('ComponentHarness', function() {
   describe('renderHtml', function() {
@@ -214,6 +215,46 @@ describe('ComponentHarness', function() {
       expect(function() {
         new ComponentHarness('<view is="box" />', ConflictingClown, Box);
       }).to.throw(Error);
+    });
+
+    it('supports view serializing', function() {
+      function Clown() {}
+      Clown.view = {
+        is: 'clown',
+        source:
+          '<index:>' +
+            '<div class="{{getClass()}}"></div>'
+      };
+      Clown.prototype.getClass = function() {
+        return 'clown';
+      };
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:
+          '<index:>' +
+            '<div class="{{getClass()}}">' +
+              '<view is="clown" />' +
+            '</div>',
+        dependencies: [Clown]
+      };
+      Box.prototype.getClass = function() {
+        return 'box';
+      };
+      var harness = new ComponentHarness('<view is="box" />', Box);
+      // Serialize returns JavaScript source code that is written to and
+      // required from a file. We simulate that by evaling the source
+      var serializedSource = harness.app.views.serialize();
+      var serialized = (new Function('return ' + serializedSource))();
+
+      // This is similar to what would happen in the browser. Derby would inject
+      // the serialized views, then the application code would execute and
+      // associate the views with component controllers
+      var harness2 = new ComponentHarness();
+      serialized(derbyTemplates, harness2.app.views);
+      harness2.app.component(Box);
+      var html = harness2.renderHtml().html;
+      expect(html).equal('<div class="box"><div class="clown"></div></div>');
     });
 
     it('gets overridden without error', function() {
