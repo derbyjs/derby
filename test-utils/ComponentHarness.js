@@ -70,18 +70,21 @@ ComponentHarness.prototype.setup = function(source) {
  * A view name is a colon-separated string of segments, as used in `<view is="...">`.
  *
  * @example
- *   var harness = new ComponentHarness('<view is="dialog"/>', Dialog)
- *     .stub('icons:open-icon', 'icons:close-icon');
+ *   var harness = new ComponentHarness('<view is="dialog"/>', Dialog).stub(
+ *     'icons:open-icon',
+ *     'icons:close-icon',
+ *     {is: 'dialog:buttons', source: '<button>OK</button>'}
+ *   );
  */
 ComponentHarness.prototype.stub = function() {
   for (var i = 0; i < arguments.length; i++) {
     var arg = arguments[i];
     if (typeof arg === 'string') {
       this.app.views.register(arg, '');
-    } else if (Array.isArray(arg)) {
-      this.app.views.register(arg[0], arg[1] || '');
+    } else if (arg && arg.is) {
+      this.app.views.register(arg.is, arg.source || '');
     } else {
-      throw new Error('each argument must be a view name string or an array of [name, source]');
+      throw new Error('each argument must be the name of a view or an object with an `is` property');
     }
   }
   return this;

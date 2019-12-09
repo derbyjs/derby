@@ -393,7 +393,7 @@ describe('ComponentHarness', function() {
       expect(html).equal('<div class="box"></div>');
     });
 
-    it('defines non-empty views with array arguments', function() {
+    it('defines source of view when provided', function() {
       function Box() {}
       Box.view = {
         is: 'box',
@@ -408,10 +408,17 @@ describe('ComponentHarness', function() {
       var html = new ComponentHarness('<view is="box" />', Box)
         .stub(
           'clown',
-          ['ball', '<span class="ball"></span>'],
+          {is: 'ball', source: '<span class="ball"></span>'},
           'puppy'
         ).renderHtml().html;
       expect(html).equal('<div class="box"><span class="ball"></span></div>');
+    });
+
+    it('throws error if no view name is provided', function() {
+      var harness = new ComponentHarness('');
+      expect(function() {
+        harness.stub({source: '<div></div>'});
+      }).to.throw(Error);
     });
 
     it('overrides a component dependency with an empty view', function() {
