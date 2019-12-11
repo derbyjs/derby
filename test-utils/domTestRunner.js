@@ -6,8 +6,8 @@ var runner = new DomTestRunner();
 // Set up Chai assertion chain methods: `#html` and `#render`
 registerAssertions(runner, require('chai').Assertion);
 
-exports.install = function() {
-  runner.installMochaHooks();
+exports.install = function(options) {
+  runner.installMochaHooks(options);
   return runner;
 };
 
@@ -17,10 +17,15 @@ function DomTestRunner() {
   this.document = null;
 }
 
-DomTestRunner.prototype.installMochaHooks = function() {
+DomTestRunner.prototype.installMochaHooks = function(options) {
+  options = options || {};
+  var jsdomOptions = options.jsdomOptions;
+
   // Set up runner's `window` and `document`.
   if (util.isServer) {
-    mochaHooksForNode(this);
+    mochaHooksForNode(this, {
+      jsdomOptions: jsdomOptions
+    });
   } else {
     mochaHooksForBrowser(this);
   }
@@ -34,7 +39,9 @@ DomTestRunner.prototype.createHarness = function() {
   return harness;
 };
 
-function mochaHooksForNode(runner) {
+function mochaHooksForNode(runner, options) {
+  var jsdomOptions = options.jsdomOptions;
+
   // Use an indirect require so that Browserify doesn't try to bundle JSDOM.
   var JSDOM = util.serverRequire(module, 'jsdom').JSDOM;
 
@@ -43,7 +50,7 @@ function mochaHooksForNode(runner) {
   var jsdom;
 
   global.beforeEach(function() {
-    jsdom = new JSDOM();
+    jsdom = new JSDOM('', jsdomOptions);
     runner.window = jsdom.window;
     runner.document = jsdom.window.document;
     // Set `window` and `document` globals for Derby code that doesn't allow injecting them.
