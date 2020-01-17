@@ -196,6 +196,19 @@ describe('ComponentHarness', function() {
       var harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).to.render('');
     });
+
+    it('ignores DOM mutations in components\' create()', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source: '<index:><div class="box" as="boxElement"></div>'
+      };
+      Box.prototype.create = function() {
+        this.boxElement.className = 'box2';
+      };
+      var harness = runner.createHarness('<view is="box" />', Box);
+      expect(harness).to.render('<div class="box"></div>');
+    });
   });
 
   describe('fake app.history implementation', function() {

@@ -1,6 +1,8 @@
+var EventEmitter = require('events').EventEmitter;
 var qs = require('qs');
 var urlParse = require('url').parse;
 var Model = require('racer').Model;
+var racerUtil = require('racer/lib/util');
 var App = require('../lib/App');
 var AppForServer = require('../lib/AppForServer');
 
@@ -35,6 +37,7 @@ module.exports = ComponentHarness;
  * If arguments are provided, then `#setup` is called with the arguments.
  */
 function ComponentHarness() {
+  EventEmitter.call(this);
   this.app = new AppForHarness(this);
   this.model = new Model();
 
@@ -42,6 +45,8 @@ function ComponentHarness() {
     this.setup.apply(this, arguments);
   }
 }
+
+racerUtil.mergeInto(ComponentHarness.prototype, EventEmitter.prototype);
 
 /** @typedef { {view: {is: string, source?: string}} } InlineComponent */
 /**
@@ -172,7 +177,18 @@ ComponentHarness.prototype._get = function(render, options) {
   // pulls URL info from the model or page.
   this.app.history = { push: setPageUrl, replace: setPageUrl };
 
+  // The `#render` assertion in assertions.js wants to compare the results of HTML and DOM
+  // rendering, to make sure they match. However, component `create()` methods can modify the DOM
+  // immediately after initial rendering, which can break assertions.
+  //
+  // To get around this, we trigger a "pageRendered" event on the harness before `create()` methods
+  // get called. This is done by pausing the context, which prevents create() methods from getting
+  // called until the pause-count drops to 0.
+  page.context.pause();
   render(page);
+  this.emit('pageRendered', page);
+  page.context.unpause();
+
   // HACK: Implement getting an instance as a side-effect of rendering. This
   // code relies on the fact that while rendering, components are instantiated,
   // and a reference is kept on page._components. Since we just created the

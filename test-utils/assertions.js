@@ -82,9 +82,13 @@ module.exports = function(dom, Assertion) {
       new Assertion(expected).is.a('string');
       new Assertion(html).equal(expected, 'HTML string rendering does not match expected HTML');
 
-      // Check DOM rendering is also equivalent
-      var fragment = harness.renderDom(options).fragment;
-      new Assertion(fragment).html(expected, options);
+      // Check DOM rendering is also equivalent.
+      // This uses the harness "pageRendered" event to grab the rendered DOM *before* any component
+      // `create()` methods are called, as `create()` methods can do DOM mutations.
+      harness.once('pageRendered', function(page) {
+        new Assertion(page.fragment).html(expected, options);
+      });
+      harness.renderDom(options);
 
       // Try attaching. Attachment will throw an error if HTML doesn't match
       var el = domDocument.createElement(parentTag);
