@@ -56,8 +56,8 @@ module.exports = function(dom, Assertion) {
 
       this.assert(
         html === expected,
-        'expected the HTML #{exp} but got #{act}',
-        'expected to not have HTML #{act}',
+        'expected DOM rendering to produce the HTML #{exp} but got #{act}',
+        'expected DOM rendering to not produce actual HTML #{act}',
         expected,
         html
       );
@@ -80,7 +80,7 @@ module.exports = function(dom, Assertion) {
       // test that all modes of rendering will be equivalent
       if (expected == null) expected = html;
       new Assertion(expected).is.a('string');
-      new Assertion(html).equal(expected);
+      new Assertion(html).equal(expected, 'HTML string rendering does not match expected HTML');
 
       // Check DOM rendering is also equivalent
       var fragment = harness.renderDom(options).fragment;
