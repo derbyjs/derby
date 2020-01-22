@@ -1,9 +1,329 @@
+var expect = require('chai').expect;
 var templates = require('derby-templates').templates;
-var util = require('./util');
-var derby = util.derby;
-var expectHtml = util.expectHtml;
+var derby = require('./util').derby;
 
 describe('components', function() {
+
+  describe('destroy', function() {
+    it('emits a "destroy" event when the component is removed from the DOM', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body',
+        '{{unless _page.hide}}' +
+          '<view is="box" as="box"></view>' +
+        '{{/unless}}'
+      );
+      app.views.register('box', '<div></div>');
+      function Box() {}
+      app.component('box', Box);
+      page.getFragment('Body');
+
+      expect(page.box).instanceof(Box);
+      page.box.on('destroy', function() {
+        done();
+      });
+      page.model.set('_page.hide', true);
+    });
+
+    it('emits an event declared in the template with `on-destroy`', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body',
+        '{{unless _page.hide}}' +
+          '<view is="box" on-destroy="destroyBox()"></view>' +
+        '{{/unless}}'
+      );
+      app.views.register('box', '<div></div>');
+      function Box() {}
+      app.component('box', Box);
+      page.destroyBox = function() {
+        done();
+      };
+      page.getFragment('Body');
+      page.model.set('_page.hide', true);
+    });
+
+    it('sets `this.isDestroyed` property to true after a component has been fully destroyed', function() {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body',
+        '{{unless _page.hide}}' +
+          '<view is="box" as="box"></view>' +
+        '{{/unless}}'
+      );
+      app.views.register('box', '<div></div>');
+      function Box() {}
+      app.component('box', Box);
+      page.getFragment('Body');
+      var box = page.box;
+      expect(box.isDestroyed).equal(false);
+      page.model.set('_page.hide', true);
+      expect(box.isDestroyed).equal(true);
+    });
+  });
+
+  describe('bind', function() {
+    it('calls a function with `this` being the component and passed in arguments', function() {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box"></view>');
+      app.views.register('box', '<div>{{area}}</div>');
+      var getArea = function(scale) {
+        expect(this).instanceof(Box);
+        return this.width * this.height * scale;
+      };
+      function Box() {}
+      Box.prototype.init = function() {
+        this.width = 3;
+        this.height = 4;
+      };
+      Box.prototype.create = function() {
+        var bound = this.bind(getArea);
+        var area = bound(10);
+        this.model.set('area', area);
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+      expect(fragment).html('<div>120</div>');
+    });
+  });
+
+  describe('debounce and throttle', function() {
+    function test(getFn, options) {
+      options = options || {};
+
+      it('calls a function once with `this` being the component', function(done) {
+        var app = derby.createApp();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
+        app.views.register('box', '<div></div>');
+        var called = false;
+        var update = function() {
+          expect(this).instanceof(Box);
+          called = true;
+          // Will error if called more than once:
+          done();
+        };
+        function Box() {}
+        Box.prototype.create = function() {
+          this.update = getFn.call(this, update);
+        };
+        app.component('box', Box);
+        var fragment = page.getFragment('Body');
+        var box = page.box;
+        box.update();
+        box.update();
+        box.update();
+        expect(called).equal(false);
+      });
+
+      it('resets and calls again', function(done) {
+        var app = derby.createApp();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
+        app.views.register('box', '<div></div>');
+        var called = false;
+        var box;
+        var update = function(cb) {
+          expect(this).instanceof(Box);
+          if (called) {
+            done();
+          } else {
+            called = true;
+            if (options.async) {
+              cb();
+              box.update();
+            } else {
+              box.update();
+            }
+          }
+        };
+        function Box() {}
+        Box.prototype.create = function() {
+          this.update = getFn.call(this, update);
+        };
+        app.component('box', Box);
+        var fragment = page.getFragment('Body');
+        box = page.box;
+        box.update();
+        box.update();
+        box.update();
+      });
+
+      it('calls with the most recent arguments', function(done) {
+        var app = derby.createApp();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
+        app.views.register('box', '<div></div>');
+        var called = false;
+        var box;
+        var update = function(letter, number, cb) {
+          expect(this).instanceof(Box);
+          if (called) {
+            expect(letter).equal('e');
+            expect(number).equal(5);
+            done();
+          } else {
+            expect(letter).equal('c');
+            expect(number).equal(3);
+            called = true;
+            if (options.async) {
+              cb();
+              box.update('d', 4);
+              box.update('e', 5);
+            } else {
+              box.update('d', 4);
+              box.update('e', 5);
+            }
+          }
+        };
+        function Box() {}
+        Box.prototype.create = function() {
+          this.update = getFn.call(this, update);
+        };
+        app.component('box', Box);
+        var fragment = page.getFragment('Body');
+        box = page.box;
+        box.update('a', 1);
+        box.update('b', 2);
+        box.update('c', 3);
+      });
+    }
+    describe('debounce default delay', function() {
+      test(function(update) {
+        return this.debounce(update);
+      });
+    });
+    describe('debounce milliseconds delay value', function() {
+      test(function(update) {
+        return this.debounce(update, 10);
+      });
+    });
+    describe('debounceAsync default delay', function() {
+      test(function(update) {
+        return this.debounceAsync(update);
+      }, {async: true});
+    });
+    describe('debounceAsync milliseconds delay value', function() {
+      test(function(update) {
+        return this.debounceAsync(update, 10);
+      }, {async: true});
+    });
+    describe('throttle default delay', function() {
+      test(function(update) {
+        return this.throttle(update);
+      });
+    });
+    describe('throttle milliseconds delay value', function() {
+      test(function(update) {
+        return this.throttle(update, 10);
+      });
+    });
+    describe('throttle with alternative delay function', function() {
+      test(function(update) {
+        return this.throttle(update, process.nextTick);
+      });
+    });
+    it('debounceAsync does not apply arguments if callback has only one argument', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box" as="box"></view>');
+      app.views.register('box', '<div></div>');
+      var called = false;
+      var update = function(cb) {
+        expect(cb).a('function');
+        if (called) {
+          done();
+        } else {
+          called = true;
+          cb();
+          page.box.update('foo');
+        }
+      };
+      function Box() {}
+      Box.prototype.create = function() {
+        this.update = this.debounceAsync(update);
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+      page.box.update('a', 1);
+    });
+    it('debounceAsync debounces until the async call completes', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box"></view>');
+      app.views.register('box', '<div></div>');
+      var calls = 0;
+      var intervalCount = 0;
+      var interval;
+      var update = function(cb) {
+        if (calls === 0) {
+          expect(intervalCount).equal(1);
+        } else if (calls < 5) {
+          // 17 / 7 ~= 2.4
+          expect(intervalCount).within(2, 3);
+        } else {
+          clearInterval(interval);
+          return done();
+        }
+        calls++;
+        intervalCount = 0;
+        setTimeout(cb, 17);
+      };
+      function Box() {}
+      Box.prototype.create = function() {
+        var debounced = this.debounceAsync(update);
+        interval = setInterval(function() {
+          intervalCount++;
+          debounced();
+          debounced();
+          setTimeout(debounced, 0);
+          setTimeout(debounced, 0);
+        }, 7);
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+    });
+    it('throttle calls no more frequently than delay', function(done) {
+      var app = derby.createApp();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box"></view>');
+      app.views.register('box', '<div></div>');
+      var delay = 10;
+      var calls = 0;
+      var tickCount = 0;
+      var timeout;
+      var previous;
+      var update = function() {
+        calls++;
+        var now = +new Date();
+        if (calls < 20) {
+          if (previous) {
+            expect(now - previous).least(delay);
+          }
+        } else {
+          expect(tickCount).above(calls);
+          clearTimeout(timeout);
+          return done();
+        }
+        previous = now;
+      };
+      function Box() {}
+      Box.prototype.create = function() {
+        var debounced = this.throttle(update, delay);
+        var tick = function() {
+          timeout = setTimeout(function() {
+            tickCount++;
+            debounced();
+            tick();
+          }, Math.random() * delay * 1.5);
+        };
+        tick();
+      };
+      app.component('box', Box);
+      var fragment = page.getFragment('Body');
+    });
+  });
 
   describe('dependencies', function() {
     it('gets dependencies rendered inside of components', function() {
@@ -79,9 +399,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, '<div style="background-color: blue"></div>');
+      expect(fragment).html('<div style="background-color: blue"></div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, '<div style="background-color: gray"></div>');
+      expect(fragment).html('<div style="background-color: gray"></div>');
     });
 
     it('updates model when expression attribute changes', function() {
@@ -104,9 +424,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, 'lightblue<div style="background-color: lightblue"></div>');
+      expect(fragment).html('lightblue<div style="background-color: lightblue"></div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, 'lightgray<div style="background-color: lightgray"></div>');
+      expect(fragment).html('lightgray<div style="background-color: lightgray"></div>');
     });
 
     it('updates model when template attribute changes', function() {
@@ -129,9 +449,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, 'lightblue<div style="background-color: lightblue"></div>');
+      expect(fragment).html('lightblue<div style="background-color: lightblue"></div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, 'lightgray<div style="background-color: lightgray"></div>');
+      expect(fragment).html('lightgray<div style="background-color: lightgray"></div>');
     });
 
     it('updates view expression', function() {
@@ -158,11 +478,11 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, '<div style="background-color: lightblue">background-color: lightblue</div>');
+      expect(fragment).html('<div style="background-color: lightblue">background-color: lightblue</div>');
       this.page.model.set('_page.color', 'gray');
-      expectHtml(fragment, '<div style="background-color: lightgray">background-color: lightgray</div>');
+      expect(fragment).html('<div style="background-color: lightgray">background-color: lightgray</div>');
       this.page.model.set('_page.view', 'fore');
-      expectHtml(fragment, '<div style="color: lightgray">color: lightgray</div>');
+      expect(fragment).html('<div style="color: lightgray">color: lightgray</div>');
     });
 
     it('updates when template attribute is updated to new value inside component model', function() {
@@ -183,12 +503,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
+      expect(fragment).html('<div style="background-color: lightblue">lightblue</div>');
       var previous = swatch.model.set('value', 'gray');
-      expectHtml(fragment, '<div style="background-color: gray">gray</div>');
+      expect(fragment).html('<div style="background-color: gray">gray</div>');
       expect(this.page.model.get('_page.color')).equal('blue');
       swatch.model.set('value', previous);
-      expectHtml(fragment, '<div style="background-color: lightblue">lightblue</div>');
+      expect(fragment).html('<div style="background-color: lightblue">lightblue</div>');
     });
 
     it('renders template attribute passed through component and partial with correct context', function() {
@@ -219,7 +539,7 @@ describe('components', function() {
       this.app.component('picture-exhibit', PictureExhibit);
 
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment,
+      expect(fragment).html(
         '<div class="picture-frame">' +
           '<div style="background-color: blue">blue</div>' +
         '</div>' +
@@ -248,9 +568,9 @@ describe('components', function() {
       this.Swatch = Swatch;
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
-      expectHtml(fragment, '<div style="width: 10px; background-color: lightblue">lightblue</div>');
+      expect(fragment).html('<div style="width: 10px; background-color: lightblue">lightblue</div>');
       this.page.model.set('_page.color', 'green');
-      expectHtml(fragment, '<div style="width: 10px; background-color: lightgreen">lightgreen</div>');
+      expect(fragment).html('<div style="width: 10px; background-color: lightgreen">lightgreen</div>');
     });
 
     it('updates within template attribute', function() {
@@ -271,11 +591,11 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(fragment).html('<div>Hide me.</div>');
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(fragment).html('<div>Show me!</div>');
+      expect(swatch.model.get('message')).instanceof(templates.Template);
     });
 
     it('updates within template attribute in model', function() {
@@ -296,11 +616,11 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(fragment).html('<div>Hide me.</div>');
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(fragment).html('<div>Show me!</div>');
+      expect(swatch.model.get('message')).instanceof(templates.Template);
     });
 
     it('updates within expression attribute by making it a template', function() {
@@ -321,11 +641,11 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(fragment).html('<div>Hide me.</div>');
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
+      expect(fragment).html('<div>Show me!</div>');
       // getAttribute works, but the rendering context is just inside the
       // component, so the alias is not defined
       expect(swatch.getAttribute('message')).equal('Hide me.');
@@ -345,11 +665,11 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, '<div>Hide me.</div>');
-      expect(swatch.model.get('message')).a(templates.Template);
+      expect(fragment).html('<div>Hide me.</div>');
+      expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
       swatch.model.set('show', true);
-      expectHtml(fragment, '<div>Show me!</div>');
+      expect(fragment).html('<div>Show me!</div>');
       expect(swatch.getAttribute('message')).equal('Show me!');
     });
 
@@ -375,13 +695,13 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
       ]);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
@@ -412,13 +732,13 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
       ]);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
@@ -447,12 +767,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
-      expect(swatch.model.get('items')[0].content).a(templates.Template);
-      expect(swatch.model.get('items')[1].content).a(templates.Template);
+      expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
+      expect(swatch.model.get('items')[1].content).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
     });
 
     it('updates array within template attribute in model from partial', function() {
@@ -480,12 +800,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
-      expect(swatch.model.get('items')[0].content).a(templates.Template);
-      expect(swatch.model.get('items')[1].content).a(templates.Template);
+      expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
+      expect(swatch.model.get('items')[1].content).instanceof(templates.Template);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
     });
 
     it('updates array within attribute bound to component model path', function() {
@@ -508,13 +828,13 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
         {content: 'Hide me.'},
       ]);
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Show me!'},
         {content: 'Hide me.'},
@@ -543,12 +863,12 @@ describe('components', function() {
       this.app.component('swatch', Swatch);
       var fragment = this.page.getFragment('Body');
       var swatch = this.page._components._1;
-      expectHtml(fragment, 'Hide me.Hide me.');
+      expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
-      expect(swatch.model.get('items')[0].content).a(templates.Template);
+      expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
       expect(swatch.model.get('items')[1].content).equal('Hide me.')
       swatch.model.set('show', true);
-      expectHtml(fragment, 'Show me!Hide me.');
+      expect(fragment).html('Show me!Hide me.');
     });
 
   });

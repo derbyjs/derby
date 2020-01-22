@@ -1,7 +1,5 @@
-var expect = require('expect.js');
-var util = require('./util');
-var derby = util.derby;
-var expectHtml = util.expectHtml;
+var expect = require('chai').expect;
+var derby = require('./util').derby;
 
 describe('DOM events', function() {
   it('HTML element markup custom `create` event', function() {
@@ -20,9 +18,9 @@ describe('DOM events', function() {
       span = element;
     };
     var fragment = page.getFragment('Body');
-    expectHtml(fragment, '<div><span></span></div>');
-    expectHtml(div, '<div><span></span></div>');
-    expectHtml(span, '<span></span>');
+    expect(fragment).html('<div><span></span></div>');
+    expect(div).html('<div><span></span></div>');
+    expect(span).html('<span></span>');
   });
 
   it('HTML element markup custom `destroy` event', function() {
@@ -40,12 +38,12 @@ describe('DOM events', function() {
       span = element;
     };
     var fragment = page.getFragment('Body');
-    expectHtml(fragment, '<div><span></span></div>');
+    expect(fragment).html('<div><span></span></div>');
     expect(span).equal(undefined);
 
     page.model.set('_page.hide', true);
-    expectHtml(fragment, '<div></div>');
-    expectHtml(span, '<span></span>');
+    expect(fragment).html('<div></div>');
+    expect(span).html('<span></span>');
   });
 
   it('dom.on custom `destroy` event', function() {
@@ -63,11 +61,11 @@ describe('DOM events', function() {
     page.dom.on('destroy', page.span, function() {
       destroyed = true;
     });
-    expectHtml(fragment, '<div><span></span></div>');
+    expect(fragment).html('<div><span></span></div>');
     expect(destroyed).equal(false);
 
     page.model.set('_page.hide', true);
-    expectHtml(fragment, '<div></div>');
+    expect(fragment).html('<div></div>');
     expect(destroyed).equal(true);
   });
 });

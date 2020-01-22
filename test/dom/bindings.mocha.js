@@ -1,12 +1,12 @@
-var util = require('./util');
-var derby = util.derby;
-var expectHtml = util.expectHtml;
+var expect = require('chai').expect;
+var domTestRunner = require('../../test-utils/domTestRunner');
 
 describe('bindings', function() {
+  var runner = domTestRunner.install();
 
   describe('bracket dependencies', function() {
     it('bracket inner dependency change', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
       var page = app.createPage();
       var doc = page.model.at('_page.doc');
@@ -17,17 +17,17 @@ describe('bindings', function() {
       });
       key.set('one');
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'hi');
+      expect(fragment).html('hi');
       key.set('two');
-      expectHtml(fragment, 'bye');
+      expect(fragment).html('bye');
       key.del();
-      expectHtml(fragment, '');
+      expect(fragment).html('');
       key.set('one');
-      expectHtml(fragment, 'hi');
+      expect(fragment).html('hi');
     });
 
     it('bracket outer dependency change', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
       var page = app.createPage();
       var doc = page.model.at('_page.doc');
@@ -38,19 +38,19 @@ describe('bindings', function() {
       });
       key.set('one');
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'hi');
+      expect(fragment).html('hi');
       doc.set('one', 'hello')
-      expectHtml(fragment, 'hello');
+      expect(fragment).html('hello');
       doc.set({
         one: 'heyo'
       });
-      expectHtml(fragment, 'heyo');
+      expect(fragment).html('heyo');
       doc.del();
-      expectHtml(fragment, '');
+      expect(fragment).html('');
     });
 
     it('bracket inner then outer dependency change', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
       var page = app.createPage();
       var doc = page.model.at('_page.doc');
@@ -61,24 +61,24 @@ describe('bindings', function() {
       });
       key.set('one');
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'hi');
+      expect(fragment).html('hi');
       key.set('two');
-      expectHtml(fragment, 'bye');
+      expect(fragment).html('bye');
       doc.set({
         one: 'heyo',
         two: 'later'
       });
-      expectHtml(fragment, 'later');
+      expect(fragment).html('later');
       doc.set('two', 'adios');
-      expectHtml(fragment, 'adios');
+      expect(fragment).html('adios');
       key.set('one');
-      expectHtml(fragment, 'heyo');
+      expect(fragment).html('heyo');
     });
   });
 
   describe('dynamic view instances', function() {
     it('simple dynamic view', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="{{_page.view}}" optional></view>'
       );
@@ -88,16 +88,16 @@ describe('bindings', function() {
       var view = page.model.at('_page.view');
       view.set('one');
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'One');
+      expect(fragment).html('One');
       view.set('two');
-      expectHtml(fragment, 'Two');
+      expect(fragment).html('Two');
       view.del();
-      expectHtml(fragment, '');
+      expect(fragment).html('');
       view.set('one');
-      expectHtml(fragment, 'One');
+      expect(fragment).html('One');
     });
     it('bracketed dynamic view', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="{{_page.names[_page.index]}}" optional></view>'
       );
@@ -109,20 +109,20 @@ describe('bindings', function() {
       var index = page.model.at('_page.index');
       index.set(0);
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'One');
+      expect(fragment).html('One');
       index.set(1);
-      expectHtml(fragment, 'Two');
+      expect(fragment).html('Two');
       index.del();
-      expectHtml(fragment, '');
+      expect(fragment).html('');
       index.set(0);
-      expectHtml(fragment, 'One');
+      expect(fragment).html('One');
       page.model.set('_page.names', ['two', 'one']);
-      expectHtml(fragment, 'Two');
+      expect(fragment).html('Two');
       page.model.unshift('_page.names', 'three');
-      expectHtml(fragment, 'Three');
+      expect(fragment).html('Three');
     });
     it('only renders if the expression value changes', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       var count = 0;
       app.proto.count = function() {
         return count++;
@@ -137,21 +137,21 @@ describe('bindings', function() {
       var view = page.model.at('_page.view');
       view.set('one');
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'One 0');
+      expect(fragment).html('One 0');
       view.set('two');
-      expectHtml(fragment, 'Two 1');
+      expect(fragment).html('Two 1');
       view.set('TWO');
-      expectHtml(fragment, 'Two 1');
+      expect(fragment).html('Two 1');
       view.set('ONE');
-      expectHtml(fragment, 'One 2');
+      expect(fragment).html('One 2');
       view.set('one');
-      expectHtml(fragment, 'One 2');
+      expect(fragment).html('One 2');
     });
   });
 
   describe('basic blocks', function() {
     it('if', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{if _page.nested.value}}' +
           '{{this}}.' +
@@ -161,17 +161,17 @@ describe('bindings', function() {
       );
       var page = app.createPage();
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'otherwise');
+      expect(fragment).html('otherwise');
       var value = page.model.at('_page.nested.value');
       value.set(true);
-      expectHtml(fragment, 'true.');
+      expect(fragment).html('true.');
       value.set(false);
-      expectHtml(fragment, 'otherwise');
+      expect(fragment).html('otherwise');
       value.set('hello');
-      expectHtml(fragment, 'hello.');
+      expect(fragment).html('hello.');
     });
     it('unless', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{unless _page.nested.value}}' +
           'nada' +
@@ -181,17 +181,17 @@ describe('bindings', function() {
       );
       var page = app.createPage();
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'nada');
+      expect(fragment).html('nada');
       var value = page.model.at('_page.nested.value');
       value.set(true);
-      expectHtml(fragment, 'otherwise');
+      expect(fragment).html('otherwise');
       value.set(false);
-      expectHtml(fragment, 'nada');
+      expect(fragment).html('nada');
       value.set('hello');
-      expectHtml(fragment, 'otherwise');
+      expect(fragment).html('otherwise');
     });
     it('each else', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{each _page.items}}' +
           '{{this}}.' +
@@ -201,24 +201,24 @@ describe('bindings', function() {
       );
       var page = app.createPage();
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, 'otherwise');
+      expect(fragment).html('otherwise');
       var items = page.model.at('_page.items');
       items.set(['one', 'two', 'three']);
-      expectHtml(fragment, 'one.two.three.');
+      expect(fragment).html('one.two.three.');
       items.set([]);
-      expectHtml(fragment, 'otherwise');
+      expect(fragment).html('otherwise');
       items.insert(0, ['one', 'two', 'three']);
-      expectHtml(fragment, 'one.two.three.');
+      expect(fragment).html('one.two.three.');
       items.remove(0, 2);
-      expectHtml(fragment, 'three.');
+      expect(fragment).html('three.');
       items.remove(0, 1);
-      expectHtml(fragment, 'otherwise');
+      expect(fragment).html('otherwise');
     });
   });
 
   describe('nested blocks', function() {
     it('each containing if', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{each _page.items as #item}}' +
           '{{if _page.toggle}}' +
@@ -233,13 +233,13 @@ describe('bindings', function() {
       items.set(['one', 'two', 'three']);
       toggle.set(true);
       items.move(2, 1);
-      expectHtml(fragment, 'one.three.two.');
+      expect(fragment).html('one.three.two.');
     });
   });
 
   function testArray(itemTemplate, itemData) {
     it('each on path', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' + itemTemplate + '{{/each}}' +
@@ -248,7 +248,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on alias', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page.items as #items}}' +
           '<ul>' +
@@ -259,7 +259,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on relative path', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page.items}}' +
           '<ul>' +
@@ -270,7 +270,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on relative subpath', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page}}' +
           '<ul>' +
@@ -281,7 +281,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on attribute', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="list" items="{{_page.items}}"></view>'
       );
@@ -293,7 +293,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing withs', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -310,7 +310,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing view instance', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -322,7 +322,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing view instance containing with', function() {
-      var app = derby.createApp();
+      var app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -337,37 +337,37 @@ describe('bindings', function() {
       var page = app.createPage();
       var items = page.model.at('_page.items');
       var fragment = page.getFragment('Body');
-      expectHtml(fragment, '<ul></ul>');
+      expect(fragment).html('<ul></ul>');
       items.insert(0, itemData.slice(0, 2));
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul><li>0. One One</li><li>1. Two Two</li></ul>'
       );
       items.push(itemData[2]);
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul><li>0. One One</li><li>1. Two Two</li><li>2. Three Three</li></ul>'
       );
       items.unshift(itemData[3]);
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul><li>0. Four Four</li><li>1. One One</li><li>2. Two Two</li><li>3. Three Three</li></ul>'
       );
       items.remove(1, 2);
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul><li>0. Four Four</li><li>1. Three Three</li></ul>'
       );
       items.shift();
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul><li>0. Three Three</li></ul>'
       );
       items.pop();
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul></ul>'
       );
       items.pop();
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul></ul>'
       );
       items.push(itemData[0]);
-      expectHtml(fragment,
+      expect(fragment).html(
         '<ul><li>0. One One</li></ul>'
       );
     }
@@ -406,9 +406,7 @@ describe('bindings', function() {
   // This is solved by having Derby register its catch-all listeners using
   // the *Immediate events, which operate outside the mutator event queue.
   it('array chained insertions at index 0', function() {
-    var Model = require('racer').Model;
-
-    var app = derby.createApp();
+    var app = runner.createHarness().app;
     app.views.register('Body',
       '<ul>' +
         '{{each _data.items as #item}}' +
@@ -416,21 +414,20 @@ describe('bindings', function() {
         '{{/each}}' +
       '</ul>'
     );
-    app.model.set('$derbyFlags.immediateModelListeners', true);
-    app.model.on('insert', '_data.items', function(index, values) {
-      if (values[0] == 'B') {
-        app.model.insert('_data.items', 0, 'C');
-      }
-    });
 
     var page = app.createPage();
+    page.model.on('insert', '_data.items', function(index, values) {
+      if (values[0] == 'B') {
+        page.model.insert('_data.items', 0, 'C');
+      }
+    });
     var $items = page.model.at('_data.items');
     $items.set(['A']);
 
     var fragment = page.getFragment('Body');
-    expectHtml(fragment, '<ul><li>A</li></ul>');
+    expect(fragment).html('<ul><li>A</li></ul>');
     $items.insert(0, 'B');
-    expectHtml(fragment, '<ul><li>C</li><li>B</li><li>A</li></ul>');
+    expect(fragment).html('<ul><li>C</li><li>B</li><li>A</li></ul>');
   });
 
   it('mutation with number path segments', function() {
@@ -438,7 +435,7 @@ describe('bindings', function() {
     // which handle binding updates. The event model expects that any numeric
     // path segments it receives have been cast into JS numbers, which the
     // Racer model doesn't necessarily guarantee.
-    var app = derby.createApp();
+    var app = runner.createHarness().app;
     app.views.register('Body',
       '<ul>' +
         '{{each _data.items as #item}}' +
@@ -446,7 +443,6 @@ describe('bindings', function() {
         '{{/each}}' +
       '</ul>'
     );
-    app.model.set('$derbyFlags.immediateModelListeners', true);
     var page = app.createPage();
     var $items = page.model.at('_data.items');
     $items.set([
@@ -456,9 +452,9 @@ describe('bindings', function() {
     ]);
 
     var fragment = page.getFragment('Body');
-    expectHtml(fragment, '<ul><li>Red</li><li>Green</li><li>Blue</li></ul>');
+    expect(fragment).html('<ul><li>Red</li><li>Green</li><li>Blue</li></ul>');
     // Test mutation with a numeric path segment.
-    app.model.set('_data.items.1.label', 'Verde');
-    expectHtml(fragment, '<ul><li>Red</li><li>Verde</li><li>Blue</li></ul>');
+    page.model.set('_data.items.1.label', 'Verde');
+    expect(fragment).html('<ul><li>Red</li><li>Verde</li><li>Blue</li></ul>');
   });
 });

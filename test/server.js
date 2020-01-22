@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var async = require('async');
 var browserify = require('browserify');
 var express = require('express');
 
@@ -9,15 +10,14 @@ expressApp.use(express.static(__dirname + '/../node_modules/mocha'));
 
 expressApp.get('/test.js', function(req, res, next) {
   var bundle = browserify({debug: true});
-  addScripts(bundle, __dirname + '/all', function(err) {
+  async.each(['/all', '/dom', '/browser'], function(dir, cb) {
+    addScripts(bundle, __dirname + dir, cb);
+  }, function(err) {
     if (err) return next(err);
-    addScripts(bundle, __dirname + '/browser', function(err) {
+    bundle.bundle(function(err, code) {
       if (err) return next(err);
-      bundle.bundle(function(err, code) {
-        if (err) return next(err);
-        res.type('js');
-        res.send(code);
-      });
+      res.type('js');
+      res.send(code);
     });
   });
 });
