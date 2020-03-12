@@ -204,7 +204,7 @@ describe('ComponentHarness', function() {
         source: '<index:><div class="box" as="boxElement"></div>'
       };
       Box.prototype.create = function() {
-        this.boxElement.className = 'box2';
+        this.boxElement.className = 'box-changed-in-create';
       };
       var harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).to.render('<div class="box"></div>');
