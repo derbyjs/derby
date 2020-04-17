@@ -71,46 +71,102 @@ module.exports = function(dom, Assertion) {
       }
       var domDocument = getWindow().document;
       var parentTag = (options && options.parentTag) || 'ins';
+      var firstFailureMessage, actual;
 
       new Assertion(harness).instanceOf(ComponentHarness);
 
-      // Check HTML matches expected value
-      var html = harness.renderHtml(options).html;
-      // Use the HTML as the expected value if null. This allows the user to
-      // test that all modes of rendering will be equivalent
-      if (expected == null) expected = html;
-      new Assertion(expected).is.a('string');
-      new Assertion(html).equal(expected, 'HTML string rendering does not match expected HTML');
+      // Render to a HTML string.
+      var htmlString = harness.renderHtml(options).html;
+
+      // Normalize `htmlString` into the same form as the DOM would give for `element.innerHTML`.
+      //
+      // derby-parsing uses htmlUtil.unescapeEntities(source) on text nodes' content. That converts
+      // HTML entities like '&nbsp;' to their corresponding Unicode characters. However, for this
+      // assertion, if the `expected` string is provided, it will not have that same transformation.
+      // To make the assertion work properly, normalize the actual `htmlString`.
+      var html = normalizeHtml(htmlString);
+
+      var htmlRenderingOk;
+      if (expected == null) {
+        // If `expected` is not provided, then we skip this check.
+        // Set `expected` as the normalized HTML string for subsequent checks.
+        expected = html;
+        htmlRenderingOk = true;
+      } else {
+        // If `expected` was originally provided, check that the normalized HTML string is equal.
+        new Assertion(expected).is.a('string');
+        // Check HTML matches expected value
+        htmlRenderingOk = html === expected;
+        if (!htmlRenderingOk) {
+          if (!firstFailureMessage) {
+            firstFailureMessage = 'HTML string rendering does not match expected HTML';
+            actual = html;
+          }
+        }
+      }
 
       // Check DOM rendering is also equivalent.
       // This uses the harness "pageRendered" event to grab the rendered DOM *before* any component
       // `create()` methods are called, as `create()` methods can do DOM mutations.
+      var domRenderingOk;
       harness.once('pageRendered', function(page) {
-        new Assertion(page.fragment).html(expected, options);
+        try {
+          new Assertion(page.fragment).html(expected, options);
+          domRenderingOk = true;
+        } catch (err) {
+          domRenderingOk = false;
+          if (!firstFailureMessage) {
+            firstFailureMessage = err.message;
+            actual = err.actual;
+          }
+        }
       });
       harness.renderDom(options);
 
       // Try attaching. Attachment will throw an error if HTML doesn't match
       var el = domDocument.createElement(parentTag);
-      el.innerHTML = html;
+      el.innerHTML = htmlString;
       var innerHTML = el.innerHTML;
       var attachError;
       try {
         harness.attachTo(el);
       } catch (err) {
         attachError = err;
+        if (!firstFailureMessage) {
+          firstFailureMessage = 'expected success attaching to #{exp} but got #{act}.\n' +
+            (attachError ? (attachError.message + attachError.stack) : '');
+          actual = innerHTML;
+        }
       }
+      var attachOk = !attachError;
 
       // TODO: Would be nice to add a diff of the expected and actual HTML
       this.assert(
-        !attachError,
-        'expected success attaching to #{exp} but got #{act}.\n' +
-          (attachError ? (attachError.message + attachError.stack) : ''),
-        'expected render to fail but matched #{exp}',
+        htmlRenderingOk && domRenderingOk && attachOk,
+        firstFailureMessage || 'rendering failed due to an unknown reason',
+        'expected rendering to fail but it succeeded',
         expected,
-        innerHTML
+        actual
       );
     });
+
+    /**
+     * Normalize a HTML string into its `innerHTML` form.
+     *
+     * WARNING - Only use this with trusted HTML, e.g. developer-provided HTML.
+     *
+     * Assigning into `element.innerHTML` does some interesting transformations:
+     *
+     * - Certain safe HTML entities like "&quot;" are converted into their unescaped
+     *   single-character forms.
+     * - Certain single characters, e.g. ">" or a non-breaking space, are converted
+     *   into their escaped HTML entity forms, e.g. "&gt;" or "&nbsp;".
+     */
+    var normalizeHtml = function(html) {
+      var normalizerElement = window.document.createElement('ins');
+      normalizerElement.innerHTML = html;
+      return normalizerElement.innerHTML;
+    };
   }
 
   return {
