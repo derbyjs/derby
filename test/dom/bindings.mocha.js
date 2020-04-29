@@ -26,6 +26,33 @@ describe('bindings', function() {
       expect(fragment).html('hi');
     });
 
+    it.skip('bracket inner attribute-alias dependency change', function() {
+      var app = runner.createHarness().app;
+      app.views.register('Body', '<view is="greeting-list" greetingIds="{{_page.greetingIds}}"/>');
+      app.views.register('greeting-list',
+        '{{each @greetingIds as #id, #i}}' +
+          '<div>{{_page.greetings[#id]}}</div>' +
+        '{{/each}}');
+      var page = app.createPage();
+      page.model.set('_page.greetings', {
+        hi: 'Hello!',
+        bye: 'Farewell',
+      });
+      page.model.set('_page.greetingIds', ['hi']);
+      var fragment = page.getFragment('Body');
+      expect(fragment).html('<div>Hello!</div>');
+
+      // 2020-04-29: The binding does not update as expected when setting to an array index, e.g.
+      // `set('_page.greetingIds.0', 'bye')`.
+      //
+      // The binding _does_ work under these other scenarios:
+      // 1. Setting the entire array: `set('_page.greetingIds', ['bye'])`
+      // 2. Changing the template to use the array index: `{{ _page.greetings[@greetingIds[#i]] }}`
+      // 3. Changing the template to not use an attribute: `{{each _page.greetingIds as #id, #i}}`
+      page.model.set('_page.greetingIds.0', 'bye');
+      expect(fragment).html('<div>Farewell</div>');
+    });
+
     it('bracket outer dependency change', function() {
       var app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
