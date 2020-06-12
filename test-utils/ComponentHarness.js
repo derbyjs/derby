@@ -14,7 +14,12 @@ AppForHarness.prototype = Object.create(App.prototype);
 AppForHarness.prototype.constructor = AppForHarness;
 
 AppForHarness.prototype.createPage = function() {
-  return new this.Page(this, this._harness.model);
+  if (this.page) {
+    this.page.destroy();
+  }
+  var page = new this.Page(this, this._harness.model);
+  this.page = page;
+  return page;
 };
 
 // Load views by filename. The client version of this method is a no-op

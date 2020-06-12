@@ -36,6 +36,7 @@ DomTestRunner.prototype.createHarness = function() {
   if (arguments.length > 0) {
     harness.setup.apply(harness, arguments);
   }
+  runner._harness = harness;
   return harness;
 };
 
@@ -61,6 +62,13 @@ function mochaHooksForNode(runner, options) {
   });
 
   global.afterEach(function() {
+    // Destroy the most recent page on the harness, so that if a test cleans up its model itself,
+    // bindings won't throw errors due to `document` not being present.
+    if (runner._harness && runner._harness.app.page) {
+      runner._harness.app.page.destroy();
+    }
+    runner._harness = null;
+
     jsdom.window.close();
     runner.window = null;
     runner.document = null;
