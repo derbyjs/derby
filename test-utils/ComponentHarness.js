@@ -9,16 +9,14 @@ var AppForServer = require('../lib/AppForServer');
 function AppForHarness(harness) {
   App.call(this);
   this._harness = harness;
+  this._pages = [];
 }
 AppForHarness.prototype = Object.create(App.prototype);
 AppForHarness.prototype.constructor = AppForHarness;
 
 AppForHarness.prototype.createPage = function() {
-  if (this.page) {
-    this.page.destroy();
-  }
   var page = new this.Page(this, this._harness.model);
-  this.page = page;
+  this._pages.push(page);
   return page;
 };
 

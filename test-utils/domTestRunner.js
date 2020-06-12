@@ -62,10 +62,12 @@ function mochaHooksForNode(runner, options) {
   });
 
   global.afterEach(function() {
-    // Destroy the most recent page on the harness, so that if a test cleans up its model itself,
+    // Destroy the pages created by the harness, so that if a test cleans up its model itself,
     // bindings won't throw errors due to `document` not being present.
-    if (runner._harness && runner._harness.app.page) {
-      runner._harness.app.page.destroy();
+    if (runner._harness) {
+      runner._harness.app.pages.forEach(function(page) {
+        page.destroy();
+      });
     }
     runner._harness = null;
 
