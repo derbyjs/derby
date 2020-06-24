@@ -15,6 +15,7 @@ exports.DomTestRunner = DomTestRunner;
 function DomTestRunner() {
   this.window = null;
   this.document = null;
+  this.harnesses = [];
 }
 
 DomTestRunner.prototype.installMochaHooks = function(options) {
@@ -36,6 +37,7 @@ DomTestRunner.prototype.createHarness = function() {
   if (arguments.length > 0) {
     harness.setup.apply(harness, arguments);
   }
+  this.harnesses.push(harness);
   return harness;
 };
 
@@ -61,6 +63,15 @@ function mochaHooksForNode(runner, options) {
   });
 
   global.afterEach(function() {
+    // Destroy the pages created by the harness, so that if a test cleans up its model itself,
+    // bindings won't throw errors due to `document` not being present.
+    runner.harnesses.forEach(function(harness) {
+      harness.app._pages.forEach(function(page) {
+        page.destroy();
+      });
+    });
+    runner.harnesses = [];
+
     jsdom.window.close();
     runner.window = null;
     runner.document = null;
