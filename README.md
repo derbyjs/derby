@@ -14,10 +14,12 @@ Examples here: **https://github.com/derbyjs/derby-examples**
 
 ## Getting in touch
 
-If you have feedback, ideas, or suggestions, please message the [Google Group](http://groups.google.com/group/derbyjs) or create an Issue. If you are interested in contributing, please reach out to [Nate](https://github.com/nateps).
+Create an [issue](https://github.com/derbyjs/derby/issues) or reach out to the derbyjs [team](https://github.com/orgs/derbyjs/people).
+
+Further resources: **https://derbyjs.com/resources**
 
 ## MIT License
-Copyright (c) 2011-2018 by Nate Smith
+Copyright (c) 2011-2020 by Nate Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
