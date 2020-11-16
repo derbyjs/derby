@@ -96,6 +96,26 @@ describe('forms', function() {
     });
 
   });
+
+  describe('input', function() {
+    it('input', function() {
+      var app = derby.createApp();
+      var page = app.createPage();
+      page.model.set('_page.checked', true);
+
+      app.views.register('Body',
+        '<input type="checkbox" checked="{{_page.checked}}">'
+      );
+
+      var fragment = page.getFragment('Body');
+      expect(fragment).html('<input type="checkbox" checked="">');
+      page.model.set('_page.checked', false);
+
+      var fragment = page.getFragment('Body');
+      expect(fragment).html('<input type="checkbox">');
+    });
+  });
+
 });
 
 function createEvent(type) {
