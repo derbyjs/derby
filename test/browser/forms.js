@@ -98,7 +98,7 @@ describe('forms', function() {
   });
 
   describe('input', function() {
-    it('input', function() {
+    it('checked', function() {
       var app = derby.createApp();
       var page = app.createPage();
       page.model.set('_page.checked', true);
@@ -108,11 +108,26 @@ describe('forms', function() {
       );
 
       var fragment = page.getFragment('Body');
-      expect(fragment).html('<input type="checkbox" checked="">');
+      expect(fragment.querySelector('input').checked).to.be.true;
+
       page.model.set('_page.checked', false);
+      expect(fragment.querySelector('input').checked).to.be.false;
+    });
+
+    it('indeterminate', function() {
+      var app = derby.createApp();
+      var page = app.createPage();
+      page.model.set('_page.indeterminate', true);
+
+      app.views.register('Body',
+        '<input type="checkbox" indeterminate="{{_page.indeterminate}}">'
+      );
 
       var fragment = page.getFragment('Body');
-      expect(fragment).html('<input type="checkbox">');
+      expect(fragment.querySelector('input').indeterminate).to.be.true;
+
+      page.model.set('_page.indeterminate', false);
+      expect(fragment.querySelector('input').indeterminate).to.be.false;
     });
   });
 
