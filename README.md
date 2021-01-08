@@ -20,7 +20,7 @@ Further resources: **https://derbyjs.com/resources**
 
 ## MIT License
 
-Copyright (c) 2011-2020 by Nate Smith
+Copyright (c) 2011-2021 by Nate Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
