@@ -1,4 +1,4 @@
-[![build status](https://api.travis-ci.org/derbyjs/derby.png)](http://travis-ci.org/derbyjs/derby)
+![Test](https://github.com/derbyjs/derby/workflows/Test/badge.svg)
 
 # Derby
 
@@ -19,6 +19,7 @@ Create an [issue](https://github.com/derbyjs/derby/issues) or reach out to the d
 Further resources: **https://derbyjs.com/resources**
 
 ## MIT License
+
 Copyright (c) 2011-2020 by Nate Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
