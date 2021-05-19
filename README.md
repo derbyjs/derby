@@ -12,6 +12,22 @@ See docs here: **http://derbyjs.com/**
 
 Examples here: **https://github.com/derbyjs/derby-examples**
 
+## Running Tests
+
+Run unit tests:
+
+```
+npm test
+```
+
+Run browser-tests:
+
+> This will prompt to open a browser to run front-end tests
+
+```
+npm run test-browser
+```
+
 ## Getting in touch
 
 Create an [issue](https://github.com/derbyjs/derby/issues) or reach out to the derbyjs [team](https://github.com/orgs/derbyjs/people).
