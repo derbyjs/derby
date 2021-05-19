@@ -20,7 +20,7 @@ Run unit tests:
 npm test
 ```
 
-Run browser-tests:
+Run browser tests:
 
 > This will prompt to open a browser to run front-end tests
 
