@@ -41,6 +41,20 @@ module.exports = function(dom, Assertion) {
     return el.innerHTML;
   }
 
+  // Executes the parts of `Page#destroy` pertaining to the model, which get
+  // re-done when a new Page gets created on the same model. Normally, using
+  // `Page#destroy` would be fine, but the `.to.render` assertion wants to do
+  // 3 rendering passes on the same data, so we can't completely clear the
+  // model's state between the rendering passes.
+  function resetPageModel(page) {
+    page._removeModelListeners();
+    for (var componentId in page._components) {
+      var component = page._components[componentId];
+      component.destroy();
+    }
+    page.model.silent().destroy('$components');
+  }
+
   if (Assertion) {
     Assertion.addMethod('html', function(expected, options) {
       var obj = this._obj;
@@ -76,7 +90,8 @@ module.exports = function(dom, Assertion) {
       new Assertion(harness).instanceOf(ComponentHarness);
 
       // Render to a HTML string.
-      var htmlString = harness.renderHtml(options).html;
+      var renderResult = harness.renderHtml(options);
+      var htmlString = renderResult.html;
 
       // Normalize `htmlString` into the same form as the DOM would give for `element.innerHTML`.
       //
@@ -105,6 +120,8 @@ module.exports = function(dom, Assertion) {
         }
       }
 
+      resetPageModel(renderResult.page);
+
       // Check DOM rendering is also equivalent.
       // This uses the harness "pageRendered" event to grab the rendered DOM *before* any component
       // `create()` methods are called, as `create()` methods can do DOM mutations.
@@ -121,7 +138,8 @@ module.exports = function(dom, Assertion) {
           }
         }
       });
-      harness.renderDom(options);
+      renderResult = harness.renderDom(options);
+      resetPageModel(renderResult.page);
 
       // Try attaching. Attachment will throw an error if HTML doesn't match
       var el = domDocument.createElement(parentTag);
