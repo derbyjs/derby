@@ -215,6 +215,31 @@ describe('ComponentHarness', function() {
       expect(harness).to.render();
       expect(harness).to.render('&lt;&nbsp;"&gt;');
     });
+
+    it('cleans up component state between render passes', function() {
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source: '<index:><div class="box">{{greeting}}</div>'
+      };
+      Box.prototype.init = function() {
+        var initialName = this.model.scope('_page.initialName').get();
+        expect(initialName).to.equal('Spot');
+        this.model.set('name', initialName);
+        this.model.start('greeting', ['name'], function(name) {
+          // This assertion ensures that the reactive function isn't called after
+          // the component gets destroyed.
+          expect(name).to.equal('Spot');
+          return 'Hello, ' + name;
+        });
+      };
+      var harness = runner.createHarness('<view is="box" />', Box);
+      // Have the test depend on state in `_page` to make sure it's not cleared
+      // between rendering passes in `.to.render`.
+      harness.model.set('_page.initialName', 'Spot');
+
+      expect(harness).to.render('<div class="box">Hello, Spot</div>');
+    });
   });
 
   describe('fake app.history implementation', function() {
