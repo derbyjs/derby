@@ -12,6 +12,22 @@ See docs here: **http://derbyjs.com/**
 
 Examples here: **https://github.com/derbyjs/derby-examples**
 
+## Running Tests
+
+Run unit tests:
+
+```
+npm test
+```
+
+Run browser tests:
+
+> This will prompt to open a browser to run front-end tests
+
+```
+npm run test-browser
+```
+
 ## Getting in touch
 
 Create an [issue](https://github.com/derbyjs/derby/issues) or reach out to the derbyjs [team](https://github.com/orgs/derbyjs/people).
@@ -20,7 +36,7 @@ Further resources: **https://derbyjs.com/resources**
 
 ## MIT License
 
-Copyright (c) 2011-2020 by Nate Smith
+Copyright (c) 2011-2021 by Nate Smith
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

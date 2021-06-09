@@ -9,7 +9,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js"
+    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js",
+    "test-browser": "node test/server.js"
   },
   "dependencies": {
     "chokidar": "^3.1.1",
