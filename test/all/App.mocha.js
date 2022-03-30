@@ -13,10 +13,7 @@ describe('App._parseInitialData', () => {
   });
 
   it('thorws error with context for unexpected tokens', () => {
-    var fn = function() {
-      return App._parseInitialData('{"foo": b}');
-    };
-    expect(fn).to.throw(
+    expect(() => App._parseInitialData('{"foo": b}')).to.throw(
       'Parse failure: Unexpected token b in JSON at position 8 context: \'{"foo": b}\''
     );
   });
