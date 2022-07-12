@@ -9,17 +9,20 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js",
+    "checks": "npm run lint && npm test",
+    "lint": "npx jshint lib/*.js test/*.js test-utils/*.js",
+    "test": "npx mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js test/templates/*.mocha.js test/parsing/*.mocha.js",
     "test-browser": "node test/server.js"
   },
   "dependencies": {
     "chokidar": "^3.1.1",
-    "derby-parsing": "^0.7.6",
-    "derby-templates": "^0.7.4",
+    "esprima-derby": "^0.1.0",
     "html-util": "^0.2.1",
     "qs": "^6.0.2",
     "racer": "^1.0.0",
     "resolve": "^1.1.6",
+    "saddle": "^0.9.7",
+    "serialize-object": "^1.0.0",
     "through": "^2.3.4",
     "tracks": "^0.5.0"
   },
