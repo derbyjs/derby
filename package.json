@@ -27,9 +27,9 @@
     "async": "^1.5.2",
     "browserify": "^16.2.2",
     "chai": "^4.2.0",
+    "eslint": "^8.24.0",
     "express": "^4.13.3",
     "jsdom": "^15.2.0",
-    "jshint": "^2.9.5",
     "mocha": "^6.2.0"
   },
   "optionalDependencies": {},
