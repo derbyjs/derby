@@ -34,5 +34,11 @@
       2,
       "except-parens"
     ]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*.mocha.js", "test/browser/*.js"],
+      "env": {"mocha": true, "node": true}
+    }
+  ]
 }

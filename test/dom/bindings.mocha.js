@@ -417,7 +417,7 @@ describe('bindings', function() {
 
     var page = app.createPage();
     page.model.on('insert', '_data.items', function(index, values) {
-      if (values[0] == 'B') {
+      if (values[0] === 'B') {
         page.model.insert('_data.items', 0, 'C');
       }
     });
