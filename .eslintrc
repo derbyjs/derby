@@ -14,8 +14,7 @@
       2,
       "last"
     ],
-    "no-eq-null": 2,
-    "eqeqeq": 2,
+    "eqeqeq": ["error", "always", {"null": "ignore"}],
     "indent": [
       2,
       2,
