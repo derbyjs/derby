@@ -2,6 +2,9 @@
   "env": {
     "node": true
   },
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
   "globals": {
     "window": false,
     "document": false
