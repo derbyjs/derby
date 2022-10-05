@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - master
+      - derby-2
   pull_request:
     branches:
       - master
+      - derby-2
 
 jobs:
   test:
@@ -15,10 +17,10 @@ jobs:
     strategy:
       matrix:
         node:
-          - 8
-          - 10
           - 12
           - 14
+          - 16
+          - 18
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
