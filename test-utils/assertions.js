@@ -18,7 +18,7 @@ module.exports = function(dom, Assertion) {
     // NodeFilter.SHOW_COMMENT === 128
     var treeWalker = domDocument.createTreeWalker(clone, 128, null, false);
     var toRemove = [];
-    for (var item; item = treeWalker.nextNode();) {
+    for (var item = treeWalker.nextNode(); item != null; item = treeWalker.nextNode()) {
       toRemove.push(item);
     }
     for (var i = toRemove.length; i--;) {

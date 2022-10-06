@@ -9,7 +9,9 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js",
+    "checks": "npm run lint && npm test",
+    "lint": "npx eslint *.js lib/**/*.js test/**/*.js test-utils/**/*.js",
+    "test": "npx mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js",
     "test-browser": "node test/server.js"
   },
   "dependencies": {
