@@ -9,7 +9,9 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js; ./node_modules/.bin/jshint lib/*.js test/*.js test-utils/*.js",
+    "checks": "npm run lint && npm test",
+    "lint": "npx eslint *.js lib/**/*.js test/**/*.js test-utils/**/*.js",
+    "test": "npx mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js",
     "test-browser": "node test/server.js"
   },
   "dependencies": {
@@ -27,9 +29,9 @@
     "async": "^1.5.2",
     "browserify": "^16.2.2",
     "chai": "^4.2.0",
+    "eslint": "^8.24.0",
     "express": "^4.13.3",
     "jsdom": "^15.2.0",
-    "jshint": "^2.9.5",
     "mocha": "^6.2.0"
   },
   "optionalDependencies": {},

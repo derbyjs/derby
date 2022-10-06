@@ -1,0 +1,44 @@
+{
+  "env": {
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
+  "globals": {
+    "window": false,
+    "document": false
+  },
+  "rules": {
+    "comma-style": [
+      2,
+      "last"
+    ],
+    "eqeqeq": ["error", "always", {"null": "ignore"}],
+    "indent": [
+      2,
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "new-cap": 2,
+    "quotes": [
+      2,
+      "single"
+    ],
+    "no-undef": 2,
+    "no-shadow": 0,
+    "no-unused-expressions": 2,
+    "no-cond-assign": [
+      2,
+      "except-parens"
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*.mocha.js", "test/browser/*.js"],
+      "env": {"mocha": true, "node": true}
+    }
+  ]
+}
