@@ -44,6 +44,23 @@ describe('eventmodel', function() {
     };
   });
 
+  describe('Initial eventmodel', function() {
+    it('should be empty', function() {
+      const em = new EventModel();
+      expect(em.isEmpty()).is.true;
+    });
+
+    it('should lazily create bindings', function() {
+      const em = new EventModel();
+      expect(em.bindings).to.be.null;
+      expect(this.binding.eventModels).to.be.undefined;
+      em.addBinding(['x'], this.binding);
+      expect(this.binding.eventModels).to.be.instanceOf(Object);
+      expect(em.bindings).not.to.be.null;
+      expect(em.bindings).to.be.instanceof(Object);
+    });
+  });
+
   it('updates any object references under a path when remove/insert/move happens');
 
   describe('sets', function() {
