@@ -47,17 +47,17 @@ describe('eventmodel', function() {
   describe('Initial eventmodel', function() {
     it('should be empty', function() {
       const em = new EventModel();
-      expect(em.isEmpty()).is.true;
+      expect(em.isEmpty()).eq(true);
     });
 
     it('should lazily create bindings', function() {
       const em = new EventModel();
-      expect(em.bindings).to.be.null;
-      expect(this.binding.eventModels).to.be.undefined;
-      em.addBinding(['x'], this.binding);
-      expect(this.binding.eventModels).to.be.instanceOf(Object);
-      expect(em.bindings).not.to.be.null;
-      expect(em.bindings).to.be.instanceof(Object);
+      const binding = this.binding;
+      expect(binding.eventModels).to.eq(undefined);
+      em.addBinding(['x'], binding);
+      expect(binding.eventModels).to.be.instanceOf(Object);
+      console.log(em.at(['x']));
+      expect(em.at(['x'])).has.ownProperty('bindings').instanceOf(Object);
     });
   });
 
