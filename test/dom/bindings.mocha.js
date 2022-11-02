@@ -388,6 +388,42 @@ describe('bindings', function() {
       'Four'
     ]);
   });
+
+  it('array item binding with view function calls', function() {
+    var app = runner.createHarness().app;
+    app.views.register('Body', '<view is="box" list="{{_page.list}}"/ boxName="My box"/>');
+    function Box() {}
+    Box.view = {
+      is: 'box',
+      source:
+        '<index:>' +
+        '{{each list.items as #item, #i}}' +
+          '<view is="item-row" item="{{#item}}" index="{{#i}}"/>' +
+        '{{/each}}'
+    };
+    app.component(Box);
+    // The second argument to `len(@item, boxName)` is important to the test, even though it's
+    // unused by the function implementation. The presence of the second argument adds an additional
+    // dependency in the function binding, subtly changing how `binding.eventModels` gets set up.
+    app.views.register('item-row', '<div>{{@item}} <view is="item-len" len="{{len(@item, boxName)}}"/></div>');
+    app.views.register('item-len', '[L={{@len}}]');
+    app.proto.len = function(str) {
+      if (str == null) {
+        throw new Error('len(str) function param is null');
+      }
+      return str.length;
+    };
+    var page = app.createPage();
+    var $items = page.model.at('_page.list.items');
+    $items.set(['alpha', 'beta']);
+
+    var fragment = page.getFragment('Body');
+    // When `items` gets set to an array of one, down from two, a possible bug is the `len` function
+    // getting invoked again for the no-longer-existing second item, resulting in a thrown exception.
+    page.model.set('_page.list.items', ['omega']);
+    expect(fragment).html('<div>omega [L=5]</div>');
+  });
+
   // Racer model listeners could mutate the model, causing changed mutations.
   // These events queue up in the model's mutator event queue. Derby knows
   // when to re-evaluate bindings by registering catch-all model listeners.
