@@ -17,8 +17,9 @@ jobs:
     strategy:
       matrix:
         node:
-          - 12
           - 14
+          - 16
+          - 18
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
@@ -28,4 +29,4 @@ jobs:
       - name: Install
         run: npm install
       - name: Test
-        run: npm run test
+        run: npm run checks
