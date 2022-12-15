@@ -237,6 +237,43 @@ describe('bindings', function() {
     });
   });
 
+  describe('as properties', function() {
+    it('conditionally rendered', function(done) {
+      var harness = runner.createHarness(`
+      <view is="box" as="box"/>
+    `);
+      function Box() {}
+      Box.view = {
+        is: 'box',
+        source:`
+          <index:>
+          {{if _page.foo}}
+            <div as="myDiv">one</div>
+          {{else}}
+            <div as="myDiv">two</div>
+          {{/if}}>
+        `
+      };
+      var app = harness.app;
+      app.component(Box);
+      var page = harness.renderDom();
+      var value = page.component.model.at('_page.foo');
+      value.set(true);
+      var initialElement = page.box.myDiv;
+      expect(page.box.myDiv, 'check pre value change')
+        .instanceOf(Object)
+        .to.have.property('textContent', 'one');
+      value.set(false);
+      process.nextTick(() => {
+        expect(page.box.myDiv, 'check post value change')
+          .instanceOf(Object)
+          .to.have.property('textContent', 'two');
+        expect(page.box.myDiv).to.not.equal(initialElement);
+        done();
+      });
+    })
+  })
+
   function testArray(itemTemplate, itemData) {
     it('each on path', function() {
       var app = runner.createHarness().app;
