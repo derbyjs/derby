@@ -1,5 +1,5 @@
 {
-  "name": "derby",
+  "name": "@derbyjs/derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
   "version": "2.0.1",
   "homepage": "http://derbyjs.com/",
@@ -35,6 +35,9 @@
     "mocha": "^10.0.0"
   },
   "optionalDependencies": {},
+  "publishConfig": {
+    "access": "public"
+  },
   "bugs": {
     "url": "https://github.com/derbyjs/derby/issues"
   },
