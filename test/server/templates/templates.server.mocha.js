@@ -68,10 +68,10 @@ describe('Expression::serialize', function() {
 describe('ConditionalBlock::serialize', function() {
   it('serializes multiple condition block', test(function() {
     return new templates.ConditionalBlock(
-      [new expressions.Expression('comments'), null]
-    , [
-        [new templates.Element('h1', null, [new templates.Text('Comments')]), new templates.Text('')]
-      , [new templates.Element('h1', null, [new templates.Text('No comments')])]
+      [new expressions.Expression('comments'), null],
+      [
+        [new templates.Element('h1', null, [new templates.Text('Comments')]), new templates.Text('')],
+        [new templates.Element('h1', null, [new templates.Text('No comments')])]
       ]
     );
   }));
@@ -80,22 +80,23 @@ describe('ConditionalBlock::serialize', function() {
 describe('EachBlock::serialize', function() {
   it('serializes each block with else', test(function() {
     return new templates.EachBlock(
-      new expressions.Expression('comments')
-    , [
+      new expressions.Expression('comments'),
+      [
         new templates.Element('h2', null, [
-          new templates.Text('By ')
-        , new templates.Block(
-            new expressions.Expression('nonsense')
-          , [new templates.DynamicText(new expressions.Expression('author'))]
+          new templates.Text('By '),
+          new templates.Block(
+            new expressions.Expression('nonsense'),
+            [new templates.DynamicText(new expressions.Expression('author'))]
           )
-        ])
-      , new templates.Element('div', {
+        ]),
+        new templates.Element('div',
+          {
             'class': new templates.Attribute('body')
-          }
-        , [new templates.DynamicText(new expressions.Expression('body'))]
+          },
+          [new templates.DynamicText(new expressions.Expression('body'))]
         )
-      ]
-    , [new templates.Text('Lamers')]
+      ],
+      [new templates.Text('Lamers')]
     );
   }));
 });
