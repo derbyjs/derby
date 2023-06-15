@@ -1,5 +1,5 @@
-var expect = require('expect.js');
-var templates = require('../lib/templates');
+var expect = require('chai').expect;
+var templates = require('../../../lib/templates/templates');
 
 describe('Views', function() {
 

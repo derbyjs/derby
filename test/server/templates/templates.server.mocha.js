@@ -1,11 +1,12 @@
 var expect = require('chai').expect;
-var templates = require('../index');
-var expressions = require('../example/expressions');
+var templates = require('../../../lib/templates/templates');
+var expressions = require('../../../lib/templates/expressions');
 
 function test(createTemplate) {
   return function() {
     var serialized = createTemplate().serialize();
     var expected = createTemplate.toString()
+      .replace(/,\n\s*/g, ', ')
       // Remove leading & trailing whitespace and newlines
       .replace(/\s*\r?\n\s*/g, '')
       // Remove the wrapping function boilerplate
