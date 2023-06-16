@@ -1,23 +1,23 @@
-var expect = require('expect.js');
-var derbyTemplates = require('derby-templates');
+var expect = require('chai').expect;
+var derbyTemplates = require('../../../lib/templates');
 var contexts = derbyTemplates.contexts;
 var templates = derbyTemplates.templates;
-var parsing = require('../lib/index');
+var parsing = require('../../../lib/parsing');
 
 var model = {
   data: {
     _page: {
-      greeting: 'Howdy!'
-    , zero: 0
-    , yep: true
-    , nope: false
-    , nada: null
-    , letters: ['A', 'B', 'C']
-    , emptyList: []
-    , matrix: [[0, 1], [1, 0]]
-    , view: 'section'
-    , html: '<b class="foo">Qua?</b>'
-    , tag: 'strong'
+      greeting: 'Howdy!',
+      zero: 0,
+      yep: true,
+      nope: false,
+      nada: null,
+      letters: ['A', 'B', 'C'],
+      emptyList: [],
+      matrix: [[0, 1], [1, 0]],
+      view: 'section',
+      html: '<b class="foo">Qua?</b>',
+      tag: 'strong'
     }
   }
 };
@@ -28,23 +28,23 @@ var context = new contexts.Context(contextMeta, controller);
 describe('Parse and render literal HTML', function() {
 
   var literalTests = {
-    'empty string': ''
-  , 'empty div': '<div></div>'
-  , 'div with attributes': '<div class="page home" title="Home"></div>'
-  , 'text': 'Hi.'
-  , 'conditional comment': '<!--[if IE 6]>Yikes!<![endif]-->'
-  , 'div containing text': '<div> </div>'
-  , 'nested divs': '<div><div></div></div>'
-  , 'sibling divs': '<div></div><div></div>'
-  , 'input': '<input type="text">'
-  , 'self-closing input': '<input type="text" />'
-  , 'void and nonvoid elements': '<div><img><br><b>Hi</b></div><br><div></div>'
-  , 'HTML5 doctype': '<!DOCTYPE html>'
-  , 'HTML4 doctype': '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">'
-  , 'XHTML doctype': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'
-  , 'MathML 1.01 doctype': '<!DOCTYPE math SYSTEM "http://www.w3.org/Math/DTD/mathml1/mathml.dtd">'
-  , 'html5 basic page': '<!DOCTYPE html><html><head><title></title></head><body><p></p></body></html>'
-  , 'page missing end body and html tags': '<!DOCTYPE html><html><head><title></title></head><body><p></p>'
+    'empty string': '',
+    'empty div': '<div></div>',
+    'div with attributes': '<div class="page home" title="Home"></div>',
+    'text': 'Hi.',
+    'conditional comment': '<!--[if IE 6]>Yikes!<![endif]-->',
+    'div containing text': '<div> </div>',
+    'nested divs': '<div><div></div></div>',
+    'sibling divs': '<div></div><div></div>',
+    'input': '<input type="text">',
+    'self-closing input': '<input type="text" />',
+    'void and nonvoid elements': '<div><img><br><b>Hi</b></div><br><div></div>',
+    'HTML5 doctype': '<!DOCTYPE html>',
+    'HTML4 doctype': '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
+    'XHTML doctype': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">',
+    'MathML 1.01 doctype': '<!DOCTYPE math SYSTEM "http://www.w3.org/Math/DTD/mathml1/mathml.dtd">',
+    'html5 basic page': '<!DOCTYPE html><html><head><title></title></head><body><p></p></body></html>',
+    'page missing end body and html tags': '<!DOCTYPE html><html><head><title></title></head><body><p></p>'
   };
 
   for (var name in literalTests) {
@@ -60,19 +60,19 @@ describe('Parse and render literal HTML', function() {
   it('throws on a mismatched closing HTML tag', function() {
     expect(function() {
       parsing.createTemplate('<div><a></div>');
-    }).to.throwException(/Mismatched closing HTML tag: <\/div>/);
+    }).to.throw(/Mismatched closing HTML tag: <\/div>/);
   });
 
   it('throws on a missing </span> tag', function() {
     expect(function() {
       parsing.createTemplate('<span><span></span>');
-    }).to.throwException(/Missing closing HTML tag: <\/span>/);
+    }).to.throw(/Missing closing HTML tag: <\/span>/);
   });
 
   it('throws on a missing </div> tag', function() {
     expect(function() {
       parsing.createTemplate('<div><div></div>');
-    }).to.throwException(/Missing closing HTML tag: <\/div>/);
+    }).to.throw(/Missing closing HTML tag: <\/div>/);
   });
 });
 
@@ -109,28 +109,28 @@ describe('Parse and render dynamic text and blocks', function() {
       expect(function() {
         var template = parsing.createTemplate(source);
         console.log(template.content[0]);
-      }).to.throwException(/Alias must be an identifier starting with "#"/);
+      }).to.throw(/Alias must be an identifier starting with "#"/);
     });
 
     it('trailing parenthesis in alias', function() {
       var source = '{{with _page.greeting as #greeting)}}{{/with}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Unexpected token \)/);
+      }).to.throw(/Unexpected token \)/);
     });
 
     it('brackets in alias', function() {
       var source = '{{with _page.greeting as #greeting[0]}}{{/with}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must not have dots or brackets/);
+      }).to.throw(/Alias must not have dots or brackets/);
     });
 
     it('dots in alias', function() {
       var source = '{{with _page.greeting as #greeting.a}}{{/with}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must not have dots or brackets/);
+      }).to.throw(/Alias must not have dots or brackets/);
     });
   });
 
@@ -181,8 +181,8 @@ describe('Parse and render dynamic text and blocks', function() {
         '{{each this}}' +
           '{{this}}.' +
         '{{/each}};' +
-      '{{/each}}'
-    , '0.1.;1.0.;'
+      '{{/each}}',
+      '0.1.;1.0.;'
     );
     test(
       '{{each _page.matrix}}' +
@@ -194,8 +194,8 @@ describe('Parse and render dynamic text and blocks', function() {
           '{{/each}}' +
           '{{this}}.' +
         '{{/each}};' +
-      '{{/each}}'
-    , '0!1!|1!0!|0.' +
+      '{{/each}}',
+      '0!1!|1!0!|0.' +
       '0!1!|1!0!|1.;' +
       '0!1!|1!0!|1.' +
       '0!1!|1!0!|0.;'
@@ -219,56 +219,56 @@ describe('Parse and render dynamic text and blocks', function() {
       var source = '{{each _page.letters as letter}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must be an identifier starting with "#"/);
+      }).to.throw(/Alias must be an identifier starting with "#"/);
     });
 
     it('trailing parenthesis in alias', function() {
       var source = '{{each _page.letters as #letter)}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Unexpected token \)/);
+      }).to.throw(/Unexpected token \)/);
     });
 
     it('brackets in alias', function() {
       var source = '{{each _page.letters as #letter[0]}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must not have dots or brackets/);
+      }).to.throw(/Alias must not have dots or brackets/);
     });
 
     it('dots in alias', function() {
       var source = '{{each _page.letters as #letter.a}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must not have dots or brackets/);
+      }).to.throw(/Alias must not have dots or brackets/);
     });
 
     it('no pound sign at start of index alias', function() {
       var source = '{{each _page.letters as #letter, index}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must be an identifier starting with "#"/);
+      }).to.throw(/Alias must be an identifier starting with "#"/);
     });
 
     it('trailing parenthesis in index alias', function() {
       var source = '{{each _page.letters as #letter, #index)}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Unexpected token \)/);
+      }).to.throw(/Unexpected token \)/);
     });
 
     it('brackets in index alias', function() {
       var source = '{{each _page.letters as #letter, #index[0]}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must not have dots or brackets/);
+      }).to.throw(/Alias must not have dots or brackets/);
     });
 
     it('dots in index alias', function() {
       var source = '{{each _page.letters as #letter, #index.a}}{{/each}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-      }).to.throwException(/Alias must not have dots or brackets/);
+      }).to.throw(/Alias must not have dots or brackets/);
     });
   });
 });
@@ -462,16 +462,16 @@ describe('View insertion', function() {
     it('can be defined as an option of a view', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="section">' +
+      views.register('body',
+        '<view is="section">' +
           '<title><b>Hi</b></title>' +
           'More text' +
         '</view>'
       );
-      views.register('section'
-      , '<h3>{{@title}}</h3>' +
-        '<div>{{@content}}</div>'
-      , {attributes: 'title'}
+      views.register('section',
+        '<h3>{{@title}}</h3>' +
+        '<div>{{@content}}</div>',
+        {attributes: 'title'}
       );
       var view = views.find('body');
       expect(view.get(context)).equal('<h3><b>Hi</b></h3><div>More text</div>');
@@ -480,16 +480,16 @@ describe('View insertion', function() {
     it('translates dashed tag name into camel-cased attribute name', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="section">' +
+      views.register('body',
+        '<view is="section">' +
           '<main-title><b>Hi</b></main-title>' +
           'More text' +
         '</view>'
       );
-      views.register('section'
-      , '<h3>{{@mainTitle}}</h3>' +
-        '<div>{{@content}}</div>'
-      , {attributes: 'main-title'}
+      views.register('section',
+        '<h3>{{@mainTitle}}</h3>' +
+        '<div>{{@content}}</div>',
+        {attributes: 'main-title'}
       );
       var view = views.find('body');
       expect(view.get(context)).equal('<h3><b>Hi</b></h3><div>More text</div>');
@@ -498,14 +498,14 @@ describe('View insertion', function() {
     it('can be dynamically defined with a generic attribute tag', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="section">' +
+      views.register('body',
+        '<view is="section">' +
           '<attribute is="title"><b>Hi</b></attribute>' +
           'More text' +
         '</view>'
       );
-      views.register('section'
-      , '<h3>{{@title}}</h3>' +
+      views.register('section',
+        '<h3>{{@title}}</h3>' +
         '<div>{{@content}}</div>'
       );
       var view = views.find('body');
@@ -517,22 +517,22 @@ describe('View insertion', function() {
     it('can be defined as an option of a view', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="tabs">' +
+      views.register('body',
+        '<view is="tabs">' +
           '<pane title="One"><b>Hi</b></pane>' +
           '<pane title="Two">Ho</pane>' +
         '</view>'
       );
-      views.register('tabs'
-      , '<ul>' +
+      views.register('tabs',
+        '<ul>' +
           '{{each @panes}}' +
             '<li>{{this.title}}</li>' +
           '{{/each}}' +
         '</ul>' +
         '{{each @panes}}' +
           '<div>{{this.content}}</div>' +
-        '{{/each}}'
-      , {arrays: 'pane/panes'}
+        '{{/each}}',
+        {arrays: 'pane/panes'}
       );
       var view = views.find('body');
       expect(view.get(context)).equal(
@@ -548,14 +548,14 @@ describe('View insertion', function() {
     it('can be dynamically defined with generic array tags', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="tabs">' +
+      views.register('body',
+        '<view is="tabs">' +
           '<array is="panes" title="One"><b>Hi</b></array>' +
           '<array is="panes" title="Two">Ho</array>' +
         '</view>'
       );
-      views.register('tabs'
-      , '<ul>' +
+      views.register('tabs',
+        '<ul>' +
           '{{each @panes}}' +
             '<li>{{this.title}}</li>' +
           '{{/each}}' +
@@ -578,22 +578,22 @@ describe('View insertion', function() {
     it('passes in expression values', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="tabs">' +
+      views.register('body',
+        '<view is="tabs">' +
           '<pane title="{{_page.greeting}}">{{_page.letters[0]}}</pane>' +
           '<pane title="{{\'Hi\'}}">{{33}}</pane>' +
         '</view>'
       );
-      views.register('tabs'
-      , '<ul>' +
+      views.register('tabs',
+        '<ul>' +
           '{{each @panes as #pane}}' +
             '<li>{{#pane.title}}</li>' +
           '{{/each}}' +
         '</ul>' +
         '{{each @panes as #pane}}' +
           '<div>{{#pane.content}}</div>' +
-        '{{/each}}'
-      , {arrays: 'pane/panes'}
+        '{{/each}}',
+        {arrays: 'pane/panes'}
       );
       var view = views.find('body');
       expect(view.get(context)).equal(
@@ -609,8 +609,8 @@ describe('View insertion', function() {
     it('is rendered before passing to view functions', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="tabs">' +
+      views.register('body',
+        '<view is="tabs">' +
           '<pane title="{{_page.greeting}}">{{_page.letters[0]}}</pane>' +
           '<pane title="{{\'Hi\'}}">{{33}}</pane>' +
         '</view>'
@@ -630,18 +630,18 @@ describe('View insertion', function() {
     it('supports "within" attribute on child tags to use context from inside view', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="custom-list" items="{{[\'item A\', \'item B\']}}">' +
+      views.register('body',
+        '<view is="custom-list" items="{{[\'item A\', \'item B\']}}">' +
           '<item-content within><b>{{#item}}</b></item-content>' +
         '</view>'
       );
-      views.register('custom-list'
-      , '<ul>' +
+      views.register('custom-list',
+        '<ul>' +
           '{{each @items as #item}}' +
             '<li>{{@itemContent}}</li>' +
           '{{/each}}' +
-        '</ul>'
-      , {attributes: 'item-content'}
+        '</ul>',
+        {attributes: 'item-content'}
       );
       var view = views.find('body');
       expect(view.get(context)).equal('<ul><li><b>item A</b></li><li><b>item B</b></li></ul>');
@@ -650,14 +650,14 @@ describe('View insertion', function() {
     it('supports "within" attribute on child array tags to use context from inside view', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<view is="custom-table" items="{{[\'item A\', \'item BB\']}}">' +
+      views.register('body',
+        '<view is="custom-table" items="{{[\'item A\', \'item BB\']}}">' +
           '<row-cell within>Text: {{#item}}</row-cell>' +
           '<row-cell within>Length: {{#item.length}}</row-cell>' +
         '</view>'
       );
-      views.register('custom-table'
-      , '<table>' +
+      views.register('custom-table',
+        '<table>' +
           '{{each @items as #item}}' +
             '<tr>' +
               '{{each @rowCells as #rowCell}}' +
@@ -665,8 +665,8 @@ describe('View insertion', function() {
               '{{/each}}' +
             '</tr>' +
           '{{/each}}' +
-        '</table>'
-      , {arrays: 'row-cell/rowCells'}
+        '</table>',
+        {arrays: 'row-cell/rowCells'}
       );
       var view = views.find('body');
       expect(view.get(context)).equal(
@@ -740,15 +740,15 @@ describe('View insertion', function() {
     it('gets each context', function() {
       var views = new templates.Views();
       context.meta.views = views;
-      views.register('body'
-      , '<ol>' +
+      views.register('body',
+        '<ol>' +
           '{{each _page.matrix as #row}}' +
             '<view is="row"></view>' +
           '{{/each}}' +
         '</ol>'
       );
-      views.register('row'
-      , '<li>' +
+      views.register('row',
+        '<li>' +
           '<ol>' +
             '{{each #row as #item}}' +
               '<li>{{#item}}</li>' +

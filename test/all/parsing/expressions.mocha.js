@@ -1,8 +1,8 @@
-var expect = require('expect.js');
-var derbyTemplates = require('derby-templates');
+var expect = require('chai').expect;
+var derbyTemplates = require('../../../lib/templates');
 var contexts = derbyTemplates.contexts;
 var expressions = derbyTemplates.expressions;
-var create = require('../lib/createPathExpression');
+var create = require('../../../lib/parsing/createPathExpression');
 
 var controller = {
   plus: function(a, b) {
@@ -257,7 +257,7 @@ describe('Expression::get', function() {
   it('gets a `new` expression without arguments', function() {
     var expression = create('new Date');
     var date = expression.get(context);
-    expect(date).to.be.a(Date);
+    expect(date).to.be.an.instanceOf(Date);
   });
 
   it('gets a `new` expression with arguments', function() {
@@ -269,7 +269,7 @@ describe('Expression::get', function() {
 
   it('gets `new` expression on nested path', function() {
     var expression = create('new global.Error()');
-    expect(expression.get(context)).to.be.a(Error);
+    expect(expression.get(context)).to.be.an.instanceOf(Error);
   });
 
   // None of these are supported yet, but ideally they would be
@@ -304,7 +304,7 @@ describe('Expression::get', function() {
     expect(create('\'Howdy\'').get()).equal('Howdy');
     // Regular Expressions
     var re = create('/([0-9]+)/').get();
-    expect(re).to.be.a(RegExp);
+    expect(re).to.be.an.instanceOf(RegExp);
     expect(re.source).equal('([0-9]+)');
     // Other
     expect(create('null').get()).equal(null);

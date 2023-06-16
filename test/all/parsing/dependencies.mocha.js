@@ -1,79 +1,77 @@
-var expect = require('expect.js');
-var derbyTemplates = require('derby-templates');
+var expect = require('chai').expect;
+var derbyTemplates = require('../../../lib/templates');
 var contexts = derbyTemplates.contexts;
-var expressions = derbyTemplates.expressions;
 var templates = derbyTemplates.templates;
-var parsing = require('../lib/index');
+var parsing = require('../../../lib/parsing');
 var createExpression = parsing.createExpression;
 var createTemplate = parsing.createTemplate;
 
 var controller = {
   plus: function(a, b) {
     return a + b;
-  }
-, minus: function(a, b) {
+  },
+  minus: function(a, b) {
     return a - b;
-  }
-, greeting: function() {
+  },
+  greeting: function() {
     return 'Hi.';
-  }
-, keys: function(object) {
+  },
+  keys: function(object) {
     var keys = [];
     for (var key in object) {
       keys.push(key);
     }
     return keys;
-  }
-, passThrough: function(value) {
+  },
+  passThrough: function(value) {
     return value;
-  }
-, informal: {
+  },
+  informal: {
     greeting: function() {
       return 'Yo!';
     }
-  }
-, Date: Date
-, global: global
+  },
+  Date: Date,
+  global: global
 };
 controller.model = {
   data: {
-    key: 'green'
-  , lightTemplate: createTemplate('light {{_page.colors[key].name}}')
-  , _page: {
+    key: 'green',
+    lightTemplate: createTemplate('light {{_page.colors[key].name}}'),
+    _page: {
       colors: {
         green: {
-          name: 'Green'
-        , hex: '#0f0'
-        , rgb: [0, 255, 0]
-        , light: {
+          name: 'Green',
+          hex: '#0f0',
+          rgb: [0, 255, 0],
+          light: {
             hex: '#90ee90'
-          }
-        , dark: {
+          },
+          dark: {
             hex: '#006400'
           }
         }
-      }
-    , key: 'green'
-    , channel: 0
-    , variation: 'light'
-    , variationHex: 'light.hex'
-    , keys: ['red', 'green']
-    , index: 1
-    , tagName: 'div'
-    , html: '<div>Hi</div>'
-
-    , nums: [2, 11, 3, 7]
-    , first: 2
-    , second: 3
-    , year: 2018
-    , date: new Date(1000)
+      },
+      key: 'green',
+      channel: 0,
+      variation: 'light',
+      variationHex: 'light.hex',
+      keys: ['red', 'green'],
+      index: 1,
+      tagName: 'div',
+      html: '<div>Hi</div>',
+      nums: [2, 11, 3, 7],
+      first: 2,
+      second: 3,
+      year: 2018,
+      date: new Date(1000)
     }
   }
 };
 controller.model.scope = function(path) {
   return {
-    _at: path
-  , path: function() {
+    _at: path,
+    path: function() {
       return this._at;
     }
   };
@@ -101,7 +99,7 @@ describe('template dependencies', function() {
   describe('text', function() {
     it('gets dependencies', function() {
       var template = createTemplate('Hi');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(undefined);
       expect(template.get(context)).to.equal('Hi');
     });
   });
@@ -174,7 +172,7 @@ describe('template dependencies', function() {
         '{{each [33, 77] as #key, #i}}' +
           '{{#i}},{{#key}};' +
         '{{/each}}');
-      expect(stripContexts(template.dependencies(context))).to.be.null;
+      expect(stripContexts(template.dependencies(context))).to.equal(undefined);
       expect(template.get(context)).to.equal('0,33;1,77;');
     });
   });
@@ -182,19 +180,19 @@ describe('template dependencies', function() {
   describe('HTML', function() {
     it('gets empty Template dependencies', function() {
       var template = createTemplate('');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(null);
       expect(template.get(context)).to.equal('');
     });
 
     it('gets Doctype dependencies', function() {
       var template = createTemplate('<!DOCTYPE html>');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(undefined);
       expect(template.get(context)).to.equal('<!DOCTYPE html>');
     });
 
     it('gets Text dependencies', function() {
       var template = createTemplate('Hi!');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(undefined);
       expect(template.get(context)).to.equal('Hi!');
     });
 
@@ -208,7 +206,7 @@ describe('template dependencies', function() {
 
     it('gets Comment dependencies', function() {
       var template = createTemplate('<!--[Copyright 1999]-->');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(undefined);
       expect(template.get(context)).to.equal('<!--[Copyright 1999]-->');
     });
 
@@ -236,7 +234,7 @@ describe('template dependencies', function() {
       // It is not currently possible to create a template of type Html via
       // derby-parsing, as there is no syntax that would require it
       var template = new templates.Html('<div>Hi</div>');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(undefined);
       expect(template.get(context)).to.equal('<div>Hi</div>');
     });
 
@@ -250,7 +248,7 @@ describe('template dependencies', function() {
 
     it('gets Element dependencies', function() {
       var template = createTemplate('<div>Hi<br>there</div>');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(undefined);
       expect(template.get(context)).to.equal('<div>Hi<br>there</div>');
     });
 
@@ -264,7 +262,7 @@ describe('template dependencies', function() {
 
     it('gets Attribute dependencies', function() {
       var template = createTemplate('<img src="foo">');
-      expect(template.dependencies(context)).to.be.null;
+      expect(template.dependencies(context)).to.equal(undefined);
       expect(template.get(context)).to.equal('<img src="foo">');
     });
 
@@ -283,7 +281,7 @@ describe('expression dependencies', function() {
   describe('literal', function() {
     it('gets literal dependencies', function() {
       var expression = createExpression('34');
-      expect(expression.dependencies(context)).to.be.null;
+      expect(expression.dependencies(context)).to.equal(undefined);
     });
   });
 
@@ -490,7 +488,7 @@ describe('expression dependencies', function() {
           ['_page', 'colors', 'green', 'name'],
           ['lightTemplate']
         ]);
-        expect(expression.get(blockContext)).a(templates.Template);
+        expect(expression.get(blockContext)).an.instanceOf(templates.Template);
       });
 
       it('gets subpath from template in model dependencies', function() {
@@ -561,7 +559,7 @@ describe('expression dependencies', function() {
           ['_page', 'colors', 'green', 'name'],
           ['lightTemplate']
         ]);
-        expect(expression.get(blockContext)).a(templates.Template);
+        expect(expression.get(blockContext)).an.instanceOf(templates.Template);
       });
 
       it('gets subpath from template in model dependencies', function() {
@@ -700,7 +698,7 @@ describe('expression dependencies', function() {
         expect(expression.dependencies(viewContext)).to.eql([
           ['_page', 'colors', 'green', 'name']
         ]);
-        expect(expression.get(viewContext)).a(templates.Template);
+        expect(expression.get(viewContext)).an.instanceOf(templates.Template);
       });
 
       it('gets subpath from function template attribute dependencies', function() {
@@ -726,7 +724,7 @@ describe('expression dependencies', function() {
           ['_page', 'colors', 'green', 'name'],
           ['lightTemplate']
         ]);
-        expect(expression.get(viewContext)).a(templates.Template);
+        expect(expression.get(viewContext)).an.instanceOf(templates.Template);
       });
 
       it('gets subpath from template in model attribute dependencies', function() {

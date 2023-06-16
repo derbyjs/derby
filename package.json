@@ -16,8 +16,6 @@
   },
   "dependencies": {
     "chokidar": "^3.5.3",
-    "derby-parsing": "^0.8.0",
-    "derby-templates": "^0.8.1",
     "html-util": "^0.2.3",
     "qs": "^6.11.0",
     "racer": "^1.0.3",
