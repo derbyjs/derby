@@ -7,66 +7,65 @@ var create = require('../lib/createPathExpression');
 var controller = {
   plus: function(a, b) {
     return a + b;
-  }
-, minus: function(a, b) {
+  },
+  minus: function(a, b) {
     return a - b;
-  }
-, greeting: function() {
+  },
+  greeting: function() {
     return 'Hi.';
-  }
-, keys: function(object) {
+  },
+  keys: function(object) {
     var keys = [];
     for (var key in object) {
       keys.push(key);
     }
     return keys;
-  }
-, passThrough: function(value) {
+  },
+  passThrough: function(value) {
     return value;
-  }
-, informal: {
+  },
+  informal: {
     greeting: function() {
       return 'Yo!';
     }
-  }
-, Date: Date
-, global: global
+  },
+  Date: Date,
+  global: global
 };
 controller.model = {
   data: {
-    key: 'green'
-  , _page: {
+    key: 'green',
+    _page: {
       colors: {
         green: {
-          name: 'Green'
-        , hex: '#0f0'
-        , rgb: [0, 255, 0]
-        , light: {
+          name: 'Green',
+          hex: '#0f0',
+          rgb: [0, 255, 0],
+          light: {
             hex: '#90ee90'
-          }
-        , dark: {
+          },
+          dark: {
             hex: '#006400'
           }
         }
-      }
-    , key: 'green'
-    , channel: 0
-    , variation: 'light'
-    , variationHex: 'light.hex'
-    , keys: ['red', 'green']
-    , index: 1
-
-    , nums: [2, 11, 3, 7]
-    , first: 2
-    , second: 3
-    , date: new Date(1000)
+      },
+      key: 'green',
+      channel: 0,
+      variation: 'light',
+      variationHex: 'light.hex',
+      keys: ['red', 'green'],
+      index: 1,
+      nums: [2, 11, 3, 7],
+      first: 2,
+      second: 3,
+      date: new Date(1000)
     }
   }
 };
 controller.model.scope = function(path) {
   return {
-    _at: path
-  , path: function() {
+    _at: path,
+    path: function() {
       return this._at;
     }
   };
