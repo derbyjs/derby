@@ -3,7 +3,7 @@
     "node": true
   },
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 5
   },
   "globals": {
     "window": false,
@@ -37,7 +37,15 @@
   },
   "overrides": [
     {
-      "files": ["test/**/*.mocha.js", "test/browser/*.js"],
+      // Files that are only run in Node can use more modern ES syntax.
+      "files": ["**/*ForServer.js", "test/**/*.mocha.js"],
+      "parserOptions": {
+        // Node 16 LTS supports up through ES2021.
+        "ecmaVersion": 2021
+      }
+    },
+    {
+      "files": ["test/**/*.js"],
       "env": {"mocha": true, "node": true}
     }
   ]
