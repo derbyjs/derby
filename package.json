@@ -8,6 +8,11 @@
     "url": "git://github.com/derbyjs/derby.git"
   },
   "main": "index.js",
+  "files": [
+    "*.js",
+    "lib/**/*.js",
+    "test-utils/**/*.js"
+  ],
   "scripts": {
     "checks": "npm run lint && npm test",
     "lint": "npx eslint '**/*.js'",
@@ -16,6 +21,7 @@
   },
   "dependencies": {
     "chokidar": "^3.5.3",
+    "esprima-derby": "^0.1.0",
     "html-util": "^0.2.3",
     "qs": "^6.11.0",
     "racer": "^1.0.3",
