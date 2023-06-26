@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "ignoreDeprecations": "5.0",
+    "lib":[],
+    "module": "CommonJS",
+    "noImplicitUseStrict": true,
+    "outDir": "dist",
+    "sourceMap": false,
+    "target": "ES5"
+  },
+  "include": [
+    "*.js",
+    "lib/**/*"
+  ]
+}
