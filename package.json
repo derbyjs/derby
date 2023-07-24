@@ -8,20 +8,25 @@
     "url": "git://github.com/derbyjs/derby.git"
   },
   "main": "index.js",
+  "files": [
+    "*.js",
+    "lib/**/*.js",
+    "test-utils/**/*.js"
+  ],
   "scripts": {
     "checks": "npm run lint && npm test",
-    "lint": "npx eslint *.js lib/**/*.js test/**/*.js test-utils/**/*.js",
-    "test": "npx mocha test/all/*.mocha.js test/dom/*.mocha.js test/server/*.mocha.js",
+    "lint": "npx eslint '**/*.js'",
+    "test": "npx mocha 'test/all/**/*.mocha.js' 'test/dom/**/*.mocha.js' 'test/server/**/*.mocha.js'",
     "test-browser": "node test/server.js"
   },
   "dependencies": {
     "chokidar": "^3.5.3",
-    "derby-parsing": "^0.8.0",
-    "derby-templates": "^0.8.1",
+    "esprima-derby": "^0.1.0",
     "html-util": "^0.2.3",
     "qs": "^6.11.0",
     "racer": "^1.0.3",
     "resolve": "^1.22.1",
+    "serialize-object": "^1.0.0",
     "through": "^2.3.8",
     "tracks": "^0.5.8"
   },
