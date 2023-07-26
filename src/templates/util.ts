@@ -1,10 +1,10 @@
-exports.concat = function(a, b) {
+export function concat(a, b) {
   if (!a) return b;
   if (!b) return a;
   return a.concat(b);
 };
 
-exports.hasKeys = function(value) {
+export function hasKeys(value) {
   if (!value) return false;
   for (var key in value) {
     return true;
@@ -12,7 +12,7 @@ exports.hasKeys = function(value) {
   return false;
 };
 
-exports.traverseAndCreate = function(node, segments) {
+export function traverseAndCreate(node, segments) {
   var len = segments.length;
   if (!len) return node;
   for (var i = 0; i < len; i++) {
