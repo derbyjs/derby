@@ -1,6 +1,6 @@
 var expect = require('chai').expect;
-var templates = require('../../../lib/templates/templates');
-var expressions = require('../../../lib/templates/expressions');
+var templates = require('../../../dist/templates/templates');
+var expressions = require('../../../dist/templates/expressions');
 
 function test(createTemplate) {
   return function() {

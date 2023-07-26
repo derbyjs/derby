@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var EventModel = require('../../lib/eventmodel');
+var EventModel = require('../../dist/eventmodel');
 
 describe('eventmodel', function() {
   beforeEach(function() {

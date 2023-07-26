@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var parsing = require('../../../lib/parsing');
+var parsing = require('../../../dist/parsing');
 
 describe('template truthy', function() {
 

@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git://github.com/derbyjs/derby.git"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "files": [
     "dist/**/*.js"
   ],
@@ -16,6 +16,7 @@
     "checks": "npm run lint && npm test",
     "lint": "npx eslint *.js lib/**/*.js test/**/*.js test-utils/**/*.js",
     "prepare": "npm run build",
+    "pretest": "npm run build",
     "test": "npx mocha 'test/all/**/*.mocha.js' 'test/dom/**/*.mocha.js' 'test/server/**/*.mocha.js'",
     "test-browser": "node test/server.js"
   },
