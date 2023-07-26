@@ -14,7 +14,7 @@
   "scripts": {
     "build": "node_modules/.bin/tsc",
     "checks": "npm run lint && npm test",
-    "lint": "npx eslint *.js lib/**/*.js test/**/*.js test-utils/**/*.js",
+    "lint": "npx eslint src/**/*.js test/**/*.js test-utils/**/*.js",
     "prepare": "npm run build",
     "pretest": "npm run build",
     "test": "npx mocha 'test/all/**/*.mocha.js' 'test/dom/**/*.mocha.js' 'test/server/**/*.mocha.js'",
