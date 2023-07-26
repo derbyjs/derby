@@ -1,16 +1,20 @@
 var templates = require('./templates');
 
-exports.DependencyOptions = DependencyOptions;
+export class DependencyOptions{
+  ignoreTemplate: boolean;
 
-function DependencyOptions(options) {
-  this.setIgnoreTemplate(options && options.ignoreTemplate);
-}
-DependencyOptions.shouldIgnoreTemplate = function(template, options) {
-  return (options) ? options.ignoreTemplate === template : false;
-};
-DependencyOptions.prototype.setIgnoreTemplate = function(template) {
-  while (template instanceof templates.ContextClosure) {
-    template = template.template;
+  constructor(options: { ignoreTemplate: boolean }) {
+    this.setIgnoreTemplate(options && options.ignoreTemplate);
   }
-  this.ignoreTemplate = template;
-};
+
+  static shouldIgnoreTemplate(template, options) {
+    return (options) ? options.ignoreTemplate === template : false;
+  };
+
+  setIgnoreTemplate(template) {
+    while (template instanceof templates.ContextClosure) {
+      template = template.template;
+    }
+    this.ignoreTemplate = template;
+  };
+}
