@@ -108,7 +108,7 @@ describe('Parse and render dynamic text and blocks', function() {
       var source = '{{with _page.greeting as greeting}}{{/with}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-        console.log(template.content[0]);
+        // console.log(template.content[0]);
       }).to.throw(/Alias must be an identifier starting with "#"/);
     });
 
