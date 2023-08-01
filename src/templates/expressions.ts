@@ -1,6 +1,6 @@
 import * as operatorFns from './operatorFns';
 import { concat } from './util';
-import serializeObject from 'serialize-object';
+import * as serializeObject from 'serialize-object';
 var templates = require('./templates');
 var Template = templates.Template;
 
@@ -27,6 +27,8 @@ export function pathSegments(segments) {
   }
   return result;
 }
+
+//#region Render functions
 
 export function renderValue(value, context) {
   return (typeof value !== 'object') ? value :
@@ -83,19 +85,21 @@ function renderObjectProperties(object, context) {
   return out;
 }
 
+//#endregion
+
 export class ExpressionMeta {
-  source: any;
-  blockType: any;
+  source: string;
+  blockType: string;
   isEnd: boolean;
-  as: any;
-  keyAs: any;
-  unescaped: any;
-  bindType: any;
-  valueType: any;
+  as: string;
+  keyAs: string;
+  unescaped: boolean;
+  bindType: string; // 'unbound' | 'bound' // parsing/index.js#799
+  valueType: string;
   module = 'expressions';
   type = 'ExpressionMeta';
 
-  constructor(source, blockType, isEnd, as, keyAs, unescaped, bindType, valueType) {
+  constructor(source, blockType?, isEnd?, as?, keyAs?, unescaped?, bindType?, valueType?) {
     this.source = source;
     this.blockType = blockType;
     this.isEnd = isEnd;
@@ -424,7 +428,7 @@ export class BracketsExpression extends Expression {
     return (this.afterSegments) ? lookup(this.afterSegments, base) : base;
   };
 
-  resolvegetDefaultHighWaterMark(context) {
+  resolve(context) {
     // Get and split the current value of the expression inside the brackets
     var inside = this.inside.get(context);
     if (inside == null) return;
@@ -438,7 +442,7 @@ export class BracketsExpression extends Expression {
     return this._resolvePatch(context, segments);
   };
 
-  dependenciesgetDefaultHighWaterMark(context, options) {
+  dependencies(context, options) {
     var before = this.before.dependencies(context, options);
     if (before) before.pop();
     var inner = this.inside.dependencies(context, options);
