@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "ignoreDeprecations": "5.0",
-    "lib":[],
+    "lib":["DOM"],
     "module": "CommonJS",
     "noImplicitUseStrict": true,
     "outDir": "dist",
