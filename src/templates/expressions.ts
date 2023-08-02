@@ -419,7 +419,7 @@ export class BracketsExpression extends Expression {
     return serializeObject.instance(this, this.before, this.inside, this.afterSegments, this.meta);
   };
 
-  getDefaultHighWaterMark(context) {
+  get(context) {
     var inside = this.inside.get(context);
     if (inside == null) return;
     var before = this.before.get(context);
