@@ -176,7 +176,7 @@ export class Context {
       if (context.view) {
         const attributes = context.attributes;
         if (!attributes) return;
-        if (attributes.hasOwnProperty(attribute)) return context;
+        if (Object.prototype.hasOwnProperty.call(attributes, attribute)) return context;
         // If the attribute isn't found, but the attributes inherit, continue
         // looking in the next closest view context
         if (!attributes.inherit && !attributes.extend) return;

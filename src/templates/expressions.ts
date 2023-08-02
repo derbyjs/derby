@@ -1,8 +1,7 @@
 import * as operatorFns from './operatorFns';
 import { concat } from './util';
 import * as serializeObject from 'serialize-object';
-const templates = require('./templates');
-const Template = templates.Template;
+import { ContextClosure, Template } from './templates';
 
 export function lookup(segments, value) {
   if (!segments) return value;
@@ -194,10 +193,10 @@ export class Expression {
       value = renderTemplate(value, context);
       value = lookup(this.segments, value);
     }
-    if (value instanceof Template && !(value instanceof templates.ContextClosure)) {
+    if (value instanceof Template && !(value instanceof ContextClosure)) {
       // If we're not immediately rendering the template, then create a ContextClosure
       // so that the value renders with the correct context later.
-      value = new templates.ContextClosure(value, context);
+      value = new ContextClosure(value, context);
     }
     return value;
   }
@@ -475,7 +474,7 @@ export class DeferRenderExpression extends Expression {
   }
 
   get(context) {
-    return new templates.ContextClosure(this.template, context);
+    return new ContextClosure(this.template, context);
   }
 }
 

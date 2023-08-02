@@ -1,6 +1,6 @@
-const templates = require('./templates');
+import { ContextClosure } from './templates';
 
-export class DependencyOptions{
+export class DependencyOptions {
   ignoreTemplate: boolean;
 
   constructor(options: { ignoreTemplate: boolean }) {
@@ -12,7 +12,7 @@ export class DependencyOptions{
   }
 
   setIgnoreTemplate(template) {
-    while (template instanceof templates.ContextClosure) {
+    while (template instanceof ContextClosure) {
       template = template.template;
     }
     this.ignoreTemplate = template;

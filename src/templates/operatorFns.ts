@@ -97,8 +97,8 @@ export const get = {
     return (test) ? consequent : alternate;
   },
   // Sequence
-  ',': function() {
-    return arguments[arguments.length - 1];
+  ',': function(...args) {
+    return args[args.length - 1];
   }
 };
 

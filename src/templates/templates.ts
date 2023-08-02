@@ -2,8 +2,8 @@ if (typeof require === 'function') {
   var serializeObject = require('serialize-object');
 }
 
-import {DependencyOptions} from './dependencyOptions';
-import {concat, hasKeys, traverseAndCreate} from './util';
+import { DependencyOptions } from './dependencyOptions';
+import { concat, hasKeys, traverseAndCreate } from './util';
 // var concat = util.concat;
 // var hasKeys = util.hasKeys;
 // var traverseAndCreate = util.traverseAndCreate;
@@ -2298,8 +2298,7 @@ export class ComponentOn extends MarkupHook {
 
   emit(context, component) {
     const expression = this.expression;
-    component.on(this.name, function componentOnListener() {
-      const args = arguments.length && Array.prototype.slice.call(arguments);
+    component.on(this.name, function componentOnListener(...args) {
       return expression.apply(context, args);
     });
   }
