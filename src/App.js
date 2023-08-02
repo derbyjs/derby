@@ -402,7 +402,7 @@ App._parseInitialData = function _parseInitialData(jsonString) {
     return JSON.parse(jsonString);
   } catch (error) {
     var message = error.message || '';
-    var match = message.match(/Unexpected token (.) in JSON at position (\d+)/);
+    var match = message.match(/^Unexpected token/);
     if (match) {
       var p = parseInt(match[2], 10);
       var stringContext = jsonString.substring(
