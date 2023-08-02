@@ -825,28 +825,38 @@ export class Element extends Template {
 
 export class DynamicElement extends Element {
   type = 'DynamicElement';
+  startClose: any;
+  unescapedContent: any;
+  tagName: any;
+  attributes: any;
+  content: any;
+  hooks: any;
+  selfClosing: any;
+  notClosed: any;
+  ns: any;
 
-  // @ts-ignore
+  // @TODO: fix class heirarchy here... original "class" didn't intialize super
+  // @ts-expect-error Not calling super()
   constructor(tagName, attributes, content, hooks, selfClosing, notClosed, ns) {
     // super(tagName, attributes, content, hooks, selfClosing, notClosed, ns);
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.startClose = getStartClose(selfClosing);
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.unescapedContent = false;
 
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.tagName = tagName;
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.attributes = attributes;
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.content = content;
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.hooks = hooks;
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.selfClosing = selfClosing;
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.notClosed = notClosed;
-    // @ts-ignore
+    // @ts-expect-error Not calling super()
     this.ns = ns;
   }
 
@@ -1032,7 +1042,6 @@ export class ConditionalBlock extends BaseBlock {
     if (!binding.start.parentNode) return;
     const condition = this.getCondition(context);
     // Cancel update if prior condition is equivalent to current value
-    // @ts-ignore
     if (equalConditions(condition, binding.condition)) return;
     binding.condition = condition;
     // Get start and end in advance, since binding is mutated in getFragment
@@ -1513,7 +1522,7 @@ function escapeAttribute(string: string): string {
   });
 }
 
-function equalConditions(a: Template, b: Template): boolean {
+function equalConditions(a: any, b: any): boolean {
   // First, test for strict equality
   if (a === b) return true;
   // Failing that, allow for template objects used as a condition to define a
@@ -1534,7 +1543,7 @@ export const emptyTemplate = new Template([]);
 // to null, but it throws and error if it is equal to undefined.
 
 if (!Array.isArray) {
-  // @ts-ignore
+  // @ts-expect-error Shim defining Array.isArray
   Array.isArray = function(value) {
     return Object.prototype.toString.call(value) === '[object Array]';
   };
@@ -1562,9 +1571,9 @@ let normalizeLineBreaks = (value: string) => value;
 
   const div = document.createElement('div');
   div.innerHTML = '\r\n<br>\n'
-  // @ts-ignore
+  // @ts-expect-error Property `data` does not exist on ChildNode
   const windowsLength = div.firstChild.data.length;
-  // @ts-ignore
+  // @ts-expect-error Property `data` does not exist on ChildNode
   const unixLength = div.lastChild.data.length;
   if (windowsLength === 1 && unixLength === 1) {
     normalizeLineBreaks = function(value: string) {
@@ -1605,7 +1614,7 @@ let normalizeLineBreaks = (value: string) => value;
 
   try {
     // TextNodes are not expando in IE <=8
-    // @ts-ignore
+    // @ts-expect-error $try does not exist on Text
     document.createTextNode('').$try = 0;
   } catch (err) {
     setNodeProperty = function(node, key, value) {
