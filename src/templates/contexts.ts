@@ -1,11 +1,19 @@
+import { type Expression } from "./expressions";
+import {
+  type Attributes,
+  type MarkupHook,
+  type View,
+} from "./templates";
+
 function noop() { }
 
+
 export class ContextMeta {
-  addBinding = noop;
-  removeBinding = noop;
-  removeNode = noop;
-  addItemContext = noop;
-  removeItemContext = noop;
+  addBinding: (binding: any) => void = noop;
+  removeBinding: (binding: any) => void = noop;
+  removeNode: (node: any) => void = noop;
+  addItemContext: (context: any) => void = noop;
+  removeItemContext: (context: any) => void = noop;
   views = null;
   idNamespace = '';
   idCount = 0;
@@ -14,21 +22,21 @@ export class ContextMeta {
 }
 
 export class Context {
-  meta: any;
+  meta: ContextMeta;
   controller: any;
-  parent: any;
-  unbound: any;
-  expression: any;
-  alias: any;
-  keyAlias: any;
-  item: any;
-  view: any;
-  attributes: any;
-  hooks: any;
-  initHooks: any;
-  closure: any;
-  _id: any;
-  _eventModels: any;
+  parent?: Context;
+  unbound?: boolean;
+  expression?: Expression;
+  alias?: string;
+  keyAlias?: string;
+  item?: any;
+  view?: View;
+  attributes?: Attributes;
+  hooks?: MarkupHook<any>[];
+  initHooks?: MarkupHook<any>[];
+  closure?: Context;
+  _id?: number;
+  _eventModels?: any;
 
   constructor(meta, controller, parent, unbound, expression?) {
     // Required properties //
@@ -152,7 +160,7 @@ export class Context {
   }
 
   forRelative(expression) {
-    let context = this;
+    let context: Context = this;
     while (context && context.expression === expression || context.view) {
       context = context.parent;
     }
@@ -161,7 +169,7 @@ export class Context {
 
   // Returns the closest context which defined the named alias
   forAlias(alias) {
-    let context = this;
+    let context: Context = this;
     while (context) {
       if (context.alias === alias || context.keyAlias === alias) return context;
       context = context.parent;
@@ -170,7 +178,7 @@ export class Context {
 
   // Returns the closest containing context for a view attribute name or nothing
   forAttribute(attribute) {
-    let context = this;
+    let context: Context = this;
     while (context) {
       // Find the closest context associated with a view
       if (context.view) {
@@ -186,7 +194,7 @@ export class Context {
   }
 
   forViewParent() {
-    let context = this;
+    let context: Context = this;
     while (context) {
       // When a context with a `closure` property is encountered, skip to its
       // parent context rather than returning the nearest view's. This reference
@@ -199,7 +207,7 @@ export class Context {
   }
 
   getView() {
-    let context = this;
+    let context: Context = this;
     while (context) {
       // Find the closest view
       if (context.view) return context.view;

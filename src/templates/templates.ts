@@ -2,11 +2,12 @@ if (typeof require === 'function') {
   var serializeObject = require('serialize-object');
 }
 
+import { type Context } from './contexts';
 import { DependencyOptions } from './dependencyOptions';
+import { type Expression } from './expressions';
 import { concat, hasKeys, traverseAndCreate } from './util';
-// var concat = util.concat;
-// var hasKeys = util.hasKeys;
-// var traverseAndCreate = util.traverseAndCreate;
+
+export type Attributes = Record<string, Attribute>
 
 // UPDATE_PROPERTIES map HTML attribute names to an Element DOM property that
 // should be used for setting on bindings updates instead of setAttribute.
@@ -90,8 +91,11 @@ export const NAMESPACE_URIS = {
 export class Template {
   module = 'templates';
   type = 'Template';
-  content: any;
-  source: any;
+  content: Template[];
+  source: string;
+  expression?: Expression;
+  unbound?: boolean;
+  hooks: MarkupHook<any>[];
 
   constructor(content?, source?) {
     this.content = content;
@@ -102,7 +106,7 @@ export class Template {
     return this.source;
   }
 
-  get(context, unescaped) {
+  get(context, unescaped): string | boolean {
     return contentHtml(this.content, context, unescaped);
   }
 
@@ -236,7 +240,7 @@ export class Text extends Template {
 // The update method must take care to switch between these types of bindings
 // in case the expression return type changes dynamically.
 export class DynamicText extends Template {
-  expression: any;
+  expression: Expression;
   unbound: boolean;
 
   constructor(expression) {
@@ -260,7 +264,7 @@ export class DynamicText extends Template {
   appendTo(parent, context, binding) {
     const value = this.expression.get(context);
     if (value instanceof Template) {
-      const start = document.createComment(this.expression);
+      const start = document.createComment(this.expression.toString());
       const end = document.createComment('/' + this.expression);
       const condition = this.getCondition(context);
       parent.appendChild(start);
@@ -278,7 +282,7 @@ export class DynamicText extends Template {
   attachTo(parent, node, context) {
     const value = this.expression.get(context);
     if (value instanceof Template) {
-      const start = document.createComment(this.expression);
+      const start = document.createComment(this.expression.toString());
       const end = document.createComment('/' + this.expression);
       const condition = this.getCondition(context);
       parent.insertBefore(start, node || null);
@@ -325,7 +329,7 @@ export class DynamicText extends Template {
   }
 }
 
-function attachText(parent, node, data, template, context?) {
+function attachText(parent: Node, node: Node, data: string, template: Template, context?: Context) {
   if (!node) {
     var newNode = document.createTextNode(data);
     parent.appendChild(newNode);
@@ -334,6 +338,7 @@ function attachText(parent, node, data, template, context?) {
   }
   if (node.nodeType === 3) {
     // Proceed if nodes already match
+    // @ts-expect-error Known Text node at this point
     if (node.data === data) {
       addNodeBinding(template, context, node);
       return node.nextSibling;
@@ -341,6 +346,7 @@ function attachText(parent, node, data, template, context?) {
     data = normalizeLineBreaks(data);
     // Split adjacent text nodes that would have been merged together in HTML
     const nextNode = splitData(node, data.length);
+    // @ts-expect-error Known Text node at this point
     if (node.data !== data) {
       throw attachError(parent, node);
     }
@@ -359,7 +365,7 @@ function attachText(parent, node, data, template, context?) {
 
 export class Comment extends Template {
   data: string;
-  hooks: any;
+  hooks: MarkupHook<any>[];
   type = 'Comment';
 
   constructor(data, hooks) {
@@ -390,8 +396,8 @@ export class Comment extends Template {
 }
 
 export class DynamicComment extends Template {
-  expression: any;
-  hooks: any;
+  expression: Expression;
+  hooks: MarkupHook<any>[];
   type = 'DynamicComment';
 
   constructor(expression, hooks) {
@@ -435,7 +441,7 @@ export class DynamicComment extends Template {
   }
 }
 
-function attachComment(parent, node, data, template, context) {
+function attachComment(parent: Node, node: Node, data: string, template: Template, context: Context) {
   // Sometimes IE fails to create Comment nodes from HTML or innerHTML.
   // This is an issue inside of <select> elements, for example.
   if (!node || node.nodeType !== 8) {
@@ -445,6 +451,7 @@ function attachComment(parent, node, data, template, context) {
     return node;
   }
   // Proceed if nodes already match
+  // @ts-expect-error Dom Comment Node
   if (node.data === data) {
     addNodeBinding(template, context, node);
     return node.nextSibling;
@@ -452,7 +459,7 @@ function attachComment(parent, node, data, template, context) {
   throw attachError(parent, node);
 }
 
-function addNodeBinding(template, context, node) {
+function addNodeBinding(template: Template, context: Context, node: Node) {
   if (template.expression && !template.unbound) {
     context.addBinding(new NodeBinding(template, context, node));
   }
@@ -489,7 +496,6 @@ export class Html extends Template {
 }
 
 export class DynamicHtml extends Template {
-  expression: any;
   ending: any;
   type = 'DynamicHtml';
 
@@ -505,7 +511,7 @@ export class DynamicHtml extends Template {
   }
 
   appendTo(parent, context, binding) {
-    const start = document.createComment(this.expression);
+    const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     const value = getUnescapedValue(this.expression, context);
     const html = this.stringify(value);
@@ -517,7 +523,7 @@ export class DynamicHtml extends Template {
   }
 
   attachTo(parent, node, context) {
-    const start = document.createComment(this.expression);
+    const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     const value = getUnescapedValue(this.expression, context);
     const html = this.stringify(value);
@@ -551,7 +557,7 @@ export class DynamicHtml extends Template {
   }
 }
 
-function createHtmlFragment(parent, html) {
+function createHtmlFragment(parent: Node, html: string) {
   if (parent && parent.nodeType === 1) {
     var range = document.createRange();
     range.selectNodeContents(parent);
@@ -564,7 +570,7 @@ function createHtmlFragment(parent, html) {
   return range.extractContents();
 }
 
-function attachHtml(parent, node, html) {
+function attachHtml(parent: Node, node: Node, html: string) {
   const fragment = createHtmlFragment(parent, html);
   for (let i = 0, len = fragment.childNodes.length; i < len; i++) {
     if (!node) throw attachError(parent, node);
@@ -574,7 +580,7 @@ function attachHtml(parent, node, html) {
 }
 
 export class Attribute extends Template {
-  data?: string;
+  data?: string | boolean;
   ns?: string;
   type = 'Attribute';
 
@@ -600,8 +606,8 @@ export class Attribute extends Template {
 }
 
 export class DynamicAttribute extends Attribute {
-  expression: any;
-  elementNs: any;
+  expression: Expression;
+  elementNs: string;
   type = 'DynamicAttribute';
 
   constructor(expression, ns?) {
@@ -671,7 +677,7 @@ export class DynamicAttribute extends Attribute {
   }
 }
 
-function getUnescapedValue(expression, context) {
+function getUnescapedValue(expression: Expression, context: Context) {
   const unescaped = true;
   let value = expression.get(context, unescaped);
   while (value instanceof Template) {
@@ -680,29 +686,35 @@ function getUnescapedValue(expression, context) {
   return value;
 }
 
-export class Element extends Template {
-  tagName: string;
-  attributes: any;
-  hooks: any;
-  selfClosing: boolean;
+abstract class BaseElement<T> extends Template {
+  attributes: Attributes;
+  bindContentToValue: boolean;
+  hooks: MarkupHook<any>[];
   notClosed: boolean;
   ns: string;
-  type = 'Element';
-  endTag: string;
+  selfClosing: boolean;
   startClose: string;
+  tagName: T;
   unescapedContent: boolean;
-  bindContentToValue: boolean;
 
-  constructor(tagName: string, attributes, content, hooks, selfClosing, notClosed, ns) {
+  constructor(attributes, content, hooks, selfClosing, notClosed, ns) {
     super();
-    this.tagName = tagName;
     this.attributes = attributes;
     this.content = content;
     this.hooks = hooks;
     this.selfClosing = selfClosing;
     this.notClosed = notClosed;
     this.ns = ns;
+  }
+}
 
+export class Element extends BaseElement<string> {
+  type = 'Element';
+  endTag: string;
+
+  constructor(tagName: string, attributes, content, hooks, selfClosing, notClosed, ns) {
+    super(attributes, content, hooks, selfClosing, notClosed, ns);
+    this.tagName = tagName;
     this.endTag = getEndTag(tagName, selfClosing, notClosed);
     this.startClose = getStartClose(selfClosing);
     const lowerTagName = tagName && tagName.toLowerCase();
@@ -738,7 +750,7 @@ export class Element extends Template {
     return startTag + endTag;
   }
 
-  appendTo(parent, context) {
+  appendTo(parent: Node, context: Context) {
     const tagName = this.getTagName(context);
     const element = (this.ns) ?
       document.createElementNS(this.ns, tagName) :
@@ -823,41 +835,18 @@ export class Element extends Template {
   }
 }
 
-export class DynamicElement extends Element {
+export class DynamicElement extends BaseElement<Expression> {
   type = 'DynamicElement';
-  startClose: any;
-  unescapedContent: any;
-  tagName: any;
-  attributes: any;
-  content: any;
-  hooks: any;
-  selfClosing: any;
-  notClosed: any;
-  ns: any;
+  content: Template[];
+  attributes: Attributes;
 
-  // @TODO: fix class heirarchy here... original "class" didn't intialize super
-  // @ts-expect-error Not calling super()
   constructor(tagName, attributes, content, hooks, selfClosing, notClosed, ns) {
-    // super(tagName, attributes, content, hooks, selfClosing, notClosed, ns);
-    // @ts-expect-error Not calling super()
-    this.startClose = getStartClose(selfClosing);
-    // @ts-expect-error Not calling super()
-    this.unescapedContent = false;
-
-    // @ts-expect-error Not calling super()
-    this.tagName = tagName;
-    // @ts-expect-error Not calling super()
-    this.attributes = attributes;
-    // @ts-expect-error Not calling super()
+    super(attributes, content, hooks, selfClosing, notClosed, ns);
     this.content = content;
-    // @ts-expect-error Not calling super()
-    this.hooks = hooks;
-    // @ts-expect-error Not calling super()
-    this.selfClosing = selfClosing;
-    // @ts-expect-error Not calling super()
-    this.notClosed = notClosed;
-    // @ts-expect-error Not calling super()
-    this.ns = ns;
+    this.attributes = attributes;
+    this.startClose = getStartClose(selfClosing);
+    this.unescapedContent = false;
+    this.tagName = tagName;
   }
 
   getTagName(context) {
@@ -907,7 +896,7 @@ export class Block extends BaseBlock {
   type = 'Block';
   expression: any;
 
-  constructor(expression: any, content: string) {
+  constructor(expression: any, content: Template[]) {
     super();
     this.expression = expression;
     this.ending = '/' + expression;
@@ -1286,13 +1275,13 @@ function setNodeBounds(binding, start, itemFor) {
   }
 }
 
-function appendContent(parent, content, context) {
+function appendContent(parent, content: Template[], context) {
   for (let i = 0, len = content.length; i < len; i++) {
     content[i].appendTo(parent, context);
   }
 }
 
-function attachContent(parent, node, content, context) {
+function attachContent(parent, node, content: Template[], context) {
   for (let i = 0, len = content.length; i < len; i++) {
     while (node && node.hasAttribute && node.hasAttribute('data-no-attach')) {
       node = node.nextSibling;
@@ -1302,7 +1291,7 @@ function attachContent(parent, node, content, context) {
   return node;
 }
 
-function contentHtml(content, context, unescaped) {
+function contentHtml(content: Template[], context, unescaped) {
   let html = '';
   for (let i = 0, len = content.length; i < len; i++) {
     html += content[i].get(context, unescaped);
@@ -1637,72 +1626,6 @@ let normalizeLineBreaks = (value: string) => value;
 })();
 
 //#endregion
-
-// Doctype.prototype.dependencies = function() { };
-// Text.prototype.dependencies = function() { };
-// DynamicText.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   return getDependencies(this.expression, context, options);
-// };
-// Comment.prototype.dependencies = function() { };
-// DynamicComment.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   return getDependencies(this.expression, context, options);
-// };
-// Html.prototype.dependencies = function() { };
-// DynamicHtml.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   return getDependencies(this.expression, context, options);
-// };
-// Element.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   var dependencies = concatMapDependencies(null, this.attributes, context, options);
-//   if (!this.content) return dependencies;
-//   return concatArrayDependencies(dependencies, this.content, context, options);
-// };
-// DynamicElement.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   var dependencies = Element.prototype.dependencies(context, options);
-//   return concatDependencies(dependencies, this.tagName, context, options);
-// };
-// Block.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   var dependencies = (this.expression.meta && this.expression.meta.blockType === 'on') ?
-//     getDependencies(this.expression, context, options) : null;
-//   var blockContext = context.child(this.expression);
-//   return concatArrayDependencies(dependencies, this.content, blockContext, options);
-// };
-// ConditionalBlock.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   var condition = this.getCondition(context);
-//   if (condition == null) {
-//     return getDependencies(this.expressions[0], context, options);
-//   }
-//   var dependencies = concatSubArrayDependencies(null, this.expressions, context, options, condition);
-//   var expression = this.expressions[condition];
-//   var content = this.contents[condition];
-//   var blockContext = context.child(expression);
-//   return concatArrayDependencies(dependencies, content, blockContext, options);
-// };
-// EachBlock.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   var dependencies = getDependencies(this.expression, context, options);
-//   var items = this.expression.get(context);
-//   if (items && items.length) {
-//     for (var i = 0; i < items.length; i++) {
-//       var itemContext = context.eachChild(this.expression, i);
-//       dependencies = concatArrayDependencies(dependencies, this.content, itemContext, options);
-//     }
-//   } else if (this.elseContent) {
-//     dependencies = concatArrayDependencies(dependencies, this.elseContent, context, options);
-//   }
-//   return dependencies;
-// };
-// Attribute.prototype.dependencies = function() { };
-// DynamicAttribute.prototype.dependencies = function(context, options) {
-//   if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-//   return getDependencies(this.expression, context, options);
-// };
 
 function concatSubArrayDependencies(dependencies, expressions, context, options, end) {
   for (let i = 0; i <= end; i++) {
@@ -2074,8 +1997,8 @@ export class ViewParent extends Template {
 // Instances of this template cannot be serialized. It is intended for use
 // dynamically during rendering only.
 export class ContextClosure extends Template {
-  template: any;
-  context: any;
+  template: Template;
+  context: Context;
 
   constructor(template, context) {
     super();
@@ -2242,11 +2165,13 @@ export class Views {
   }
 }
 
-export class MarkupHook {
+export abstract class MarkupHook<T> {
   module = Template.prototype.module;
+  name: string;
+  abstract emit(context: Context, target: T): void;
 }
 
-export class ElementOn extends MarkupHook {
+export class ElementOn extends MarkupHook<Element> {
   type = 'ElementOn';
   name: string;
   expression: any;
@@ -2290,7 +2215,7 @@ export class ElementOn extends MarkupHook {
   }
 }
 
-export class ComponentOn extends MarkupHook {
+export class ComponentOn extends MarkupHook<any> {
   type = 'ComponentOn';
   name: string;
   expression: any;
@@ -2313,7 +2238,7 @@ export class ComponentOn extends MarkupHook {
   }
 }
 
-export class AsProperty extends MarkupHook {
+export class AsProperty extends MarkupHook<any> {
   type = 'AsProperty';
   segments: any;
   lastSegment: any;
