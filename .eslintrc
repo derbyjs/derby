@@ -9,6 +9,7 @@
     "window": false,
     "document": false
   },
+  "root": true,
   "rules": {
     "comma-style": [
       2,
@@ -47,6 +48,16 @@
     {
       "files": ["test/**/*.js"],
       "env": {"mocha": true, "node": true}
+    },
+    {
+      "files": ["src/**/*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ]
     }
   ]
 }

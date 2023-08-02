@@ -15,6 +15,7 @@
     "build": "node_modules/.bin/tsc",
     "checks": "npm run lint && npm test",
     "lint": "npx eslint src/**/*.js test/**/*.js test-utils/**/*.js",
+    "lint:ts": "npx eslint src/**/*.ts",
     "prepare": "npm run build",
     "pretest": "npm run build",
     "test": "npx mocha 'test/all/**/*.mocha.js' 'test/dom/**/*.mocha.js' 'test/server/**/*.mocha.js'",
@@ -33,6 +34,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.3.1",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
     "async": "^3.2.4",
     "browserify": "^17.0.0",
     "chai": "^4.3.6",
