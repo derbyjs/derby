@@ -107,7 +107,7 @@ export class Template {
   }
 
   getFragment(context, binding?) {
-    var fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
     this.appendTo(fragment, context, binding);
     return fragment;
   }
@@ -148,7 +148,7 @@ export class Template {
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return concatArrayDependencies(null, this.content, context, options);
-  };
+  }
 }
 
 export class Doctype extends Template {
@@ -165,36 +165,36 @@ export class Doctype extends Template {
   }
 
   get() {
-    var publicText = (this.publicId) ?
+    const publicText = (this.publicId) ?
       ' PUBLIC "' + this.publicId + '"' :
       '';
-    var systemText = (this.systemId) ?
+    const systemText = (this.systemId) ?
       (this.publicId) ?
         ' "' + this.systemId + '"' :
         ' SYSTEM "' + this.systemId + '"' :
       '';
     return '<!DOCTYPE ' + this.name + publicText + systemText + '>';
-  };
+  }
 
   appendTo() {
     // Doctype could be created via:
     //   document.implementation.createDocumentType(this.name, this.publicId, this.systemId)
     // However, it does not appear possible or useful to append it to the
     // document fragment. Therefore, just don't render it in the browser
-  };
+  }
 
   attachTo(parent, node) {
     if (!node || node.nodeType !== 10) {
       throw attachError(parent, node);
     }
     return node.nextSibling;
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.name, this.publicId, this.systemId);
-  };
+  }
 
-  dependencies() { };
+  dependencies() { }
 }
 
 export class Text extends Template {
@@ -213,7 +213,7 @@ export class Text extends Template {
   }
 
   appendTo(parent) {
-    var node = document.createTextNode(this.data);
+    const node = document.createTextNode(this.data);
     parent.appendChild(node);
   }
 
@@ -225,7 +225,7 @@ export class Text extends Template {
     return serializeObject.instance(this, this.data);
   }
 
-  dependencies() { };
+  dependencies() { }
 }
 
 // DynamicText might be more accurately named DynamicContent. When its
@@ -246,50 +246,50 @@ export class DynamicText extends Template {
   }
 
   get(context, unescaped) {
-    var value = this.expression.get(context);
+    let value = this.expression.get(context);
     if (value instanceof Template) {
       do {
         value = value.get(context, unescaped);
       } while (value instanceof Template);
       return value;
     }
-    var data = this.stringify(value);
+    const data = this.stringify(value);
     return (unescaped) ? data : escapeHtml(data);
-  };
+  }
 
   appendTo(parent, context, binding) {
-    var value = this.expression.get(context);
+    const value = this.expression.get(context);
     if (value instanceof Template) {
-      var start = document.createComment(this.expression);
-      var end = document.createComment('/' + this.expression);
-      var condition = this.getCondition(context);
+      const start = document.createComment(this.expression);
+      const end = document.createComment('/' + this.expression);
+      const condition = this.getCondition(context);
       parent.appendChild(start);
       value.appendTo(parent, context);
       parent.appendChild(end);
       updateRange(context, binding, this, start, end, null, condition);
       return;
     }
-    var data = this.stringify(value);
-    var node = document.createTextNode(data);
+    const data = this.stringify(value);
+    const node = document.createTextNode(data);
     parent.appendChild(node);
     addNodeBinding(this, context, node);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var value = this.expression.get(context);
+    const value = this.expression.get(context);
     if (value instanceof Template) {
-      var start = document.createComment(this.expression);
-      var end = document.createComment('/' + this.expression);
-      var condition = this.getCondition(context);
+      const start = document.createComment(this.expression);
+      const end = document.createComment('/' + this.expression);
+      const condition = this.getCondition(context);
       parent.insertBefore(start, node || null);
       node = value.attachTo(parent, node, context);
       parent.insertBefore(end, node || null);
       updateRange(context, null, this, start, end, null, condition);
       return node;
     }
-    var data = this.stringify(value);
+    const data = this.stringify(value);
     return attachText(parent, node, data, this, context);
-  };
+  }
   type = 'DynamicText';
 
   update(context, binding) {
@@ -297,32 +297,32 @@ export class DynamicText extends Template {
       this._blockUpdate(context, binding);
       return;
     }
-    var value = this.expression.get(context);
+    const value = this.expression.get(context);
     if (value instanceof Template) {
-      var start = binding.node;
+      const start = binding.node;
       if (!start.parentNode) return;
-      var end = start;
-      var fragment = this.getFragment(context);
+      const end = start;
+      const fragment = this.getFragment(context);
       replaceRange(context, start, end, fragment, binding);
       return;
     }
     binding.node.data = this.stringify(value);
-  };
+  }
 
   getCondition(context) {
     return this.expression.get(context);
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.expression);
-  };
+  }
 
   _blockUpdate = Block.prototype.update;
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
-  };
+  }
 }
 
 function attachText(parent, node, data, template, context?) {
@@ -340,7 +340,7 @@ function attachText(parent, node, data, template, context?) {
     }
     data = normalizeLineBreaks(data);
     // Split adjacent text nodes that would have been merged together in HTML
-    var nextNode = splitData(node, data.length);
+    const nextNode = splitData(node, data.length);
     if (node.data !== data) {
       throw attachError(parent, node);
     }
@@ -370,21 +370,21 @@ export class Comment extends Template {
 
   get() {
     return '<!--' + this.data + '-->';
-  };
+  }
 
   appendTo(parent, context) {
-    var node = document.createComment(this.data);
+    const node = document.createComment(this.data);
     parent.appendChild(node);
     emitHooks(this.hooks, context, node);
-  };
+  }
 
   attachTo(parent, node, context) {
     return attachComment(parent, node, this.data, this, context);
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.data, this.hooks);
-  };
+  }
 
   dependencies() { }
 }
@@ -401,45 +401,45 @@ export class DynamicComment extends Template {
   }
 
   get(context) {
-    var value = getUnescapedValue(this.expression, context);
-    var data = this.stringify(value);
+    const value = getUnescapedValue(this.expression, context);
+    const data = this.stringify(value);
     return '<!--' + data + '-->';
-  };
+  }
 
   appendTo(parent, context) {
-    var value = getUnescapedValue(this.expression, context);
-    var data = this.stringify(value);
-    var node = document.createComment(data);
+    const value = getUnescapedValue(this.expression, context);
+    const data = this.stringify(value);
+    const node = document.createComment(data);
     parent.appendChild(node);
     addNodeBinding(this, context, node);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var value = getUnescapedValue(this.expression, context);
-    var data = this.stringify(value);
+    const value = getUnescapedValue(this.expression, context);
+    const data = this.stringify(value);
     return attachComment(parent, node, data, this, context);
-  };
+  }
 
   update(context, binding) {
-    var value = getUnescapedValue(this.expression, context);
+    const value = getUnescapedValue(this.expression, context);
     binding.node.data = this.stringify(value);
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.expression, this.hooks);
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
-  };
+  }
 }
 
 function attachComment(parent, node, data, template, context) {
   // Sometimes IE fails to create Comment nodes from HTML or innerHTML.
   // This is an issue inside of <select> elements, for example.
   if (!node || node.nodeType !== 8) {
-    var newNode = document.createComment(data);
+    const newNode = document.createComment(data);
     parent.insertBefore(newNode, node || null);
     addNodeBinding(template, context, newNode);
     return node;
@@ -470,20 +470,20 @@ export class Html extends Template {
 
   get() {
     return this.data;
-  };
+  }
 
   appendTo(parent) {
-    var fragment = createHtmlFragment(parent, this.data);
+    const fragment = createHtmlFragment(parent, this.data);
     parent.appendChild(fragment);
-  };
+  }
 
   attachTo(parent, node) {
     return attachHtml(parent, node, this.data);
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.data);
-  };
+  }
 
   dependencies() { }
 }
@@ -500,55 +500,55 @@ export class DynamicHtml extends Template {
   }
 
   get(context) {
-    var value = getUnescapedValue(this.expression, context);
+    const value = getUnescapedValue(this.expression, context);
     return this.stringify(value);
-  };
+  }
 
   appendTo(parent, context, binding) {
-    var start = document.createComment(this.expression);
-    var end = document.createComment(this.ending);
-    var value = getUnescapedValue(this.expression, context);
-    var html = this.stringify(value);
-    var fragment = createHtmlFragment(parent, html);
+    const start = document.createComment(this.expression);
+    const end = document.createComment(this.ending);
+    const value = getUnescapedValue(this.expression, context);
+    const html = this.stringify(value);
+    const fragment = createHtmlFragment(parent, html);
     parent.appendChild(start);
     parent.appendChild(fragment);
     parent.appendChild(end);
     updateRange(context, binding, this, start, end);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var start = document.createComment(this.expression);
-    var end = document.createComment(this.ending);
-    var value = getUnescapedValue(this.expression, context);
-    var html = this.stringify(value);
+    const start = document.createComment(this.expression);
+    const end = document.createComment(this.ending);
+    const value = getUnescapedValue(this.expression, context);
+    const html = this.stringify(value);
     parent.insertBefore(start, node || null);
     node = attachHtml(parent, node, html);
     parent.insertBefore(end, node || null);
     updateRange(context, null, this, start, end);
     return node;
-  };
+  }
 
   update(context, binding) {
-    var parent = binding.start.parentNode;
+    const parent = binding.start.parentNode;
     if (!parent) return;
     // Get start and end in advance, since binding is mutated in getFragment
-    var start = binding.start;
-    var end = binding.end;
-    var value = getUnescapedValue(this.expression, context);
-    var html = this.stringify(value);
-    var fragment = createHtmlFragment(parent, html);
-    var innerOnly = true;
+    const start = binding.start;
+    const end = binding.end;
+    const value = getUnescapedValue(this.expression, context);
+    const html = this.stringify(value);
+    const fragment = createHtmlFragment(parent, html);
+    const innerOnly = true;
     replaceRange(context, start, end, fragment, binding, innerOnly);
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.expression);
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
-  };
+  }
 }
 
 function createHtmlFragment(parent, html) {
@@ -557,7 +557,7 @@ function createHtmlFragment(parent, html) {
     range.selectNodeContents(parent);
     return range.createContextualFragment(html);
   }
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   var range = document.createRange();
   div.innerHTML = html;
   range.selectNodeContents(div);
@@ -565,8 +565,8 @@ function createHtmlFragment(parent, html) {
 }
 
 function attachHtml(parent, node, html) {
-  var fragment = createHtmlFragment(parent, html);
-  for (var i = 0, len = fragment.childNodes.length; i < len; i++) {
+  const fragment = createHtmlFragment(parent, html);
+  for (let i = 0, len = fragment.childNodes.length; i < len; i++) {
     if (!node) throw attachError(parent, node);
     node = node.nextSibling;
   }
@@ -586,15 +586,15 @@ export class Attribute extends Template {
 
   get(_context?) {
     return this.data;
-  };
+  }
 
   getBound(_context, _element, _name, _elementNs) {
     return this.get();
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.data, this.ns);
-  };
+  }
 
   dependencies(_context, _options) { }
 }
@@ -613,18 +613,18 @@ export class DynamicAttribute extends Attribute {
 
   get(context) {
     return getUnescapedValue(this.expression, context);
-  };
+  }
 
   getBound(context, element, name, elementNs) {
     this.elementNs = elementNs;
     context.addBinding(new AttributeBinding(this, context, element, name));
     return getUnescapedValue(this.expression, context);
-  };
+  }
 
   update(context, binding) {
-    var value = getUnescapedValue(this.expression, context);
-    var element = binding.element;
-    var propertyName = !this.elementNs && UPDATE_PROPERTIES[binding.name];
+    let value = getUnescapedValue(this.expression, context);
+    const element = binding.element;
+    const propertyName = !this.elementNs && UPDATE_PROPERTIES[binding.name];
     if (propertyName) {
       // Update via DOM property, short-circuiting if no update is needed.
       // Certain properties must be strings, so for those properties, the value gets stringified.
@@ -639,7 +639,7 @@ export class DynamicAttribute extends Attribute {
           return;
         }
       }
-      var propertyValue = (STRING_PROPERTIES[binding.name]) ?
+      const propertyValue = (STRING_PROPERTIES[binding.name]) ?
         this.stringify(value) : value;
       if (element[propertyName] === propertyValue) return;
       element[propertyName] = propertyValue;
@@ -659,21 +659,21 @@ export class DynamicAttribute extends Attribute {
     } else {
       element.setAttribute(binding.name, value);
     }
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.expression, this.ns);
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
-  };
+  }
 }
 
 function getUnescapedValue(expression, context) {
-  var unescaped = true;
-  var value = expression.get(context, unescaped);
+  const unescaped = true;
+  let value = expression.get(context, unescaped);
   while (value instanceof Template) {
     value = value.get(context, unescaped);
   }
@@ -695,7 +695,7 @@ export class Element extends Template {
 
   constructor(tagName: string, attributes, content, hooks, selfClosing, notClosed, ns) {
     super();
-   this.tagName = tagName;
+    this.tagName = tagName;
     this.attributes = attributes;
     this.content = content;
     this.hooks = hooks;
@@ -705,49 +705,49 @@ export class Element extends Template {
 
     this.endTag = getEndTag(tagName, selfClosing, notClosed);
     this.startClose = getStartClose(selfClosing);
-    var lowerTagName = tagName && tagName.toLowerCase();
+    const lowerTagName = tagName && tagName.toLowerCase();
     this.unescapedContent = (lowerTagName === 'script' || lowerTagName === 'style');
     this.bindContentToValue = (lowerTagName === 'textarea');
   }
 
   getTagName(_context) {
     return this.tagName;
-  };
+  }
 
   getEndTag(_context) {
     return this.endTag;
-  };
+  }
 
   get(context) {
-    var tagName = this.getTagName(context);
-    var endTag = this.getEndTag(tagName);
-    var tagItems = [tagName];
-    for (var key in this.attributes) {
-      var value = this.attributes[key].get(context);
+    const tagName = this.getTagName(context);
+    const endTag = this.getEndTag(tagName);
+    const tagItems = [tagName];
+    for (const key in this.attributes) {
+      const value = this.attributes[key].get(context);
       if (value === true) {
         tagItems.push(key);
       } else if (value !== false && value != null) {
         tagItems.push(key + '="' + escapeAttribute(value) + '"');
       }
     }
-    var startTag = '<' + tagItems.join(' ') + this.startClose;
+    const startTag = '<' + tagItems.join(' ') + this.startClose;
     if (this.content) {
-      var inner = contentHtml(this.content, context, this.unescapedContent);
+      const inner = contentHtml(this.content, context, this.unescapedContent);
       return startTag + inner + endTag;
     }
     return startTag + endTag;
-  };
+  }
 
   appendTo(parent, context) {
-    var tagName = this.getTagName(context);
-    var element = (this.ns) ?
+    const tagName = this.getTagName(context);
+    const element = (this.ns) ?
       document.createElementNS(this.ns, tagName) :
       document.createElement(tagName);
-    for (var key in this.attributes) {
-      var attribute = this.attributes[key];
-      var value = attribute.getBound(context, element, key, this.ns);
+    for (const key in this.attributes) {
+      const attribute = this.attributes[key];
+      let value = attribute.getBound(context, element, key, this.ns);
       if (value === false || value == null) continue;
-      var propertyName = !this.ns && CREATE_PROPERTIES[key];
+      const propertyName = !this.ns && CREATE_PROPERTIES[key];
       if (propertyName) {
         element[propertyName] = value;
         continue;
@@ -765,10 +765,10 @@ export class Element extends Template {
     }
     parent.appendChild(element);
     emitHooks(this.hooks, context, element);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var tagName = this.getTagName(context);
+    const tagName = this.getTagName(context);
     if (
       !node ||
       node.nodeType !== 1 ||
@@ -776,7 +776,7 @@ export class Element extends Template {
     ) {
       throw attachError(parent, node);
     }
-    for (var key in this.attributes) {
+    for (const key in this.attributes) {
       // Get each attribute to create bindings
       this.attributes[key].getBound(context, node, key, this.ns);
       // TODO: Ideally, this would also check that the node's current attributes
@@ -788,19 +788,19 @@ export class Element extends Template {
     }
     emitHooks(this.hooks, context, node);
     return node.nextSibling;
-  };
+  }
 
   _bindContent(context, element) {
     // For textareas with dynamic text content, bind to the value property
-    var child = this.bindContentToValue &&
+    const child = this.bindContentToValue &&
       this.content.length === 1 &&
       this.content[0];
     if (child instanceof DynamicText) {
       child.unbound = true;
-      var template = new DynamicAttribute(child.expression);
+      const template = new DynamicAttribute(child.expression);
       context.addBinding(new AttributeBinding(template, context, element, 'value'));
     }
-  };
+  }
 
   serialize() {
     return serializeObject.instance(
@@ -813,14 +813,14 @@ export class Element extends Template {
       this.notClosed,
       this.ns
     );
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var dependencies = concatMapDependencies(null, this.attributes, context, options);
+    const dependencies = concatMapDependencies(null, this.attributes, context, options);
     if (!this.content) return dependencies;
     return concatArrayDependencies(dependencies, this.content, context, options);
-  };
+  }
 }
 
 export class DynamicElement extends Element {
@@ -860,9 +860,9 @@ export class DynamicElement extends Element {
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var dependencies = Element.prototype.dependencies(context, options);
+    const dependencies = Element.prototype.dependencies(context, options);
     return concatDependencies(dependencies, this.tagName, context, options);
-  };
+  }
 }
 
 function getStartClose(selfClosing: boolean) {
@@ -870,20 +870,20 @@ function getStartClose(selfClosing: boolean) {
 }
 
 function getEndTag(tagName: string, selfClosing: boolean, notClosed: boolean) {
-  var lowerTagName = tagName && tagName.toLowerCase();
-  var isVoid = VOID_ELEMENTS[lowerTagName];
+  const lowerTagName = tagName && tagName.toLowerCase();
+  const isVoid = VOID_ELEMENTS[lowerTagName];
   return (isVoid || selfClosing || notClosed) ? '' : '</' + tagName + '>';
 }
 
 function getAttributeValue(element, name: string) {
-  var propertyName = UPDATE_PROPERTIES[name];
+  const propertyName = UPDATE_PROPERTIES[name];
   return (propertyName) ? element[propertyName] : element.getAttribute(name);
 }
 
 function emitHooks(hooks, context, value) {
   if (!hooks) return;
   context.queue(function queuedHooks() {
-    for (var i = 0, len = hooks.length; i < len; i++) {
+    for (let i = 0, len = hooks.length; i < len; i++) {
       hooks[i].emit(context, value);
     }
   });
@@ -905,49 +905,49 @@ export class Block extends BaseBlock {
   }
 
   get(context, unescaped) {
-    var blockContext = context.child(this.expression);
+    const blockContext = context.child(this.expression);
     return contentHtml(this.content, blockContext, unescaped);
-  };
+  }
 
   appendTo(parent, context, binding) {
-    var blockContext = context.child(this.expression);
-    var start = document.createComment(this.expression);
-    var end = document.createComment(this.ending);
-    var condition = this.getCondition(context);
+    const blockContext = context.child(this.expression);
+    const start = document.createComment(this.expression);
+    const end = document.createComment(this.ending);
+    const condition = this.getCondition(context);
     parent.appendChild(start);
     appendContent(parent, this.content, blockContext);
     parent.appendChild(end);
     updateRange(context, binding, this, start, end, null, condition);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var blockContext = context.child(this.expression);
-    var start = document.createComment(this.expression);
-    var end = document.createComment(this.ending);
-    var condition = this.getCondition(context);
+    const blockContext = context.child(this.expression);
+    const start = document.createComment(this.expression);
+    const end = document.createComment(this.ending);
+    const condition = this.getCondition(context);
     parent.insertBefore(start, node || null);
     node = attachContent(parent, node, this.content, blockContext);
     parent.insertBefore(end, node || null);
     updateRange(context, null, this, start, end, null, condition);
     return node;
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.expression, this.content);
-  };
+  }
 
   update(context, binding) {
     if (!binding.start.parentNode) return;
-    var condition = this.getCondition(context);
+    const condition = this.getCondition(context);
     // Cancel update if prior condition is equivalent to current value
     if (equalConditions(condition, binding.condition)) return;
     binding.condition = condition;
     // Get start and end in advance, since binding is mutated in getFragment
-    var start = binding.start;
-    var end = binding.end;
-    var fragment = this.getFragment(context, binding);
+    const start = binding.start;
+    const end = binding.end;
+    const fragment = this.getFragment(context, binding);
     replaceRange(context, start, end, fragment, binding);
-  };
+  }
 
   getCondition(context) {
     // We do an identity check to see if the value has changed before updating.
@@ -959,17 +959,17 @@ export class Block extends BaseBlock {
     // that could be really expensive on gets of things that never change, and
     // is probably not a good tradeoff. Perhaps there should be a separate block
     // type that is only used in the case of dynamic updates
-    var value = this.expression.get(context);
+    const value = this.expression.get(context);
     return (typeof value === 'object') ? NaN : value;
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var dependencies = (this.expression.meta && this.expression.meta.blockType === 'on') ?
+    const dependencies = (this.expression.meta && this.expression.meta.blockType === 'on') ?
       getDependencies(this.expression, context, options) : null;
-    var blockContext = context.child(this.expression);
+    const blockContext = context.child(this.expression);
     return concatArrayDependencies(dependencies, this.content, blockContext, options);
-  };
+  }
 }
 
 export class ConditionalBlock extends BaseBlock {
@@ -988,80 +988,80 @@ export class ConditionalBlock extends BaseBlock {
   }
 
   get(context, unescaped) {
-    var condition = this.getCondition(context);
+    const condition = this.getCondition(context);
     if (condition == null) return '';
-    var expression = this.expressions[condition];
-    var blockContext = context.child(expression);
+    const expression = this.expressions[condition];
+    const blockContext = context.child(expression);
     return contentHtml(this.contents[condition], blockContext, unescaped);
-  };
+  }
 
   appendTo(parent, context, binding) {
-    var start = document.createComment(this.beginning);
-    var end = document.createComment(this.ending);
+    const start = document.createComment(this.beginning);
+    const end = document.createComment(this.ending);
     parent.appendChild(start);
-    var condition = this.getCondition(context);
+    const condition = this.getCondition(context);
     if (condition != null) {
-      var expression = this.expressions[condition];
-      var blockContext = context.child(expression);
+      const expression = this.expressions[condition];
+      const blockContext = context.child(expression);
       appendContent(parent, this.contents[condition], blockContext);
     }
     parent.appendChild(end);
     updateRange(context, binding, this, start, end, null, condition);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var start = document.createComment(this.beginning);
-    var end = document.createComment(this.ending);
+    const start = document.createComment(this.beginning);
+    const end = document.createComment(this.ending);
     parent.insertBefore(start, node || null);
-    var condition = this.getCondition(context);
+    const condition = this.getCondition(context);
     if (condition != null) {
-      var expression = this.expressions[condition];
-      var blockContext = context.child(expression);
+      const expression = this.expressions[condition];
+      const blockContext = context.child(expression);
       node = attachContent(parent, node, this.contents[condition], blockContext);
     }
     parent.insertBefore(end, node || null);
     updateRange(context, null, this, start, end, null, condition);
     return node;
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.expressions, this.contents);
-  };
+  }
 
   update(context, binding) {
     if (!binding.start.parentNode) return;
-    var condition = this.getCondition(context);
+    const condition = this.getCondition(context);
     // Cancel update if prior condition is equivalent to current value
     // @ts-ignore
     if (equalConditions(condition, binding.condition)) return;
     binding.condition = condition;
     // Get start and end in advance, since binding is mutated in getFragment
-    var start = binding.start;
-    var end = binding.end;
-    var fragment = this.getFragment(context, binding);
+    const start = binding.start;
+    const end = binding.end;
+    const fragment = this.getFragment(context, binding);
     replaceRange(context, start, end, fragment, binding);
-  };
+  }
 
   getCondition(context) {
-    for (var i = 0, len = this.expressions.length; i < len; i++) {
+    for (let i = 0, len = this.expressions.length; i < len; i++) {
       if (this.expressions[i].truthy(context)) {
         return i;
       }
     }
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var condition = this.getCondition(context);
+    const condition = this.getCondition(context);
     if (condition == null) {
       return getDependencies(this.expressions[0], context, options);
     }
-    var dependencies = concatSubArrayDependencies(null, this.expressions, context, options, condition);
-    var expression = this.expressions[condition];
-    var content = this.contents[condition];
-    var blockContext = context.child(expression);
+    const dependencies = concatSubArrayDependencies(null, this.expressions, context, options, condition);
+    const expression = this.expressions[condition];
+    const content = this.contents[condition];
+    const blockContext = context.child(expression);
     return concatArrayDependencies(dependencies, content, blockContext, options);
-  };
+  }
 }
 
 export class EachBlock extends Block {
@@ -1075,11 +1075,11 @@ export class EachBlock extends Block {
   }
 
   get(context, unescaped) {
-    var items = this.expression.get(context);
+    const items = this.expression.get(context);
     if (items && items.length) {
-      var html = '';
-      for (var i = 0, len = items.length; i < len; i++) {
-        var itemContext = context.eachChild(this.expression, i);
+      let html = '';
+      for (let i = 0, len = items.length; i < len; i++) {
+        const itemContext = context.eachChild(this.expression, i);
         html += contentHtml(this.content, itemContext, unescaped);
       }
       return html;
@@ -1087,16 +1087,16 @@ export class EachBlock extends Block {
       return contentHtml(this.elseContent, context, unescaped);
     }
     return '';
-  };
+  }
 
   appendTo(parent, context, binding) {
-    var items = this.expression.get(context);
-    var start = document.createComment(this.expression);
-    var end = document.createComment(this.ending);
+    const items = this.expression.get(context);
+    const start = document.createComment(this.expression);
+    const end = document.createComment(this.ending);
     parent.appendChild(start);
     if (items && items.length) {
-      for (var i = 0, len = items.length; i < len; i++) {
-        var itemContext = context.eachChild(this.expression, i);
+      for (let i = 0, len = items.length; i < len; i++) {
+        const itemContext = context.eachChild(this.expression, i);
         this.appendItemTo(parent, itemContext, start);
       }
     } else if (this.elseContent) {
@@ -1104,11 +1104,11 @@ export class EachBlock extends Block {
     }
     parent.appendChild(end);
     updateRange(context, binding, this, start, end);
-  };
+  }
 
   appendItemTo(parent, context, itemFor, binding?) {
-    var before = parent.lastChild;
-    var start, end;
+    const before = parent.lastChild;
+    let start, end;
     appendContent(parent, this.content, context);
     if (before === parent.lastChild) {
       start = end = document.createComment('empty');
@@ -1118,16 +1118,16 @@ export class EachBlock extends Block {
       end = parent.lastChild;
     }
     updateRange(context, binding, this, start, end, itemFor);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var items = this.expression.get(context);
-    var start = document.createComment(this.expression);
-    var end = document.createComment(this.ending);
+    const items = this.expression.get(context);
+    const start = document.createComment(this.expression);
+    const end = document.createComment(this.ending);
     parent.insertBefore(start, node || null);
     if (items && items.length) {
-      for (var i = 0, len = items.length; i < len; i++) {
-        var itemContext = context.eachChild(this.expression, i);
+      for (let i = 0, len = items.length; i < len; i++) {
+        const itemContext = context.eachChild(this.expression, i);
         node = this.attachItemTo(parent, node, itemContext, start);
       }
     } else if (this.elseContent) {
@@ -1136,12 +1136,12 @@ export class EachBlock extends Block {
     parent.insertBefore(end, node || null);
     updateRange(context, null, this, start, end);
     return node;
-  };
+  }
 
   attachItemTo(parent, node, context, itemFor) {
-    var start, end;
-    var oldPrevious = node && node.previousSibling;
-    var nextNode = attachContent(parent, node, this.content, context);
+    let start, end;
+    const oldPrevious = node && node.previousSibling;
+    const nextNode = attachContent(parent, node, this.content, context);
     if (nextNode === node) {
       start = end = document.createComment('empty');
       parent.insertBefore(start, node || null);
@@ -1151,12 +1151,12 @@ export class EachBlock extends Block {
     }
     updateRange(context, null, this, start, end, itemFor);
     return nextNode;
-  };
+  }
 
   update(context, binding) {
     if (!binding.start.parentNode) return;
-    var start = binding.start;
-    var end = binding.end;
+    const start = binding.start;
+    const end = binding.end;
     if (binding.itemFor) {
       var fragment = document.createDocumentFragment();
       this.appendItemTo(fragment, context, binding.itemFor, binding);
@@ -1164,65 +1164,65 @@ export class EachBlock extends Block {
       var fragment = this.getFragment(context, binding);
     }
     replaceRange(context, start, end, fragment, binding);
-  };
+  }
 
   insert(context, binding, index, howMany) {
-    var parent = binding.start.parentNode;
+    const parent = binding.start.parentNode;
     if (!parent) return;
     // In case we are inserting all of the items, update instead. This is needed
     // when we were previously rendering elseContent so that it is replaced
     if (index === 0 && this.expression.get(context).length === howMany) {
       return this.update(context, binding);
     }
-    var node = indexStartNode(binding, index);
-    var fragment = document.createDocumentFragment();
-    for (var i = index, len = index + howMany; i < len; i++) {
-      var itemContext = context.eachChild(this.expression, i);
+    const node = indexStartNode(binding, index);
+    const fragment = document.createDocumentFragment();
+    for (let i = index, len = index + howMany; i < len; i++) {
+      const itemContext = context.eachChild(this.expression, i);
       this.appendItemTo(fragment, itemContext, binding.start);
     }
     parent.insertBefore(fragment, node || null);
-  };
+  }
 
   remove(context, binding, index, howMany) {
-    var parent = binding.start.parentNode;
+    const parent = binding.start.parentNode;
     if (!parent) return;
     // In case we are removing all of the items, update instead. This is needed
     // when elseContent should be rendered
     if (index === 0 && this.expression.get(context).length === 0) {
       return this.update(context, binding);
     }
-    var node = indexStartNode(binding, index);
-    var i = 0;
+    let node = indexStartNode(binding, index);
+    let i = 0;
     while (node) {
       if (node === binding.end) return;
       if (node.$bindItemStart && node.$bindItemStart.itemFor === binding.start) {
         if (howMany === i++) return;
       }
-      var nextNode = node.nextSibling;
+      const nextNode = node.nextSibling;
       parent.removeChild(node);
       emitRemoved(context, node, binding);
       node = nextNode;
     }
-  };
+  }
 
   move(context, binding, from, to, howMany) {
-    var parent = binding.start.parentNode;
+    const parent = binding.start.parentNode;
     if (!parent) return;
-    var node = indexStartNode(binding, from);
-    var fragment = document.createDocumentFragment();
-    var i = 0;
+    let node = indexStartNode(binding, from);
+    const fragment = document.createDocumentFragment();
+    let i = 0;
     while (node) {
       if (node === binding.end) break;
       if (node.$bindItemStart && node.$bindItemStart.itemFor === binding.start) {
         if (howMany === i++) break;
       }
-      var nextNode = node.nextSibling;
+      const nextNode = node.nextSibling;
       fragment.appendChild(node);
       node = nextNode;
     }
     node = indexStartNode(binding, to);
     parent.insertBefore(fragment, node || null);
-  };
+  }
 
   serialize() {
     return serializeObject.instance(this, this.expression, this.content, this.elseContent);
@@ -1230,25 +1230,25 @@ export class EachBlock extends Block {
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var dependencies = getDependencies(this.expression, context, options);
-    var items = this.expression.get(context);
+    let dependencies = getDependencies(this.expression, context, options);
+    const items = this.expression.get(context);
     if (items && items.length) {
-      for (var i = 0; i < items.length; i++) {
-        var itemContext = context.eachChild(this.expression, i);
+      for (let i = 0; i < items.length; i++) {
+        const itemContext = context.eachChild(this.expression, i);
         dependencies = concatArrayDependencies(dependencies, this.content, itemContext, options);
       }
     } else if (this.elseContent) {
       dependencies = concatArrayDependencies(dependencies, this.elseContent, context, options);
     }
     return dependencies;
-  };
+  }
 }
 
 //#region functions
 
 function indexStartNode(binding, index) {
-  var node = binding.start;
-  var i = 0;
+  let node = binding.start;
+  let i = 0;
   while ((node = node.nextSibling)) {
     if (node === binding.end) return node;
     if (node.$bindItemStart && node.$bindItemStart.itemFor === binding.start) {
@@ -1278,13 +1278,13 @@ function setNodeBounds(binding, start, itemFor) {
 }
 
 function appendContent(parent, content, context) {
-  for (var i = 0, len = content.length; i < len; i++) {
+  for (let i = 0, len = content.length; i < len; i++) {
     content[i].appendTo(parent, context);
   }
 }
 
 function attachContent(parent, node, content, context) {
-  for (var i = 0, len = content.length; i < len; i++) {
+  for (let i = 0, len = content.length; i < len; i++) {
     while (node && node.hasAttribute && node.hasAttribute('data-no-attach')) {
       node = node.nextSibling;
     }
@@ -1294,8 +1294,8 @@ function attachContent(parent, node, content, context) {
 }
 
 function contentHtml(content, context, unescaped) {
-  var html = '';
-  for (var i = 0, len = content.length; i < len; i++) {
+  let html = '';
+  for (let i = 0, len = content.length; i < len; i++) {
     html += content[i].get(context, unescaped);
   }
   return html;
@@ -1303,7 +1303,7 @@ function contentHtml(content, context, unescaped) {
 
 function replaceRange(context, start, end, fragment, binding, innerOnly?: boolean) {
   // Note: the calling function must make sure to check that there is a parent
-  var parent = start.parentNode;
+  const parent = start.parentNode;
   // Copy item binding from old start to fragment being inserted
   if (start.$bindItemStart && fragment.firstChild) {
     setNodeProperty(fragment.firstChild, '$bindItemStart', start.$bindItemStart);
@@ -1316,8 +1316,8 @@ function replaceRange(context, start, end, fragment, binding, innerOnly?: boolea
     return;
   }
   // Remove all nodes from start to end
-  var node = (innerOnly) ? start.nextSibling : start;
-  var nextNode;
+  let node = (innerOnly) ? start.nextSibling : start;
+  let nextNode;
   while (node) {
     nextNode = node.nextSibling;
     emitRemoved(context, node, binding);
@@ -1338,10 +1338,10 @@ function emitRemoved(context, node, ignore) {
   emitRemovedBinding(context, ignore, node, '$bindNode');
   emitRemovedBinding(context, ignore, node, '$bindStart');
   emitRemovedBinding(context, ignore, node, '$bindItemStart');
-  var attributes = node.$bindAttributes;
+  const attributes = node.$bindAttributes;
   if (attributes) {
     node.$bindAttributes = null;
-    for (var key in attributes) {
+    for (const key in attributes) {
       context.removeBinding(attributes[key]);
     }
   }
@@ -1351,7 +1351,7 @@ function emitRemoved(context, node, ignore) {
 }
 
 function emitRemovedBinding(context, ignore, node, property) {
-  var binding = node[property];
+  const binding = node[property];
   if (binding) {
     node[property] = null;
     if (binding !== ignore) {
@@ -1385,19 +1385,19 @@ export class Binding {
     this.context.pause();
     this.template.update(this.context, this);
     this.context.unpause();
-  };
+  }
 
   insert(_index, _howMany) {
     this.update();
-  };
+  }
 
   remove(_index, _howMany) {
     this.update();
-  };
+  }
 
   move(_from, _to, _howMany) {
     this.update();
-  };
+  }
 
   isUnbound() {
     return this.template.expression.isUnbound(this.context);
@@ -1432,7 +1432,7 @@ export class AttributeBinding extends Binding {
     this.element = element;
     this.name = name;
     this.meta = null;
-    var map = element.$bindAttributes ||
+    const map = element.$bindAttributes ||
       (element.$bindAttributes = new AttributeBindingsMap());
     map[name] = this;
   }
@@ -1465,7 +1465,7 @@ export class RangeBinding extends Binding {
       this.template.update(this.context, this);
     }
     this.context.unpause();
-  };
+  }
 
   remove(index, howMany) {
     this.context.pause();
@@ -1475,7 +1475,7 @@ export class RangeBinding extends Binding {
       this.template.update(this.context, this);
     }
     this.context.unpause();
-  };
+  }
 
   move(from, to, howMany) {
     this.context.pause();
@@ -1485,7 +1485,7 @@ export class RangeBinding extends Binding {
       this.template.update(this.context, this);
     }
     this.context.unpause();
-  };
+  }
 }
 
 //#region
@@ -1494,7 +1494,7 @@ export class RangeBinding extends Binding {
 function noop() { }
 
 function mergeInto(from, to) {
-  for (var key in from) {
+  for (const key in from) {
     to[key] = from[key];
   }
 }
@@ -1542,7 +1542,7 @@ if (!Array.isArray) {
 
 // Equivalent to textNode.splitText, which is buggy in IE <=9
 function splitData(node, index) {
-  var newNode = node.cloneNode(false);
+  const newNode = node.cloneNode(false);
   newNode.deleteData(0, index);
   node.deleteData(index, node.length - index);
   node.parentNode.insertBefore(newNode, node.nextSibling || null);
@@ -1560,12 +1560,12 @@ let normalizeLineBreaks = (value: string) => value;
   // Don't try to shim in Node.js environment
   if (typeof document === 'undefined') return;
 
-  var div = document.createElement('div');
+  const div = document.createElement('div');
   div.innerHTML = '\r\n<br>\n'
   // @ts-ignore
-  var windowsLength = div.firstChild.data.length;
+  const windowsLength = div.firstChild.data.length;
   // @ts-ignore
-  var unixLength = div.lastChild.data.length;
+  const unixLength = div.lastChild.data.length;
   if (windowsLength === 1 && unixLength === 1) {
     normalizeLineBreaks = function(value: string) {
       return value.replace(/\r\n/g, '\n');
@@ -1573,7 +1573,7 @@ let normalizeLineBreaks = (value: string) => value;
   } else if (windowsLength === 2 && unixLength === 2) {
     normalizeLineBreaks = function(value: string) {
       return value.replace(/(^|[^\r])(\n+)/g, function(match, value, newLines) {
-        for (var i = newLines.length; i--;) {
+        for (let i = newLines.length; i--;) {
           value += '\r\n';
         }
         return value;
@@ -1597,7 +1597,7 @@ let normalizeLineBreaks = (value: string) => value;
   // Surprisingly, in IE <=7, input.defaultChecked must be used instead of
   // input.checked before the input is in the document.
   // http://webbugtrack.blogspot.com/2007/11/bug-299-setattribute-checked-does-not.html
-  var input = document.createElement('input');
+  const input = document.createElement('input');
   input.defaultValue = 'x';
   if (input.value !== 'x') {
     CREATE_PROPERTIES.value = 'value';
@@ -1613,7 +1613,7 @@ let normalizeLineBreaks = (value: string) => value;
       // and set the property on that node instead. Put the proxy after the
       // TextNode if marking the end of a range, and before otherwise.
       if (node.nodeType === 3) {
-        var proxyNode = node.previousSibling;
+        let proxyNode = node.previousSibling;
         if (!proxyNode || proxyNode.$bindProxy !== node) {
           proxyNode = document.createComment('proxy');
           proxyNode.$bindProxy = node;
@@ -1696,28 +1696,28 @@ let normalizeLineBreaks = (value: string) => value;
 // };
 
 function concatSubArrayDependencies(dependencies, expressions, context, options, end) {
-  for (var i = 0; i <= end; i++) {
+  for (let i = 0; i <= end; i++) {
     dependencies = concatDependencies(dependencies, expressions[i], context, options);
   }
   return dependencies;
 }
 
 function concatArrayDependencies(dependencies, expressions, context, options) {
-  for (var i = 0; i < expressions.length; i++) {
+  for (let i = 0; i < expressions.length; i++) {
     dependencies = concatDependencies(dependencies, expressions[i], context, options);
   }
   return dependencies;
 }
 
 function concatMapDependencies(dependencies, expressions, context, options) {
-  for (var key in expressions) {
+  for (const key in expressions) {
     dependencies = concatDependencies(dependencies, expressions[key], context, options);
   }
   return dependencies;
 }
 
 function concatDependencies(dependencies, expression, context, options) {
-  var expressionDependencies = getDependencies(expression, context, options);
+  const expressionDependencies = getDependencies(expression, context, options);
   return concat(dependencies, expressionDependencies);
 }
 
@@ -1725,7 +1725,7 @@ function getDependencies(expression, context, options) {
   return expression.dependencies(context, options);
 }
 
-var markerHooks = [{
+const markerHooks = [{
   emit: function(context, node) {
     node.$component = context.controller;
     context.controller.markerNode = node;
@@ -1741,24 +1741,24 @@ export class Marker extends Comment {
 
   serialize() {
     return serializeObject.instance(this, this.data);
-  };
+  }
 
   get() {
     return '';
-  };
+  }
 }
 
 function ViewAttributesMap(source) {
-  var items = source.split(/\s+/);
-  for (var i = 0, len = items.length; i < len; i++) {
+  const items = source.split(/\s+/);
+  for (let i = 0, len = items.length; i < len; i++) {
     this[items[i]] = true;
   }
 }
 
 function ViewArraysMap(source) {
-  var items = source.split(/\s+/);
-  for (var i = 0, len = items.length; i < len; i++) {
-    var item = items[i].split('/');
+  const items = source.split(/\s+/);
+  for (let i = 0, len = items.length; i < len; i++) {
+    const item = items[i].split('/');
     this[item[0]] = item[1] || item[0];
   }
 }
@@ -1786,8 +1786,8 @@ export class View extends Template {
     this.source = source;
     this.options = options;
 
-    var nameSegments = (this.name || '').split(':');
-    var lastSegment = nameSegments.pop();
+    const nameSegments = (this.name || '').split(':');
+    const lastSegment = nameSegments.pop();
     this.namespace = nameSegments.join(':');
     this.registeredName = (lastSegment === 'index') ? this.namespace : this.name;
 
@@ -1806,22 +1806,22 @@ export class View extends Template {
 
   serialize() {
     return null;
-  };
+  }
 
   _isComponent(context) {
     if (!this.componentFactory) return false;
     if (context.attributes && context.attributes.extend) return false;
     return true;
-  };
+  }
 
   _initComponent(context) {
     return (this._isComponent(context)) ?
       this.componentFactory.init(context) : context;
-  };
+  }
 
   _queueCreate(context, viewContext) {
     if (this._isComponent(context)) {
-      var componentFactory = this.componentFactory;
+      const componentFactory = this.componentFactory;
       context.queue(function queuedCreate() {
         componentFactory.create(viewContext);
       });
@@ -1829,45 +1829,45 @@ export class View extends Template {
       if (!context.hooks) return;
       context.queue(function queuedComponentHooks() {
         // Kick off hooks if view instance specified `on` or `as` attributes
-        for (var i = 0, len = context.hooks.length; i < len; i++) {
+        for (let i = 0, len = context.hooks.length; i < len; i++) {
           context.hooks[i].emit(context, viewContext.controller);
         }
       });
     }
-  };
+  }
 
   get(context, unescaped) {
-    var viewContext = this._initComponent(context);
-    var template = this.template || this.parse();
+    const viewContext = this._initComponent(context);
+    const template = this.template || this.parse();
     return template.get(viewContext, unescaped);
-  };
+  }
 
   getFragment(context, binding) {
-    var viewContext = this._initComponent(context);
-    var template = this.template || this.parse();
-    var fragment = template.getFragment(viewContext, binding);
+    const viewContext = this._initComponent(context);
+    const template = this.template || this.parse();
+    const fragment = template.getFragment(viewContext, binding);
     this._queueCreate(context, viewContext);
     return fragment;
-  };
+  }
 
   appendTo(parent, context) {
-    var viewContext = this._initComponent(context);
-    var template = this.template || this.parse();
+    const viewContext = this._initComponent(context);
+    const template = this.template || this.parse();
     template.appendTo(parent, viewContext);
     this._queueCreate(context, viewContext);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var viewContext = this._initComponent(context);
-    var template = this.template || this.parse();
+    const viewContext = this._initComponent(context);
+    const template = this.template || this.parse();
     var node = template.attachTo(parent, node, viewContext);
     this._queueCreate(context, viewContext);
     return node;
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var template = this.template || this.parse();
+    const template = this.template || this.parse();
     // We can't figure out relative path dependencies within a component without
     // rendering it, because each component instance's scope is dynamically set
     // based on its unique `id` property. To represent this, set the context
@@ -1891,25 +1891,25 @@ export class View extends Template {
     // more Functional Reactive Programming (FRP)-like approach of having
     // dependencies be returned from getFragment and attach methods along with
     // DOM nodes rather than computing dependencies separately from rendering.
-    var viewContext = (this._isComponent(context)) ?
+    const viewContext = (this._isComponent(context)) ?
       context.componentChild(null) : context;
     return template.dependencies(viewContext, options);
-  };
+  }
 
   parse() {
     this._parse();
     if (this.componentFactory && !this.componentFactory.constructor.prototype.singleton) {
-      var marker = new Marker(this.name);
+      const marker = new Marker(this.name);
       this.template.content.unshift(marker);
     }
     return this.template;
-  };
+  }
 
   // _parse is defined in parsing.js, so that it doesn't have to
   // be included in the client if templates are all parsed server-side
   _parse() {
     throw new Error('View parsing not available');
-  };
+  }
 }
 
 abstract class BaseViewInstance extends Template {
@@ -1918,28 +1918,28 @@ abstract class BaseViewInstance extends Template {
   initHooks: any;
 
   get(context, unescaped) {
-    var view = this._find(context);
-    var viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
+    const view = this._find(context);
+    const viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
     return view.get(viewContext, unescaped);
-  };
+  }
 
   getFragment(context, binding) {
-    var view = this._find(context);
-    var viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
+    const view = this._find(context);
+    const viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
     return view.getFragment(viewContext, binding);
-  };
+  }
 
   appendTo(parent, context) {
-    var view = this._find(context);
-    var viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
+    const view = this._find(context);
+    const viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
     view.appendTo(parent, viewContext);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var view = this._find(context);
-    var viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
+    const view = this._find(context);
+    const viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
     return view.attachTo(parent, node, viewContext);
-  };
+  }
 
   abstract _find(_context): any;
 }
@@ -1960,26 +1960,26 @@ export class ViewInstance extends BaseViewInstance {
 
   serialize() {
     return serializeObject.instance(this, this.name, this.attributes, this.hooks, this.initHooks);
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var view = this._find(context);
-    var viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
+    const view = this._find(context);
+    const viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
     return view.dependencies(viewContext, options);
-  };
+  }
 
   _find(context) {
     if (this.view) return this.view;
-    var contextView = context.getView();
-    var namespace = contextView && contextView.namespace;
+    const contextView = context.getView();
+    const namespace = contextView && contextView.namespace;
     this.view = context.meta.views.find(this.name, namespace);
     if (!this.view) {
-      var message = context.meta.views.findErrorMessage(this.name, contextView);
+      const message = context.meta.views.findErrorMessage(this.name, contextView);
       throw new Error(message);
     }
     return this.view;
-  };
+  }
 }
 
 export class DynamicViewInstance extends BaseViewInstance {
@@ -1996,22 +1996,22 @@ export class DynamicViewInstance extends BaseViewInstance {
 
   serialize() {
     return serializeObject.instance(this, this.nameExpression, this.attributes, this.hooks, this.initHooks);
-  };
+  }
 
   _find(context) {
-    var name = this.nameExpression.get(context);
-    var contextView = context.getView();
-    var namespace = contextView && contextView.namespace;
-    var view = name && context.meta.views.find(name, namespace);
+    const name = this.nameExpression.get(context);
+    const contextView = context.getView();
+    const namespace = contextView && contextView.namespace;
+    const view = name && context.meta.views.find(name, namespace);
     return view || exports.emptyTemplate;
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var nameDependencies = this.nameExpression.dependencies(context);
-    var viewDependencies = ViewInstance.prototype.dependencies.call(this, context, options);
+    const nameDependencies = this.nameExpression.dependencies(context);
+    const viewDependencies = ViewInstance.prototype.dependencies.call(this, context, options);
     return concat(nameDependencies, viewDependencies);
-  };
+  }
 }
 
 // Without a ContextClosure, ViewParent will return the nearest context that
@@ -2029,33 +2029,33 @@ export class ViewParent extends Template {
 
   serialize() {
     return serializeObject.instance(this, this.template);
-  };
+  }
 
   get(context, unescaped) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.template.get(parentContext, unescaped);
-  };
+  }
 
   getFragment(context, binding) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.template.getFragment(parentContext, binding);
-  };
+  }
 
   appendTo(parent, context) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     this.template.appendTo(parent, parentContext);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.template.attachTo(parent, node, parentContext);
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.template.dependencies(parentContext, options);
-  };
+  }
 }
 
 // At render time, this template creates a context child and sets its
@@ -2076,39 +2076,39 @@ export class ContextClosure extends Template {
 
   serialize() {
     throw new Error('ContextClosure cannot be serialized');
-  };
+  }
 
   get(context, unescaped) {
-    var closureContext = context.closureChild(this.context);
+    const closureContext = context.closureChild(this.context);
     return this.template.get(closureContext, unescaped);
-  };
+  }
 
   getFragment(context, binding) {
-    var closureContext = context.closureChild(this.context);
+    const closureContext = context.closureChild(this.context);
     return this.template.getFragment(closureContext, binding);
-  };
+  }
 
   appendTo(parent, context) {
-    var closureContext = context.closureChild(this.context);
+    const closureContext = context.closureChild(this.context);
     this.template.appendTo(parent, closureContext);
-  };
+  }
 
   attachTo(parent, node, context) {
-    var closureContext = context.closureChild(this.context);
+    const closureContext = context.closureChild(this.context);
     return this.template.attachTo(parent, node, closureContext);
-  };
+  }
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this.template, options)) return;
-    var closureContext = context.closureChild(this.context);
+    const closureContext = context.closureChild(this.context);
     return this.template.dependencies(closureContext, options);
-  };
+  }
 
   equals(other) {
     return (other instanceof ContextClosure) &&
       (this.context === other.context) &&
       (this.template.equals(other.template));
-  };
+  }
 }
 
 class ViewsMap { }
@@ -2127,40 +2127,40 @@ export class Views {
   }
 
   find(name, namespace) {
-    var map = this.nameMap;
+    const map = this.nameMap;
 
     // Exact match lookup
-    var exactName = (namespace) ? namespace + ':' + name : name;
+    const exactName = (namespace) ? namespace + ':' + name : name;
     var match = map[exactName];
     if (match) return match;
 
     // Relative lookup
-    var segments = name.split(':');
-    var segmentsDepth = segments.length;
+    let segments = name.split(':');
+    let segmentsDepth = segments.length;
     if (namespace) segments = namespace.split(':').concat(segments);
     // Iterate through segments, leaving the `segmentsDepth` segments and
     // removing the second to `segmentsDepth` segment to traverse up the
     // namespaces. Decrease `segmentsDepth` if not found and repeat again.
     while (segmentsDepth > 0) {
-      var testSegments = segments.slice();
+      const testSegments = segments.slice();
       while (testSegments.length > segmentsDepth) {
         testSegments.splice(-1 - segmentsDepth, 1);
-        var testName = testSegments.join(':');
+        const testName = testSegments.join(':');
         var match = map[testName];
         if (match) return match;
       }
       segmentsDepth--;
     }
-  };
+  }
 
   register(name, source, options) {
-    var mapName = name.replace(/:index$/, '');
-    var view = this.nameMap[mapName];
+    const mapName = name.replace(/:index$/, '');
+    let view = this.nameMap[mapName];
     if (view) {
       // Recreate the view if it already exists. We re-apply the constructor
       // instead of creating a new view object so that references to object
       // can be cached after finding the first time
-      var componentFactory = view.componentFactory;
+      const componentFactory = view.componentFactory;
       View.call(view, this, name, source, options);
       view.componentFactory = componentFactory;
     } else {
@@ -2168,31 +2168,31 @@ export class Views {
     }
     this.nameMap[mapName] = view;
     // TODO: element is deprecated and should be removed with Derby 0.6.0
-    var tagName = options && (options.tag || options.element);
+    const tagName = options && (options.tag || options.element);
     if (tagName) this.tagMap[tagName] = view;
     return view;
-  };
+  }
 
   deserialize(items) {
-    for (var i = 0; i < items.length; i++) {
-      var item = items[i];
-      var setTemplate = item[0];
-      var name = item[1];
-      var source = item[2];
-      var options = item[3];
-      var view = this.register(name, source, options);
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const setTemplate = item[0];
+      const name = item[1];
+      const source = item[2];
+      const options = item[3];
+      const view = this.register(name, source, options);
       view.parse = setTemplate;
       view.fromSerialized = true;
     }
-  };
+  }
 
   serialize(options) {
-    var forServer = options && options.server;
-    var minify = options && options.minify;
-    var items = [];
-    for (var name in this.nameMap) {
-      var view = this.nameMap[name];
-      var template = view.template || view.parse();
+    const forServer = options && options.server;
+    const minify = options && options.minify;
+    const items = [];
+    for (const name in this.nameMap) {
+      const view = this.nameMap[name];
+      let template = view.template || view.parse();
       if (!forServer && view.options) {
         // Do not serialize views with the `serverOnly` option, except when
         // serializing for a server script
@@ -2220,17 +2220,17 @@ export class Views {
       'var expressions = derbyTemplates.expressions,' +
       'templates = derbyTemplates.templates;' +
       'views.deserialize([' + items.join(',') + '])}';
-  };
+  }
 
   findErrorMessage(name, contextView) {
-    var names = Object.keys(this.nameMap);
-    var message = 'Cannot find view "' + name + '" in' +
+    const names = Object.keys(this.nameMap);
+    let message = 'Cannot find view "' + name + '" in' +
       [''].concat(names).join('\n  ') + '\n';
     if (contextView) {
       message += '\nWithin template "' + contextView.name + '":\n' + contextView.source;
     }
     return message;
-  };
+  }
 }
 
 export class MarkupHook {
@@ -2250,15 +2250,15 @@ export class ElementOn extends MarkupHook {
 
   serialize() {
     return serializeObject.instance(this, this.name, this.expression);
-  };
+  }
 
   emit(context, element) {
     if (this.name === 'create') {
       this.apply(context, element);
       return;
     }
-    var elementOn = this;
-    var listener = function elementOnListener(event) {
+    const elementOn = this;
+    const listener = function elementOnListener(event) {
       return elementOn.apply(context, element, event);
     };
     // Using `context.controller.dom.on` would be better for garbage collection,
@@ -2268,17 +2268,17 @@ export class ElementOn extends MarkupHook {
     // the listeners once there are no references to the element.
     element.addEventListener(this.name, listener, false);
     // context.controller.dom.on(this.name, element, listener, false);
-  };
+  }
 
   apply(context, element, event?) {
-    var modelData = context.controller.model.data;
+    const modelData = context.controller.model.data;
     modelData.$event = event;
     modelData.$element = element;
-    var out = this.expression.apply(context);
+    const out = this.expression.apply(context);
     delete modelData.$event;
     delete modelData.$element;
     return out;
-  };
+  }
 }
 
 export class ComponentOn extends MarkupHook {
@@ -2294,15 +2294,15 @@ export class ComponentOn extends MarkupHook {
 
   serialize() {
     return serializeObject.instance(this, this.name, this.expression);
-  };
+  }
 
   emit(context, component) {
-    var expression = this.expression;
+    const expression = this.expression;
     component.on(this.name, function componentOnListener() {
-      var args = arguments.length && Array.prototype.slice.call(arguments);
+      const args = arguments.length && Array.prototype.slice.call(arguments);
       return expression.apply(context, args);
     });
-  };
+  }
 }
 
 export class AsProperty extends MarkupHook {
@@ -2317,21 +2317,21 @@ export class AsProperty extends MarkupHook {
   }
 
   serialize() {
-    var segments = this.segments.concat(this.lastSegment);
+    const segments = this.segments.concat(this.lastSegment);
     return serializeObject.instance(this, segments);
-  };
+  }
 
   emit(context, target) {
-    var node = traverseAndCreate(context.controller, this.segments);
+    const node = traverseAndCreate(context.controller, this.segments);
     node[this.lastSegment] = target;
     this.addListeners(target, node, this.lastSegment);
-  };
+  }
 
   addListeners(target, object, key) {
     this.addDestroyListener(target, function asPropertyDestroy() {
       // memoize initial reference so we dont destroy
       // property that has been replaced with a different reference
-      var intialRef = object[key];
+      const intialRef = object[key];
       process.nextTick(function deleteProperty() {
         if (intialRef !== object[key]) {
           return;
@@ -2339,7 +2339,7 @@ export class AsProperty extends MarkupHook {
         delete object[key];
       });
     });
-  };
+  }
 
   addDestroyListener = elementAddDestroyListener;
 }
@@ -2364,17 +2364,17 @@ export class AsObject extends AsProperty {
   }
 
   serialize() {
-    var segments = this.segments.concat(this.lastSegment);
+    const segments = this.segments.concat(this.lastSegment);
     return serializeObject.instance(this, segments, this.keyExpression);
-  };
+  }
 
   emit(context, target) {
-    var node = traverseAndCreate(context.controller, this.segments);
-    var object = node[this.lastSegment] || (node[this.lastSegment] = {});
-    var key = this.keyExpression.get(context);
+    const node = traverseAndCreate(context.controller, this.segments);
+    const object = node[this.lastSegment] || (node[this.lastSegment] = {});
+    const key = this.keyExpression.get(context);
     object[key] = target;
     this.addListeners(target, object, key);
-  };
+  }
 }
 
 export class AsObjectComponent extends AsObject {
@@ -2395,15 +2395,15 @@ export class AsArray extends AsProperty {
   }
 
   emit(context, target) {
-    var node = traverseAndCreate(context.controller, this.segments);
-    var array = node[this.lastSegment] || (node[this.lastSegment] = []);
+    const node = traverseAndCreate(context.controller, this.segments);
+    const array = node[this.lastSegment] || (node[this.lastSegment] = []);
 
     // Iterate backwards, since rendering will usually append
-    for (var i = array.length; i--;) {
-      var item = array[i];
+    for (let i = array.length; i--;) {
+      const item = array[i];
       // Don't add an item if already in the array
       if (item === target) return;
-      var mask = this.comparePosition(target, item);
+      const mask = this.comparePosition(target, item);
       // If the emitted target is after the current item in the document,
       // insert it next in the array
       // Node.DOCUMENT_POSITION_FOLLOWING = 4
@@ -2416,17 +2416,17 @@ export class AsArray extends AsProperty {
     // Add to the beginning if before all items
     array.unshift(target);
     this.addListeners(target, array);
-  };
+  }
 
   addListeners(target, array) {
     this.addDestroyListener(target, function asArrayDestroy() {
       removeArrayItem(array, target);
     });
-  };
+  }
 
   comparePosition(target, item) {
     return item.compareDocumentPosition(target);
-  };
+  }
 }
 
 export class AsArrayComponent extends AsArray {
@@ -2438,13 +2438,13 @@ export class AsArrayComponent extends AsArray {
 
   comparePosition(target, item) {
     return item.markerNode.compareDocumentPosition(target.markerNode);
-  };
+  }
 
   addDestroyListener = componentAddDestroyListener;
 }
 
 export function elementAddDestroyListener(element, listener) {
-  var destroyListeners = element.$destroyListeners;
+  const destroyListeners = element.$destroyListeners;
   if (destroyListeners) {
     if (destroyListeners.indexOf(listener) === -1) {
       destroyListeners.push(listener);
@@ -2455,7 +2455,7 @@ export function elementAddDestroyListener(element, listener) {
 }
 
 export function elementRemoveDestroyListener(element, listener) {
-  var destroyListeners = element.$destroyListeners;
+  const destroyListeners = element.$destroyListeners;
   if (destroyListeners) {
     removeArrayItem(destroyListeners, listener);
   }
@@ -2466,7 +2466,7 @@ function componentAddDestroyListener(target, listener) {
 }
 
 function removeArrayItem(array, item) {
-  var index = array.indexOf(item);
+  const index = array.indexOf(item);
   if (index > -1) {
     array.splice(index, 1);
   }

@@ -75,106 +75,106 @@ export class Context {
   }
 
   id() {
-    var count = ++this.meta.idCount;
+    const count = ++this.meta.idCount;
     return this.meta.idNamespace + '_' + count.toString(36);
-  };
+  }
 
   addBinding(binding) {
     // Don't add bindings that wrap list items. Only their outer range is needed
     if (binding.itemFor) return;
-    var expression = binding.template.expression;
+    const expression = binding.template.expression;
     // Don't rerender in unbound sections
     if (expression ? expression.isUnbound(this) : this.unbound) return;
     // Don't rerender to changes in a with expression
     if (expression && expression.meta && expression.meta.blockType === 'with') return;
     this.meta.addBinding(binding);
-  };
+  }
 
   removeBinding(binding) {
     this.meta.removeBinding(binding);
-  };
+  }
 
   removeNode(node) {
-    var bindItemStart = node.$bindItemStart;
+    const bindItemStart = node.$bindItemStart;
     if (bindItemStart) {
       this.meta.removeItemContext(bindItemStart.context);
     }
-    var component = node.$component;
+    const component = node.$component;
     if (component) {
       node.$component = null;
       if (!component.singleton) {
         component.destroy();
       }
     }
-    var destroyListeners = node.$destroyListeners;
+    const destroyListeners = node.$destroyListeners;
     if (destroyListeners) {
       node.$destroyListeners = null;
-      for (var i = 0, len = destroyListeners.length; i < len; i++) {
+      for (let i = 0, len = destroyListeners.length; i < len; i++) {
         destroyListeners[i]();
       }
     }
-  };
+  }
 
   child(expression) {
     // Set or inherit the binding mode
-    var blockType = expression.meta && expression.meta.blockType;
-    var unbound = (blockType === 'unbound') ? true :
+    const blockType = expression.meta && expression.meta.blockType;
+    const unbound = (blockType === 'unbound') ? true :
       (blockType === 'bound') ? false :
         this.unbound;
     return new Context(this.meta, this.controller, this, unbound, expression);
-  };
+  }
 
   componentChild(component) {
     return new Context(this.meta, component, this, this.unbound);
-  };
+  }
 
   // Make a context for an item in an each block
   eachChild(expression, item) {
-    var context = new Context(this.meta, this.controller, this, this.unbound, expression);
+    const context = new Context(this.meta, this.controller, this, this.unbound, expression);
     context.item = item;
     this.meta.addItemContext(context);
     return context;
-  };
+  }
 
   viewChild(view, attributes, hooks, initHooks) {
-    var context = new Context(this.meta, this.controller, this, this.unbound);
+    const context = new Context(this.meta, this.controller, this, this.unbound);
     context.view = view;
     context.attributes = attributes;
     context.hooks = hooks;
     context.initHooks = initHooks;
     return context;
-  };
+  }
 
   closureChild(closure) {
-    var context = new Context(this.meta, this.controller, this, this.unbound);
+    const context = new Context(this.meta, this.controller, this, this.unbound);
     context.closure = closure;
     return context;
-  };
+  }
 
   forRelative(expression) {
-    var context = this;
+    let context = this;
     while (context && context.expression === expression || context.view) {
       context = context.parent;
     }
     return context;
-  };
+  }
 
   // Returns the closest context which defined the named alias
   forAlias(alias) {
-    var context = this;
+    let context = this;
     while (context) {
       if (context.alias === alias || context.keyAlias === alias) return context;
       context = context.parent;
     }
-  };
+  }
 
   // Returns the closest containing context for a view attribute name or nothing
   forAttribute(attribute) {
-    var context = this;
+    let context = this;
     while (context) {
       // Find the closest context associated with a view
       if (context.view) {
-        var attributes = context.attributes;
+        const attributes = context.attributes;
         if (!attributes) return;
         if (attributes.hasOwnProperty(attribute)) return context;
         // If the attribute isn't found, but the attributes inherit, continue
@@ -183,10 +183,10 @@ export class Context {
       }
       context = context.parent;
     }
-  };
+  }
 
   forViewParent() {
-    var context = this;
+    let context = this;
     while (context) {
       // When a context with a `closure` property is encountered, skip to its
       // parent context rather than returning the nearest view's. This reference
@@ -196,48 +196,48 @@ export class Context {
       if (context.view) return context.parent;
       context = context.parent;
     }
-  };
+  }
 
   getView() {
-    var context = this;
+    let context = this;
     while (context) {
       // Find the closest view
       if (context.view) return context.view;
       context = context.parent;
     }
-  };
+  }
 
   // Returns the `this` value for a context
   get() {
-    var value = (this.expression) ?
+    const value = (this.expression) ?
       this.expression.get(this) :
       this.controller.model.data;
     if (this.item != null) {
       return value && value[this.item];
     }
     return value;
-  };
+  }
 
   pause() {
     this.meta.pauseCount++;
-  };
+  }
 
   unpause() {
     if (--this.meta.pauseCount) return;
     this.flush();
-  };
+  }
 
   flush() {
-    var pending = this.meta.pending;
-    var len = pending.length;
+    const pending = this.meta.pending;
+    const len = pending.length;
     if (!len) return;
     this.meta.pending = [];
-    for (var i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
       pending[i]();
     }
-  };
+  }
 
   queue(cb) {
     this.meta.pending.push(cb);
-  };
+  }
 }

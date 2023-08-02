@@ -1,4 +1,4 @@
-var templates = require('./templates');
+const templates = require('./templates');
 
 export class DependencyOptions{
   ignoreTemplate: boolean;
@@ -9,12 +9,12 @@ export class DependencyOptions{
 
   static shouldIgnoreTemplate(template, options) {
     return (options) ? options.ignoreTemplate === template : false;
-  };
+  }
 
   setIgnoreTemplate(template) {
     while (template instanceof templates.ContextClosure) {
       template = template.template;
     }
     this.ignoreTemplate = template;
-  };
+  }
 }

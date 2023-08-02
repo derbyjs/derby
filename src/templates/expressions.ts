@@ -1,13 +1,13 @@
 import * as operatorFns from './operatorFns';
 import { concat } from './util';
 import * as serializeObject from 'serialize-object';
-var templates = require('./templates');
-var Template = templates.Template;
+const templates = require('./templates');
+const Template = templates.Template;
 
 export function lookup(segments, value) {
   if (!segments) return value;
 
-  for (var i = 0, len = segments.length; i < len; i++) {
+  for (let i = 0, len = segments.length; i < len; i++) {
     if (value == null) return value;
     value = value[segments[i]];
   }
@@ -20,9 +20,9 @@ export function templateTruthy(value) {
 }
 
 export function pathSegments(segments) {
-  var result = [];
-  for (var i = 0; i < segments.length; i++) {
-    var segment = segments[i];
+  const result = [];
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
     result[i] = (typeof segment === 'object') ? segment.item : segment;
   }
   return result;
@@ -38,7 +38,7 @@ export function renderValue(value, context) {
 }
 
 export function renderTemplate(value, context) {
-  var i = 1000;
+  let i = 1000;
   while (value instanceof Template) {
     if (--i < 0) throw new Error('Maximum template render passes exceeded');
     value = value.get(context, true);
@@ -47,7 +47,7 @@ export function renderTemplate(value, context) {
 }
 
 export function renderArray(array, context) {
-  for (var i = 0; i < array.length; i++) {
+  for (let i = 0; i < array.length; i++) {
     if (hasTemplateProperty(array[i])) {
       return renderArrayProperties(array, context);
     }
@@ -63,23 +63,23 @@ export function renderObject(object, context) {
 function hasTemplateProperty(object) {
   if (!object) return false;
   if (object.constructor !== Object) return false;
-  for (var key in object) {
+  for (const key in object) {
     if (object[key] instanceof Template) return true;
   }
   return false;
 }
 
 function renderArrayProperties(array, context) {
-  var out = new Array(array.length);
-  for (var i = 0; i < array.length; i++) {
+  const out = new Array(array.length);
+  for (let i = 0; i < array.length; i++) {
     out[i] = renderValue(array[i], context);
   }
   return out;
 }
 
 function renderObjectProperties(object, context) {
-  var out = {};
-  for (var key in object) {
+  const out = {};
+  for (const key in object) {
     out[key] = renderValue(object[key], context);
   }
   return out;
@@ -122,7 +122,7 @@ export class ExpressionMeta {
       this.bindType,
       this.valueType
     );
-  };
+  }
 }
 
 export class Expression {
@@ -137,54 +137,54 @@ export class Expression {
 
   serialize() {
     return serializeObject.instance(this, this.meta);
-  };
+  }
 
   toString() {
     return this.meta && this.meta.source;
-  };
+  }
 
   truthy(context) {
-    var blockType = this.meta.blockType;
+    const blockType = this.meta.blockType;
     if (blockType === 'else') return true;
-    var value = this.get(context, true);
-    var truthy = templateTruthy(value);
+    const value = this.get(context, true);
+    const truthy = templateTruthy(value);
     return (blockType === 'unless') ? !truthy : truthy;
-  };
+  }
 
-  get(_context, _flag?): any { };
+  get(_context, _flag?): any { }
 
   // Return the expression's segment list with context objects
-  resolve(_context): any { };
+  resolve(_context): any { }
 
   // Return a list of segment lists or null
-  dependencies(_context, _options): any { };
+  dependencies(_context, _options): any { }
 
   // Return the pathSegments that the expression currently resolves to or null
   pathSegments(context) {
-    var segments = this.resolve(context);
+    const segments = this.resolve(context);
     return segments && pathSegments(segments);
-  };
+  }
 
   set(context, value) {
-    var segments = this.pathSegments(context);
+    const segments = this.pathSegments(context);
     if (!segments) throw new Error('Expression does not support setting');
     context.controller.model._set(segments, value);
-  };
+  }
 
   _resolvePatch(context, segments) {
     return (context && context.expression === this && context.item != null) ?
       segments.concat(context) : segments;
-  };
+  }
 
   isUnbound(context) {
     // If the template being rendered has an explicit bindType keyword, such as:
     // {{unbound #item.text}}
-    var bindType = this.meta && this.meta.bindType;
+    const bindType = this.meta && this.meta.bindType;
     if (bindType === 'unbound') return true;
     if (bindType === 'bound') return false;
     // Otherwise, inherit from the context
     return context.unbound;
-  };
+  }
 
   _lookupAndContextifyValue(value, context) {
     if (this.segments && this.segments.length) {
@@ -200,7 +200,7 @@ export class Expression {
       value = new templates.ContextClosure(value, context);
     }
     return value;
-  };
+  }
 }
 
 export class LiteralExpression extends Expression {
@@ -214,11 +214,11 @@ export class LiteralExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.value, this.meta);
-  };
+  }
 
   get() {
     return this.value;
-  };
+  }
 }
 
 export class PathExpression extends Expression {
@@ -232,7 +232,7 @@ export class PathExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.segments, this.meta);
-  };
+  }
 
   get(context) {
     // See View::dependencies. This is needed in order to handle the case of
@@ -240,26 +240,26 @@ export class PathExpression extends Expression {
     // access model data separate from rendering.
     if (!context.controller) return;
     return lookup(this.segments, context.controller.model.data);
-  };
+  }
 
   resolve(context) {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
     if (!context.controller) return;
-    var segments = concat(context.controller._scope, this.segments);
+    const segments = concat(context.controller._scope, this.segments);
     return this._resolvePatch(context, segments);
-  };
+  }
 
   dependencies(context, options) {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
     if (!context.controller) return;
-    var value = lookup(this.segments, context.controller.model.data);
-    var dependencies = getDependencies(value, context, options);
+    const value = lookup(this.segments, context.controller.model.data);
+    const dependencies = getDependencies(value, context, options);
     return appendDependency(dependencies, this, context);
-  };
+  }
 }
 
 export class RelativePathExpression extends Expression {
@@ -273,32 +273,32 @@ export class RelativePathExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.segments, this.meta);
-  };
+  }
 
   get(context) {
-    var relativeContext = context.forRelative(this);
-    var value = relativeContext.get();
+    const relativeContext = context.forRelative(this);
+    const value = relativeContext.get();
     return this._lookupAndContextifyValue(value, relativeContext);
-  };
+  }
 
   resolve(context) {
-    var relativeContext = context.forRelative(this);
-    var base = (relativeContext.expression) ?
+    const relativeContext = context.forRelative(this);
+    const base = (relativeContext.expression) ?
       relativeContext.expression.resolve(relativeContext) :
       [];
     if (!base) return;
-    var segments = base.concat(this.segments);
+    const segments = base.concat(this.segments);
     return this._resolvePatch(context, segments);
-  };
+  }
 
   dependencies(context, options) {
     // Return inner dependencies from our ancestor
     // (e.g., {{ with foo[bar] }} ... {{ this.x }} has 'bar' as a dependency.)
-    var relativeContext = context.forRelative(this);
-    var dependencies = relativeContext.expression &&
+    const relativeContext = context.forRelative(this);
+    const dependencies = relativeContext.expression &&
       relativeContext.expression.dependencies(relativeContext, options);
     return swapLastDependency(dependencies, this, context);
-  };
+  }
 }
 
 export class AliasPathExpression extends Expression {
@@ -314,43 +314,43 @@ export class AliasPathExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.alias, this.segments, this.meta);
-  };
+  }
 
   get(context) {
-    var aliasContext = context.forAlias(this.alias);
+    const aliasContext = context.forAlias(this.alias);
     if (!aliasContext) return;
     if (aliasContext.keyAlias === this.alias) {
       return aliasContext.item;
     }
-    var value = aliasContext.get();
+    const value = aliasContext.get();
     return this._lookupAndContextifyValue(value, aliasContext);
-  };
+  }
 
   resolve(context) {
-    var aliasContext = context.forAlias(this.alias);
+    const aliasContext = context.forAlias(this.alias);
     if (!aliasContext) return;
     if (aliasContext.keyAlias === this.alias) return;
-    var base = aliasContext.expression.resolve(aliasContext);
+    const base = aliasContext.expression.resolve(aliasContext);
     if (!base) return;
-    var segments = base.concat(this.segments);
+    const segments = base.concat(this.segments);
     return this._resolvePatch(context, segments);
-  };
+  }
 
   dependencies(context, options) {
-    var aliasContext = context.forAlias(this.alias);
+    const aliasContext = context.forAlias(this.alias);
     if (!aliasContext) return;
     if (aliasContext.keyAlias === this.alias) {
       // For keyAliases, use a dependency of the entire list, so that it will
       // always update when the list itself changes. This is over-binding, but
       // would otherwise be much more complex
-      var base = aliasContext.expression.resolve(aliasContext.parent);
+      const base = aliasContext.expression.resolve(aliasContext.parent);
       if (!base) return;
       return [base];
     }
 
-    var dependencies = aliasContext.expression.dependencies(aliasContext, options);
+    const dependencies = aliasContext.expression.dependencies(aliasContext, options);
     return swapLastDependency(dependencies, this, context);
-  };
+  }
 }
 
 export class AttributePathExpression extends Expression {
@@ -364,41 +364,41 @@ export class AttributePathExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.attribute, this.segments, this.meta);
-  };
+  }
 
   get(context) {
-    var attributeContext = context.forAttribute(this.attribute);
+    const attributeContext = context.forAttribute(this.attribute);
     if (!attributeContext) return;
-    var value = attributeContext.attributes[this.attribute];
+    let value = attributeContext.attributes[this.attribute];
     if (value instanceof Expression) {
       value = value.get(attributeContext);
     }
     return this._lookupAndContextifyValue(value, attributeContext);
-  };
+  }
 
   resolve(context) {
-    var attributeContext = context.forAttribute(this.attribute);
+    const attributeContext = context.forAttribute(this.attribute);
     if (!attributeContext) return;
     // Attributes may be a template, an expression, or a literal value
-    var base;
-    var value = attributeContext.attributes[this.attribute];
+    let base;
+    const value = attributeContext.attributes[this.attribute];
     if (value instanceof Expression || value instanceof Template) {
       base = value.resolve(attributeContext);
     }
     if (!base) return;
-    var segments = base.concat(this.segments);
+    const segments = base.concat(this.segments);
     return this._resolvePatch(context, segments);
-  };
+  }
 
   dependencies(context, options) {
-    var attributeContext = context.forAttribute(this.attribute);
+    const attributeContext = context.forAttribute(this.attribute);
     if (!attributeContext) return;
 
     // Attributes may be a template, an expression, or a literal value
-    var value = attributeContext.attributes[this.attribute];
-    var dependencies = getDependencies(value, attributeContext, options);
+    const value = attributeContext.attributes[this.attribute];
+    const dependencies = getDependencies(value, attributeContext, options);
     return swapLastDependency(dependencies, this, context);
-  };
+  }
 }
 
 export class BracketsExpression extends Expression {
@@ -420,35 +420,35 @@ export class BracketsExpression extends Expression {
   };
 
   get(context) {
-    var inside = this.inside.get(context);
+    const inside = this.inside.get(context);
     if (inside == null) return;
-    var before = this.before.get(context);
+    const before = this.before.get(context);
     if (!before) return;
-    var base = before[inside];
+    const base = before[inside];
     return (this.afterSegments) ? lookup(this.afterSegments, base) : base;
-  };
+  }
 
   resolve(context) {
     // Get and split the current value of the expression inside the brackets
-    var inside = this.inside.get(context);
+    const inside = this.inside.get(context);
     if (inside == null) return;
 
     // Concat the before, inside, and optional after segments
-    var base = this.before.resolve(context);
+    const base = this.before.resolve(context);
     if (!base) return;
-    var segments = (this.afterSegments) ?
+    const segments = (this.afterSegments) ?
       base.concat(inside, this.afterSegments) :
       base.concat(inside);
     return this._resolvePatch(context, segments);
-  };
+  }
 
   dependencies(context, options) {
-    var before = this.before.dependencies(context, options);
+    const before = this.before.dependencies(context, options);
     if (before) before.pop();
-    var inner = this.inside.dependencies(context, options);
-    var dependencies = concat(before, inner);
+    const inner = this.inside.dependencies(context, options);
+    const dependencies = concat(before, inner);
     return appendDependency(dependencies, this, context);
-  };
+  }
 }
 
 // This Expression is used to wrap a template so that when its containing
@@ -472,11 +472,11 @@ export class DeferRenderExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.template, this.meta);
-  };
+  }
 
   get(context) {
     return new templates.ContextClosure(this.template, context);
-  };
+  }
 }
 
 export class ArrayExpression extends Expression {
@@ -493,26 +493,26 @@ export class ArrayExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.items, this.afterSegments, this.meta);
-  };
+  }
 
   get(context) {
-    var items = new Array(this.items.length);
-    for (var i = 0; i < this.items.length; i++) {
-      var value = this.items[i].get(context);
+    const items = new Array(this.items.length);
+    for (let i = 0; i < this.items.length; i++) {
+      const value = this.items[i].get(context);
       items[i] = value;
     }
     return (this.afterSegments) ? lookup(this.afterSegments, items) : items;
-  };
+  }
 
   dependencies(context, options) {
     if (!this.items) return;
-    var dependencies;
-    for (var i = 0; i < this.items.length; i++) {
-      var itemDependencies = this.items[i].dependencies(context, options);
+    let dependencies;
+    for (let i = 0; i < this.items.length; i++) {
+      const itemDependencies = this.items[i].dependencies(context, options);
       dependencies = concat(dependencies, itemDependencies);
     }
     return dependencies;
-  };
+  }
 }
 
 export class ObjectExpression extends Expression {
@@ -528,26 +528,26 @@ export class ObjectExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.properties, this.afterSegments, this.meta);
-  };
+  }
 
   get(context) {
-    var object = {};
-    for (var key in this.properties) {
-      var value = this.properties[key].get(context);
+    const object = {};
+    for (const key in this.properties) {
+      const value = this.properties[key].get(context);
       object[key] = value;
     }
     return (this.afterSegments) ? lookup(this.afterSegments, object) : object;
-  };
+  }
 
   dependencies(context, options) {
     if (!this.properties) return;
-    var dependencies;
-    for (var key in this.properties) {
-      var propertyDependencies = this.properties[key].dependencies(context, options);
+    let dependencies;
+    for (const key in this.properties) {
+      const propertyDependencies = this.properties[key].dependencies(context, options);
       dependencies = concat(dependencies, propertyDependencies);
     }
     return dependencies;
-  };
+  }
 }
 
 export class FnExpression extends Expression {
@@ -563,41 +563,41 @@ export class FnExpression extends Expression {
     this.args = args;
     this.afterSegments = afterSegments;
     this.meta = meta;
-    var parentSegments = segments && segments.slice();
+    const parentSegments = segments && segments.slice();
     this.lastSegment = parentSegments && parentSegments.pop();
     this.parentSegments = (parentSegments && parentSegments.length) ? parentSegments : null;
   }
 
   serialize() {
     return serializeObject.instance(this, this.segments, this.args, this.afterSegments, this.meta);
-  };
+  }
 
   get(context) {
-    var value = this.apply(context);
+    const value = this.apply(context);
     // Lookup property underneath computed value if needed
     return (this.afterSegments) ? lookup(this.afterSegments, value) : value;
-  };
+  }
 
   apply(context, extraInputs?) {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
     if (!context.controller) return;
-    var parent = this._lookupParent(context);
-    var fn = parent[this.lastSegment];
-    var getFn = fn.get || fn;
-    var out = this._applyFn(getFn, context, extraInputs, parent);
+    const parent = this._lookupParent(context);
+    const fn = parent[this.lastSegment];
+    const getFn = fn.get || fn;
+    const out = this._applyFn(getFn, context, extraInputs, parent);
     return out;
-  };
+  }
 
   _lookupParent(context) {
     // Lookup function on current controller
-    var controller = context.controller;
-    var segments = this.parentSegments;
-    var parent = (segments) ? lookup(segments, controller) : controller;
+    const controller = context.controller;
+    const segments = this.parentSegments;
+    let parent = (segments) ? lookup(segments, controller) : controller;
     if (parent && parent[this.lastSegment]) return parent;
     // Otherwise lookup function on page
-    var page = controller.page;
+    const page = controller.page;
     if (controller !== page) {
       parent = (segments) ? lookup(segments, page) : page;
       if (parent && parent[this.lastSegment]) return parent;
@@ -607,16 +607,16 @@ export class FnExpression extends Expression {
     if (parent && parent[this.lastSegment]) return parent;
     // Throw if not found
     throw new Error('Function not found for: ' + this.segments.join('.'));
-  };
+  }
 
   _getInputs(context) {
-    var inputs = [];
-    for (var i = 0, len = this.args.length; i < len; i++) {
-      var value = this.args[i].get(context);
+    const inputs = [];
+    for (let i = 0, len = this.args.length; i < len; i++) {
+      const value = this.args[i].get(context);
       inputs.push(renderValue(value, context));
     }
     return inputs;
-  };
+  }
 
   _applyFn(fn, context, extraInputs, thisArg) {
     // Apply if there are no path inputs
@@ -626,37 +626,37 @@ export class FnExpression extends Expression {
         fn.call(thisArg);
     }
     // Otherwise, get the current value for path inputs and apply
-    var inputs = this._getInputs(context);
+    const inputs = this._getInputs(context);
     if (extraInputs) {
-      for (var i = 0, len = extraInputs.length; i < len; i++) {
+      for (let i = 0, len = extraInputs.length; i < len; i++) {
         inputs.push(extraInputs[i]);
       }
     }
     return fn.apply(thisArg, inputs);
-  };
+  }
 
   dependencies(context, options) {
-    var dependencies = [];
+    const dependencies = [];
     if (!this.args) return dependencies;
-    for (var i = 0, len = this.args.length; i < len; i++) {
-      var argDependencies = this.args[i].dependencies(context, options);
+    for (let i = 0, len = this.args.length; i < len; i++) {
+      const argDependencies = this.args[i].dependencies(context, options);
       if (!argDependencies || argDependencies.length < 1) continue;
-      var end = argDependencies.length - 1;
-      for (var j = 0; j < end; j++) {
+      const end = argDependencies.length - 1;
+      for (let j = 0; j < end; j++) {
         dependencies.push(argDependencies[j]);
       }
-      var last = argDependencies[end];
+      let last = argDependencies[end];
       if (last[last.length - 1] !== '*') {
         last = last.concat('*');
       }
       dependencies.push(last);
     }
     return dependencies;
-  };
+  }
 
   set(context, value) {
-    var controller = context.controller;
-    var fn, parent;
+    let controller = context.controller;
+    let fn, parent;
     while (controller) {
       parent = (this.parentSegments) ?
         lookup(this.parentSegments, controller) :
@@ -665,15 +665,15 @@ export class FnExpression extends Expression {
       if (fn) break;
       controller = controller.parent;
     }
-    var setFn = fn && fn.set;
+    const setFn = fn && fn.set;
     if (!setFn) throw new Error('No setter function for: ' + this.segments.join('.'));
-    var inputs = this._getInputs(context);
+    const inputs = this._getInputs(context);
     inputs.unshift(value);
-    var out = setFn.apply(parent, inputs);
-    for (var i in out) {
+    const out = setFn.apply(parent, inputs);
+    for (const i in out) {
       this.args[i].set(context, out[i]);
     }
-  };
+  }
 }
 
 export class NewExpression extends FnExpression {
@@ -687,10 +687,10 @@ export class NewExpression extends FnExpression {
     // Apply if there are no path inputs
     if (!this.args) return new Fn();
     // Otherwise, get the current value for path inputs and apply
-    var inputs = this._getInputs(context);
+    const inputs = this._getInputs(context);
     inputs.unshift(null);
     return new (Fn.bind.apply(Fn, inputs))();
-  };
+  }
 }
 
 export class OperatorExpression extends FnExpression {
@@ -708,21 +708,21 @@ export class OperatorExpression extends FnExpression {
 
   serialize() {
     return serializeObject.instance(this, this.name, this.args, this.afterSegments, this.meta);
-  };
+  }
 
   apply(context) {
-    var inputs = this._getInputs(context);
+    const inputs = this._getInputs(context);
     return this.getFn.apply(null, inputs);
-  };
+  }
 
   set(context, value) {
-    var inputs = this._getInputs(context);
+    const inputs = this._getInputs(context);
     inputs.unshift(value);
-    var out = this.setFn.apply(null, inputs);
-    for (var i in out) {
+    const out = this.setFn.apply(null, inputs);
+    for (const i in out) {
       this.args[i].set(context, out[i]);
     }
-  };
+  }
 }
 
 export class SequenceExpression extends OperatorExpression {
@@ -735,22 +735,22 @@ export class SequenceExpression extends OperatorExpression {
   }
   serialize() {
     return serializeObject.instance(this, this.args, this.afterSegments, this.meta);
-  };
+  }
   getFn = operatorFns.get[','];
   resolve(context) {
-    var last = this.args[this.args.length - 1];
+    const last = this.args[this.args.length - 1];
     return last.resolve(context);
-  };
+  }
   dependencies(context, options) {
-    var dependencies = [];
-    for (var i = 0, len = this.args.length; i < len; i++) {
-      var argDependencies = this.args[i].dependencies(context, options);
-      for (var j = 0, jLen = argDependencies.length; j < jLen; j++) {
+    const dependencies = [];
+    for (let i = 0, len = this.args.length; i < len; i++) {
+      const argDependencies = this.args[i].dependencies(context, options);
+      for (let j = 0, jLen = argDependencies.length; j < jLen; j++) {
         dependencies.push(argDependencies[j]);
       }
     }
     return dependencies;
-  };
+  }
 }
 // For each method that takes a context argument, get the nearest parent view
 // context, then delegate methods to the inner expression
@@ -765,32 +765,32 @@ export class ViewParentExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.expression, this.meta);
-  };
+  }
 
   get(context) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.expression.get(parentContext);
-  };
+  }
 
   resolve(context) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.expression.resolve(parentContext);
-  };
+  }
 
   dependencies(context, options) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.expression.dependencies(parentContext, options);
-  };
+  }
 
   pathSegments(context) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.expression.pathSegments(parentContext);
-  };
+  }
 
   set(context, value) {
-    var parentContext = context.forViewParent();
+    const parentContext = context.forViewParent();
     return this.expression.set(parentContext, value);
-  };
+  }
 }
 
 export class ScopedModelExpression extends Expression {
@@ -808,7 +808,7 @@ export class ScopedModelExpression extends Expression {
 
   // Return a scoped model instead of the value
   get = function(context) {
-    var segments = this.pathSegments(context);
+    const segments = this.pathSegments(context);
     if (!segments) return;
     return context.controller.model.scope(segments.join('.'));
   };
@@ -838,7 +838,7 @@ function getDependencies(value, context, options) {
 }
 
 function appendDependency(dependencies, expression, context) {
-  var segments = expression.resolve(context);
+  const segments = expression.resolve(context);
   if (!segments) return dependencies;
   if (dependencies) {
     dependencies.push(segments);
@@ -851,7 +851,7 @@ function swapLastDependency(dependencies, expression, context) {
   if (!expression.segments.length) {
     return dependencies;
   }
-  var segments = expression.resolve(context);
+  const segments = expression.resolve(context);
   if (!segments) return dependencies;
   if (dependencies) {
     dependencies.pop();
