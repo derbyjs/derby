@@ -2,8 +2,9 @@ import * as operatorFns from './operatorFns';
 import { concat } from './util';
 import * as serializeObject from 'serialize-object';
 import { ContextClosure, Template } from './templates';
+import { type Context } from './contexts';
 
-export function lookup(segments, value) {
+export function lookup(segments: string[], value) {
   if (!segments) return value;
 
   for (let i = 0, len = segments.length; i < len; i++) {
@@ -29,14 +30,14 @@ export function pathSegments(segments) {
 
 //#region Render functions
 
-export function renderValue(value, context) {
+export function renderValue(value, context: Context) {
   return (typeof value !== 'object') ? value :
     (value instanceof Template) ? renderTemplate(value, context) :
       (Array.isArray(value)) ? renderArray(value, context) :
         renderObject(value, context);
 }
 
-export function renderTemplate(value, context) {
+export function renderTemplate(value, context: Context) {
   let i = 1000;
   while (value instanceof Template) {
     if (--i < 0) throw new Error('Maximum template render passes exceeded');
@@ -45,7 +46,7 @@ export function renderTemplate(value, context) {
   return value;
 }
 
-export function renderArray(array, context) {
+export function renderArray(array, context: Context) {
   for (let i = 0; i < array.length; i++) {
     if (hasTemplateProperty(array[i])) {
       return renderArrayProperties(array, context);
@@ -54,7 +55,7 @@ export function renderArray(array, context) {
   return array;
 }
 
-export function renderObject(object, context) {
+export function renderObject(object, context: Context) {
   return (hasTemplateProperty(object)) ?
     renderObjectProperties(object, context) : object;
 }
@@ -68,7 +69,7 @@ function hasTemplateProperty(object) {
   return false;
 }
 
-function renderArrayProperties(array, context) {
+function renderArrayProperties(array, context: Context) {
   const out = new Array(array.length);
   for (let i = 0; i < array.length; i++) {
     out[i] = renderValue(array[i], context);
@@ -76,7 +77,7 @@ function renderArrayProperties(array, context) {
   return out;
 }
 
-function renderObjectProperties(object, context) {
+function renderObjectProperties(object, context: Context) {
   const out = {};
   for (const key in object) {
     out[key] = renderValue(object[key], context);
@@ -127,7 +128,7 @@ export class ExpressionMeta {
 export class Expression {
   module = 'expressions';
   type = 'Expression';
-  meta: any;
+  meta: ExpressionMeta;
   segments: string[];
 
   constructor(meta) {
@@ -222,7 +223,7 @@ export class LiteralExpression extends Expression {
 
 export class PathExpression extends Expression {
   type = 'PathExpression';
-  segments: any;
+  segments: string[];
 
   constructor(segments, meta) {
     super(meta);

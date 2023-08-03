@@ -894,7 +894,7 @@ abstract class BaseBlock extends Template {
 
 export class Block extends BaseBlock {
   type = 'Block';
-  expression: any;
+  expression: Expression;
 
   constructor(expression: any, content: Template[]) {
     super();
@@ -910,7 +910,7 @@ export class Block extends BaseBlock {
 
   appendTo(parent, context, binding) {
     const blockContext = context.child(this.expression);
-    const start = document.createComment(this.expression);
+    const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     const condition = this.getCondition(context);
     parent.appendChild(start);
@@ -921,7 +921,7 @@ export class Block extends BaseBlock {
 
   attachTo(parent, node, context) {
     const blockContext = context.child(this.expression);
-    const start = document.createComment(this.expression);
+    const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     const condition = this.getCondition(context);
     parent.insertBefore(start, node || null);
@@ -973,9 +973,9 @@ export class Block extends BaseBlock {
 
 export class ConditionalBlock extends BaseBlock {
   type = 'ConditionalBlock';
-  expressions: any;
+  expressions: Expression[];
   beginning: string;
-  contents: any;
+  contents: Template[][];
 
   // @TODO: resolve expressions and contents (plural) with Block super call
   constructor(expressions, contents) {
@@ -1064,7 +1064,7 @@ export class ConditionalBlock extends BaseBlock {
 
 export class EachBlock extends Block {
   type = 'EachBlock';
-  elseContent: any;
+  elseContent: Template[];
 
   constructor(expression, content, elseContent) {
     super(expression, content);
@@ -1089,7 +1089,7 @@ export class EachBlock extends Block {
 
   appendTo(parent, context, binding) {
     const items = this.expression.get(context);
-    const start = document.createComment(this.expression);
+    const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     parent.appendChild(start);
     if (items && items.length) {
@@ -1120,7 +1120,7 @@ export class EachBlock extends Block {
 
   attachTo(parent, node, context) {
     const items = this.expression.get(context);
-    const start = document.createComment(this.expression);
+    const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     parent.insertBefore(start, node || null);
     if (items && items.length) {
@@ -1244,7 +1244,7 @@ export class EachBlock extends Block {
 
 //#region functions
 
-function indexStartNode(binding, index) {
+function indexStartNode(binding, index: number) {
   let node = binding.start;
   let i = 0;
   while ((node = node.nextSibling)) {
@@ -1331,13 +1331,15 @@ function replaceRange(context, start, end, fragment, binding, innerOnly?: boolea
   parent.insertBefore(fragment, nextNode || null);
 }
 
-function emitRemoved(context, node, ignore) {
+function emitRemoved(context: Context, node: Node, ignore: boolean) {
   context.removeNode(node);
   emitRemovedBinding(context, ignore, node, '$bindNode');
   emitRemovedBinding(context, ignore, node, '$bindStart');
   emitRemovedBinding(context, ignore, node, '$bindItemStart');
+  // @ts-expect-error Property `$bindAttributes` not on Node
   const attributes = node.$bindAttributes;
   if (attributes) {
+    // @ts-expect-error Property `$bindAttributes` not on Node
     node.$bindAttributes = null;
     for (const key in attributes) {
       context.removeBinding(attributes[key]);
@@ -1348,7 +1350,7 @@ function emitRemoved(context, node, ignore) {
   }
 }
 
-function emitRemovedBinding(context, ignore, node, property) {
+function emitRemovedBinding(context: Context, ignore, node: Node, property: string) {
   const binding = node[property];
   if (binding) {
     node[property] = null;
@@ -1358,7 +1360,7 @@ function emitRemovedBinding(context, ignore, node, property) {
   }
 }
 
-function attachError(parent, node) {
+function attachError(parent: Node, node: Node) {
   if (typeof console !== 'undefined') {
     console.error('Attach failed for', node, 'within', parent);
   }
@@ -1372,7 +1374,7 @@ function attachError(parent, node) {
 export class Binding {
   type = 'Binding';
   meta: any;
-  context: any;
+  context: Context;
   template: any;
 
   constructor() {
@@ -1404,7 +1406,7 @@ export class Binding {
 
 export class NodeBinding extends Binding {
   type = 'NodeBinding';
-  node: any;
+  node: Node;
 
   constructor(template, context, node) {
     super();
@@ -1420,7 +1422,7 @@ export class AttributeBindingsMap { }
 
 export class AttributeBinding extends Binding {
   type = 'AttributeBinding';
-  element: any;
+  element: Element;
   name: string;
 
   constructor(template, context, element, name) {

@@ -1,19 +1,18 @@
-import { type Expression } from "./expressions";
+import { type Expression } from './expressions';
 import {
   type Attributes,
   type MarkupHook,
   type View,
-} from "./templates";
+} from './templates';
 
 function noop() { }
-
 
 export class ContextMeta {
   addBinding: (binding: any) => void = noop;
   removeBinding: (binding: any) => void = noop;
-  removeNode: (node: any) => void = noop;
-  addItemContext: (context: any) => void = noop;
-  removeItemContext: (context: any) => void = noop;
+  removeNode: (node: Node) => void = noop;
+  addItemContext: (context: Context) => void = noop;
+  removeItemContext: (context: Context) => void = noop;
   views = null;
   idNamespace = '';
   idCount = 0;
