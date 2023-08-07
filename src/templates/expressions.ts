@@ -1,8 +1,8 @@
-import * as operatorFns from './operatorFns';
-import { concat } from './util';
-import * as serializeObject from 'serialize-object';
-import { ContextClosure, Template } from './templates';
 import { type Context } from './contexts';
+import { concat } from './util';
+import { ContextClosure, Template } from './templates';
+import * as operatorFns from './operatorFns';
+import * as serializeObject from 'serialize-object';
 
 export function lookup(segments: string[], value) {
   if (!segments) return value;
