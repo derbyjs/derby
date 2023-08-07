@@ -116,13 +116,13 @@ export class Template {
     return fragment;
   }
 
-  appendTo(parent, context, _binding?) {
+  appendTo(parent: Node, context, _binding?) {
     context.pause();
     appendContent(parent, this.content, context);
     context.unpause();
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     context.pause();
     var node = attachContent(parent, node, this.content, context);
     context.unpause();
@@ -187,7 +187,7 @@ export class Doctype extends Template {
     // document fragment. Therefore, just don't render it in the browser
   }
 
-  attachTo(parent, node) {
+  attachTo(parent: Node, node: Node) {
     if (!node || node.nodeType !== 10) {
       throw attachError(parent, node);
     }
@@ -216,12 +216,12 @@ export class Text extends Template {
     return (unescaped) ? this.data : this.escaped;
   }
 
-  appendTo(parent) {
+  appendTo(parent: Node) {
     const node = document.createTextNode(this.data);
     parent.appendChild(node);
   }
 
-  attachTo(parent, node) {
+  attachTo(parent: Node, node: Node) {
     return attachText(parent, node, this.data, this);
   }
 
@@ -261,7 +261,7 @@ export class DynamicText extends Template {
     return (unescaped) ? data : escapeHtml(data);
   }
 
-  appendTo(parent, context, binding) {
+  appendTo(parent: Node, context, binding) {
     const value = this.expression.get(context);
     if (value instanceof Template) {
       const start = document.createComment(this.expression.toString());
@@ -279,7 +279,7 @@ export class DynamicText extends Template {
     addNodeBinding(this, context, node);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const value = this.expression.get(context);
     if (value instanceof Template) {
       const start = document.createComment(this.expression.toString());
@@ -331,7 +331,7 @@ export class DynamicText extends Template {
 
 function attachText(parent: Node, node: Node, data: string, template: Template, context?: Context) {
   if (!node) {
-    var newNode = document.createTextNode(data);
+    const newNode = document.createTextNode(data);
     parent.appendChild(newNode);
     addNodeBinding(template, context, newNode);
     return;
@@ -355,7 +355,7 @@ function attachText(parent: Node, node: Node, data: string, template: Template, 
   }
   // An empty text node might not be created at the end of some text
   if (data === '') {
-    var newNode = document.createTextNode('');
+    const newNode = document.createTextNode('');
     parent.insertBefore(newNode, node || null);
     addNodeBinding(template, context, newNode);
     return node;
@@ -378,13 +378,13 @@ export class Comment extends Template {
     return '<!--' + this.data + '-->';
   }
 
-  appendTo(parent, context) {
+  appendTo(parent: Node, context) {
     const node = document.createComment(this.data);
     parent.appendChild(node);
     emitHooks(this.hooks, context, node);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     return attachComment(parent, node, this.data, this, context);
   }
 
@@ -412,7 +412,7 @@ export class DynamicComment extends Template {
     return '<!--' + data + '-->';
   }
 
-  appendTo(parent, context) {
+  appendTo(parent: Node, context) {
     const value = getUnescapedValue(this.expression, context);
     const data = this.stringify(value);
     const node = document.createComment(data);
@@ -420,7 +420,7 @@ export class DynamicComment extends Template {
     addNodeBinding(this, context, node);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const value = getUnescapedValue(this.expression, context);
     const data = this.stringify(value);
     return attachComment(parent, node, data, this, context);
@@ -470,7 +470,7 @@ export class Html extends Template {
   data: string;
   type = 'Html';
 
-  constructor(data) {
+  constructor(data: string) {
     super();
     this.data = data;
   }
@@ -479,12 +479,12 @@ export class Html extends Template {
     return this.data;
   }
 
-  appendTo(parent) {
+  appendTo(parent: Node) {
     const fragment = createHtmlFragment(parent, this.data);
     parent.appendChild(fragment);
   }
 
-  attachTo(parent, node) {
+  attachTo(parent: Node, node: Node) {
     return attachHtml(parent, node, this.data);
   }
 
@@ -510,7 +510,7 @@ export class DynamicHtml extends Template {
     return this.stringify(value);
   }
 
-  appendTo(parent, context, binding) {
+  appendTo(parent: Node, context, binding) {
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     const value = getUnescapedValue(this.expression, context);
@@ -522,7 +522,7 @@ export class DynamicHtml extends Template {
     updateRange(context, binding, this, start, end);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
     const value = getUnescapedValue(this.expression, context);
@@ -706,29 +706,10 @@ abstract class BaseElement<T> extends Template {
     this.notClosed = notClosed;
     this.ns = ns;
   }
-}
 
-export class Element extends BaseElement<string> {
-  type = 'Element';
-  endTag: string;
+  abstract getTagName(context): string;
 
-  constructor(tagName: string, attributes, content, hooks, selfClosing, notClosed, ns) {
-    super(attributes, content, hooks, selfClosing, notClosed, ns);
-    this.tagName = tagName;
-    this.endTag = getEndTag(tagName, selfClosing, notClosed);
-    this.startClose = getStartClose(selfClosing);
-    const lowerTagName = tagName && tagName.toLowerCase();
-    this.unescapedContent = (lowerTagName === 'script' || lowerTagName === 'style');
-    this.bindContentToValue = (lowerTagName === 'textarea');
-  }
-
-  getTagName(_context) {
-    return this.tagName;
-  }
-
-  getEndTag(_context) {
-    return this.endTag;
-  }
+  abstract getEndTag(tagName): string;
 
   get(context) {
     const tagName = this.getTagName(context);
@@ -779,7 +760,7 @@ export class Element extends BaseElement<string> {
     emitHooks(this.hooks, context, element);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const tagName = this.getTagName(context);
     if (
       !node ||
@@ -835,6 +816,29 @@ export class Element extends BaseElement<string> {
   }
 }
 
+export class Element extends BaseElement<string> {
+  type = 'Element';
+  endTag: string;
+
+  constructor(tagName: string, attributes, content, hooks, selfClosing, notClosed, ns) {
+    super(attributes, content, hooks, selfClosing, notClosed, ns);
+    this.tagName = tagName;
+    this.endTag = getEndTag(tagName, selfClosing, notClosed);
+    this.startClose = getStartClose(selfClosing);
+    const lowerTagName = tagName && tagName.toLowerCase();
+    this.unescapedContent = (lowerTagName === 'script' || lowerTagName === 'style');
+    this.bindContentToValue = (lowerTagName === 'textarea');
+  }
+
+  getTagName(_context) {
+    return this.tagName;
+  }
+
+  getEndTag(_tagName) {
+    return this.endTag;
+  }
+}
+
 export class DynamicElement extends BaseElement<Expression> {
   type = 'DynamicElement';
   content: Template[];
@@ -859,7 +863,7 @@ export class DynamicElement extends BaseElement<Expression> {
 
   dependencies(context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
-    const dependencies = Element.prototype.dependencies(context, options);
+    const dependencies = super.dependencies(context, options);
     return concatDependencies(dependencies, this.tagName, context, options);
   }
 }
@@ -908,7 +912,7 @@ export class Block extends BaseBlock {
     return contentHtml(this.content, blockContext, unescaped);
   }
 
-  appendTo(parent, context, binding) {
+  appendTo(parent: Node, context, binding) {
     const blockContext = context.child(this.expression);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -919,7 +923,7 @@ export class Block extends BaseBlock {
     updateRange(context, binding, this, start, end, null, condition);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const blockContext = context.child(this.expression);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -994,7 +998,7 @@ export class ConditionalBlock extends BaseBlock {
     return contentHtml(this.contents[condition], blockContext, unescaped);
   }
 
-  appendTo(parent, context, binding) {
+  appendTo(parent: Node, context, binding) {
     const start = document.createComment(this.beginning);
     const end = document.createComment(this.ending);
     parent.appendChild(start);
@@ -1008,7 +1012,7 @@ export class ConditionalBlock extends BaseBlock {
     updateRange(context, binding, this, start, end, null, condition);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const start = document.createComment(this.beginning);
     const end = document.createComment(this.ending);
     parent.insertBefore(start, node || null);
@@ -1087,7 +1091,7 @@ export class EachBlock extends Block {
     return '';
   }
 
-  appendTo(parent, context, binding) {
+  appendTo(parent: Node, context, binding) {
     const items = this.expression.get(context);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -1118,7 +1122,7 @@ export class EachBlock extends Block {
     updateRange(context, binding, this, start, end, itemFor);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const items = this.expression.get(context);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -1784,14 +1788,14 @@ export class View extends Template {
     return fragment;
   }
 
-  appendTo(parent, context) {
+  appendTo(parent: Node, context) {
     const viewContext = this._initComponent(context);
     const template = this.template || this.parse();
     template.appendTo(parent, viewContext);
     this._queueCreate(context, viewContext);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const viewContext = this._initComponent(context);
     const template = this.template || this.parse();
     var node = template.attachTo(parent, node, viewContext);
@@ -1863,13 +1867,13 @@ abstract class BaseViewInstance extends Template {
     return view.getFragment(viewContext, binding);
   }
 
-  appendTo(parent, context) {
+  appendTo(parent: Node, context) {
     const view = this._find(context);
     const viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
     view.appendTo(parent, viewContext);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const view = this._find(context);
     const viewContext = context.viewChild(view, this.attributes, this.hooks, this.initHooks);
     return view.attachTo(parent, node, viewContext);
@@ -1975,12 +1979,12 @@ export class ViewParent extends Template {
     return this.template.getFragment(parentContext, binding);
   }
 
-  appendTo(parent, context) {
+  appendTo(parent: Node, context) {
     const parentContext = context.forViewParent();
     this.template.appendTo(parent, parentContext);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const parentContext = context.forViewParent();
     return this.template.attachTo(parent, node, parentContext);
   }
@@ -2022,12 +2026,12 @@ export class ContextClosure extends Template {
     return this.template.getFragment(closureContext, binding);
   }
 
-  appendTo(parent, context) {
+  appendTo(parent: Node, context) {
     const closureContext = context.closureChild(this.context);
     this.template.appendTo(parent, closureContext);
   }
 
-  attachTo(parent, node, context) {
+  attachTo(parent: Node, node, context) {
     const closureContext = context.closureChild(this.context);
     return this.template.attachTo(parent, node, closureContext);
   }
