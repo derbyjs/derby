@@ -106,7 +106,7 @@ export class Template {
     return this.source;
   }
 
-  get(context, unescaped): string | boolean {
+  get(context, unescaped): string | boolean | Template {
     return contentHtml(this.content, context, unescaped);
   }
 

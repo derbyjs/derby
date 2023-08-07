@@ -30,15 +30,19 @@ export function pathSegments(segments) {
 
 //#region Render functions
 
-export function renderValue(value, context: Context) {
+type PrimitiveValue = string | number | boolean;
+type Renderable = PrimitiveValue | Template | Record<string, Template>;
+
+export function renderValue(value: Renderable, context: Context) {
   return (typeof value !== 'object') ? value :
     (value instanceof Template) ? renderTemplate(value, context) :
       (Array.isArray(value)) ? renderArray(value, context) :
         renderObject(value, context);
 }
 
-export function renderTemplate(value, context: Context) {
+export function renderTemplate(template: Template, context: Context) {
   let i = 1000;
+  let value: Renderable = template;
   while (value instanceof Template) {
     if (--i < 0) throw new Error('Maximum template render passes exceeded');
     value = value.get(context, true);
@@ -46,7 +50,7 @@ export function renderTemplate(value, context: Context) {
   return value;
 }
 
-export function renderArray(array, context: Context) {
+export function renderArray(array: Renderable[], context: Context) {
   for (let i = 0; i < array.length; i++) {
     if (hasTemplateProperty(array[i])) {
       return renderArrayProperties(array, context);
@@ -55,21 +59,18 @@ export function renderArray(array, context: Context) {
   return array;
 }
 
-export function renderObject(object, context: Context) {
+export function renderObject(object: Record<string, Template>, context: Context) {
   return (hasTemplateProperty(object)) ?
     renderObjectProperties(object, context) : object;
 }
 
-function hasTemplateProperty(object) {
+function hasTemplateProperty(object: Renderable): boolean {
   if (!object) return false;
   if (object.constructor !== Object) return false;
-  for (const key in object) {
-    if (object[key] instanceof Template) return true;
-  }
-  return false;
+  return Object.values(object).some((value) => value instanceof Template)
 }
 
-function renderArrayProperties(array, context: Context) {
+function renderArrayProperties(array: Renderable[], context: Context) {
   const out = new Array(array.length);
   for (let i = 0; i < array.length; i++) {
     out[i] = renderValue(array[i], context);
@@ -77,7 +78,7 @@ function renderArrayProperties(array, context: Context) {
   return out;
 }
 
-function renderObjectProperties(object, context: Context) {
+function renderObjectProperties(object: Record<string, Renderable>, context: Context): Record<string, any> {
   const out = {};
   for (const key in object) {
     out[key] = renderValue(object[key], context);
