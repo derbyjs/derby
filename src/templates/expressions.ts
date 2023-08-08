@@ -96,11 +96,12 @@ function renderObjectProperties(object: Record<string, Renderable>, context: Con
 
 type BindType = 'bound' | 'unbound'; // 'unbound' | 'bound' // parsing/index.js#799
 type ValueType = 'view' | undefined;
+type BlockType = string; // 'if' | 'else if' | 'else' | 'unless' | 'on' | 'end' | 'each'
 
 export class ExpressionMeta {
   as: string;
   bindType: BindType;
-  blockType: string; // 'if' | 'else if' | 'else' | 'unless' | 'on' | 'end' | 'each'
+  blockType: BlockType;
   isEnd: boolean;
   keyAs: string;
   module = 'expressions';
