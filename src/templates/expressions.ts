@@ -163,7 +163,7 @@ export abstract class Expression {
   abstract get(_context: Context, _flag?: boolean): any;
 
   // Return the expression's segment list with context objects
-  resolve(_context: Context): any { }
+  resolve(_context: Context): Segments | undefined { return undefined; }
 
   // Return a list of segment lists or null
   dependencies(_context: Context, _options: any): string[][] | undefined { return undefined; };
@@ -256,7 +256,7 @@ export class PathExpression extends Expression {
     return lookup(this.segments, context.controller.model.data);
   }
 
-  resolve(context: Context): any[] {
+  resolve(context: Context) {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
@@ -295,7 +295,7 @@ export class RelativePathExpression extends Expression {
     return this._lookupAndContextifyValue(value, relativeContext);
   }
 
-  resolve(context: Context): any[] {
+  resolve(context: Context) {
     const relativeContext = context.forRelative(this);
     const base = (relativeContext.expression) ?
       relativeContext.expression.resolve(relativeContext) :
