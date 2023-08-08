@@ -149,7 +149,7 @@ export class Template {
 
   resolve(_context: Context): any { }
 
-  dependencies(context: Context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return concatArrayDependencies(null, this.content, context, options);
   }
@@ -198,7 +198,7 @@ export class Doctype extends Template {
     return serializeObject.instance(this, this.name, this.publicId, this.systemId);
   }
 
-  dependencies() { }
+  dependencies() { return undefined; }
 }
 
 export class Text extends Template {
@@ -229,7 +229,7 @@ export class Text extends Template {
     return serializeObject.instance(this, this.data);
   }
 
-  dependencies() { }
+  dependencies() { return undefined; }
 }
 
 // DynamicText might be more accurately named DynamicContent. When its
@@ -323,7 +323,7 @@ export class DynamicText extends Template {
 
   _blockUpdate = Block.prototype.update;
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
   }
@@ -392,7 +392,7 @@ export class Comment extends Template {
     return serializeObject.instance(this, this.data, this.hooks);
   }
 
-  dependencies() { }
+  dependencies() { return undefined; }
 }
 
 export class DynamicComment extends Template {
@@ -435,7 +435,7 @@ export class DynamicComment extends Template {
     return serializeObject.instance(this, this.expression, this.hooks);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
   }
@@ -492,7 +492,7 @@ export class Html extends Template {
     return serializeObject.instance(this, this.data);
   }
 
-  dependencies() { }
+  dependencies() { return undefined; }
 }
 
 export class DynamicHtml extends Template {
@@ -534,7 +534,7 @@ export class DynamicHtml extends Template {
     return node;
   }
 
-  update(context, binding) {
+  update(context: Context, binding) {
     const parent = binding.start.parentNode;
     if (!parent) return;
     // Get start and end in advance, since binding is mutated in getFragment
@@ -551,7 +551,7 @@ export class DynamicHtml extends Template {
     return serializeObject.instance(this, this.expression);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
   }
@@ -584,7 +584,7 @@ export class Attribute extends Template {
   ns?: string;
   type = 'Attribute';
 
-  constructor(data?, ns?) {
+  constructor(data?: string | boolean, ns?: string) {
     super();
     this.data = data;
     this.ns = ns;
@@ -602,7 +602,7 @@ export class Attribute extends Template {
     return serializeObject.instance(this, this.data, this.ns);
   }
 
-  dependencies(_context, _options) { }
+  dependencies(_context: Context, _options: DependencyOptions) { return undefined; }
 }
 
 export class DynamicAttribute extends Attribute {
@@ -627,7 +627,7 @@ export class DynamicAttribute extends Attribute {
     return getUnescapedValue(this.expression, context);
   }
 
-  update(context, binding) {
+  update(context: Context, binding) {
     let value = getUnescapedValue(this.expression, context);
     const element = binding.element;
     const propertyName = !this.elementNs && UPDATE_PROPERTIES[binding.name];
@@ -671,7 +671,7 @@ export class DynamicAttribute extends Attribute {
     return serializeObject.instance(this, this.expression, this.ns);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return getDependencies(this.expression, context, options);
   }
@@ -697,7 +697,7 @@ abstract class BaseElement<T> extends Template {
   tagName: T;
   unescapedContent: boolean;
 
-  constructor(attributes, content, hooks, selfClosing, notClosed, ns) {
+  constructor(attributes: Attributes, content: Template[], hooks: MarkupHook<any>[], selfClosing: boolean, notClosed: boolean, ns: string) {
     super();
     this.attributes = attributes;
     this.content = content;
@@ -707,11 +707,11 @@ abstract class BaseElement<T> extends Template {
     this.ns = ns;
   }
 
-  abstract getTagName(context): string;
+  abstract getTagName(context: Context): string;
 
-  abstract getEndTag(tagName): string;
+  abstract getEndTag(tagName: string): string;
 
-  get(context) {
+  get(context: Context) {
     const tagName = this.getTagName(context);
     const endTag = this.getEndTag(tagName);
     const tagItems = [tagName];
@@ -760,7 +760,7 @@ abstract class BaseElement<T> extends Template {
     emitHooks(this.hooks, context, element);
   }
 
-  attachTo(parent: Node, node, context) {
+  attachTo(parent: Node, node, context: Context) {
     const tagName = this.getTagName(context);
     if (
       !node ||
@@ -783,7 +783,7 @@ abstract class BaseElement<T> extends Template {
     return node.nextSibling;
   }
 
-  _bindContent(context, element) {
+  _bindContent(context: Context, element) {
     // For textareas with dynamic text content, bind to the value property
     const child = this.bindContentToValue &&
       this.content.length === 1 &&
@@ -808,7 +808,7 @@ abstract class BaseElement<T> extends Template {
     );
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     const dependencies = concatMapDependencies(null, this.attributes, context, options);
     if (!this.content) return dependencies;
@@ -820,7 +820,7 @@ export class Element extends BaseElement<string> {
   type = 'Element';
   endTag: string;
 
-  constructor(tagName: string, attributes, content, hooks, selfClosing, notClosed, ns) {
+  constructor(tagName: string, attributes: Record<string, Attribute>, content: Template[], hooks: MarkupHook<any>[], selfClosing: boolean, notClosed: boolean, ns: string) {
     super(attributes, content, hooks, selfClosing, notClosed, ns);
     this.tagName = tagName;
     this.endTag = getEndTag(tagName, selfClosing, notClosed);
@@ -830,11 +830,11 @@ export class Element extends BaseElement<string> {
     this.bindContentToValue = (lowerTagName === 'textarea');
   }
 
-  getTagName(_context) {
+  getTagName(_context: Context) {
     return this.tagName;
   }
 
-  getEndTag(_tagName) {
+  getEndTag(_tagName: string) {
     return this.endTag;
   }
 }
@@ -844,7 +844,7 @@ export class DynamicElement extends BaseElement<Expression> {
   content: Template[];
   attributes: Attributes;
 
-  constructor(tagName, attributes, content, hooks, selfClosing, notClosed, ns) {
+  constructor(tagName: Expression, attributes: Attributes, content: Template[], hooks: any, selfClosing: boolean, notClosed: any, ns: any) {
     super(attributes, content, hooks, selfClosing, notClosed, ns);
     this.content = content;
     this.attributes = attributes;
@@ -853,15 +853,15 @@ export class DynamicElement extends BaseElement<Expression> {
     this.tagName = tagName;
   }
 
-  getTagName(context) {
+  getTagName(context: Context) {
     return getUnescapedValue(this.tagName, context);
   }
 
-  getEndTag(tagName) {
+  getEndTag(tagName: string) {
     return getEndTag(tagName, this.selfClosing, this.notClosed);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     const dependencies = super.dependencies(context, options);
     return concatDependencies(dependencies, this.tagName, context, options);
@@ -883,7 +883,7 @@ function getAttributeValue(element, name: string) {
   return (propertyName) ? element[propertyName] : element.getAttribute(name);
 }
 
-function emitHooks(hooks, context, value) {
+function emitHooks(hooks: MarkupHook<any>[], context: Context, value) {
   if (!hooks) return;
   context.queue(function queuedHooks() {
     for (let i = 0, len = hooks.length; i < len; i++) {
@@ -900,19 +900,19 @@ export class Block extends BaseBlock {
   type = 'Block';
   expression: Expression;
 
-  constructor(expression: any, content: Template[]) {
+  constructor(expression: Expression, content: Template[]) {
     super();
     this.expression = expression;
     this.ending = '/' + expression;
     this.content = content;
   }
 
-  get(context, unescaped) {
+  get(context: Context, unescaped: boolean) {
     const blockContext = context.child(this.expression);
     return contentHtml(this.content, blockContext, unescaped);
   }
 
-  appendTo(parent: Node, context, binding) {
+  appendTo(parent: Node, context: Context, binding) {
     const blockContext = context.child(this.expression);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -923,7 +923,7 @@ export class Block extends BaseBlock {
     updateRange(context, binding, this, start, end, null, condition);
   }
 
-  attachTo(parent: Node, node, context) {
+  attachTo(parent: Node, node: Node, context: Context) {
     const blockContext = context.child(this.expression);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -939,7 +939,7 @@ export class Block extends BaseBlock {
     return serializeObject.instance(this, this.expression, this.content);
   }
 
-  update(context, binding) {
+  update(context: Context, binding) {
     if (!binding.start.parentNode) return;
     const condition = this.getCondition(context);
     // Cancel update if prior condition is equivalent to current value
@@ -952,7 +952,7 @@ export class Block extends BaseBlock {
     replaceRange(context, start, end, fragment, binding);
   }
 
-  getCondition(context) {
+  getCondition(context: Context) {
     // We do an identity check to see if the value has changed before updating.
     // With objects, the object would still be the same, so this identity check
     // would fail to update enough. Thus, return NaN, which never equals anything
@@ -966,7 +966,7 @@ export class Block extends BaseBlock {
     return (typeof value === 'object') ? NaN : value;
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     const dependencies = (this.expression.meta && this.expression.meta.blockType === 'on') ?
       getDependencies(this.expression, context, options) : null;
@@ -976,13 +976,13 @@ export class Block extends BaseBlock {
 }
 
 export class ConditionalBlock extends BaseBlock {
-  type = 'ConditionalBlock';
-  expressions: Expression[];
   beginning: string;
   contents: Template[][];
+  expressions: Expression[];
+  type = 'ConditionalBlock';
 
   // @TODO: resolve expressions and contents (plural) with Block super call
-  constructor(expressions, contents) {
+  constructor(expressions: Expression[], contents: Template[][]) {
     super();
     this.expressions = expressions;
     this.beginning = expressions.join('; ');
@@ -990,7 +990,7 @@ export class ConditionalBlock extends BaseBlock {
     this.contents = contents;
   }
 
-  get(context, unescaped) {
+  get(context: Context, unescaped: boolean) {
     const condition = this.getCondition(context);
     if (condition == null) return '';
     const expression = this.expressions[condition];
@@ -998,7 +998,7 @@ export class ConditionalBlock extends BaseBlock {
     return contentHtml(this.contents[condition], blockContext, unescaped);
   }
 
-  appendTo(parent: Node, context, binding) {
+  appendTo(parent: Node, context: Context, binding) {
     const start = document.createComment(this.beginning);
     const end = document.createComment(this.ending);
     parent.appendChild(start);
@@ -1012,7 +1012,7 @@ export class ConditionalBlock extends BaseBlock {
     updateRange(context, binding, this, start, end, null, condition);
   }
 
-  attachTo(parent: Node, node, context) {
+  attachTo(parent: Node, node: Node, context: Context) {
     const start = document.createComment(this.beginning);
     const end = document.createComment(this.ending);
     parent.insertBefore(start, node || null);
@@ -1031,7 +1031,7 @@ export class ConditionalBlock extends BaseBlock {
     return serializeObject.instance(this, this.expressions, this.contents);
   }
 
-  update(context, binding) {
+  update(context: Context, binding) {
     if (!binding.start.parentNode) return;
     const condition = this.getCondition(context);
     // Cancel update if prior condition is equivalent to current value
@@ -1044,7 +1044,7 @@ export class ConditionalBlock extends BaseBlock {
     replaceRange(context, start, end, fragment, binding);
   }
 
-  getCondition(context) {
+  getCondition(context: Context) {
     for (let i = 0, len = this.expressions.length; i < len; i++) {
       if (this.expressions[i].truthy(context)) {
         return i;
@@ -1052,7 +1052,7 @@ export class ConditionalBlock extends BaseBlock {
     }
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     const condition = this.getCondition(context);
     if (condition == null) {
@@ -1070,13 +1070,13 @@ export class EachBlock extends Block {
   type = 'EachBlock';
   elseContent: Template[];
 
-  constructor(expression, content, elseContent) {
+  constructor(expression: Expression, content: Template[], elseContent: Template[]) {
     super(expression, content);
     this.ending = '/' + expression;
     this.elseContent = elseContent;
   }
 
-  get(context, unescaped) {
+  get(context: Context, unescaped: boolean) {
     const items = this.expression.get(context);
     if (items && items.length) {
       let html = '';
@@ -1091,7 +1091,7 @@ export class EachBlock extends Block {
     return '';
   }
 
-  appendTo(parent: Node, context, binding) {
+  appendTo(parent: Node, context: Context, binding) {
     const items = this.expression.get(context);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -1108,7 +1108,7 @@ export class EachBlock extends Block {
     updateRange(context, binding, this, start, end);
   }
 
-  appendItemTo(parent, context, itemFor, binding?) {
+  appendItemTo(parent: Node, context: Context, itemFor, binding?) {
     const before = parent.lastChild;
     let start, end;
     appendContent(parent, this.content, context);
@@ -1122,7 +1122,7 @@ export class EachBlock extends Block {
     updateRange(context, binding, this, start, end, itemFor);
   }
 
-  attachTo(parent: Node, node, context) {
+  attachTo(parent: Node, node: Node, context: Context) {
     const items = this.expression.get(context);
     const start = document.createComment(this.expression.toString());
     const end = document.createComment(this.ending);
@@ -1140,7 +1140,7 @@ export class EachBlock extends Block {
     return node;
   }
 
-  attachItemTo(parent, node, context, itemFor) {
+  attachItemTo(parent: Node, node: Node, context: Context, itemFor: globalThis.Comment) {
     let start, end;
     const oldPrevious = node && node.previousSibling;
     const nextNode = attachContent(parent, node, this.content, context);
@@ -1155,7 +1155,7 @@ export class EachBlock extends Block {
     return nextNode;
   }
 
-  update(context, binding) {
+  update(context: Context, binding) {
     if (!binding.start.parentNode) return;
     const start = binding.start;
     const end = binding.end;
@@ -1168,7 +1168,7 @@ export class EachBlock extends Block {
     replaceRange(context, start, end, fragment, binding);
   }
 
-  insert(context, binding, index, howMany) {
+  insert(context: Context, binding, index: number, howMany: number) {
     const parent = binding.start.parentNode;
     if (!parent) return;
     // In case we are inserting all of the items, update instead. This is needed
@@ -1185,7 +1185,7 @@ export class EachBlock extends Block {
     parent.insertBefore(fragment, node || null);
   }
 
-  remove(context, binding, index, howMany) {
+  remove(context: Context, binding, index: number, howMany: number) {
     const parent = binding.start.parentNode;
     if (!parent) return;
     // In case we are removing all of the items, update instead. This is needed
@@ -1207,7 +1207,7 @@ export class EachBlock extends Block {
     }
   }
 
-  move(context, binding, from, to, howMany) {
+  move(_context: Context, binding, from: number, to: number, howMany: number) {
     const parent = binding.start.parentNode;
     if (!parent) return;
     let node = indexStartNode(binding, from);
@@ -1230,7 +1230,7 @@ export class EachBlock extends Block {
     return serializeObject.instance(this, this.expression, this.content, this.elseContent);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     let dependencies = getDependencies(this.expression, context, options);
     const items = this.expression.get(context);
@@ -1260,7 +1260,7 @@ function indexStartNode(binding, index: number) {
   }
 }
 
-function updateRange(context, binding, template, start, end, itemFor?, condition?) {
+function updateRange(context: Context, binding, template: Template, start, end, itemFor?, condition?) {
   if (binding) {
     binding.start = start;
     binding.end = end;
@@ -1271,7 +1271,7 @@ function updateRange(context, binding, template, start, end, itemFor?, condition
   }
 }
 
-function setNodeBounds(binding, start, itemFor) {
+function setNodeBounds(binding: any, start: any, itemFor: any) {
   if (itemFor) {
     setNodeProperty(start, '$bindItemStart', binding);
   } else {
@@ -1279,13 +1279,13 @@ function setNodeBounds(binding, start, itemFor) {
   }
 }
 
-function appendContent(parent, content: Template[], context) {
+function appendContent(parent: Node, content: Template[], context: Context) {
   for (let i = 0, len = content.length; i < len; i++) {
     content[i].appendTo(parent, context);
   }
 }
 
-function attachContent(parent, node, content: Template[], context) {
+function attachContent(parent: Node, node: any, content: Template[], context: Context) {
   for (let i = 0, len = content.length; i < len; i++) {
     while (node && node.hasAttribute && node.hasAttribute('data-no-attach')) {
       node = node.nextSibling;
@@ -1295,7 +1295,7 @@ function attachContent(parent, node, content: Template[], context) {
   return node;
 }
 
-function contentHtml(content: Template[], context, unescaped): string {
+function contentHtml(content: Template[], context: Context, unescaped: boolean): string {
   let html = '';
   for (let i = 0, len = content.length; i < len; i++) {
     html += content[i].get(context, unescaped);
@@ -1633,33 +1633,33 @@ let normalizeLineBreaks = (value: string) => value;
 
 //#endregion
 
-function concatSubArrayDependencies(dependencies, expressions, context, options, end) {
+function concatSubArrayDependencies(dependencies: string[][], expressions: any[], context: Context, options: DependencyOptions, end: number) {
   for (let i = 0; i <= end; i++) {
     dependencies = concatDependencies(dependencies, expressions[i], context, options);
   }
   return dependencies;
 }
 
-function concatArrayDependencies(dependencies, expressions, context, options) {
+function concatArrayDependencies(dependencies: string[][], expressions: any[], context: Context, options: DependencyOptions) {
   for (let i = 0; i < expressions.length; i++) {
     dependencies = concatDependencies(dependencies, expressions[i], context, options);
   }
   return dependencies;
 }
 
-function concatMapDependencies(dependencies, expressions, context, options) {
+function concatMapDependencies(dependencies: string[][], expressions: Record<string, any>, context: Context, options: DependencyOptions) {
   for (const key in expressions) {
     dependencies = concatDependencies(dependencies, expressions[key], context, options);
   }
   return dependencies;
 }
 
-function concatDependencies(dependencies, expression, context, options) {
+function concatDependencies(dependencies: string[][], expression: any, context: Context, options: DependencyOptions) {
   const expressionDependencies = getDependencies(expression, context, options);
   return concat(dependencies, expressionDependencies);
 }
 
-function getDependencies(expression, context, options) {
+function getDependencies(expression: Expression, context: Context, options: DependencyOptions) {
   return expression.dependencies(context, options);
 }
 
@@ -1774,7 +1774,7 @@ export class View extends Template {
     }
   }
 
-  get(context, unescaped) {
+  get(context: Context, unescaped) {
     const viewContext = this._initComponent(context);
     const template = this.template || this.parse();
     return template.get(viewContext, unescaped);

@@ -1,13 +1,13 @@
-import { ContextClosure } from './templates';
+import { ContextClosure, type Template } from './templates';
 
 export class DependencyOptions {
-  ignoreTemplate: boolean;
+  ignoreTemplate: Template;
 
-  constructor(options: { ignoreTemplate: boolean }) {
+  constructor(options: { ignoreTemplate: Template }) {
     this.setIgnoreTemplate(options && options.ignoreTemplate);
   }
 
-  static shouldIgnoreTemplate(template, options) {
+  static shouldIgnoreTemplate(template: Template, options: DependencyOptions) {
     return (options) ? options.ignoreTemplate === template : false;
   }
 
