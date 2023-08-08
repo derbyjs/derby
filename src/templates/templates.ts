@@ -7,7 +7,7 @@ import { DependencyOptions } from './dependencyOptions';
 import { type Expression } from './expressions';
 import { concat, hasKeys, traverseAndCreate } from './util';
 
-export type Attributes = Record<string, Attribute>
+export type Attributes = Record<string, Attribute>;
 
 // UPDATE_PROPERTIES map HTML attribute names to an Element DOM property that
 // should be used for setting on bindings updates instead of setAttribute.
@@ -106,30 +106,30 @@ export class Template {
     return this.source;
   }
 
-  get(context, unescaped): string | boolean | Template {
+  get(context: Context, unescaped: boolean): any {
     return contentHtml(this.content, context, unescaped);
   }
 
-  getFragment(context, binding?) {
+  getFragment(context: Context, binding?) {
     const fragment = document.createDocumentFragment();
     this.appendTo(fragment, context, binding);
     return fragment;
   }
 
-  appendTo(parent: Node, context, _binding?) {
+  appendTo(parent: Node, context: Context, _binding?) {
     context.pause();
     appendContent(parent, this.content, context);
     context.unpause();
   }
 
-  attachTo(parent: Node, node, context) {
+  attachTo(parent: Node, node, context: Context) {
     context.pause();
     var node = attachContent(parent, node, this.content, context);
     context.unpause();
     return node;
   }
 
-  update(_context, _binding) { }
+  update(_context: Context, _binding) { }
 
   stringify(value) {
     return (value == null) ? '' : value + '';
@@ -139,17 +139,17 @@ export class Template {
     return this === other;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.content, this.source);
   }
 
-  isUnbound(context) {
+  isUnbound(context: Context): boolean {
     return context.unbound;
   }
 
-  resolve() { }
+  resolve(_context: Context): any { }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options) {
     if (DependencyOptions.shouldIgnoreTemplate(this, options)) return;
     return concatArrayDependencies(null, this.content, context, options);
   }
@@ -194,7 +194,7 @@ export class Doctype extends Template {
     return node.nextSibling;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.name, this.publicId, this.systemId);
   }
 
@@ -225,7 +225,7 @@ export class Text extends Template {
     return attachText(parent, node, this.data, this);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.data);
   }
 
@@ -317,7 +317,7 @@ export class DynamicText extends Template {
     return this.expression.get(context);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expression);
   }
 
@@ -388,7 +388,7 @@ export class Comment extends Template {
     return attachComment(parent, node, this.data, this, context);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.data, this.hooks);
   }
 
@@ -431,7 +431,7 @@ export class DynamicComment extends Template {
     binding.node.data = this.stringify(value);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expression, this.hooks);
   }
 
@@ -488,7 +488,7 @@ export class Html extends Template {
     return attachHtml(parent, node, this.data);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.data);
   }
 
@@ -547,7 +547,7 @@ export class DynamicHtml extends Template {
     replaceRange(context, start, end, fragment, binding, innerOnly);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expression);
   }
 
@@ -590,7 +590,7 @@ export class Attribute extends Template {
     this.ns = ns;
   }
 
-  get(_context?) {
+  get(_context?: Context): any {
     return this.data;
   }
 
@@ -598,7 +598,7 @@ export class Attribute extends Template {
     return this.get();
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.data, this.ns);
   }
 
@@ -667,7 +667,7 @@ export class DynamicAttribute extends Attribute {
     }
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expression, this.ns);
   }
 
@@ -795,7 +795,7 @@ abstract class BaseElement<T> extends Template {
     }
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(
       this,
       this.tagName,
@@ -935,7 +935,7 @@ export class Block extends BaseBlock {
     return node;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expression, this.content);
   }
 
@@ -1027,7 +1027,7 @@ export class ConditionalBlock extends BaseBlock {
     return node;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expressions, this.contents);
   }
 
@@ -1226,7 +1226,7 @@ export class EachBlock extends Block {
     parent.insertBefore(fragment, node || null);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expression, this.content, this.elseContent);
   }
 
@@ -1295,7 +1295,7 @@ function attachContent(parent, node, content: Template[], context) {
   return node;
 }
 
-function contentHtml(content: Template[], context, unescaped) {
+function contentHtml(content: Template[], context, unescaped): string {
   let html = '';
   for (let i = 0, len = content.length; i < len; i++) {
     html += content[i].get(context, unescaped);
@@ -1677,7 +1677,7 @@ export class Marker extends Comment {
     super(data, markerHooks);
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.data);
   }
 
@@ -1742,7 +1742,7 @@ export class View extends Template {
     this.fromSerialized = false;
   }
 
-  serialize() {
+  serialize(): string {
     return null;
   }
 
@@ -1896,7 +1896,7 @@ export class ViewInstance extends BaseViewInstance {
     this.view = null;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.name, this.attributes, this.hooks, this.initHooks);
   }
 
@@ -1932,7 +1932,7 @@ export class DynamicViewInstance extends BaseViewInstance {
     this.nameExpression = nameExpression;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.nameExpression, this.attributes, this.hooks, this.initHooks);
   }
 
@@ -1965,7 +1965,7 @@ export class ViewParent extends Template {
     this.template = template;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.template);
   }
 
@@ -2012,7 +2012,7 @@ export class ContextClosure extends Template {
     this.context = context;
   }
 
-  serialize() {
+  serialize(): string {
     throw new Error('ContextClosure cannot be serialized');
   }
 
@@ -2188,7 +2188,7 @@ export class ElementOn extends MarkupHook<Element> {
     this.expression = expression;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.name, this.expression);
   }
 
@@ -2232,7 +2232,7 @@ export class ComponentOn extends MarkupHook<any> {
     this.expression = expression;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.name, this.expression);
   }
 
@@ -2255,7 +2255,7 @@ export class AsProperty extends MarkupHook<any> {
     this.lastSegment = segments.pop();
   }
 
-  serialize() {
+  serialize(): string {
     const segments = this.segments.concat(this.lastSegment);
     return serializeObject.instance(this, segments);
   }
@@ -2302,7 +2302,7 @@ export class AsObject extends AsProperty {
     this.keyExpression = keyExpression;
   }
 
-  serialize() {
+  serialize(): string {
     const segments = this.segments.concat(this.lastSegment);
     return serializeObject.instance(this, segments, this.keyExpression);
   }

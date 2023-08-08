@@ -4,7 +4,7 @@ import { ContextClosure, Template } from './templates';
 import * as operatorFns from './operatorFns';
 import * as serializeObject from 'serialize-object';
 
-export function lookup(segments: string[], value) {
+export function lookup(segments: string[] | undefined, value: any) {
   if (!segments) return value;
 
   for (let i = 0, len = segments.length; i < len; i++) {
@@ -15,11 +15,11 @@ export function lookup(segments: string[], value) {
 }
 
 // Unlike JS, `[]` is falsey. Otherwise, truthiness is the same as JS
-export function templateTruthy(value) {
+export function templateTruthy(value: any[] | PrimitiveValue): boolean {
   return (Array.isArray(value)) ? value.length > 0 : !!value;
 }
 
-export function pathSegments(segments) {
+export function pathSegments(segments: any[]) {
   const result = [];
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
@@ -40,7 +40,7 @@ export function renderValue(value: Renderable, context: Context) {
         renderObject(value, context);
 }
 
-export function renderTemplate(template: Template, context: Context) {
+export function renderTemplate(template: Renderable, context: Context): PrimitiveValue | Record<string, Template> {
   let i = 1000;
   let value: Renderable = template;
   while (value instanceof Template) {
@@ -88,19 +88,21 @@ function renderObjectProperties(object: Record<string, Renderable>, context: Con
 
 //#endregion
 
+type BindType = 'bound' | 'unbound'; // 'unbound' | 'bound' // parsing/index.js#799
+
 export class ExpressionMeta {
-  source: string;
+  as: string;
+  bindType: BindType;
   blockType: string;
   isEnd: boolean;
-  as: string;
   keyAs: string;
-  unescaped: boolean;
-  bindType: string; // 'unbound' | 'bound' // parsing/index.js#799
-  valueType: string;
   module = 'expressions';
+  source: string;
   type = 'ExpressionMeta';
+  unescaped: boolean;
+  valueType: string;
 
-  constructor(source, blockType?, isEnd?, as?, keyAs?, unescaped?, bindType?, valueType?) {
+  constructor(source: string, blockType?: string, isEnd?: boolean, as?: string, keyAs?: string, unescaped?: boolean, bindType?: BindType, valueType?: string) {
     this.source = source;
     this.blockType = blockType;
     this.isEnd = isEnd;
@@ -111,7 +113,7 @@ export class ExpressionMeta {
     this.valueType = valueType;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(
       this,
       this.source,
@@ -126,25 +128,25 @@ export class ExpressionMeta {
   }
 }
 
-export class Expression {
+export abstract class Expression {
   module = 'expressions';
   type = 'Expression';
   meta: ExpressionMeta;
   segments: string[];
 
-  constructor(meta) {
+  constructor(meta: ExpressionMeta) {
     this.meta = meta;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.meta);
   }
 
-  toString() {
+  toString(): string {
     return this.meta && this.meta.source;
   }
 
-  truthy(context) {
+  truthy(context: Context) {
     const blockType = this.meta.blockType;
     if (blockType === 'else') return true;
     const value = this.get(context, true);
@@ -152,32 +154,32 @@ export class Expression {
     return (blockType === 'unless') ? !truthy : truthy;
   }
 
-  get(_context, _flag?): any { }
+  abstract get(_context: Context, _flag?: boolean): any;
 
   // Return the expression's segment list with context objects
-  resolve(_context): any { }
+  resolve(_context: Context): any { }
 
   // Return a list of segment lists or null
-  dependencies(_context, _options): any { }
+  dependencies(_context: Context, _options: any): string[][] | undefined { return undefined; };
 
   // Return the pathSegments that the expression currently resolves to or null
-  pathSegments(context) {
+  pathSegments(context: Context): any[] {
     const segments = this.resolve(context);
     return segments && pathSegments(segments);
   }
 
-  set(context, value) {
+  set(context: Context, value: any): void {
     const segments = this.pathSegments(context);
     if (!segments) throw new Error('Expression does not support setting');
     context.controller.model._set(segments, value);
   }
 
-  _resolvePatch(context, segments) {
+  _resolvePatch(context: Context, segments: any[]): any[] {
     return (context && context.expression === this && context.item != null) ?
       segments.concat(context) : segments;
   }
 
-  isUnbound(context) {
+  isUnbound(context: Pick<Context, 'unbound'>): boolean {
     // If the template being rendered has an explicit bindType keyword, such as:
     // {{unbound #item.text}}
     const bindType = this.meta && this.meta.bindType;
@@ -187,7 +189,7 @@ export class Expression {
     return context.unbound;
   }
 
-  _lookupAndContextifyValue(value, context) {
+  _lookupAndContextifyValue(value: Renderable, context: Context): any {
     if (this.segments && this.segments.length) {
       // If expression has segments, e.g. `bar.baz` in `#foo.bar.baz`, then
       // render the base value (e.g. `#foo`) if it's a template and look up the
@@ -208,16 +210,16 @@ export class LiteralExpression extends Expression {
   type = 'LiteralExpression';
   value: any;
 
-  constructor(value, meta) {
+  constructor(value: any, meta: ExpressionMeta) {
     super(meta);
     this.value = value;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.value, this.meta);
   }
 
-  get() {
+  get(): any {
     return this.value;
   }
 }
@@ -226,16 +228,16 @@ export class PathExpression extends Expression {
   type = 'PathExpression';
   segments: string[];
 
-  constructor(segments, meta) {
+  constructor(segments: string[], meta: ExpressionMeta) {
     super(meta);
     this.segments = segments;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.segments, this.meta);
   }
 
-  get(context) {
+  get(context: Context): Record<string, any> {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
@@ -243,7 +245,7 @@ export class PathExpression extends Expression {
     return lookup(this.segments, context.controller.model.data);
   }
 
-  resolve(context) {
+  resolve(context: Context): any[] {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
@@ -252,7 +254,7 @@ export class PathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any): any {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
@@ -266,23 +268,23 @@ export class PathExpression extends Expression {
 export class RelativePathExpression extends Expression {
   type = 'RelativePathExpression';
 
-  constructor(segments, meta) {
+  constructor(segments: string[], meta: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.meta = meta;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.segments, this.meta);
   }
 
-  get(context) {
+  get(context: Context): any {
     const relativeContext = context.forRelative(this);
     const value = relativeContext.get();
     return this._lookupAndContextifyValue(value, relativeContext);
   }
 
-  resolve(context) {
+  resolve(context: Context): any[] {
     const relativeContext = context.forRelative(this);
     const base = (relativeContext.expression) ?
       relativeContext.expression.resolve(relativeContext) :
@@ -292,7 +294,7 @@ export class RelativePathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any): any[] {
     // Return inner dependencies from our ancestor
     // (e.g., {{ with foo[bar] }} ... {{ this.x }} has 'bar' as a dependency.)
     const relativeContext = context.forRelative(this);
@@ -306,18 +308,18 @@ export class AliasPathExpression extends Expression {
   type = 'AliasPathExpression';
   alias: any;
 
-  constructor(alias, segments, meta) {
+  constructor(alias: any, segments: string[], meta: ExpressionMeta) {
     super(meta);
     this.alias = alias;
     this.segments = segments;
     this.meta = meta;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.alias, this.segments, this.meta);
   }
 
-  get(context) {
+  get(context: Context) {
     const aliasContext = context.forAlias(this.alias);
     if (!aliasContext) return;
     if (aliasContext.keyAlias === this.alias) {
@@ -327,7 +329,7 @@ export class AliasPathExpression extends Expression {
     return this._lookupAndContextifyValue(value, aliasContext);
   }
 
-  resolve(context) {
+  resolve(context: Context) {
     const aliasContext = context.forAlias(this.alias);
     if (!aliasContext) return;
     if (aliasContext.keyAlias === this.alias) return;
@@ -337,7 +339,7 @@ export class AliasPathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any) {
     const aliasContext = context.forAlias(this.alias);
     if (!aliasContext) return;
     if (aliasContext.keyAlias === this.alias) {
@@ -357,17 +359,17 @@ export class AliasPathExpression extends Expression {
 export class AttributePathExpression extends Expression {
   type = 'AttributePathExpression';
   attribute: any;
-  constructor(attribute, segments, meta) {
+  constructor(attribute: any, segments: string[], meta: ExpressionMeta) {
     super(meta);
     this.attribute = attribute;
     this.segments = segments;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.attribute, this.segments, this.meta);
   }
 
-  get(context) {
+  get(context: Context) {
     const attributeContext = context.forAttribute(this.attribute);
     if (!attributeContext) return;
     let value = attributeContext.attributes[this.attribute];
@@ -377,11 +379,11 @@ export class AttributePathExpression extends Expression {
     return this._lookupAndContextifyValue(value, attributeContext);
   }
 
-  resolve(context) {
+  resolve(context: Context) {
     const attributeContext = context.forAttribute(this.attribute);
     if (!attributeContext) return;
     // Attributes may be a template, an expression, or a literal value
-    let base;
+    let base: any[];
     const value = attributeContext.attributes[this.attribute];
     if (value instanceof Expression || value instanceof Template) {
       base = value.resolve(attributeContext);
@@ -391,7 +393,7 @@ export class AttributePathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any) {
     const attributeContext = context.forAttribute(this.attribute);
     if (!attributeContext) return;
 
@@ -408,7 +410,7 @@ export class BracketsExpression extends Expression {
   inside: any;
   afterSegments: any;
 
-  constructor(before, inside, afterSegments, meta) {
+  constructor(before: any, inside: any, afterSegments: any, meta: ExpressionMeta) {
     super(meta);
     this.before = before;
     this.inside = inside;
@@ -420,7 +422,7 @@ export class BracketsExpression extends Expression {
     return serializeObject.instance(this, this.before, this.inside, this.afterSegments, this.meta);
   };
 
-  get(context) {
+  get(context: Context) {
     const inside = this.inside.get(context);
     if (inside == null) return;
     const before = this.before.get(context);
@@ -429,7 +431,7 @@ export class BracketsExpression extends Expression {
     return (this.afterSegments) ? lookup(this.afterSegments, base) : base;
   }
 
-  resolve(context) {
+  resolve(context: Context) {
     // Get and split the current value of the expression inside the brackets
     const inside = this.inside.get(context);
     if (inside == null) return;
@@ -443,7 +445,7 @@ export class BracketsExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any) {
     const before = this.before.dependencies(context, options);
     if (before) before.pop();
     const inner = this.inside.dependencies(context, options);
@@ -462,7 +464,7 @@ export class DeferRenderExpression extends Expression {
   template: any;
   type = 'DeferRenderExpression';
 
-  constructor(template, meta) {
+  constructor(template: any, meta: ExpressionMeta) {
     super(meta);
     if (!(template instanceof Template)) {
       throw new Error('DeferRenderExpression requires a Template argument');
@@ -471,11 +473,11 @@ export class DeferRenderExpression extends Expression {
     this.meta = meta;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.template, this.meta);
   }
 
-  get(context) {
+  get(context: Context) {
     return new ContextClosure(this.template, context);
   }
 }
@@ -485,18 +487,18 @@ export class ArrayExpression extends Expression {
   afterSegments: any;
   type = 'ArrayExpression';
 
-  constructor(items, afterSegments, meta) {
+  constructor(items: any, afterSegments: any, meta: ExpressionMeta) {
     super(meta);
     this.items = items;
     this.afterSegments = afterSegments;
     this.meta = meta;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.items, this.afterSegments, this.meta);
   }
 
-  get(context) {
+  get(context: Context) {
     const items = new Array(this.items.length);
     for (let i = 0; i < this.items.length; i++) {
       const value = this.items[i].get(context);
@@ -505,9 +507,9 @@ export class ArrayExpression extends Expression {
     return (this.afterSegments) ? lookup(this.afterSegments, items) : items;
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any) {
     if (!this.items) return;
-    let dependencies;
+    let dependencies: any;
     for (let i = 0; i < this.items.length; i++) {
       const itemDependencies = this.items[i].dependencies(context, options);
       dependencies = concat(dependencies, itemDependencies);
@@ -521,17 +523,17 @@ export class ObjectExpression extends Expression {
   afterSegments: any;
   type = 'ObjectExpression';
 
-  constructor(properties, afterSegments, meta) {
+  constructor(properties: any, afterSegments: any, meta: ExpressionMeta) {
     super(meta);
     this.properties = properties;
     this.afterSegments = afterSegments;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.properties, this.afterSegments, this.meta);
   }
 
-  get(context) {
+  get(context: Context) {
     const object = {};
     for (const key in this.properties) {
       const value = this.properties[key].get(context);
@@ -540,9 +542,9 @@ export class ObjectExpression extends Expression {
     return (this.afterSegments) ? lookup(this.afterSegments, object) : object;
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any) {
     if (!this.properties) return;
-    let dependencies;
+    let dependencies: any;
     for (const key in this.properties) {
       const propertyDependencies = this.properties[key].dependencies(context, options);
       dependencies = concat(dependencies, propertyDependencies);
@@ -558,7 +560,7 @@ export class FnExpression extends Expression {
   parentSegments: any;
   type = 'FnExpression';
 
-  constructor(segments, args, afterSegments, meta) {
+  constructor(segments: string[], args: any, afterSegments: any, meta: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.args = args;
@@ -569,17 +571,17 @@ export class FnExpression extends Expression {
     this.parentSegments = (parentSegments && parentSegments.length) ? parentSegments : null;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.segments, this.args, this.afterSegments, this.meta);
   }
 
-  get(context) {
+  get(context: Context) {
     const value = this.apply(context);
     // Lookup property underneath computed value if needed
     return (this.afterSegments) ? lookup(this.afterSegments, value) : value;
   }
 
-  apply(context, extraInputs?) {
+  apply(context: Context, extraInputs?: any[]) {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
@@ -591,7 +593,7 @@ export class FnExpression extends Expression {
     return out;
   }
 
-  _lookupParent(context) {
+  _lookupParent(context: Context) {
     // Lookup function on current controller
     const controller = context.controller;
     const segments = this.parentSegments;
@@ -610,7 +612,7 @@ export class FnExpression extends Expression {
     throw new Error('Function not found for: ' + this.segments.join('.'));
   }
 
-  _getInputs(context) {
+  _getInputs(context: Context) {
     const inputs = [];
     for (let i = 0, len = this.args.length; i < len; i++) {
       const value = this.args[i].get(context);
@@ -619,7 +621,7 @@ export class FnExpression extends Expression {
     return inputs;
   }
 
-  _applyFn(fn, context, extraInputs, thisArg) {
+  _applyFn(fn: { apply: (arg0: any, arg1: any[]) => any; call: (arg0: any) => any; }, context: Context, extraInputs: any[], thisArg: any) {
     // Apply if there are no path inputs
     if (!this.args) {
       return (extraInputs) ?
@@ -636,7 +638,7 @@ export class FnExpression extends Expression {
     return fn.apply(thisArg, inputs);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any): any[] {
     const dependencies = [];
     if (!this.args) return dependencies;
     for (let i = 0, len = this.args.length; i < len; i++) {
@@ -655,9 +657,9 @@ export class FnExpression extends Expression {
     return dependencies;
   }
 
-  set(context, value) {
+  set(context: Context, value: any) {
     let controller = context.controller;
-    let fn, parent;
+    let fn: { set: any; }, parent: { [x: string]: any; };
     while (controller) {
       parent = (this.parentSegments) ?
         lookup(this.parentSegments, controller) :
@@ -680,11 +682,11 @@ export class FnExpression extends Expression {
 export class NewExpression extends FnExpression {
   type = 'NewExpression';
 
-  constructor(segments, args, afterSegments, meta) {
+  constructor(segments: any, args: any, afterSegments: any, meta: ExpressionMeta) {
     super(segments, args, afterSegments, meta);
   }
 
-  _applyFn(Fn, context) {
+  _applyFn(Fn: { new(): any; bind: { apply: (arg0: any, arg1: any[]) => any; }; }, context: Context) {
     // Apply if there are no path inputs
     if (!this.args) return new Fn();
     // Otherwise, get the current value for path inputs and apply
@@ -700,23 +702,23 @@ export class OperatorExpression extends FnExpression {
   getFn: any;
   setFn: any;
 
-  constructor(name, args, afterSegments, meta) {
+  constructor(name: string, args: any, afterSegments: any, meta: ExpressionMeta) {
     super(null, args, afterSegments, meta);
     this.name = name;
     this.getFn = operatorFns.get[name];
     this.setFn = operatorFns.set[name];
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.name, this.args, this.afterSegments, this.meta);
   }
 
-  apply(context) {
+  apply(context: Context) {
     const inputs = this._getInputs(context);
     return this.getFn.apply(null, inputs);
   }
 
-  set(context, value) {
+  set(context: Context, value: any) {
     const inputs = this._getInputs(context);
     inputs.unshift(value);
     const out = this.setFn.apply(null, inputs);
@@ -728,21 +730,25 @@ export class OperatorExpression extends FnExpression {
 
 export class SequenceExpression extends OperatorExpression {
   type = 'SequenceExpression';
-  constructor(args, afterSegments, meta) {
+  constructor(args: any, afterSegments: any, meta: ExpressionMeta) {
     super(',', args, afterSegments, meta);
     this.args = args;
     this.afterSegments = afterSegments;
     this.meta = meta;
   }
-  serialize() {
+
+  serialize(): string {
     return serializeObject.instance(this, this.args, this.afterSegments, this.meta);
   }
-  getFn = operatorFns.get[','];
-  resolve(context) {
+
+  getFn = operatorFns.get[',']; 
+
+  resolve(context: Context) {
     const last = this.args[this.args.length - 1];
     return last.resolve(context);
   }
-  dependencies(context, options) {
+
+  dependencies(context: Context, options: any) {
     const dependencies = [];
     for (let i = 0, len = this.args.length; i < len; i++) {
       const argDependencies = this.args[i].dependencies(context, options);
@@ -753,51 +759,52 @@ export class SequenceExpression extends OperatorExpression {
     return dependencies;
   }
 }
+
 // For each method that takes a context argument, get the nearest parent view
 // context, then delegate methods to the inner expression
 export class ViewParentExpression extends Expression {
   type = 'ViewParentExpression';
-  expression: any;
+  expression: Expression;
 
-  constructor(expression, meta) {
+  constructor(expression: Expression, meta: ExpressionMeta) {
     super(meta);
     this.expression = expression;
   }
 
-  serialize() {
+  serialize(): string {
     return serializeObject.instance(this, this.expression, this.meta);
   }
 
-  get(context) {
+  get(context: Context) {
     const parentContext = context.forViewParent();
     return this.expression.get(parentContext);
   }
 
-  resolve(context) {
+  resolve(context: Context) {
     const parentContext = context.forViewParent();
     return this.expression.resolve(parentContext);
   }
 
-  dependencies(context, options) {
+  dependencies(context: Context, options: any) {
     const parentContext = context.forViewParent();
     return this.expression.dependencies(parentContext, options);
   }
 
-  pathSegments(context) {
+  pathSegments(context: Context) {
     const parentContext = context.forViewParent();
     return this.expression.pathSegments(parentContext);
   }
 
-  set(context, value) {
+  set(context: Context, value: any) {
     const parentContext = context.forViewParent();
     return this.expression.set(parentContext, value);
   }
 }
 
 export class ScopedModelExpression extends Expression {
-  expression: any;
+  expression: Expression;
   type = 'ScopedModelExpression';
-  constructor(expression, meta) {
+  constructor(expression: Expression, meta: ExpressionMeta) {
     super(meta);
     this.expression = expression;
     this.meta = meta;
@@ -808,37 +815,37 @@ export class ScopedModelExpression extends Expression {
   };
 
   // Return a scoped model instead of the value
-  get = function(context) {
+  get = function(context: Context) {
     const segments = this.pathSegments(context);
     if (!segments) return;
     return context.controller.model.scope(segments.join('.'));
   };
 
   // Delegate other methods to the inner expression
-  resolve = function(context) {
+  resolve = function(context: Context) {
     return this.expression.resolve(context);
   };
 
-  dependencies = function(context, options) {
+  dependencies = function(context: Context, options: any) {
     return this.expression.dependencies(context, options);
   };
 
-  pathSegments = function(context) {
+  pathSegments = function(context: Context) {
     return this.expression.pathSegments(context);
   };
 
-  set = function(context, value) {
+  set = function(context: Context, value: any) {
     return this.expression.set(context, value);
   };
 }
 
-function getDependencies(value, context, options) {
+function getDependencies(value: Record<string, any>, context: Context, options: any) {
   if (value instanceof Expression || value instanceof Template) {
     return value.dependencies(context, options);
   }
 }
 
-function appendDependency(dependencies, expression, context) {
+function appendDependency(dependencies: any[], expression: Expression, context: Context) {
   const segments = expression.resolve(context);
   if (!segments) return dependencies;
   if (dependencies) {
@@ -848,7 +855,7 @@ function appendDependency(dependencies, expression, context) {
   return [segments];
 }
 
-function swapLastDependency(dependencies, expression, context) {
+function swapLastDependency(dependencies: any[], expression: Expression, context: Context) {
   if (!expression.segments.length) {
     return dependencies;
   }

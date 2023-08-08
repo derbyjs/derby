@@ -158,7 +158,7 @@ export class Context {
     return context;
   }
 
-  forRelative(expression) {
+  forRelative(expression: Expression) {
     let context: Context = this;
     while (context && context.expression === expression || context.view) {
       context = context.parent;
@@ -167,7 +167,7 @@ export class Context {
   }
 
   // Returns the closest context which defined the named alias
-  forAlias(alias) {
+  forAlias(alias: string) {
     let context: Context = this;
     while (context) {
       if (context.alias === alias || context.keyAlias === alias) return context;
@@ -176,7 +176,7 @@ export class Context {
   }
 
   // Returns the closest containing context for a view attribute name or nothing
-  forAttribute(attribute) {
+  forAttribute(attribute: string) {
     let context: Context = this;
     while (context) {
       // Find the closest context associated with a view
