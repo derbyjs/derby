@@ -821,31 +821,31 @@ export class ScopedModelExpression extends Expression {
     this.meta = meta;
   }
 
-  serialize = function() {
+  serialize() {
     return serializeObject.instance(this, this.expression, this.meta);
   };
 
   // Return a scoped model instead of the value
-  get = function(context: Context) {
+  get(context: Context) {
     const segments = this.pathSegments(context);
     if (!segments) return;
     return context.controller.model.scope(segments.join('.'));
   };
 
   // Delegate other methods to the inner expression
-  resolve = function(context: Context) {
+  resolve(context: Context) {
     return this.expression.resolve(context);
   };
 
-  dependencies = function(context: Context, options: any) {
+  dependencies(context: Context, options: any) {
     return this.expression.dependencies(context, options);
   };
 
-  pathSegments = function(context: Context) {
+  pathSegments(context: Context) {
     return this.expression.pathSegments(context);
   };
 
-  set = function(context: Context, value: any) {
+  set(context: Context, value: any) {
     return this.expression.set(context, value);
   };
 }
