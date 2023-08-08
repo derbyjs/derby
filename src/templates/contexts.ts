@@ -28,7 +28,7 @@ export class Context {
   expression?: Expression;
   alias?: string;
   keyAlias?: string;
-  item?: any;
+  item?: number;
   view?: View;
   attributes?: Attributes;
   hooks?: MarkupHook<any>[];

@@ -4,12 +4,17 @@ import { ContextClosure, Template } from './templates';
 import * as operatorFns from './operatorFns';
 import * as serializeObject from 'serialize-object';
 
-export function lookup(segments: string[] | undefined, value: any) {
+type Segment = string | { item: number } | Context;
+type Segments = Segment[];
+
+export function lookup(segments: Segments | undefined, value: any) {
   if (!segments) return value;
 
   for (let i = 0, len = segments.length; i < len; i++) {
     if (value == null) return value;
-    value = value[segments[i]];
+    const segment = segments[i];
+    const index = (typeof segment === 'object') ? segment.item : segment;
+    value = value[index];
   }
   return value;
 }
@@ -19,7 +24,7 @@ export function templateTruthy(value: any[] | PrimitiveValue): boolean {
   return (Array.isArray(value)) ? value.length > 0 : !!value;
 }
 
-export function pathSegments(segments: any[]) {
+export function pathSegments(segments: Segments) {
   const result = [];
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
@@ -132,7 +137,7 @@ export abstract class Expression {
   module = 'expressions';
   type = 'Expression';
   meta: ExpressionMeta;
-  segments: string[];
+  segments: Segments;
 
   constructor(meta: ExpressionMeta) {
     this.meta = meta;
@@ -174,9 +179,14 @@ export abstract class Expression {
     context.controller.model._set(segments, value);
   }
 
-  _resolvePatch(context: Context, segments: any[]): any[] {
-    return (context && context.expression === this && context.item != null) ?
-      segments.concat(context) : segments;
+  _resolvePatch(context: Context, segments: Segments): Segments {
+    if (context.item == null) {
+      return segments;
+    }
+    if (context.expression === this) {
+      return segments.concat(context);
+    }
+    return segments;
   }
 
   isUnbound(context: Pick<Context, 'unbound'>): boolean {
@@ -226,9 +236,9 @@ export class LiteralExpression extends Expression {
 
 export class PathExpression extends Expression {
   type = 'PathExpression';
-  segments: string[];
+  segments: Segments;
 
-  constructor(segments: string[], meta: ExpressionMeta) {
+  constructor(segments: Segments, meta: ExpressionMeta) {
     super(meta);
     this.segments = segments;
   }
@@ -268,7 +278,7 @@ export class PathExpression extends Expression {
 export class RelativePathExpression extends Expression {
   type = 'RelativePathExpression';
 
-  constructor(segments: string[], meta: ExpressionMeta) {
+  constructor(segments: Segments, meta: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.meta = meta;
@@ -308,7 +318,7 @@ export class AliasPathExpression extends Expression {
   type = 'AliasPathExpression';
   alias: any;
 
-  constructor(alias: any, segments: string[], meta: ExpressionMeta) {
+  constructor(alias: any, segments: Segments, meta: ExpressionMeta) {
     super(meta);
     this.alias = alias;
     this.segments = segments;
@@ -359,7 +369,7 @@ export class AliasPathExpression extends Expression {
 export class AttributePathExpression extends Expression {
   type = 'AttributePathExpression';
   attribute: any;
-  constructor(attribute: any, segments: string[], meta: ExpressionMeta) {
+  constructor(attribute: any, segments: Segments, meta: ExpressionMeta) {
     super(meta);
     this.attribute = attribute;
     this.segments = segments;
@@ -560,7 +570,7 @@ export class FnExpression extends Expression {
   parentSegments: any;
   type = 'FnExpression';
 
-  constructor(segments: string[], args: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(segments: Segments, args: any, afterSegments: any, meta: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.args = args;
