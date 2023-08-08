@@ -25,7 +25,7 @@ export function templateTruthy(value: Value[] | PrimitiveValue): boolean {
   return (Array.isArray(value)) ? value.length > 0 : !!value;
 }
 
-export function pathSegments(segments: Segments) {
+export function pathSegments(segments: Segments): Segments {
   const result = [];
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
@@ -170,7 +170,7 @@ export abstract class Expression {
   dependencies(_context: Context, _options: any): string[][] | undefined { return undefined; };
 
   // Return the pathSegments that the expression currently resolves to or null
-  pathSegments(context: Context): any[] {
+  pathSegments(context: Context): Segments | null {
     const segments = this.resolve(context);
     return segments && pathSegments(segments);
   }
