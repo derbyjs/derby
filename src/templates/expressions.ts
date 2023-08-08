@@ -21,7 +21,7 @@ export function lookup(segments: Segments | undefined, value: Value) {
 }
 
 // Unlike JS, `[]` is falsey. Otherwise, truthiness is the same as JS
-export function templateTruthy(value: any[] | PrimitiveValue): boolean {
+export function templateTruthy(value: Value[] | PrimitiveValue): boolean {
   return (Array.isArray(value)) ? value.length > 0 : !!value;
 }
 
