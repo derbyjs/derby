@@ -94,20 +94,21 @@ function renderObjectProperties(object: Record<string, Renderable>, context: Con
 //#endregion
 
 type BindType = 'bound' | 'unbound'; // 'unbound' | 'bound' // parsing/index.js#799
+type ValueType = 'view' | undefined;
 
 export class ExpressionMeta {
   as: string;
   bindType: BindType;
-  blockType: string;
+  blockType: string; // 'if' | 'else if' | 'else' | 'unless' | 'on' | 'end' | 'each'
   isEnd: boolean;
   keyAs: string;
   module = 'expressions';
   source: string;
   type = 'ExpressionMeta';
   unescaped: boolean;
-  valueType: string;
+  valueType: ValueType;
 
-  constructor(source: string, blockType?: string, isEnd?: boolean, as?: string, keyAs?: string, unescaped?: boolean, bindType?: BindType, valueType?: string) {
+  constructor(source: string, blockType?: string, isEnd?: boolean, as?: string, keyAs?: string, unescaped?: boolean, bindType?: BindType, valueType?: ValueType) {
     this.source = source;
     this.blockType = blockType;
     this.isEnd = isEnd;
