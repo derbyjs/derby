@@ -6,8 +6,9 @@ import * as serializeObject from 'serialize-object';
 
 type Segment = string | { item: number } | Context;
 type Segments = Segment[];
+type Value = any; // global | Page | ModelData
 
-export function lookup(segments: Segments | undefined, value: any) {
+export function lookup(segments: Segments | undefined, value: Value) {
   if (!segments) return value;
 
   for (let i = 0, len = segments.length; i < len; i++) {
@@ -174,7 +175,7 @@ export abstract class Expression {
     return segments && pathSegments(segments);
   }
 
-  set(context: Context, value: any): void {
+  set(context: Context, value: Value): void {
     const segments = this.pathSegments(context);
     if (!segments) throw new Error('Expression does not support setting');
     context.controller.model._set(segments, value);
@@ -219,9 +220,9 @@ export abstract class Expression {
 
 export class LiteralExpression extends Expression {
   type = 'LiteralExpression';
-  value: any;
+  value: Value;
 
-  constructor(value: any, meta: ExpressionMeta) {
+  constructor(value: Value, meta: ExpressionMeta) {
     super(meta);
     this.value = value;
   }
@@ -668,7 +669,7 @@ export class FnExpression extends Expression {
     return dependencies;
   }
 
-  set(context: Context, value: any) {
+  set(context: Context, value: Value) {
     let controller = context.controller;
     let fn: { set: any; }, parent: { [x: string]: any; };
     while (controller) {
@@ -729,7 +730,7 @@ export class OperatorExpression extends FnExpression {
     return this.getFn.apply(null, inputs);
   }
 
-  set(context: Context, value: any) {
+  set(context: Context, value: Value) {
     const inputs = this._getInputs(context);
     inputs.unshift(value);
     const out = this.setFn.apply(null, inputs);
@@ -806,7 +807,7 @@ export class ViewParentExpression extends Expression {
     return this.expression.pathSegments(parentContext);
   }
 
-  set(context: Context, value: any) {
+  set(context: Context, value: Value) {
     const parentContext = context.forViewParent();
     return this.expression.set(parentContext, value);
   }
@@ -845,7 +846,7 @@ export class ScopedModelExpression extends Expression {
     return this.expression.pathSegments(context);
   };
 
-  set(context: Context, value: any) {
+  set(context: Context, value: Value) {
     return this.expression.set(context, value);
   };
 }
