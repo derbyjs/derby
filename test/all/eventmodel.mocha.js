@@ -94,10 +94,9 @@ describe('eventmodel', function() {
   });
 
   describe('lists', function() {
-    it('Does not update an item binding inside a list item when something is inserted around it', function() {
+    it.skip('Does not update an item binding inside a list item when something is inserted around it', function() {
       //var ctx = {item:1};
       //this.em.addBinding(['list', ctx], this.binding);
-
     });
   });
 
