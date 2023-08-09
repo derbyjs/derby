@@ -1,5 +1,5 @@
-exports.contexts = require('./contexts');
-exports.expressions = require('./expressions');
-exports.operatorFns = require('./operatorFns');
-exports.options = require('./dependencyOptions').DependencyOptions;
-exports.templates = require('./templates');
+export * as contexts from './contexts';
+export * as expressions from './expressions';
+export * as operatorFns from './operatorFns';
+export * as templates from './templates';
+export { DependencyOptions as options} from './dependencyOptions';
