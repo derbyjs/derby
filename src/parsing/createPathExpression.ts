@@ -208,11 +208,11 @@ function reduceArrayExpression(node: estree.ArrayExpression) {
 }
 
 function isProperty(property: estree.Property | estree.SpreadElement): property is estree.Property {
-  return (property as estree.Property).key !== undefined;
+  return (property as estree.Property).type === Syntax.Property;
 }
 
 function isSpreadElement(property: estree.Property | estree.SpreadElement): property is estree.SpreadElement {
-  return (property as estree.SpreadElement).argument !== undefined;
+  return (property as estree.SpreadElement).type === Syntax.SpreadElement;
 }
 
 function reduceObjectExpression(node: estree.ObjectExpression) {
