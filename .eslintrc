@@ -34,7 +34,9 @@
     "no-cond-assign": [
       2,
       "except-parens"
-    ]
+    ],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   },
   "overrides": [
     {
