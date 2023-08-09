@@ -3,6 +3,7 @@ import { concat } from './util';
 import { ContextClosure, Template } from './templates';
 import * as operatorFns from './operatorFns';
 import * as serializeObject from 'serialize-object';
+import { DependencyOptions } from './dependencyOptions';
 
 type Segment = string | { item: number } | Context;
 type Segments = Segment[];
@@ -223,7 +224,7 @@ export class LiteralExpression extends Expression {
   type = 'LiteralExpression';
   value: Value;
 
-  constructor(value: Value, meta: ExpressionMeta) {
+  constructor(value: Value, meta?: ExpressionMeta) {
     super(meta);
     this.value = value;
   }
@@ -241,7 +242,7 @@ export class PathExpression extends Expression {
   type = 'PathExpression';
   segments: Segments;
 
-  constructor(segments: Segments, meta: ExpressionMeta) {
+  constructor(segments: Segments, meta?: ExpressionMeta) {
     super(meta);
     this.segments = segments;
   }
@@ -267,7 +268,7 @@ export class PathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context: Context, options: any): any {
+  dependencies(context: Context, options: DependencyOptions): any {
     // See View::dependencies. This is needed in order to handle the case of
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
@@ -281,7 +282,7 @@ export class PathExpression extends Expression {
 export class RelativePathExpression extends Expression {
   type = 'RelativePathExpression';
 
-  constructor(segments: Segments, meta: ExpressionMeta) {
+  constructor(segments: Segments, meta?: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.meta = meta;
@@ -307,7 +308,7 @@ export class RelativePathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context: Context, options: any): any[] {
+  dependencies(context: Context, options: DependencyOptions): any[] {
     // Return inner dependencies from our ancestor
     // (e.g., {{ with foo[bar] }} ... {{ this.x }} has 'bar' as a dependency.)
     const relativeContext = context.forRelative(this);
@@ -319,9 +320,9 @@ export class RelativePathExpression extends Expression {
 
 export class AliasPathExpression extends Expression {
   type = 'AliasPathExpression';
-  alias: any;
+  alias: string;
 
-  constructor(alias: any, segments: Segments, meta: ExpressionMeta) {
+  constructor(alias: string, segments: Segments, meta?: ExpressionMeta) {
     super(meta);
     this.alias = alias;
     this.segments = segments;
@@ -352,7 +353,7 @@ export class AliasPathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context: Context, options: any) {
+  dependencies(context: Context, options: DependencyOptions) {
     const aliasContext = context.forAlias(this.alias);
     if (!aliasContext) return;
     if (aliasContext.keyAlias === this.alias) {
@@ -372,7 +373,8 @@ export class AliasPathExpression extends Expression {
 export class AttributePathExpression extends Expression {
   type = 'AttributePathExpression';
   attribute: any;
-  constructor(attribute: any, segments: Segments, meta: ExpressionMeta) {
+
+  constructor(attribute: any, segments: Segments, meta?: ExpressionMeta) {
     super(meta);
     this.attribute = attribute;
     this.segments = segments;
@@ -406,7 +408,7 @@ export class AttributePathExpression extends Expression {
     return this._resolvePatch(context, segments);
   }
 
-  dependencies(context: Context, options: any) {
+  dependencies(context: Context, options: DependencyOptions) {
     const attributeContext = context.forAttribute(this.attribute);
     if (!attributeContext) return;
 
@@ -423,7 +425,7 @@ export class BracketsExpression extends Expression {
   inside: any;
   afterSegments: any;
 
-  constructor(before: any, inside: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(before: any, inside: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(meta);
     this.before = before;
     this.inside = inside;
@@ -474,10 +476,10 @@ export class BracketsExpression extends Expression {
 // is used to support array attributes of views. This way, we can evaluate an
 // array and iterate through it separately from rendering template content
 export class DeferRenderExpression extends Expression {
-  template: any;
+  template: Template;
   type = 'DeferRenderExpression';
 
-  constructor(template: any, meta: ExpressionMeta) {
+  constructor(template: Template, meta: ExpressionMeta) {
     super(meta);
     if (!(template instanceof Template)) {
       throw new Error('DeferRenderExpression requires a Template argument');
@@ -500,7 +502,7 @@ export class ArrayExpression extends Expression {
   afterSegments: any;
   type = 'ArrayExpression';
 
-  constructor(items: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(items: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(meta);
     this.items = items;
     this.afterSegments = afterSegments;
@@ -520,7 +522,7 @@ export class ArrayExpression extends Expression {
     return (this.afterSegments) ? lookup(this.afterSegments, items) : items;
   }
 
-  dependencies(context: Context, options: any) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (!this.items) return;
     let dependencies: any;
     for (let i = 0; i < this.items.length; i++) {
@@ -536,7 +538,7 @@ export class ObjectExpression extends Expression {
   afterSegments: any;
   type = 'ObjectExpression';
 
-  constructor(properties: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(properties: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(meta);
     this.properties = properties;
     this.afterSegments = afterSegments;
@@ -555,7 +557,7 @@ export class ObjectExpression extends Expression {
     return (this.afterSegments) ? lookup(this.afterSegments, object) : object;
   }
 
-  dependencies(context: Context, options: any) {
+  dependencies(context: Context, options: DependencyOptions) {
     if (!this.properties) return;
     let dependencies: any;
     for (const key in this.properties) {
@@ -573,7 +575,7 @@ export class FnExpression extends Expression {
   parentSegments: any;
   type = 'FnExpression';
 
-  constructor(segments: Segments, args: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(segments: Segments, args: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.args = args;
@@ -651,7 +653,7 @@ export class FnExpression extends Expression {
     return fn.apply(thisArg, inputs);
   }
 
-  dependencies(context: Context, options: any): any[] {
+  dependencies(context: Context, options: DependencyOptions): any[] {
     const dependencies = [];
     if (!this.args) return dependencies;
     for (let i = 0, len = this.args.length; i < len; i++) {
@@ -695,7 +697,7 @@ export class FnExpression extends Expression {
 export class NewExpression extends FnExpression {
   type = 'NewExpression';
 
-  constructor(segments: any, args: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(segments: any, args: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(segments, args, afterSegments, meta);
   }
 
@@ -715,7 +717,7 @@ export class OperatorExpression extends FnExpression {
   getFn: any;
   setFn: any;
 
-  constructor(name: string, args: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(name: string, args: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(null, args, afterSegments, meta);
     this.name = name;
     this.getFn = operatorFns.get[name];
@@ -743,7 +745,7 @@ export class OperatorExpression extends FnExpression {
 
 export class SequenceExpression extends OperatorExpression {
   type = 'SequenceExpression';
-  constructor(args: any, afterSegments: any, meta: ExpressionMeta) {
+  constructor(args: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(',', args, afterSegments, meta);
     this.args = args;
     this.afterSegments = afterSegments;
@@ -761,7 +763,7 @@ export class SequenceExpression extends OperatorExpression {
     return last.resolve(context);
   }
 
-  dependencies(context: Context, options: any) {
+  dependencies(context: Context, options: DependencyOptions) {
     const dependencies = [];
     for (let i = 0, len = this.args.length; i < len; i++) {
       const argDependencies = this.args[i].dependencies(context, options);
@@ -817,7 +819,7 @@ export class ViewParentExpression extends Expression {
 export class ScopedModelExpression extends Expression {
   expression: Expression;
   type = 'ScopedModelExpression';
-  constructor(expression: Expression, meta: ExpressionMeta) {
+  constructor(expression: Expression, meta?: ExpressionMeta) {
     super(meta);
     this.expression = expression;
     this.meta = meta;
