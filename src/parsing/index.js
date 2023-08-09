@@ -3,7 +3,7 @@ var htmlUtil = require('html-util');
 var path = require('path');
 var App = require('../App');
 var createPathExpression = require('./createPathExpression').createPathExpression;
-var markup = require('./markup');
+var markup = require('./markup').markup;
 
 var templates = derbyTemplates.templates;
 var expressions = derbyTemplates.expressions;
