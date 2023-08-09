@@ -6,7 +6,6 @@ const { Syntax } = esprima;
 export function createPathExpression(source) {
   // @ts-expect-error `parse` not declared in @types/esprima
   const parsed = esprima.parse(source);
-  console.log('PARSED', typeof parsed, parsed)
   const node = parsed.expression;
   return reduce(node);
 }
