@@ -168,7 +168,7 @@ export abstract class Expression {
   resolve(_context: Context): Segments | undefined { return undefined; }
 
   // Return a list of segment lists or null
-  dependencies(_context: Context, _options: any): string[][] | undefined { return undefined; };
+  dependencies(_context: Context, _options: any): string[][] | undefined { return undefined; }
 
   // Return the pathSegments that the expression currently resolves to or null
   pathSegments(context: Context): Segments | null {
@@ -825,31 +825,31 @@ export class ScopedModelExpression extends Expression {
 
   serialize() {
     return serializeObject.instance(this, this.expression, this.meta);
-  };
+  }
 
   // Return a scoped model instead of the value
   get(context: Context) {
     const segments = this.pathSegments(context);
     if (!segments) return;
     return context.controller.model.scope(segments.join('.'));
-  };
+  }
 
   // Delegate other methods to the inner expression
   resolve(context: Context) {
     return this.expression.resolve(context);
-  };
+  }
 
   dependencies(context: Context, options: any) {
     return this.expression.dependencies(context, options);
-  };
+  }
 
   pathSegments(context: Context) {
     return this.expression.pathSegments(context);
-  };
+  }
 
   set(context: Context, value: Value) {
     return this.expression.set(context, value);
-  };
+  }
 }
 
 function getDependencies(value: Record<string, any>, context: Context, options: any) {
