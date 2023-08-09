@@ -2,7 +2,7 @@ var derbyTemplates = require('../templates');
 var htmlUtil = require('html-util');
 var path = require('path');
 var App = require('../App');
-var createPathExpression = require('./createPathExpression');
+var createPathExpression = require('./createPathExpression').createPathExpression;
 var markup = require('./markup');
 
 var templates = derbyTemplates.templates;

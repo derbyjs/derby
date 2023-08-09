@@ -1,11 +1,13 @@
 import { expressions, operatorFns } from '../templates';
-import esprima = require('esprima-derby');
-const {Syntax} = esprima;
+import * as esprima from 'esprima-derby';
+import * as estree from 'estree';
+const { Syntax } = esprima;
 
-module.exports = createPathExpression;
-
-function createPathExpression(source) {
-  const node = esprima.parse(source).expression;
+export function createPathExpression(source) {
+  // @ts-expect-error `parse` not declared in @types/esprima
+  const parsed = esprima.parse(source);
+  console.log('PARSED', typeof parsed, parsed)
+  const node = parsed.expression;
   return reduce(node);
 }
 
@@ -39,7 +41,7 @@ function reduce(node) {
   unexpected(node);
 }
 
-function reduceMemberExpression(node, afterSegments?) {
+function reduceMemberExpression(node, afterSegments?: string[]) {
   if (node.computed) {
     // Square brackets
     if (node.property.type === Syntax.Literal) {
@@ -56,7 +58,7 @@ function reduceMemberExpression(node, afterSegments?) {
   unexpected(node);
 }
 
-function reducePath(node, segment, afterSegments?) {
+function reducePath(node, segment, afterSegments?: string[]) {
   let segments = [segment];
   if (afterSegments) segments = segments.concat(afterSegments);
   let relative = false;
@@ -117,15 +119,15 @@ function createSegmentsExpression(segments) {
   }
 }
 
-function reduceCallExpression(node, afterSegments?) {
+function reduceCallExpression(node: estree.CallExpression, afterSegments?: string[]) {
   return reduceFnExpression(node, afterSegments, expressions.FnExpression);
 }
 
-function reduceNewExpression(node, afterSegments?) {
+function reduceNewExpression(node: estree.NewExpression, afterSegments?: string[]) {
   return reduceFnExpression(node, afterSegments, expressions.NewExpression);
 }
 
-function reduceFnExpression(node, afterSegments, Constructor) {
+function reduceFnExpression(node: estree.CallExpression, afterSegments, Constructor) {
   const args = node.arguments.map(reduce);
   const callee = node.callee;
   if (callee.type === Syntax.Identifier) {
@@ -141,11 +143,11 @@ function reduceFnExpression(node, afterSegments, Constructor) {
   }
 }
 
-function reduceLiteral(node) {
+function reduceLiteral(node: estree.Literal) {
   return new expressions.LiteralExpression(node.value);
 }
 
-function reduceUnaryExpression(node) {
+function reduceUnaryExpression(node: estree.UnaryExpression) {
   // `-` and `+` can be either unary or binary, so all unary operators are
   // postfixed with `U` to differentiate
   const operator = node.operator + 'U';
@@ -158,7 +160,7 @@ function reduceUnaryExpression(node) {
   return new expressions.OperatorExpression(operator, [expression]);
 }
 
-function reduceBinaryExpression(node) {
+function reduceBinaryExpression(node: estree.BinaryExpression) {
   const operator = node.operator;
   const left = reduce(node.left);
   const right = reduce(node.right);
@@ -173,7 +175,7 @@ function reduceBinaryExpression(node) {
   return new expressions.OperatorExpression(operator, [left, right]);
 }
 
-function reduceConditionalExpression(node) {
+function reduceConditionalExpression(node: estree.ConditionalExpression) {
   const test = reduce(node.test);
   const consequent = reduce(node.consequent);
   const alternate = reduce(node.alternate);
@@ -188,7 +190,7 @@ function reduceConditionalExpression(node) {
   return new expressions.OperatorExpression('?', [test, consequent, alternate]);
 }
 
-function reduceArrayExpression(node) {
+function reduceArrayExpression(node: estree.ArrayExpression) {
   const literal = [];
   const items = [];
   let isLiteral = true;
@@ -206,19 +208,33 @@ function reduceArrayExpression(node) {
     new expressions.ArrayExpression(items);
 }
 
-function reduceObjectExpression(node) {
+function isProperty(property: estree.Property | estree.SpreadElement): property is estree.Property {
+  return (property as estree.Property).key !== undefined;
+}
+
+function isSpreadElement(property: estree.Property | estree.SpreadElement): property is estree.SpreadElement {
+  return (property as estree.SpreadElement).argument !== undefined;
+}
+
+function reduceObjectExpression(node: estree.ObjectExpression) {
   const literal = {};
   const properties = {};
   let isLiteral = true;
   for (let i = 0; i < node.properties.length; i++) {
     const property = node.properties[i];
-    const key = getKeyName(property.key);
-    const expression = reduce(property.value);
-    properties[key] = expression;
-    if (isLiteral && expression instanceof expressions.LiteralExpression) {
-      literal[key] = expression.value;
-    } else {
-      isLiteral = false;
+    if (isSpreadElement(property)) {
+      // actually a estree.SpreadElement and not supported
+      unexpected(node);
+    }
+    if (isProperty(property)) {
+      const key = getKeyName(property.key);
+      const expression = reduce(property.value);
+      properties[key] = expression;
+      if (isLiteral && expression instanceof expressions.LiteralExpression) {
+        literal[key] = expression.value;
+      } else {
+        isLiteral = false;
+      }
     }
   }
   return (isLiteral) ?
@@ -226,13 +242,13 @@ function reduceObjectExpression(node) {
     new expressions.ObjectExpression(properties);
 }
 
-function getKeyName(key) {
-  return (key.type === Syntax.Identifier) ? key.name :
-    (key.type === Syntax.Literal) ? key.value :
-      unexpected(key);
+function getKeyName(node): string {
+  return (node.type === Syntax.Identifier) ? node.name :
+    (node.type === Syntax.Literal) ? node.value :
+      unexpected(node);
 }
 
-function reduceSequenceExpression(node, afterSegments?) {
+function reduceSequenceExpression(node: estree.SequenceExpression, afterSegments?: string[]) {
   // Note that sequence expressions are not reduced to a literal if they only
   // contain literals. There isn't any utility to such an expression, so it
   // isn't worth optimizing.
@@ -244,6 +260,6 @@ function reduceSequenceExpression(node, afterSegments?) {
   return new expressions.SequenceExpression(args, afterSegments);
 }
 
-function unexpected(node) {
+function unexpected(node: estree.Node) {
   throw new Error('Unexpected Esprima node: ' + JSON.stringify(node, null, 2));
 }
