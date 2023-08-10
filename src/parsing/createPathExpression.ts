@@ -211,20 +211,12 @@ function isProperty(property: estree.Property | estree.SpreadElement): property 
   return (property as estree.Property).type === Syntax.Property;
 }
 
-function isSpreadElement(property: estree.Property | estree.SpreadElement): property is estree.SpreadElement {
-  return (property as estree.SpreadElement).type === Syntax.SpreadElement;
-}
-
 function reduceObjectExpression(node: estree.ObjectExpression) {
   const literal = {};
   const properties = {};
   let isLiteral = true;
   for (let i = 0; i < node.properties.length; i++) {
     const property = node.properties[i];
-    if (isSpreadElement(property)) {
-      // actually a estree.SpreadElement and not supported
-      unexpected(node);
-    }
     if (isProperty(property)) {
       const key = getKeyName(property.key);
       const expression = reduce(property.value);
@@ -234,6 +226,9 @@ function reduceObjectExpression(node: estree.ObjectExpression) {
       } else {
         isLiteral = false;
       }
+    } else {
+      // actually a estree.SpreadElement and not supported
+      unexpected(node);
     }
   }
   return (isLiteral) ?
