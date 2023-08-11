@@ -893,11 +893,6 @@ function getEndTag(tagName: string, selfClosing: boolean, notClosed: boolean) {
   return (isVoid || selfClosing || notClosed) ? '' : '</' + tagName + '>';
 }
 
-function getAttributeValue(element: globalThis.Element, name: string) {
-  const propertyName = UPDATE_PROPERTIES[name];
-  return (propertyName) ? element[propertyName] : element.getAttribute(name);
-}
-
 function emitHooks(hooks: MarkupHook<any>[], context: Context, value: Node) {
   if (!hooks) return;
   context.queue(function queuedHooks() {
@@ -1510,14 +1505,6 @@ export class RangeBinding extends Binding {
 
 //#region
 /// Utility functions ///
-
-function noop() { }
-
-function mergeInto(from: { [x: string]: any; }, to: { [x: string]: any; }) {
-  for (const key in from) {
-    to[key] = from[key];
-  }
-}
 
 function escapeHtml(string: string): string {
   string = string + '';
