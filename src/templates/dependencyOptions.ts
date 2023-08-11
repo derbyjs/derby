@@ -7,7 +7,7 @@ export class DependencyOptions {
     this.setIgnoreTemplate(options && options.ignoreTemplate);
   }
 
-  static shouldIgnoreTemplate(template: Template, options: DependencyOptions) {
+  static shouldIgnoreTemplate(template, options?: { ignoreTemplate?: Template }) {
     return (options) ? options.ignoreTemplate === template : false;
   }
 

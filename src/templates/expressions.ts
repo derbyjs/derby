@@ -1,22 +1,20 @@
 import { type Context } from './contexts';
 import { concat } from './util';
-import { ContextClosure, Template } from './templates';
+import { ContextClosure, Dependency, Template } from './templates';
 import * as operatorFns from './operatorFns';
 import * as serializeObject from 'serialize-object';
 import { DependencyOptions } from './dependencyOptions';
 
-type Segment = string | { item: number } | Context;
-type Segments = Segment[];
+type SegmentOrContext = string | number | { item: number } | Context;
+type Segment = string | number;
 type Value = any; // global | Page | ModelData
 
-export function lookup(segments: Segments | undefined, value: Value) {
+export function lookup(segments: Segment[] | undefined, value: Value) {
   if (!segments) return value;
 
   for (let i = 0, len = segments.length; i < len; i++) {
     if (value == null) return value;
-    const segment = segments[i];
-    const index = (typeof segment === 'object') ? segment.item : segment;
-    value = value[index];
+    value = value[segments[i]];
   }
   return value;
 }
@@ -26,7 +24,7 @@ export function templateTruthy(value: Value[] | PrimitiveValue): boolean {
   return (Array.isArray(value)) ? value.length > 0 : !!value;
 }
 
-export function pathSegments(segments: Segments): Segments {
+export function pathSegments(segments: SegmentOrContext[]): Segment[] {
   const result = [];
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
@@ -141,7 +139,7 @@ export class Expression {
   module = 'expressions';
   type = 'Expression';
   meta?: ExpressionMeta;
-  segments: Segments;
+  segments: Array<string | number>;
 
   constructor(meta?: ExpressionMeta) {
     this.meta = meta;
@@ -166,13 +164,13 @@ export class Expression {
   get(_context: Context, _flag?: boolean): any { return undefined; }
 
   // Return the expression's segment list with context objects
-  resolve(_context: Context): Segments | undefined { return undefined; }
+  resolve(_context: Context): SegmentOrContext[] | undefined { return undefined; }
 
   // Return a list of segment lists or null
-  dependencies(_context: Context, _options: any): string[][] | undefined { return undefined; }
+  dependencies(_context: Context, _options: DependencyOptions): Dependency[] | undefined { return undefined; }
 
   // Return the pathSegments that the expression currently resolves to or null
-  pathSegments(context: Context): Segments | null {
+  pathSegments(context: Context): Segment[] | undefined {
     const segments = this.resolve(context);
     return segments && pathSegments(segments);
   }
@@ -183,14 +181,9 @@ export class Expression {
     context.controller.model._set(segments, value);
   }
 
-  _resolvePatch(context: Context, segments: Segments): Segments {
-    if (context.item == null) {
-      return segments;
-    }
-    if (context.expression === this) {
-      return segments.concat(context);
-    }
-    return segments;
+  _resolvePatch(context: Context, segments) {
+    return (context && context.expression === this && context.item != null) ?
+      segments.concat(context) : segments;
   }
 
   isUnbound(context: Pick<Context, 'unbound'>): boolean {
@@ -240,9 +233,9 @@ export class LiteralExpression extends Expression {
 
 export class PathExpression extends Expression {
   type = 'PathExpression';
-  segments: Segments;
+  segments: Segment[];
 
-  constructor(segments: Segments, meta?: ExpressionMeta) {
+  constructor(segments: Segment[], meta?: ExpressionMeta) {
     super(meta);
     this.segments = segments;
   }
@@ -282,7 +275,7 @@ export class PathExpression extends Expression {
 export class RelativePathExpression extends Expression {
   type = 'RelativePathExpression';
 
-  constructor(segments: Segments, meta?: ExpressionMeta) {
+  constructor(segments: Segment[], meta?: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.meta = meta;
@@ -322,7 +315,7 @@ export class AliasPathExpression extends Expression {
   type = 'AliasPathExpression';
   alias: string;
 
-  constructor(alias: string, segments: Segments, meta?: ExpressionMeta) {
+  constructor(alias: string, segments: Segment[], meta?: ExpressionMeta) {
     super(meta);
     this.alias = alias;
     this.segments = segments;
@@ -374,7 +367,7 @@ export class AttributePathExpression extends Expression {
   type = 'AttributePathExpression';
   attribute: any;
 
-  constructor(attribute: any, segments: Segments, meta?: ExpressionMeta) {
+  constructor(attribute: any, segments: Segment[], meta?: ExpressionMeta) {
     super(meta);
     this.attribute = attribute;
     this.segments = segments;
@@ -571,11 +564,11 @@ export class ObjectExpression extends Expression {
 export class FnExpression extends Expression {
   args: any;
   afterSegments: any;
-  lastSegment: any;
-  parentSegments: any;
+  lastSegment: Segment;
+  parentSegments: Segment[] | null;
   type = 'FnExpression';
 
-  constructor(segments: Segments, args: any, afterSegments?: any, meta?: ExpressionMeta) {
+  constructor(segments: Segment[], args: any, afterSegments?: any, meta?: ExpressionMeta) {
     super(meta);
     this.segments = segments;
     this.args = args;
@@ -854,7 +847,7 @@ export class ScopedModelExpression extends Expression {
   }
 }
 
-function getDependencies(value: Record<string, any>, context: Context, options: any) {
+function getDependencies(value: Record<string, any>, context: Context, options: any): Dependency[] | undefined {
   if (value instanceof Expression || value instanceof Template) {
     return value.dependencies(context, options);
   }
