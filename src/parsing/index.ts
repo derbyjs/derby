@@ -340,7 +340,7 @@ function finishParseViewElement(viewAttributes, remaining, viewInstance) {
 }
 
 function setContentAttribute(attributes, content) {
-  if (attributes.hasOwnProperty('content')) return;
+  if (Object.prototype.hasOwnProperty.call(attributes, ['content'])) return;
   if (!content.length) return;
   attributes.content = attributeValueFromContent(content, attributes.within);
 }
