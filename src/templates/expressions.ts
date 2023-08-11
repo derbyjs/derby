@@ -1,9 +1,10 @@
-import { type Context } from './contexts';
-import { concat } from './util';
-import { ContextClosure, Dependency, Template } from './templates';
-import * as operatorFns from './operatorFns';
 import * as serializeObject from 'serialize-object';
+
+import { type Context } from './contexts';
 import { DependencyOptions } from './dependencyOptions';
+import * as operatorFns from './operatorFns';
+import { ContextClosure, Dependency, Template } from './templates';
+import { concat } from './util';
 
 type SegmentOrContext = string | number | { item: number } | Context;
 type Segment = string | number;

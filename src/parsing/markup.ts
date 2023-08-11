@@ -1,5 +1,6 @@
-import { createPathExpression } from './createPathExpression';
 import { EventEmitter } from 'events';
+
+import { createPathExpression } from './createPathExpression';
 import { templates } from '../templates';
 
 class MarkupParser extends EventEmitter { }

@@ -2,10 +2,10 @@ import * as path from 'path';
 
 import htmlUtil = require('html-util');
 
-import derbyTemplates = require('../templates');
 import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
 import App = require('../App');
+import derbyTemplates = require('../templates');
 
 const templates = derbyTemplates.templates;
 const expressions = derbyTemplates.expressions;

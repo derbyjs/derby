@@ -3,11 +3,11 @@ if (typeof require === 'function') {
   serializeObject = require('serialize-object');
 }
 
-import { Component } from '../components';
 import { type Context } from './contexts';
 import { DependencyOptions } from './dependencyOptions';
 import { type Expression } from './expressions';
 import { concat, hasKeys, traverseAndCreate } from './util';
+import { Component } from '../components';
 
 export type Attributes = Record<string, Attribute>;
 type PathSegment = string | number;

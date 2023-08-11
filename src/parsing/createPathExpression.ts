@@ -1,6 +1,7 @@
-import { expressions, operatorFns } from '../templates';
 import * as esprima from 'esprima-derby';
 import * as estree from 'estree';
+
+import { expressions, operatorFns } from '../templates';
 const { Syntax } = esprima;
 
 export function createPathExpression(source) {
