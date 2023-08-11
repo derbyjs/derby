@@ -3,8 +3,8 @@ import * as path from 'path';
 import htmlUtil = require('html-util');
 
 import derbyTemplates = require('../templates');
-import {createPathExpression} from './createPathExpression';
-import {markup} from './markup';
+import { createPathExpression } from './createPathExpression';
+import { markup } from './markup';
 import App = require('../App');
 
 const templates = derbyTemplates.templates;
@@ -255,7 +255,7 @@ function parseBlockExpression(expression) {
       throw new Error('Mismatched closing template tag: ' + expression.meta.source);
     }
 
-  // Continuing block
+    // Continuing block
   } else if (blockType === 'else' || blockType === 'else if') {
     parseNode = parseNode.parent;
     const last = parseNode.last();
@@ -271,7 +271,7 @@ function parseBlockExpression(expression) {
       unexpected(expression.meta.source);
     }
 
-  // Block start
+    // Block start
   } else {
     const nextNode = parseNode.child();
     let block;
@@ -406,7 +406,7 @@ function parseAsObjectAttribute(key, value) {
   }
   const segments = expression.args[0].segments;
   expression = expression.args[1];
-  return {segments: segments, expression: expression};
+  return { segments: segments, expression: expression };
 }
 
 function parseOnAttribute(key, value) {
@@ -586,8 +586,8 @@ function parseArrayElement(element, name, viewAttributes) {
   if (viewAttribute instanceof expressions.ArrayExpression) {
     viewAttribute.items.push(expression);
 
-  // Alternatively, viewAttribute will be an array if its items have all been
-  // literal values thus far
+    // Alternatively, viewAttribute will be an array if its items have all been
+    // literal values thus far
   } else if (Array.isArray(viewAttribute)) {
     if (expression instanceof expressions.LiteralExpression) {
       // If the current array element continues to be a literal value, push it
@@ -605,9 +605,9 @@ function parseArrayElement(element, name, viewAttributes) {
       viewAttributes[camelName] = new expressions.ArrayExpression(items);
     }
 
-  // For the first array element encountered, create a containing array or
-  // ArrayExpression. Create an array of raw values in the literal case and an
-  // ArrayExpression of expressions in the non-literal case
+    // For the first array element encountered, create a containing array or
+    // ArrayExpression. Create an array of raw values in the literal case and an
+    // ArrayExpression of expressions in the non-literal case
   } else if (viewAttribute == null) {
     viewAttributes[camelName] = (expression instanceof expressions.LiteralExpression) ?
       [expression.value] : new expressions.ArrayExpression([expression]);
@@ -778,19 +778,19 @@ function createExpression(source) {
     as = match[3];
     keyAs = match[4];
 
-  // The blocks `else`, `unbound`, and `bound` may not have a path or alias
+    // The blocks `else`, `unbound`, and `bound` may not have a path or alias
   } else if (source === 'else' || source === 'unbound' || source === 'bound') {
     meta.blockType = source;
 
-  // Any source that starts with a `/` is treated as an end block. Either a
-  // `{{/}}` with no following characters or a `{{/if}}` style ending is valid
+    // Any source that starts with a `/` is treated as an end block. Either a
+    // `{{/}}` with no following characters or a `{{/if}}` style ending is valid
   } else if (source.charAt(0) === '/') {
     meta.isEnd = true;
     meta.blockType = source.slice(1).trim() || 'end';
 
 
-  // Parse value expression //
-  // A value expression has zero or many keywords and an expression
+    // Parse value expression //
+    // A value expression has zero or many keywords and an expression
   } else {
     path = source;
     let keyword;
