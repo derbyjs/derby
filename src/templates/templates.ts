@@ -368,7 +368,7 @@ export class Comment extends Template {
   hooks: MarkupHook<any>[];
   type = 'Comment';
 
-  constructor(data, hooks) {
+  constructor(data, hooks?) {
     super();
     this.data = data;
     this.hooks = hooks;
@@ -1070,7 +1070,7 @@ export class EachBlock extends Block {
   type = 'EachBlock';
   elseContent: Template[];
 
-  constructor(expression: Expression, content: Template[], elseContent: Template[]) {
+  constructor(expression: Expression, content: Template[], elseContent?: Template[]) {
     super(expression, content);
     this.ending = '/' + expression;
     this.elseContent = elseContent;

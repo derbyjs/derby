@@ -137,13 +137,13 @@ export class ExpressionMeta {
   }
 }
 
-export abstract class Expression {
+export class Expression {
   module = 'expressions';
   type = 'Expression';
-  meta: ExpressionMeta;
+  meta?: ExpressionMeta;
   segments: Segments;
 
-  constructor(meta: ExpressionMeta) {
+  constructor(meta?: ExpressionMeta) {
     this.meta = meta;
   }
 
@@ -163,7 +163,7 @@ export abstract class Expression {
     return (blockType === 'unless') ? !truthy : truthy;
   }
 
-  abstract get(_context: Context, _flag?: boolean): any;
+  get(_context: Context, _flag?: boolean): any { return undefined; }
 
   // Return the expression's segment list with context objects
   resolve(_context: Context): Segments | undefined { return undefined; }
@@ -479,7 +479,7 @@ export class DeferRenderExpression extends Expression {
   template: Template;
   type = 'DeferRenderExpression';
 
-  constructor(template: Template, meta: ExpressionMeta) {
+  constructor(template: Template, meta?: ExpressionMeta) {
     super(meta);
     if (!(template instanceof Template)) {
       throw new Error('DeferRenderExpression requires a Template argument');
@@ -781,7 +781,7 @@ export class ViewParentExpression extends Expression {
   type = 'ViewParentExpression';
   expression: Expression;
 
-  constructor(expression: Expression, meta: ExpressionMeta) {
+  constructor(expression: Expression, meta?: ExpressionMeta) {
     super(meta);
     this.expression = expression;
   }
