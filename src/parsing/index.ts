@@ -140,6 +140,7 @@ function parseAttributes(attributes) {
 
     } else if (parseNode.content.length > 1) {
       const template = new templates.Template(parseNode.content, value);
+      // @ts-expect-error template can be Expression or Template
       attributesMap[key] = new templates.DynamicAttribute(template, nsUri);
 
     } else {
