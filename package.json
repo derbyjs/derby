@@ -30,7 +30,6 @@
     "racer": "^1.0.3",
     "resolve": "^1.22.1",
     "serialize-object": "^1.0.0",
-    "through": "^2.3.8",
     "tracks": "^0.5.8"
   },
   "devDependencies": {

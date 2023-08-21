@@ -13,14 +13,12 @@ var parsing = require('./parsing');
 var derbyTemplates = require('./templates');
 
 // Avoid Browserifying these dependencies
-var chokidar, crypto, files, fs, path, through;
+var chokidar, files, fs, path;
 if (module.require) {
   chokidar = module.require('chokidar');
-  crypto = module.require('crypto');
   files = module.require('./files');
   fs = module.require('fs');
   path = module.require('path');
-  through = module.require('through');
 }
 
 var STYLE_EXTENSIONS = ['.css'];
