@@ -27,9 +27,11 @@ var COMPILERS = {
   '.css': cssCompiler,
   '.html': htmlCompiler
 };
-function cssCompiler(file, filename, options) {
+
+function cssCompiler(file, filename, _options) {
   return {css: file, files: [filename]};
 }
+
 function htmlCompiler(file) {
   return file;
 }
@@ -113,13 +115,13 @@ AppForServer.prototype.createPage = function(req, res, next) {
   return page;
 };
 
-AppForServer.prototype.bundle = function(backend, options, cb) {
+AppForServer.prototype.bundle = function(_backend, _options, _cb) {
   throw new Error(
     'bundle implementation missing; use racer-bundler for implementation, or remove call to this method and use another bundler',
   );
 };
 
-AppForServer.prototype.writeScripts = function(backend, dir, options, cb) {
+AppForServer.prototype.writeScripts = function(_backend, _dir, _options, _cb) {
   throw new Error(
     'writeScripts implementation missing; use racer-bundler for implementation, or remove call to this method and use another bundler',
   );
@@ -224,7 +226,6 @@ AppForServer.prototype._watchStyles = function(filenames, filename, options) {
 
 AppForServer.prototype._watchBundle = function(filenames) {
   if (!process.send) return;
-  var app = this;
   watchOnce(filenames, function() {
     process.send({type: 'reload'});
   });
@@ -327,7 +328,6 @@ AppForServer.prototype._refreshClients = function() {
 
 AppForServer.prototype._refreshStyles = function(filename, styles) {
   if (!this.agents) return;
-  var data = {filename: filename, css: styles.css};
   var message = {
     derby: 'refreshStyles',
     filename: filename,

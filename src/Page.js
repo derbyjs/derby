@@ -259,7 +259,7 @@ Page.prototype._addContextListeners = function(eventModel) {
     var segments = context.expression.resolve(context);
     eventModel.addItemContext(segments, context);
   }
-  function removeItemContext(context) {
+  function removeItemContext(_context) {
     // TODO
   }
   function addBinding(binding) {

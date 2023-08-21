@@ -109,7 +109,6 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
-        var fragment = page.getFragment('Body');
         var box = page.box;
         box.update();
         box.update();
@@ -143,7 +142,6 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
-        var fragment = page.getFragment('Body');
         box = page.box;
         box.update();
         box.update();
@@ -182,7 +180,6 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
-        var fragment = page.getFragment('Body');
         box = page.box;
         box.update('a', 1);
         box.update('b', 2);
@@ -245,12 +242,10 @@ describe('components', function() {
         this.update = this.debounceAsync(update);
       };
       app.component('box', Box);
-      var fragment = page.getFragment('Body');
       page.box.update('a', 1);
     });
     it('debounceAsync debounces until the async call completes', function(done) {
       var app = derby.createApp();
-      var page = app.createPage();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div></div>');
       var calls = 0;
@@ -282,11 +277,9 @@ describe('components', function() {
         }, 7);
       };
       app.component('box', Box);
-      var fragment = page.getFragment('Body');
     });
     it('throttle calls no more frequently than delay', function(done) {
       var app = derby.createApp();
-      var page = app.createPage();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div></div>');
       var delay = 10;
@@ -321,7 +314,6 @@ describe('components', function() {
         tick();
       };
       app.component('box', Box);
-      var fragment = page.getFragment('Body');
     });
   });
 
