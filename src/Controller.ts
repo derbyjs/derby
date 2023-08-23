@@ -1,46 +1,47 @@
-var EventEmitter = require('events').EventEmitter;
-var util = require('racer/lib/util');
-var Dom = require('./Dom');
+import { EventEmitter } from 'events';
 
-module.exports = Controller;
+import Dom = require('./Dom');
 
-function Controller(app, page, model) {
-  EventEmitter.call(this);
-  this.dom = new Dom(this);
-  this.app = app;
-  this.page = page;
-  this.model = model;
-  model.data.$controller = this;
+export class Controller extends EventEmitter {
+  dom: Dom;
+  app: any;
+  page: any;
+  model: any;
+
+  constructor(app, page, model) {
+    super();
+    this.dom = new Dom(this);
+    this.app = app;
+    this.page = page;
+    this.model = model;
+    model.data.$controller = this;
+  }
+
+  emitCancellable(...args) {
+    let cancelled = false;
+    function cancel() {
+      cancelled = true;
+    }
+
+    args.push(cancel);
+    this.emit.apply(this, ...args);
+
+    return cancelled;
+  }
+
+  emitDelayable(...args) {
+    const callback = args.pop();
+
+    let delayed = false;
+    function delay() {
+      delayed = true;
+      return callback;
+    }
+
+    args.push(delay);
+    this.emit.apply(this, ...args);
+    if (!delayed) callback();
+
+    return delayed;
+  }
 }
-
-util.mergeInto(Controller.prototype, EventEmitter.prototype);
-
-Controller.prototype.emitCancellable = function() {
-  var cancelled = false;
-  function cancel() {
-    cancelled = true;
-  }
-
-  var args = Array.prototype.slice.call(arguments);
-  args.push(cancel);
-  this.emit.apply(this, args);
-
-  return cancelled;
-};
-
-Controller.prototype.emitDelayable = function() {
-  var args = Array.prototype.slice.call(arguments);
-  var callback = args.pop();
-
-  var delayed = false;
-  function delay() {
-    delayed = true;
-    return callback;
-  }
-
-  args.push(delay);
-  this.emit.apply(this, args);
-  if (!delayed) callback();
-
-  return delayed;
-};
