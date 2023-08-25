@@ -870,7 +870,7 @@ export function getImportNamespace(namespace, attrs, importFilename) {
   return (namespace && relativeNamespace) ?
     namespace + ':' + relativeNamespace :
     namespace || relativeNamespace || '';
-};
+}
 
 export function parseViews(file, namespace, filename, onImport) {
   const views = [];
@@ -923,11 +923,11 @@ export function parseViews(file, namespace, filename, onImport) {
   }
 
   return views;
-};
+}
 
 export function registerParsedViews(app, items) {
   for (let i = 0, len = items.length; i < len; i++) {
     const item = items[i];
     app.views.register(item.name, item.source, item.options);
   }
-};
+}
