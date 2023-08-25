@@ -1,14 +1,17 @@
 import { EventEmitter } from 'events';
 
+import { type ModelData } from 'racer';
+
+import { type App } from './App';
 import Dom = require('./Dom');
 
 export class Controller extends EventEmitter {
   dom: Dom;
-  app: any;
+  app: App;
   page: any;
-  model: any;
+  model: ModelData;
 
-  constructor(app, page, model) {
+  constructor(app: App, page, model: ModelData) {
     super();
     this.dom = new Dom(this);
     this.app = app;

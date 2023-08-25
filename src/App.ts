@@ -8,6 +8,7 @@
 import { EventEmitter } from 'events';
 import { basename } from 'path';
 
+import { type ModelData } from 'racer';
 import * as util from 'racer/lib/util';
 import tracks = require('tracks');
 
@@ -48,7 +49,7 @@ export class App extends EventEmitter {
   proto: any;
   views: any;
   tracksRoutes: any;
-  model: any;
+  model: ModelData;
   page: any;
   _pendingComponentMap: any;
   _waitForAttach: boolean;
@@ -151,7 +152,6 @@ export class App extends EventEmitter {
   _contentReady() {
     // Is the DOM ready to be used? Set to true once it occurs.
     let isReady = false;
-    const app = this;
 
     // The ready event handler
     function onDOMContentLoaded() {
@@ -176,7 +176,7 @@ export class App extends EventEmitter {
       isReady = true;
       // Make sure this is always async and then finishin init
       setTimeout(function() {
-        app._finishInit();
+        this._finishInit();
       }, 0);
     }
 
@@ -387,20 +387,19 @@ export class App extends EventEmitter {
   }
 
   _autoRefresh(_backend?) {
-    const app = this;
     const connection = this.model.connection;
     connection.on('connected', function() {
       connection.send({
         derby: 'app',
-        name: app.name,
-        hash: app.scriptHash
+        name: this.name,
+        hash: this.scriptHash
       });
     });
     connection.on('receive', function(request) {
       if (request.data.derby) {
         const message = request.data;
         request.data = null;
-        app._handleMessage(message.derby, message);
+        this._handleMessage(message.derby, message);
       }
     });
   }
