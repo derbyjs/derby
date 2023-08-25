@@ -3,8 +3,8 @@ var qs = require('qs');
 var urlParse = require('url').parse;
 var Model = require('racer').Model;
 var racerUtil = require('racer/lib/util');
-var App = require('../dist/App');
-var AppForServer = require('../dist/AppForServer');
+var App = require('../dist/App').App;
+var AppForServer = require('../dist/AppForServer').AppForServer;
 
 function AppForHarness(harness) {
   App.call(this);

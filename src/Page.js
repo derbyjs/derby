@@ -7,7 +7,7 @@ var util = require('racer/lib/util');
 var components = require('./components');
 var EventModel = require('./eventmodel');
 var textDiff = require('./textDiff');
-var Controller = require('./Controller');
+var Controller = require('./Controller').Controller;
 var documentListeners = require('./documentListeners');
 
 module.exports = Page;

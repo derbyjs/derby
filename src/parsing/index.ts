@@ -4,17 +4,23 @@ import htmlUtil = require('html-util');
 
 import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
-import App = require('../App');
+import { App } from '../App';
 import derbyTemplates = require('../templates');
+
+export { createPathExpression } from './createPathExpression';
+export { markup } from './markup';
 
 const templates = derbyTemplates.templates;
 const expressions = derbyTemplates.expressions;
 
-exports.createTemplate = createTemplate;
-exports.createStringTemplate = createStringTemplate;
-exports.createExpression = createExpression;
-exports.createPathExpression = createPathExpression;
-exports.markup = markup;
+// export createPathExpression;
+// exports.markup = markup;
+
+declare module '../App' {
+  interface App {
+    addViews(file: string, namespace: string): void;
+  }
+}
 
 // View.prototype._parse is defined here, so that it doesn't have to
 // be included in the client if templates are all parsed server-side
@@ -46,7 +52,7 @@ templates.View.prototype._parse = function() {
 // to be shared at the module level, since it is only used by synchronous code
 let parseNode;
 
-function createTemplate(source, view) {
+export function createTemplate(source, view) {
   source = escapeBraced(source);
   parseNode = new ParseNode(view);
   htmlUtil.parse(source, {
@@ -76,7 +82,7 @@ function createTemplate(source, view) {
   return new templates.Template(parseNode.content);
 }
 
-function createStringTemplate(source, view) {
+export function createStringTemplate(source, view) {
   source = escapeBraced(source);
   parseNode = new ParseNode(view);
   parseText(source, parseTextLiteral, parseTextExpression, 'string');
@@ -761,7 +767,7 @@ function matchBraces(text, num, i, openChar, closeChar) {
 const blockRegExp = /^(if|unless|else if|each|with|on)\s+([\s\S]+?)(?:\s+as\s+([^,\s]+)\s*(?:,\s*(\S+))?)?$/;
 const valueRegExp = /^(?:(view|unbound|bound|unescaped)\s+)?([\s\S]*)/;
 
-function createExpression(source) {
+export function createExpression(source) {
   source = source.trim();
   const meta = new expressions.ExpressionMeta(source);
 
@@ -856,7 +862,7 @@ function parseAlias(source) {
 
 App.prototype.addViews = function(file, namespace) {
   const views = exports.parseViews(file, namespace);
-  exports.registerParsedViews(this, views);
+  registerParsedViews(this, views);
 };
 
 exports.getImportNamespace = function(namespace, attrs, importFilename) {
@@ -922,7 +928,7 @@ exports.parseViews = function(file, namespace, filename, onImport) {
   return views;
 };
 
-exports.registerParsedViews = function(app, items) {
+export function registerParsedViews(app, items) {
   for (let i = 0, len = items.length; i < len; i++) {
     const item = items[i];
     app.views.register(item.name, item.source, item.options);

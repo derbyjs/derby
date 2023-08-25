@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var App = require('../../dist/App');
+var App = require('../../dist/App').App;
 
 describe('App._parseInitialData', () => {
   it('parses simple json', () => {

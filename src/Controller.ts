@@ -24,7 +24,8 @@ export class Controller extends EventEmitter {
     }
 
     args.push(cancel);
-    this.emit.apply(this, ...args);
+    // eslint-disable-next-line prefer-spread
+    this.emit.apply(this, args);
 
     return cancelled;
   }
@@ -39,7 +40,8 @@ export class Controller extends EventEmitter {
     }
 
     args.push(delay);
-    this.emit.apply(this, ...args);
+    // eslint-disable-next-line prefer-spread
+    this.emit.apply(this, args);
     if (!delayed) callback();
 
     return delayed;

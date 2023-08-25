@@ -11,7 +11,7 @@ var util = require('racer/lib/util');
 var derbyTemplates = require('./templates');
 var templates = derbyTemplates.templates;
 var expressions = derbyTemplates.expressions;
-var Controller = require('./Controller');
+var Controller = require('./Controller').Controller;
 var slice = [].slice;
 
 exports.Component = Component;
