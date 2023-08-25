@@ -13,9 +13,6 @@ export { markup } from './markup';
 const templates = derbyTemplates.templates;
 const expressions = derbyTemplates.expressions;
 
-// export createPathExpression;
-// exports.markup = markup;
-
 declare module '../App' {
   interface App {
     addViews(file: string, namespace: string): void;
@@ -865,7 +862,7 @@ App.prototype.addViews = function(file, namespace) {
   registerParsedViews(this, views);
 };
 
-exports.getImportNamespace = function(namespace, attrs, importFilename) {
+export function getImportNamespace(namespace, attrs, importFilename) {
   const extension = path.extname(importFilename);
   const relativeNamespace = (attrs.ns == null) ?
     path.basename(attrs.src, extension) :
@@ -875,7 +872,7 @@ exports.getImportNamespace = function(namespace, attrs, importFilename) {
     namespace || relativeNamespace || '';
 };
 
-exports.parseViews = function(file, namespace, filename, onImport) {
+export function parseViews(file, namespace, filename, onImport) {
   const views = [];
   const prefix = (namespace) ? namespace + ':' : '';
 
