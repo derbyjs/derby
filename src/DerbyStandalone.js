@@ -1,7 +1,7 @@
 var EventEmitter = require('events').EventEmitter;
 var Model = require('racer/lib/Model/ModelStandalone');
 var util = require('racer/lib/util');
-var App = require('./App');
+var App = require('./App').App;
 var Page = require('./Page');
 var components = require('./components');
 
