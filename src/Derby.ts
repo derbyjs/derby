@@ -3,22 +3,22 @@
  * Meant to be the entry point for the framework.
  *
  */
-var racer = require('racer');
+import racer = require('racer');
 
-module.exports = Derby;
+import { App } from './App';
+import components = require('./components');
+import Page = require('./Page');
 
-function Derby() {}
-Derby.prototype = Object.create(racer);
-Derby.prototype.constructor = Derby;
+export class Derby extends racer {
+  App = App;
+  Page = Page;
+  Component = components.Component;
 
-Derby.prototype.App = require('./App');
-Derby.prototype.Page = require('./Page');
-Derby.prototype.Component = require('./components').Component;
-
-Derby.prototype.createApp = function(name, filename, options) {
-  return new this.App(this, name, filename, options);
-};
+  createApp(name: string, filename: string, options) {
+    return new this.App(this, name, filename, options);
+  }
+}
 
 if (!racer.util.isServer) {
-  require('./documentListeners').add(document);
+  module.require('./documentListeners').add(document);
 }
