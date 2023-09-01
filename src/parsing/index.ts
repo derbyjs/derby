@@ -678,7 +678,7 @@ ParseNode.prototype.last = function() {
   return this.content[this.content.length - 1];
 };
 
-function escapeBraced(source) {
+function escapeBraced(source: string) {
   let out = '';
   parseText(source, onLiteral, onExpression, 'string');
   function onLiteral(text) {
@@ -693,7 +693,7 @@ function escapeBraced(source) {
   return out;
 }
 
-function unescapeBraced(source) {
+function unescapeBraced(source: string) {
   return source.replace(/(?:&amp;|&lt;)/g, function(match) {
     return (match === '&amp;') ? '&' : '<';
   });
@@ -764,7 +764,7 @@ function matchBraces(text, num, i, openChar, closeChar) {
 const blockRegExp = /^(if|unless|else if|each|with|on)\s+([\s\S]+?)(?:\s+as\s+([^,\s]+)\s*(?:,\s*(\S+))?)?$/;
 const valueRegExp = /^(?:(view|unbound|bound|unescaped)\s+)?([\s\S]*)/;
 
-export function createExpression(source) {
+export function createExpression(source: string) {
   source = source.trim();
   const meta = new expressions.ExpressionMeta(source);
 
@@ -831,7 +831,7 @@ export function createExpression(source) {
   return expression;
 }
 
-function unexpected(source?) {
+function unexpected(source?: unknown) {
   throw new Error('Error parsing template: ' + JSON.stringify(source));
 }
 
@@ -843,7 +843,7 @@ function appendErrorMessage(err, message) {
   return new Error(err + message);
 }
 
-function parseAlias(source) {
+function parseAlias(source: string) {
   // Try parsing into a path expression. This throws on invalid expressions.
   const expression = createPathExpression(source);
   // Verify that it's an AliasPathExpression with no segments, i.e. that
@@ -857,7 +857,7 @@ function parseAlias(source) {
   throw new Error('Alias must be an identifier starting with "#": ' + source);
 }
 
-App.prototype.addViews = function(file, namespace) {
+App.prototype.addViews = function(file: string, namespace: string) {
   const views = exports.parseViews(file, namespace);
   registerParsedViews(this, views);
 };
@@ -872,7 +872,7 @@ export function getImportNamespace(namespace, attrs, importFilename) {
     namespace || relativeNamespace || '';
 }
 
-export function parseViews(file, namespace, filename, onImport) {
+export function parseViews(file: string, namespace: string, filename: string, onImport: (attrs) => void) {
   const views = [];
   const prefix = (namespace) ? namespace + ':' : '';
 
@@ -885,7 +885,7 @@ export function parseViews(file, namespace, filename, onImport) {
     text: onText
   });
 
-  function matchEnd(tagName) {
+  function matchEnd(tagName: string) {
     if (tagName.slice(-1) === ':') {
       return /<\/?[^\s=\/!>]+:[\s>]/i;
     }
