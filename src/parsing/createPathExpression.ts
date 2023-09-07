@@ -4,14 +4,14 @@ import * as estree from 'estree';
 import { expressions, operatorFns } from '../templates';
 const { Syntax } = esprima;
 
-export function createPathExpression(source) {
+export function createPathExpression(source: string) {
   // @ts-expect-error `parse` not declared in @types/esprima
   const parsed = esprima.parse(source);
   const node = parsed.expression;
   return reduce(node);
 }
 
-function reduce(node) {
+function reduce(node: estree.Node) {
   const type = node.type;
   if (type === Syntax.MemberExpression) {
     return reduceMemberExpression(node);
@@ -58,7 +58,7 @@ function reduceMemberExpression(node, afterSegments?: string[]) {
   unexpected(node);
 }
 
-function reducePath(node, segment, afterSegments?: string[]) {
+function reducePath(node, segment: string, afterSegments?: string[]) {
   let segments = [segment];
   if (afterSegments) segments = segments.concat(afterSegments);
   let relative = false;
@@ -100,7 +100,7 @@ function reduceThis(_node) {
   return new expressions.RelativePathExpression(segments);
 }
 
-function createSegmentsExpression(segments) {
+function createSegmentsExpression(segments: string[]) {
   const firstSegment = segments[0];
   const firstChar = firstSegment.charAt && firstSegment.charAt(0);
 
@@ -160,7 +160,7 @@ function reduceUnaryExpression(node: estree.UnaryExpression) {
   return new expressions.OperatorExpression(operator, [expression]);
 }
 
-function reduceBinaryExpression(node: estree.BinaryExpression) {
+function reduceBinaryExpression(node: estree.BinaryExpression | estree.LogicalExpression) {
   const operator = node.operator;
   const left = reduce(node.left);
   const right = reduce(node.right);

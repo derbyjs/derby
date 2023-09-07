@@ -6,6 +6,8 @@ import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
 import { App } from '../App';
 import derbyTemplates = require('../templates');
+import { View } from '../templates/templates';
+import { Expression } from '../templates/expressions';
 
 export { createPathExpression } from './createPathExpression';
 export { markup } from './markup';
@@ -47,9 +49,9 @@ templates.View.prototype._parse = function() {
 
 // Modified and shared among the following parse functions. It's OK for this
 // to be shared at the module level, since it is only used by synchronous code
-let parseNode;
+let parseNode: ParseNode;
 
-export function createTemplate(source, view) {
+export function createTemplate(source: string, view: View) {
   source = escapeBraced(source);
   parseNode = new ParseNode(view);
   htmlUtil.parse(source, {
@@ -79,14 +81,14 @@ export function createTemplate(source, view) {
   return new templates.Template(parseNode.content);
 }
 
-export function createStringTemplate(source, view) {
+export function createStringTemplate(source: string, view: View) {
   source = escapeBraced(source);
   parseNode = new ParseNode(view);
   parseText(source, parseTextLiteral, parseTextExpression, 'string');
   return new templates.Template(parseNode.content);
 }
 
-function parseHtmlStart(tag, tagName, attributes, selfClosing) {
+function parseHtmlStart(tag: string, tagName: string, attributes: Record<string, string>, selfClosing: boolean) {
   const lowerTagName = tagName.toLowerCase();
   let hooks;
   if (lowerTagName !== 'view' && !viewForTagName(lowerTagName)) {
@@ -113,7 +115,7 @@ function parseHtmlStart(tag, tagName, attributes, selfClosing) {
   }
 }
 
-function parseAttributes(attributes) {
+function parseAttributes(attributes: Record<string, string>) {
   let attributesMap;
   for (const key in attributes) {
     if (!attributesMap) attributesMap = {};
@@ -155,7 +157,7 @@ function parseAttributes(attributes) {
   return attributesMap;
 }
 
-function parseHtmlEnd(tag, tagName) {
+function parseHtmlEnd(tag: string, tagName: string) {
   parseNode = parseNode.parent;
   const last = parseNode.last();
   if (!(
@@ -167,7 +169,7 @@ function parseHtmlEnd(tag, tagName) {
   parseElementClose(tagName);
 }
 
-function parseElementClose(tagName) {
+function parseElementClose(tagName: string) {
   if (tagName === 'view') {
     const element = parseNode.content.pop();
     parseViewElement(element);
@@ -184,16 +186,16 @@ function parseElementClose(tagName) {
   markup.emit('element:' + tagName, element);
 }
 
-function viewForTagName(tagName) {
+function viewForTagName(tagName: string) {
   return parseNode.view && parseNode.view.views.tagMap[tagName];
 }
 
-function parseHtmlText(data, isRawText) {
+function parseHtmlText(data: string, isRawText: boolean) {
   const environment = (isRawText) ? 'string' : 'html';
   parseText(data, parseTextLiteral, parseTextExpression, environment);
 }
 
-function parseHtmlComment(tag, data) {
+function parseHtmlComment(tag: string, data: string) {
   // Only output comments that start with `<!--[` and end with `]-->`
   if (!htmlUtil.isConditionalComment(tag)) return;
   const comment = new templates.Comment(data);
@@ -202,7 +204,7 @@ function parseHtmlComment(tag, data) {
 
 const doctypeRegExp = /^<!DOCTYPE\s+([^\s]+)(?:\s+(PUBLIC|SYSTEM)\s+"([^"]+)"(?:\s+"([^"]+)")?)?\s*>/i;
 
-function parseHtmlOther(tag) {
+function parseHtmlOther(tag: string) {
   const match = doctypeRegExp.exec(tag);
   if (match) {
     const name = match[1];
@@ -221,12 +223,12 @@ function parseHtmlOther(tag) {
   }
 }
 
-function parseTextLiteral(data) {
+function parseTextLiteral(data: string) {
   const text = new templates.Text(data);
   parseNode.content.push(text);
 }
 
-function parseTextExpression(source, environment) {
+function parseTextExpression(source: string, environment: string) {
   const expression = createExpression(source);
   if (expression.meta.blockType) {
     parseBlockExpression(expression);
@@ -241,7 +243,7 @@ function parseTextExpression(source, environment) {
   }
 }
 
-function parseBlockExpression(expression) {
+function parseBlockExpression(expression: Expression) {
   const blockType = expression.meta.blockType;
 
   // Block ending
@@ -290,7 +292,7 @@ function parseBlockExpression(expression) {
   }
 }
 
-function parseViewElement(element) {
+function parseViewElement(element: any) {
   // TODO: "name" is deprecated in lieu of "is". Remove "name" in Derby 0.6.0
   const nameAttribute = element.attributes.is || element.attributes.name;
   if (!nameAttribute) {
@@ -312,7 +314,7 @@ function parseViewElement(element) {
   }
 }
 
-function findView(name) {
+function findView(name: string) {
   const view = parseNode.view.views.find(name, parseNode.view.namespace);
   if (!view) {
     const message = parseNode.view.views.findErrorMessage(name);
@@ -665,18 +667,27 @@ function viewAttributesFromExpression(expression) {
   return viewAttributes;
 }
 
-function ParseNode(view, parent?) {
-  this.view = view;
-  this.parent = parent;
-  this.content = [];
-  this.namespaceUri = parent && parent.namespaceUri;
+class ParseNode {
+  view: View;
+  parent?: ParseNode;
+  content: any[];
+  namespaceUri?: string;
+
+  constructor(view: View, parent?: ParseNode) {
+    this.view = view;
+    this.parent = parent;
+    this.content = [];
+    this.namespaceUri = parent && parent.namespaceUri;
+  }
+
+  child() {
+    return new ParseNode(this.view, this);
+  }
+
+  last() {
+    return this.content[this.content.length - 1];
+  }
 }
-ParseNode.prototype.child = function() {
-  return new ParseNode(this.view, this);
-};
-ParseNode.prototype.last = function() {
-  return this.content[this.content.length - 1];
-};
 
 function escapeBraced(source: string) {
   let out = '';
@@ -699,13 +710,13 @@ function unescapeBraced(source: string) {
   });
 }
 
-function unescapeTextLiteral(text, environment) {
+function unescapeTextLiteral(text: string, environment: string) {
   return (environment === 'html' || environment === 'attribute') ?
     htmlUtil.unescapeEntities(text) :
     text;
 }
 
-function parseText(data, onLiteral, onExpression, environment) {
+function parseText(data: string, onLiteral, onExpression, environment: string) {
   let current = data;
   let last;
   while (current) {
@@ -835,7 +846,7 @@ function unexpected(source?: unknown) {
   throw new Error('Error parsing template: ' + JSON.stringify(source));
 }
 
-function appendErrorMessage(err, message) {
+function appendErrorMessage(err: unknown, message: string) {
   if (err instanceof Error) {
     err.message += message;
     return err;
@@ -862,7 +873,7 @@ App.prototype.addViews = function(file: string, namespace: string) {
   registerParsedViews(this, views);
 };
 
-export function getImportNamespace(namespace, attrs, importFilename) {
+export function getImportNamespace(namespace: string, attrs: Record<string, string>, importFilename: string) {
   const extension = path.extname(importFilename);
   const relativeNamespace = (attrs.ns == null) ?
     path.basename(attrs.src, extension) :
