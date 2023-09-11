@@ -1,9 +1,9 @@
 import { ContextClosure, type Template } from './templates';
 
 export class DependencyOptions {
-  ignoreTemplate: Template;
+  ignoreTemplate?: Template;
 
-  constructor(options: { ignoreTemplate: Template }) {
+  constructor(options?: { ignoreTemplate: Template }) {
     this.setIgnoreTemplate(options && options.ignoreTemplate);
   }
 
