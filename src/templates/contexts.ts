@@ -4,6 +4,7 @@ import {
   type MarkupHook,
   type View,
 } from './templates';
+import { Controller } from '../Controller';
 
 function noop() { }
 
@@ -20,9 +21,9 @@ export class ContextMeta {
   pauseCount = 0;
 }
 
-export class Context {
+export class Context<T extends Controller = Controller> {
   meta: ContextMeta;
-  controller: any;
+  controller: T;
   parent?: Context;
   unbound?: boolean;
   expression?: Expression;
@@ -37,7 +38,7 @@ export class Context {
   _id?: number;
   _eventModels?: any;
 
-  constructor(meta, controller, parent, unbound, expression?) {
+  constructor(meta: ContextMeta, controller: T, parent?: Context, unbound?: boolean, expression?: Expression) {
     // Required properties //
 
     // Properties which are globally inherited for the entire page
@@ -159,6 +160,7 @@ export class Context {
   }
 
   forRelative(expression: Expression) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let context: Context = this;
     while (context && context.expression === expression || context.view) {
       context = context.parent;
@@ -168,6 +170,7 @@ export class Context {
 
   // Returns the closest context which defined the named alias
   forAlias(alias: string) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let context: Context = this;
     while (context) {
       if (context.alias === alias || context.keyAlias === alias) return context;
@@ -177,6 +180,7 @@ export class Context {
 
   // Returns the closest containing context for a view attribute name or nothing
   forAttribute(attribute: string) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let context: Context = this;
     while (context) {
       // Find the closest context associated with a view
@@ -193,6 +197,7 @@ export class Context {
   }
 
   forViewParent() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let context: Context = this;
     while (context) {
       // When a context with a `closure` property is encountered, skip to its
@@ -206,6 +211,7 @@ export class Context {
   }
 
   getView() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let context: Context = this;
     while (context) {
       // Find the closest view
