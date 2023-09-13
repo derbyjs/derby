@@ -9,7 +9,8 @@
 import racer = require('racer');
 
 const util = racer.util;
-import { App } from './App';
+import { AppBase } from './App';
+import { PageForServer } from './PageForServer';
 import parsing = require('./parsing');
 import * as derbyTemplates from './templates';
 
@@ -52,7 +53,7 @@ function watchOnce(filenames, callback) {
   });
 }
 
-export class AppForServer extends App {
+export class AppForServer extends AppBase<PageForServer> {
   agents: any;
   compilers: any;
   scriptBaseUrl: any;
@@ -241,20 +242,18 @@ export class AppForServer extends App {
   }
 
   _watchViews(filenames, filename, namespace) {
-    const app = this;
-    watchOnce(filenames, function() {
-      app.loadViews(filename, namespace);
-      app._updateScriptViews();
-      app._refreshClients();
+    watchOnce(filenames, () => {
+      this.loadViews(filename, namespace);
+      this._updateScriptViews();
+      this._refreshClients();
     });
   }
 
   _watchStyles(filenames, filename, options) {
-    const app = this;
-    watchOnce(filenames, function() {
-      const styles = app._loadStyles(filename, options);
-      app._updateScriptViews();
-      app._refreshStyles(filename, styles);
+    watchOnce(filenames, () => {
+      const styles = this._loadStyles(filename, options);
+      this._updateScriptViews();
+      this._refreshStyles(filename, styles);
     });
   }
 
@@ -269,10 +268,10 @@ export class AppForServer extends App {
   _updateScriptViews() {
     if (!this.scriptFilename) return;
     const script = fs.readFileSync(this.scriptFilename, 'utf8');
-    var i = script.indexOf('/*DERBY_SERIALIZED_VIEWS*/');
-    const before = script.slice(0, i);
-    var i = script.indexOf('/*DERBY_SERIALIZED_VIEWS_END*/');
-    const after = script.slice(i + 30);
+    const startIndex = script.indexOf('/*DERBY_SERIALIZED_VIEWS*/');
+    const before = script.slice(0, startIndex);
+    const endIndex = script.indexOf('/*DERBY_SERIALIZED_VIEWS_END*/');
+    const after = script.slice(endIndex + 30);
     const viewsSource = this._viewsSource();
     fs.writeFileSync(this.scriptFilename, before + viewsSource + after, 'utf8');
   }
@@ -281,7 +280,6 @@ export class AppForServer extends App {
     // already been setup if agents is defined
     if (this.agents) return;
     this.agents = {};
-    const app = this;
 
     // Auto-refresh is implemented on top of ShareDB's messaging layer.
     //
@@ -309,8 +307,8 @@ export class AppForServer extends App {
       }
     });
 
-    backend.on('derby:_messageReceived', function(agent, action, message) {
-      app._handleMessageServer(agent, action, message);
+    backend.on('derby:_messageReceived', (agent, action, message) => {
+      this._handleMessageServer(agent, action, message);
     });
   }
 

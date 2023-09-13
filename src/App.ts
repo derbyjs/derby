@@ -13,7 +13,7 @@ import * as util from 'racer/lib/util';
 import tracks = require('tracks');
 
 import components = require('./components');
-import PageBase = require('./Page');
+import { Page, PageBase } from './Page';
 import * as derbyTemplates from './templates';
 
 const { templates } = derbyTemplates;
@@ -32,43 +32,60 @@ export function createAppPage(derby) {
   return AppPage;
 }
 
-declare module '.' {
-  interface App {
-    createPage(): any;
-    createPage(req, res, next): any;
-  }
+interface AppOptions {
+  appMetadata?: Record<string, string>,
+  scriptHash?: string,
 }
 
-export class App extends EventEmitter {
+export abstract class AppBase<T extends PageBase> extends EventEmitter {
   derby: any;
   name: string;
   filename: string;
   scriptHash: string;
-  bundledAt: string;
+  // bundledAt: string;
+  appMetadata: Record<string, string>;
   Page: any;
   proto: any;
   views: any;
   tracksRoutes: any;
   model: ModelData;
-  page: any;
-  _pendingComponentMap: any;
-  _waitForAttach: boolean;
-  _cancelAttach: boolean;
-  history: any;
+  page: T;
 
-  constructor(derby, name, filename, options) {
+  constructor(derby, name, filename, options: AppOptions = {}) {
     super();
     this.derby = derby;
     this.name = name;
     this.filename = filename;
-    this.scriptHash = '{{DERBY_SCRIPT_HASH}}';
-    this.bundledAt = '{{DERBY_BUNDLED_AT}}';
+    this.scriptHash = options.scriptHash ?? '';
+    this.appMetadata = options.appMetadata;
     this.Page = createAppPage(derby);
     this.proto = this.Page.prototype;
     this.views = new templates.Views();
     this.tracksRoutes = tracks.setup(this);
     this.model = null;
     this.page = null;
+  }
+
+  abstract _init(options?: AppOptions);
+  loadViews(_viewFilename, _viewName) { }
+  loadStyles(_filename, _options) { }
+}
+
+export class App extends AppBase<Page> {
+  _pendingComponentMap: any;
+  _waitForAttach: boolean;
+  _cancelAttach: boolean;
+  history: {
+    refresh(): void,
+    push(): void,
+    replace(): void,
+  };
+
+  use = util.use;
+  serverUse = util.serverUse;
+
+  constructor(derby, name, filename, options: AppOptions) {
+    super(derby, name, filename, options);
     this._pendingComponentMap = {};
     this._init(options);
   }
@@ -231,13 +248,6 @@ export class App extends EventEmitter {
   _getAppStateScript() {
     return document.querySelector('script[data-derby-app-state]');
   }
-
-  use = util.use;
-  serverUse = util.serverUse;
-
-  loadViews(_viewFilename, _viewName) { }
-
-  loadStyles(_filename, _options) { }
 
   // This function is overriden by requiring 'derby/parsing'
   addViews(_viewFileName: string, _namespace: string) {
