@@ -5,10 +5,21 @@ import { DependencyOptions } from './dependencyOptions';
 import * as operatorFns from './operatorFns';
 import { ContextClosure, Dependency, Template } from './templates';
 import { concat } from './util';
+import { Component } from '../components';
+import { Controller } from '../Controller';
+import { Page } from '../Page';
 
 type SegmentOrContext = string | number | { item: number } | Context;
 type Segment = string | number;
 type Value = any; // global | Page | ModelData
+
+function isPage(controller: Controller): controller is Page {
+  return !Object.prototype.hasOwnProperty.call((controller as Page), '_scope');
+}
+
+function isComponent(controller: Controller): controller is Component {
+  return Object.prototype.hasOwnProperty.call((controller as Component), '_scope');
+}
 
 export function lookup(segments: Segment[] | undefined, value: Value) {
   if (!segments) return value;
@@ -258,7 +269,8 @@ export class PathExpression extends Expression {
     // getting dependencies within a component template, in which case we cannot
     // access model data separate from rendering.
     if (!context.controller) return;
-    const segments = concat(context.controller._scope, this.segments);
+    const component = context.controller as Component
+    const segments = concat(component._scope, this.segments);
     return this._resolvePatch(context, segments);
   }
 
@@ -674,8 +686,15 @@ export class FnExpression extends Expression {
         lookup(this.parentSegments, controller) :
         controller;
       fn = parent && parent[this.lastSegment];
-      if (fn) break;
-      controller = controller.parent;
+      if (fn) {
+        break;
+      }
+      if (isPage(controller)) {
+        controller = undefined;
+        break;
+      }
+      const component = controller as Component;
+      controller = component.parent;
     }
     const setFn = fn && fn.set;
     if (!setFn) throw new Error('No setter function for: ' + this.segments.join('.'));
