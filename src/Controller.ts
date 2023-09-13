@@ -10,6 +10,7 @@ export class Controller extends EventEmitter {
   app: App;
   page: any;
   model: ModelData;
+  markerNode: Node;
 
   constructor(app: App, page, model: ModelData) {
     super();
