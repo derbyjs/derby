@@ -8,6 +8,7 @@ import { DependencyOptions } from './dependencyOptions';
 import { type Expression } from './expressions';
 import { concat, hasKeys, traverseAndCreate } from './util';
 import { Component } from '../components';
+import { Controller } from '../Controller';
 
 export type Attributes = Record<string, Attribute>;
 type PathSegment = string | number;
@@ -1394,7 +1395,7 @@ export class Binding {
     this.meta = null;
   }
 
-  update() {
+  update(_previous?, _pass?) {
     this.context.pause();
     this.template.update(this.context, this);
     this.context.unpause();
@@ -1688,12 +1689,22 @@ function getDependencies(expression: HasDependencies, context: Context, options:
   return expression.dependencies(context, options);
 }
 
-const markerHooks = [{
-  emit: function(context: { controller: { markerNode: any; }; }, node: { $component: any; }) {
+export abstract class MarkupHook<T> {
+  module = Template.prototype.module;
+  name: string;
+  abstract emit(context: Context, target: T): void;
+}
+
+class Hook extends MarkupHook<any> {
+  module = Template.prototype.module;
+  name = 'hook';
+  emit(context: Context, node: Node & { $component: Controller }) {
     node.$component = context.controller;
     context.controller.markerNode = node;
   }
-}] as Array<MarkupHook<any>>;
+}
+
+const markerHooks = [new Hook()] as Array<MarkupHook<any>>;
 
 export class Marker extends Comment {
   type = 'Marker';
@@ -2217,12 +2228,6 @@ export class Views {
     }
     return message;
   }
-}
-
-export abstract class MarkupHook<T> {
-  module = Template.prototype.module;
-  name: string;
-  abstract emit(context: Context, target: T): void;
 }
 
 export class ElementOn extends MarkupHook<globalThis.Element> {
