@@ -1,73 +1,73 @@
-var Page = require('./Page');
+import { PageBase } from './Page';
 
-module.exports = PageForServer;
-function PageForServer(app, model, req, res) {
-  Page.call(this, app, model);
-  this.req = req;
-  this.res = res;
+export class PageForServer extends PageBase {
+  req: any;
+  res: any;
+
+  constructor(app, model, req, res) {
+    super(app, model);
+    this.req = req;
+    this.res = res;
+  }
+
+  render(status, ns) {
+    if (typeof status !== 'number') {
+      ns = status;
+      status = null;
+    }
+    this.app.emit('render', this);
+
+    if (status) this.res.statusCode = status;
+    // Prevent the browser from storing the HTML response in its back cache, since
+    // that will cause it to render with the data from the initial load first
+    this.res.setHeader('Cache-Control', 'no-store');
+    // Set HTML utf-8 content type unless already set
+    if (!this.res.getHeader('Content-Type')) {
+      this.res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    }
+
+    this._setRenderParams(ns);
+    const pageHtml = this.get('Page', ns);
+    this.res.write(pageHtml);
+    this.app.emit('htmlDone', this);
+
+    this.res.write('<script data-derby-app-state type="application/json">');
+    const tailHtml = this.get('Tail', ns);
+
+    this.model.destroy('$components');
+
+    this.model.bundle((err, bundle) => {
+      if (this.model.hasErrored) return;
+      if (err) return this.emit('error', err);
+      const json = stringifyBundle(bundle);
+      this.res.write(json);
+      this.res.end('</script>' + tailHtml);
+      this.app.emit('routeDone', this, 'render');
+    });
+  }
+
+  renderStatic(status, ns) {
+    if (typeof status !== 'number') {
+      ns = status;
+      status = null;
+    }
+    this.app.emit('renderStatic', this);
+
+    if (status) this.res.statusCode = status;
+    this.params = pageParams(this.req);
+    this._setRenderParams(ns);
+    const pageHtml = this.get('Page', ns);
+    const tailHtml = this.get('Tail', ns);
+    this.res.send(pageHtml + tailHtml);
+    this.app.emit('routeDone', this, 'renderStatic');
+  }
+
+  // Don't register any listeners on the server
+  // _addListeners() {}
 }
 
-PageForServer.prototype = Object.create(Page.prototype);
-PageForServer.prototype.constructor = PageForServer;
-
-PageForServer.prototype.render = function(status, ns) {
-  if (typeof status !== 'number') {
-    ns = status;
-    status = null;
-  }
-  this.app.emit('render', this);
-
-  if (status) this.res.statusCode = status;
-  // Prevent the browser from storing the HTML response in its back cache, since
-  // that will cause it to render with the data from the initial load first
-  this.res.setHeader('Cache-Control', 'no-store');
-  // Set HTML utf-8 content type unless already set
-  if (!this.res.getHeader('Content-Type')) {
-    this.res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  }
-
-  this._setRenderParams(ns);
-  var pageHtml = this.get('Page', ns);
-  this.res.write(pageHtml);
-  this.app.emit('htmlDone', this);
-
-  this.res.write('<script data-derby-app-state type="application/json">');
-  var tailHtml = this.get('Tail', ns);
-
-  this.model.destroy('$components');
-
-  var page = this;
-  this.model.bundle(function(err, bundle) {
-    if (page.model.hasErrored) return;
-    if (err) return page.emit('error', err);
-    var json = stringifyBundle(bundle);
-    page.res.write(json);
-    page.res.end('</script>' + tailHtml);
-    page.app.emit('routeDone', page, 'render');
-  });
-};
-
-PageForServer.prototype.renderStatic = function(status, ns) {
-  if (typeof status !== 'number') {
-    ns = status;
-    status = null;
-  }
-  this.app.emit('renderStatic', this);
-
-  if (status) this.res.statusCode = status;
-  this.params = pageParams(this.req);
-  this._setRenderParams(ns);
-  var pageHtml = this.get('Page', ns);
-  var tailHtml = this.get('Tail', ns);
-  this.res.send(pageHtml + tailHtml);
-  this.app.emit('routeDone', this, 'renderStatic');
-};
-
-// Don't register any listeners on the server
-PageForServer.prototype._addListeners = function() {};
-
 function stringifyBundle(bundle) {
-  var json = JSON.stringify(bundle);
+  const json = JSON.stringify(bundle);
   return json.replace(/<[\/!]/g, function(match) {
     // Replace the end tag sequence with an equivalent JSON string to make
     // sure the script is not prematurely closed
@@ -81,12 +81,12 @@ function stringifyBundle(bundle) {
 
 // TODO: Cleanup; copied from tracks
 function pageParams(req) {
-  var params = {
+  const params = {
     url: req.url,
     body: req.body,
     query: req.query,
   };
-  for (var key in req.params) {
+  for (const key in req.params) {
     params[key] = req.params[key];
   }
   return params;
