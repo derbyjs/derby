@@ -32,9 +32,7 @@ export abstract class PageBase extends Controller {
 
 
   constructor(app, model) {
-    // second arg is page instance (this) but not working
-    // @ts-expect-error TS doesnt like passing this
-    super(app, this, model);
+    super(app, null, model);
     this.params = null;
     this._eventModel = null;
     this._removeModelListeners = () => {};
