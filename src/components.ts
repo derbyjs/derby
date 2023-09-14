@@ -10,6 +10,7 @@
 import util = require('racer/lib/util');
 
 import { Controller } from './Controller';
+import { PageBase } from './Page';
 import derbyTemplates = require('./templates');
 import { Context } from './templates/contexts';
 import { Expression } from './templates/expressions';
@@ -26,14 +27,14 @@ const slice = [].slice;
 // exports.extendComponent = extendComponent;
 
 export class Component extends Controller {
-  parent: Component;
+  parent: Controller;
   context: Context;
   id: number;
   isDestroyed: boolean;
   _scope: string[];
+  page: PageBase;
 
   constructor(context, data) {
-    super(context.controller.app, context.controller.page, data);
     const parent = context.controller;
     const id = context.id();
     const scope = ['$components', id];
@@ -44,6 +45,8 @@ export class Component extends Controller {
     // Store a reference to the component's scope such that the expression
     // getters are relative to the component
     model.data = data;
+    // call super _after_ model created
+    super(context.controller.app, context.controller.page, model);
 
     this.parent = parent;
     this.context = context.componentChild(this);
@@ -415,16 +418,17 @@ class ComponentModelData {
 }
 
 export class ComponentFactory{
-  _ctor: any;
+  constructorFn: any;
 
   constructor(constructorFn) {
-    this._ctor = constructorFn;
+    this.constructorFn = constructorFn;
   }
 
   init(context) {
-    const DataConstructor = this._ctor.DataConstructor || ComponentModelData;
+    const DataConstructor = this.constructorFn.DataConstructor || ComponentModelData;
     const data = new DataConstructor();
-    const component = new this._ctor(context, data);
+    // eslint-disable-next-line new-cap
+    const component = new this.constructorFn(context, data);
     // Detect whether the component constructor already called super by checking
     // for one of the properties it sets. If not, call the Component constructor
     if (!component.context) {
@@ -456,12 +460,12 @@ export class ComponentFactory{
 function noop() {}
 
 class SingletonComponentFactory{
-  _ctor: any;
+  constructorFn: any;
   isSingleton: true;
   component: Component;
 
   constructor(constructorFn) {
-    this._ctor = constructorFn;
+    this.constructorFn = constructorFn;
     this.component = null;
     // Disable component from being destroyed, since it is intended to
     // be used multiple times
@@ -469,7 +473,7 @@ class SingletonComponentFactory{
   }
 
   init(context) {
-    if (!this.component) this.component = new this._ctor();
+    if (!this.component) this.component = new this.constructorFn();
     return context.componentChild(this.component);
   }
 

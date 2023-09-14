@@ -6,7 +6,7 @@ import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
 import { App } from '../App';
 import derbyTemplates = require('../templates');
-import { View } from '../templates/templates';
+import { MarkupHook, View } from '../templates/templates';
 import { Expression } from '../templates/expressions';
 
 export { createPathExpression } from './createPathExpression';
@@ -323,7 +323,7 @@ function findView(name: string) {
   return view;
 }
 
-function parseNamedViewElement(element, view, _name: string) {
+function parseNamedViewElement(element, view: View, _name: string) {
   const viewAttributes = viewAttributesFromElement(element);
   const componentHooks = componentHooksFromAttributes(viewAttributes);
   const remaining = parseContentAttributes(element.content, view, viewAttributes);
@@ -331,7 +331,7 @@ function parseNamedViewElement(element, view, _name: string) {
   finishParseViewElement(viewAttributes, remaining, viewInstance);
 }
 
-function createDynamicViewInstance(expression, attributes, hooks, initHooks) {
+function createDynamicViewInstance(expression: Expression, attributes: Record<string, string>, hooks: MarkupHook<unknown>[], initHooks: MarkupHook<unknown>[]) {
   const viewInstance = new templates.DynamicViewInstance(expression, attributes, hooks, initHooks);
   // Wrap the viewInstance in a block with the same expression, so that it is
   // re-rendered when any of its dependencies change

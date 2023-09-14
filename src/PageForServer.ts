@@ -3,11 +3,13 @@ import { PageBase } from './Page';
 export class PageForServer extends PageBase {
   req: any;
   res: any;
+  page: PageForServer;
 
   constructor(app, model, req, res) {
     super(app, model);
     this.req = req;
     this.res = res;
+    this.page = this;
   }
 
   render(status, ns) {

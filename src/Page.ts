@@ -16,7 +16,11 @@ const {
   templates,
 } = derbyTemplates;
 
-export class PageBase extends Controller {
+export interface PageConstructor<T extends PageBase> {
+  new (model: any, req?: any, res?: any): T
+}
+
+export abstract class PageBase extends Controller {
   params: any;
   context: Context;
   create: (model: any, dom: any) => void;
@@ -24,9 +28,12 @@ export class PageBase extends Controller {
   _components: Record<string, components.Component>
   _eventModel: any;
   _removeModelListeners: () => void = () => {};
+  page: PageBase;
+
 
   constructor(app, model) {
-    // @ts-expect-error Ignore passing `this` to `super`
+    // second arg is page instance (this) but not working
+    // @ts-expect-error TS doesnt like passing this
     super(app, this, model);
     this.params = null;
     this._eventModel = null;
@@ -34,6 +41,7 @@ export class PageBase extends Controller {
     this._components = {};
     if (this.init) this.init(model);
     this.context = this._createContext();
+    this.page = this;
   }
 
   $bodyClass(ns: string) {

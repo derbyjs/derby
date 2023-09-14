@@ -13,7 +13,7 @@ import * as util from 'racer/lib/util';
 import tracks = require('tracks');
 
 import components = require('./components');
-import { Page, PageBase } from './Page';
+import { Page, type PageBase, type PageConstructor } from './Page';
 import * as derbyTemplates from './templates';
 
 const { templates } = derbyTemplates;
@@ -21,14 +21,11 @@ const { templates } = derbyTemplates;
 // TODO: Change to Map once we officially drop support for ES5.
 global.APPS = global.APPS || {};
 
-export function createAppPage(derby) {
-  const Page = (derby && derby.Page) || PageBase;
+export function createAppPage<T extends PageBase = Page>(derby): PageConstructor<T> {
+  const pageCtor = (derby && derby.Page) || Page;
   // Inherit from Page/PageForServer so that we can add controller functions as prototype
   // methods on this app's pages
-  function AppPage(...args) {
-    Page.apply(this, args);
-  }
-  AppPage.prototype = Object.create(Page.prototype);
+  class AppPage extends pageCtor { }
   return AppPage;
 }
 
@@ -44,7 +41,7 @@ export abstract class AppBase<T extends PageBase> extends EventEmitter {
   scriptHash: string;
   // bundledAt: string;
   appMetadata: Record<string, string>;
-  Page: any;
+  Page: PageConstructor<T>;
   proto: any;
   views: any;
   tracksRoutes: any;
@@ -297,7 +294,7 @@ export class App extends AppBase<Page> {
     const mapName = viewName.replace(/:index$/, '');
     const currentView = this.views.nameMap[mapName];
     const currentConstructor = (currentView && currentView.componentFactory) ?
-      currentView.componentFactory.constructor :
+      currentView.componentFactory.constructorFn :
       this._pendingComponentMap[mapName];
 
     // Avoid registering the same component twice; we want to avoid the overhead

@@ -4,20 +4,21 @@ import { type ModelData } from 'racer';
 
 import { type App } from './App';
 import Dom = require('./Dom');
+import { PageBase } from './Page';
 
 export class Controller extends EventEmitter {
   dom: Dom;
   app: App;
-  page: any;
+  page: PageBase;
   model: ModelData;
   markerNode: Node;
 
-  constructor(app: App, page, model: ModelData) {
+  constructor(app: App, page: PageBase, model: ModelData) {
     super();
     this.dom = new Dom(this);
     this.app = app;
-    this.page = page;
     this.model = model;
+    this.page = page;
     model.data.$controller = this;
   }
 
