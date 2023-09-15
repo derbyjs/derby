@@ -35,7 +35,7 @@ interface AppOptions {
   scriptHash?: string,
 }
 
-type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: any, done?: () => void): void;
+type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: any, done?: () => void) => void;
 
 export abstract class AppBase<T extends PageBase> extends EventEmitter {
   derby: any;
