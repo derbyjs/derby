@@ -716,6 +716,7 @@ export class NewExpression extends FnExpression {
     // Otherwise, get the current value for path inputs and apply
     const inputs = this._getInputs(context);
     inputs.unshift(null);
+    // eslint-disable-next-line prefer-spread
     return new (Fn.bind.apply(Fn, inputs))();
   }
 }
