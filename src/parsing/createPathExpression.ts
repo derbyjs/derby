@@ -1,5 +1,5 @@
 import * as esprima from 'esprima-derby';
-import * as estree from 'estree';
+import type * as estree from 'estree';
 
 import { expressions, operatorFns } from '../templates';
 const { Syntax } = esprima;
