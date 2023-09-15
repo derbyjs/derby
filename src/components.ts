@@ -7,6 +7,7 @@
  *
  */
 
+import { type Model, type ModelData } from 'racer';
 import util = require('racer/lib/util');
 
 import { Controller } from './Controller';
@@ -14,27 +15,38 @@ import { PageBase } from './Page';
 import derbyTemplates = require('./templates');
 import { Context } from './templates/contexts';
 import { Expression } from './templates/expressions';
-import { Binding } from './templates/templates';
+import { Attribute, Binding } from './templates/templates';
 const { expressions, templates } = derbyTemplates;
 const slice = [].slice;
 
-// exports.Component = Component;
-// exports.ComponentAttribute = ComponentAttribute;
-// exports.ComponentAttributeBinding = ComponentAttributeBinding;
-// exports.ComponentFactory = ComponentFactory;
-// exports.SingletonComponentFactory = SingletonComponentFactory;
-// exports.createFactory = createFactory;
-// exports.extendComponent = extendComponent;
+export interface DataConstructor extends Record<string, unknown> {
+  new(): Record<string, unknown>
+}
 
-export class Component extends Controller {
-  parent: Controller;
+export interface ComponentConstructor extends Component {
+  new(context?: Context, data?: ModelData): Component;
+  DataConstructor?: DataConstructor;
+}
+
+export abstract class Component extends Controller {
   context: Context;
-  id: number;
+  id: string;
+  init?: (model: Model) => void;
   isDestroyed: boolean;
-  _scope: string[];
   page: PageBase;
+  parent: Controller;
+  singleton?: true;
+  _scope: string[];
+  // new style view prop
+  view?: {
+    dependencies: ComponentConstructor[],
+    file: string,
+    is: string,
+    source: string,
+  }
+  static DataConstructor?: DataConstructor;
 
-  constructor(context, data) {
+  constructor(context: Context, data: ModelData) {
     const parent = context.controller;
     const id = context.id();
     const scope = ['$components', id];
@@ -45,7 +57,7 @@ export class Component extends Controller {
     // Store a reference to the component's scope such that the expression
     // getters are relative to the component
     model.data = data;
-    // call super _after_ model created
+    // IMPORTANT: call super _after_ model created
     super(context.controller.app, context.controller.page, model);
 
     this.parent = parent;
@@ -74,7 +86,7 @@ export class Component extends Controller {
   // Apply calls to the passed in function with the component as the context.
   // Stop calling back once the component is destroyed, which avoids possible bugs
   // and memory leaks.
-  bind(callback) {
+  bind(callback: (...args: unknown[]) => void) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let _component = this;
     let _callback = callback;
@@ -106,7 +118,7 @@ export class Component extends Controller {
   //
   // Like component.bind(), will no longer call back once the component is
   // destroyed, which avoids possible bugs and memory leaks.
-  throttle(callback, delayArg) {
+  throttle(callback: (...args: unknown[]) => void, delayArg?: number | ((fn: () => void) => void)) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let _component = this;
     this.on('destroy', function() {
@@ -165,14 +177,14 @@ export class Component extends Controller {
 
   // Checks that component is not destroyed before calling callback function
   // which avoids possible bugs and memory leaks.
-  requestAnimationFrame(callback) {
+  requestAnimationFrame(callback: () => void) {
     const safeCallback = _safeWrap(this, callback);
     window.requestAnimationFrame(safeCallback);
   }
 
   // Checks that component is not destroyed before calling callback function
   // which avoids possible bugs and memory leaks.
-  nextTick(callback) {
+  nextTick(callback: () => void) {
     const safeCallback = _safeWrap(this, callback);
     process.nextTick(safeCallback);
   }
@@ -186,7 +198,7 @@ export class Component extends Controller {
   //
   // Like component.bind(), will no longer call back once the component is
   // destroyed, which avoids possible bugs and memory leaks.
-  debounce(callback, delay) {
+  debounce(callback: (...args: unknown[]) => void, delay: number) {
     delay = delay || 0;
     if (typeof delay !== 'number') {
       throw new Error('Second argument must be a number');
@@ -233,7 +245,7 @@ export class Component extends Controller {
   //
   // Like component.bind(), will no longer call back once the component is
   // destroyed, which avoids possible bugs and memory leaks.
-  debounceAsync(callback, delay) {
+  debounceAsync(callback: (...args: unknown[]) => void, delay: number) {
     const applyArguments = callback.length !== 1;
     delay = delay || 0;
     if (typeof delay !== 'number') {
@@ -271,7 +283,7 @@ export class Component extends Controller {
     };
   }
 
-  get(viewName, unescaped) {
+  get(viewName: string, unescaped: boolean) {
     const view = this.getView(viewName);
     return view.get(this.context, unescaped);
   }
@@ -287,7 +299,7 @@ export class Component extends Controller {
       this.app.views.find(viewName, contextView.namespace) : contextView;
   }
 
-  getAttribute(key) {
+  getAttribute(key: string) {
     const attributeContext = this.context.forAttribute(key);
     if (!attributeContext) return;
     let value = attributeContext.attributes[key];
@@ -297,17 +309,17 @@ export class Component extends Controller {
     return expressions.renderValue(value, this.context);
   }
 
-  setAttribute(key, value) {
+  setAttribute(key: string, value: Attribute) {
     this.context.parent.attributes[key] = value;
   }
 
-  setNullAttribute(key, value) {
+  setNullAttribute(key: string, value: Attribute) {
     const attributes = this.context.parent.attributes;
     if (attributes[key] == null) attributes[key] = value;
   }
 }
 
-function _safeWrap(component, callback) {
+function _safeWrap(component: Component, callback: () => void) {
   return function() {
     if (component.isDestroyed) return;
     callback.call(component);
@@ -319,13 +331,13 @@ export class ComponentAttribute{
   model: any;
   key: any;
 
-  constructor(expression, model, key) {
+  constructor(expression: Expression, model: Model, key: string) {
     this.expression = expression;
     this.model = model;
     this.key = key;
   }
 
-  update(context, binding) {
+  update(context: Context, binding: Binding) {
     const value = this.expression.get(context);
     binding.condition = value;
     this.model.setDiff(this.key, value);
@@ -345,7 +357,7 @@ export class ComponentAttributeBinding extends Binding {
   }
 }
 
-function setModelAttributes(context, model) {
+function setModelAttributes(context: Context, model: Model) {
   const attributes = context.parent.attributes;
   if (!attributes) return;
   // Set attribute values on component model
@@ -355,7 +367,7 @@ function setModelAttributes(context, model) {
   }
 }
 
-function setModelAttribute(context, model, key, value) {
+function setModelAttribute(context: Context, model: Model, key: string, value: unknown) {
   // If an attribute is an Expression, set its current value in the model
   // and keep it up to date. When it is a resolvable path, use a Racer ref,
   // which makes it a two-way binding. Otherwise, set to the current value
@@ -396,7 +408,7 @@ function setModelAttribute(context, model, key, value) {
   model.set(key, value);
 }
 
-export function createFactory(constructor) {
+export function createFactory(constructor: ComponentConstructor) {
   // DEPRECATED: constructor.prototype.singleton is deprecated. "singleton"
   // static property on the constructor is preferred
   return (constructor.singleton || constructor.prototype.singleton) ?
@@ -418,9 +430,9 @@ class ComponentModelData {
 }
 
 export class ComponentFactory{
-  constructorFn: any;
+  constructorFn: ComponentConstructor;
 
-  constructor(constructorFn) {
+  constructor(constructorFn: ComponentConstructor) {
     this.constructorFn = constructorFn;
   }
 
@@ -460,7 +472,7 @@ export class ComponentFactory{
 function noop() {}
 
 class SingletonComponentFactory{
-  constructorFn: any;
+  constructorFn: ComponentConstructor;
   isSingleton: true;
   component: Component;
 
@@ -473,6 +485,7 @@ class SingletonComponentFactory{
   }
 
   init(context) {
+    // eslint-disable-next-line new-cap
     if (!this.component) this.component = new this.constructorFn();
     return context.componentChild(this.component);
   }

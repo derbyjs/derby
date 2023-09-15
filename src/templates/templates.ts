@@ -1763,7 +1763,11 @@ interface ViewOptions {
 export class View extends Template {
   arraysMap: any;
   attributesMap: any;
-  componentFactory: any;
+  componentFactory: {
+    constructorFn: any,
+    init: any,
+    create: any,
+  };
   fromSerialized: boolean;
   literal: boolean;
   name: string;
@@ -1895,7 +1899,7 @@ export class View extends Template {
 
   parse() {
     this._parse();
-    if (this.componentFactory && !this.componentFactory.constructor.prototype.singleton) {
+    if (this.componentFactory && !this.componentFactory.constructorFn.prototype.singleton) {
       const marker = new Marker(this.name);
       this.template.content.unshift(marker);
     }

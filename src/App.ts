@@ -8,11 +8,12 @@
 import { EventEmitter } from 'events';
 import { basename } from 'path';
 
-import { type ModelData } from 'racer';
+import { type Model } from 'racer';
 import * as util from 'racer/lib/util';
 import tracks = require('tracks');
 
 import components = require('./components');
+import { type ComponentConstructor } from './components';
 import { Page, type PageBase, type PageConstructor } from './Page';
 import * as derbyTemplates from './templates';
 
@@ -34,6 +35,8 @@ interface AppOptions {
   scriptHash?: string,
 }
 
+type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: any, done?: () => void): void;
+
 export abstract class AppBase<T extends PageBase> extends EventEmitter {
   derby: any;
   name: string;
@@ -45,7 +48,7 @@ export abstract class AppBase<T extends PageBase> extends EventEmitter {
   proto: any;
   views: any;
   tracksRoutes: any;
-  model: ModelData;
+  model: Model;
   page: T;
 
   constructor(derby, name, filename, options: AppOptions = {}) {
@@ -254,7 +257,7 @@ export class App extends AppBase<Page> {
     );
   }
 
-  component(name, constructor, isDependency) {
+  component(name: string, constructor: ComponentConstructor, isDependency: boolean) {
     if (typeof name === 'function') {
       constructor = name;
       name = null;
@@ -277,6 +280,7 @@ export class App extends AppBase<Page> {
       //
       // DEPRECATED: constructor.prototype.name and constructor.prototype.view
       // use the equivalent static properties instead
+      // @ts-expect-error Ignore deprecated props
       viewIs = constructor.is || constructor.prototype.name;
       viewFilename = constructor.view || constructor.prototype.view;
     }
@@ -369,7 +373,7 @@ export class App extends AppBase<Page> {
     }
   }
 
-  onRoute(callback, page, next, done) {
+  onRoute(callback: OnRouteCallback, page: Page, next: () => void, done: () => void) {
     if (this._waitForAttach) {
       // Cancel any routing before the initial page attachment. Instead, do a
       // render once derby is ready
@@ -393,7 +397,7 @@ export class App extends AppBase<Page> {
     callback.call(page, page, page.model, page.params, next);
   }
 
-  _autoRefresh(_backend?) {
+  _autoRefresh(_backend?: unknown) {
     const connection = this.model.connection;
     connection.on('connected', function() {
       connection.send({
@@ -410,8 +414,7 @@ export class App extends AppBase<Page> {
       }
     });
   }
-
-  _handleMessage(action, message) {
+  _handleMessage(action: string, message: { views: string, filename: string, css: string}) {
     if (action === 'refreshViews') {
       const fn = new Function('return ' + message.views)(); // jshint ignore:line
       fn(derbyTemplates, this.views);
@@ -431,7 +434,7 @@ export class App extends AppBase<Page> {
     }
   }
 
-  static _parseInitialData(jsonString) {
+  static _parseInitialData(jsonString: string) {
     try {
       return JSON.parse(jsonString);
     } catch (error) {

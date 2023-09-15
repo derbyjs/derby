@@ -6,8 +6,8 @@ import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
 import { App } from '../App';
 import derbyTemplates = require('../templates');
-import { MarkupHook, View } from '../templates/templates';
 import { Expression } from '../templates/expressions';
+import { MarkupHook, View } from '../templates/templates';
 
 export { createPathExpression } from './createPathExpression';
 export { markup } from './markup';

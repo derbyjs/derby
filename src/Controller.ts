@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { type ModelData } from 'racer';
+import { type Model } from 'racer';
 
 import { type App } from './App';
 import Dom = require('./Dom');
@@ -10,10 +10,10 @@ export class Controller extends EventEmitter {
   dom: Dom;
   app: App;
   page: PageBase;
-  model: ModelData;
+  model: Model;
   markerNode: Node;
 
-  constructor(app: App, page: PageBase, model: ModelData) {
+  constructor(app: App, page: PageBase, model: Model) {
     super();
     this.dom = new Dom(this);
     this.app = app;
@@ -22,7 +22,7 @@ export class Controller extends EventEmitter {
     model.data.$controller = this;
   }
 
-  emitCancellable(...args) {
+  emitCancellable(...args: unknown[]) {
     let cancelled = false;
     function cancel() {
       cancelled = true;
@@ -35,8 +35,8 @@ export class Controller extends EventEmitter {
     return cancelled;
   }
 
-  emitDelayable(...args) {
-    const callback = args.pop();
+  emitDelayable(...args: unknown[]) {
+    const callback: () => void = args.pop() as any;
 
     let delayed = false;
     function delay() {
