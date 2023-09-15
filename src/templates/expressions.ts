@@ -17,10 +17,6 @@ function isPage(controller: Controller): controller is Page {
   return !Object.prototype.hasOwnProperty.call((controller as Page), '_scope');
 }
 
-function isComponent(controller: Controller): controller is Component {
-  return Object.prototype.hasOwnProperty.call((controller as Component), '_scope');
-}
-
 export function lookup(segments: Segment[] | undefined, value: Value) {
   if (!segments) return value;
 
