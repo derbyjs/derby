@@ -890,7 +890,7 @@ export function parseViews(file: string, namespace: string, filename: string, on
   htmlUtil.parse(file + '\n', {
     // Force view tags to be treated as raw tags,
     // meaning their contents are not parsed as HTML
-    rawTags: /^(?:[^\s=\/!>]+:|style|script)$/i,
+    rawTags: /^(?:[^\s=/!>]+:|style|script)$/i,
     matchEnd: matchEnd,
     start: onStart,
     text: onText
@@ -898,7 +898,7 @@ export function parseViews(file: string, namespace: string, filename: string, on
 
   function matchEnd(tagName: string) {
     if (tagName.slice(-1) === ':') {
-      return /<\/?[^\s=\/!>]+:[\s>]/i;
+      return /<\/?[^\s=/!>]+:[\s>]/i;
     }
     return new RegExp('</' + tagName, 'i');
   }
