@@ -63,7 +63,7 @@ export function renderTemplate(template: Renderable, context: Context): Primitiv
   return value;
 }
 
-export function renderArray(array: Renderable[], context: Context) {
+export function renderArray(array: Renderable[], context: Context): Renderable[] {
   for (let i = 0; i < array.length; i++) {
     if (hasTemplateProperty(array[i])) {
       return renderArrayProperties(array, context);
@@ -161,7 +161,7 @@ export class Expression {
     return this.meta && this.meta.source;
   }
 
-  truthy(context: Context) {
+  truthy(context: Context): boolean {
     const blockType = this.meta.blockType;
     if (blockType === 'else') return true;
     const value = this.get(context, true);
