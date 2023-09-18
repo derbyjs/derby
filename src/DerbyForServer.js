@@ -1,5 +1,5 @@
 var cluster = require('cluster');
-var Derby = require('./Derby');
+var Derby = require('./Derby').Derby;
 var util = require('racer/lib/util');
 
 util.isProduction = process.env.NODE_ENV === 'production';

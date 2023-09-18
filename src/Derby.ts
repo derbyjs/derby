@@ -4,12 +4,13 @@
  *
  */
 import racer = require('racer');
+import Racer = require('racer/lib/Racer');
 
 import { App } from './App';
 import components = require('./components');
 import Page = require('./Page');
 
-export class Derby extends racer {
+export class Derby extends Racer {
   App = App;
   Page = Page;
   Component = components.Component;

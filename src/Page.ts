@@ -30,7 +30,6 @@ export abstract class PageBase extends Controller {
   _removeModelListeners: () => void = () => {};
   page: PageBase;
 
-
   constructor(app, model) {
     super(app, null, model);
     this.params = null;
