@@ -339,6 +339,7 @@ export class ComponentAttribute{
 
   update(context: Context, binding: Binding) {
     const value = this.expression.get(context);
+    // @ts-expect-error Unsure what type binding should be w condition
     binding.condition = value;
     this.model.setDiff(this.key, value);
   }
