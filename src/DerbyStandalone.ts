@@ -1,38 +1,33 @@
-var EventEmitter = require('events').EventEmitter;
-var Model = require('racer/lib/Model/ModelStandalone');
-var util = require('racer/lib/util');
-var App = require('./App').App;
-var Page = require('./Page');
-var components = require('./components');
+import Model = require('racer/lib/Model/ModelStandalone');
+import util = require('racer/lib/util');
 
-module.exports = DerbyStandalone;
+import { App } from './App';
+import * as components from './components';
+import { DerbyBase } from './Derby';
+import { Page } from './Page';
 
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('./documentListeners').add(document);
 
 // Standard Derby inherits from Racer, but we only set up the event emitter and
 // expose the Model and util here instead
-function DerbyStandalone() {
-  EventEmitter.call(this);
+export class DerbyStandalone extends DerbyBase {
+  Model = Model;
+  util = util;
+
+  App = AppStandalone;
+  Page = Page;
+  Component = components.Component;
+
+  createApp() {
+    return new this.App(this, null, null, null);
+  }
 }
-util.mergeInto(DerbyStandalone.prototype, EventEmitter.prototype);
-DerbyStandalone.prototype.Model = Model;
-DerbyStandalone.prototype.util = util;
 
-DerbyStandalone.prototype.App = AppStandalone;
-DerbyStandalone.prototype.Page = Page;
-DerbyStandalone.prototype.Component = components.Component;
-
-DerbyStandalone.prototype.createApp = function() {
-  return new this.App(this);
-};
-
-function AppStandalone(derby) {
-  App.call(this, derby);
+export class AppStandalone extends App {
+  _init() {
+    this.model = new this.derby.Model();
+    this.createPage();
+  }
 }
-AppStandalone.prototype = Object.create(App.prototype);
-AppStandalone.prototype.constructor = AppStandalone;
-
-AppStandalone.prototype._init = function() {
-  this.model = new this.derby.Model();
-  this.createPage();
-};
