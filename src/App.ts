@@ -14,7 +14,7 @@ import tracks = require('tracks');
 
 import components = require('./components');
 import { type ComponentConstructor } from './components';
-import { Page, type PageBase, type PageConstructor } from './Page';
+import { Page, type PageBase } from './Page';
 import * as derbyTemplates from './templates';
 
 const { templates } = derbyTemplates;
@@ -22,8 +22,8 @@ const { templates } = derbyTemplates;
 // TODO: Change to Map once we officially drop support for ES5.
 global.APPS = global.APPS || {};
 
-export function createAppPage<T extends PageBase = Page>(derby): PageConstructor<T> {
-  const pageCtor = (derby && derby.Page) || Page;
+export function createAppPage(derby): typeof PageBase {
+  const pageCtor = ((derby && derby.Page) || Page) as typeof PageBase;
   // Inherit from Page/PageForServer so that we can add controller functions as prototype
   // methods on this app's pages
   class AppPage extends pageCtor { }
@@ -37,19 +37,19 @@ interface AppOptions {
 
 type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: any, done?: () => void) => void;
 
-export abstract class AppBase<T extends PageBase> extends EventEmitter {
+export abstract class AppBase extends EventEmitter {
   derby: any;
   name: string;
   filename: string;
   scriptHash: string;
   // bundledAt: string;
   appMetadata: Record<string, string>;
-  Page: PageConstructor<T>;
+  Page: typeof PageBase;
   proto: any;
   views: any;
   tracksRoutes: any;
   model: Model;
-  page: T;
+  page: PageBase;
 
   constructor(derby, name, filename, options: AppOptions = {}) {
     super();
@@ -71,10 +71,11 @@ export abstract class AppBase<T extends PageBase> extends EventEmitter {
   loadStyles(_filename, _options) { }
 }
 
-export class App extends AppBase<Page> {
+export class App extends AppBase {
   _pendingComponentMap: any;
   _waitForAttach: boolean;
   _cancelAttach: boolean;
+  page: Page;
   history: {
     refresh(): void,
     push(): void,
@@ -361,7 +362,7 @@ export class App extends AppBase<Page> {
 
   createPage() {
     this._destroyCurrentPage();
-    const page = new this.Page(this, this.model);
+    const page = new Page(this, this.model);
     this.page = page;
     return page;
   }
@@ -414,6 +415,7 @@ export class App extends AppBase<Page> {
       }
     });
   }
+
   _handleMessage(action: string, message: { views: string, filename: string, css: string}) {
     if (action === 'refreshViews') {
       const fn = new Function('return ' + message.views)(); // jshint ignore:line

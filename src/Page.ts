@@ -16,10 +16,6 @@ const {
   templates,
 } = derbyTemplates;
 
-export interface PageConstructor<T extends PageBase> {
-  new (model: any, req?: any, res?: any): T
-}
-
 export abstract class PageBase extends Controller {
   params: any;
   context: Context;

@@ -1,39 +1,43 @@
-var cluster = require('cluster');
-var Derby = require('./Derby').Derby;
-var util = require('racer/lib/util');
+import cluster from 'cluster';
 
-util.isProduction = process.env.NODE_ENV === 'production';
+import { AppForServer } from './AppForServer';
+import { DerbyBase } from './Derby';
+import { PageForServer } from './PageForServer';
 
-module.exports = DerbyForServer;
-function DerbyForServer() {}
-DerbyForServer.prototype = Object.create(Derby.prototype);
-DerbyForServer.prototype.constructor = DerbyForServer;
+const isProduction = process.env.NODE_ENV === 'production';
 
-DerbyForServer.prototype.App = require('./AppForServer');
-DerbyForServer.prototype.Page = require('./PageForServer');
+export class DerbyForServer extends DerbyBase {
+  App = AppForServer;
+  Page = PageForServer;
 
-DerbyForServer.prototype.run = function(createServer) {
-  // In production
-  if (this.util.isProduction) return createServer();
-  if (cluster.isMaster) {
-    console.log('Master pid ', process.pid);
-    startWorker();
-  } else {
-    createServer();
+  createApp(name: string, filename: string, options) {
+    return new this.App(this, name, filename, options);
   }
-};
+
+  run = function(createServer) {
+    // In production
+    if (isProduction) return createServer();
+    if (cluster.isPrimary) {
+      console.log('Primary PID ', process.pid);
+      startWorker();
+    } else {
+      createServer();
+    }
+  };
+}
 
 function startWorker() {
-  var worker = cluster.fork();
+  const worker = cluster.fork();
+  
   worker.once('disconnect', function () {
     worker.process.kill();
   });
+
   worker.on('message', function(message) {
     if (message.type === 'reload') {
-      if (worker.disconnecting) return;
+      if (worker.isDead()) return;
       console.log('Killing %d', worker.process.pid);
       worker.process.kill();
-      worker.disconnecting = true;
       startWorker();
     }
   });

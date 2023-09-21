@@ -10,7 +10,6 @@ import racer = require('racer');
 
 const util = racer.util;
 import { AppBase } from './App';
-import { type PageConstructor } from './Page';
 import { PageForServer } from './PageForServer';
 import parsing = require('./parsing');
 import * as derbyTemplates from './templates';
@@ -54,7 +53,7 @@ function watchOnce(filenames, callback) {
   });
 }
 
-export class AppForServer extends AppBase<PageForServer> {
+export class AppForServer extends AppBase {
   agents: any;
   compilers: any;
   scriptBaseUrl: any;
@@ -137,10 +136,10 @@ export class AppForServer extends AppBase<PageForServer> {
   }
 
   // overload w different signatures, but different use cases
-  createRequestPage(req, res, next) {
+  createPage(req, res, next) {
     const model = req.model || new racer.Model();
     this.emit('model', model);
-    const page = new (this.Page as PageConstructor<PageForServer>)(model, req, res);
+    const page = new PageForServer(this, model, req, res);
     if (next) {
       model.on('error', function(err) {
         model.hasErrored = true;

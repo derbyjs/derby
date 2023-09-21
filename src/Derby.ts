@@ -6,14 +6,18 @@
 import racer = require('racer');
 import Racer = require('racer/lib/Racer');
 
-import { App } from './App';
-import components = require('./components');
-import Page = require('./Page');
+import { App, type AppBase } from './App';
+import { Component } from './components';
+import { Page } from './Page';
 
-export class Derby extends Racer {
+export abstract class DerbyBase extends Racer {
+  abstract createApp(name: string, filename: string, options): AppBase
+}
+
+export class Derby extends DerbyBase {
   App = App;
   Page = Page;
-  Component = components.Component;
+  Component = Component;
 
   createApp(name: string, filename: string, options) {
     return new this.App(this, name, filename, options);
