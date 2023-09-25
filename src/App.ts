@@ -68,6 +68,7 @@ export abstract class AppBase extends EventEmitter {
     this.tracksRoutes = tracks.setup(this);
     this.model = null;
     this.page = null;
+    this._pendingComponentMap = {};
   }
 
   abstract _init(options?: AppOptions);
@@ -197,7 +198,6 @@ export class App extends AppBase {
 
   constructor(derby, name, filename, options: AppOptions) {
     super(derby, name, filename, options);
-    this._pendingComponentMap = {};
     this._init(options);
   }
 
