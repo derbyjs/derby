@@ -326,8 +326,8 @@ export class App extends AppBase {
       if (!document.body) return setTimeout(onDOMReady, 0);
       // Remember that the DOM is ready
       isReady = true;
-      // Make sure this is always async and then finishin init
-      setTimeout(function() {
+      // Make sure this is always async and then finishing init
+      setTimeout(() => {
         this._finishInit();
       }, 0);
     }
