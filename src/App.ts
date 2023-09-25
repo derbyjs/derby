@@ -51,6 +51,9 @@ export abstract class AppBase extends EventEmitter {
   model: Model;
   page: PageBase;
 
+  use = util.use;
+  serverUse = util.serverUse;
+
   constructor(derby, name, filename, options: AppOptions = {}) {
     super();
     this.derby = derby;
@@ -81,9 +84,6 @@ export class App extends AppBase {
     push(): void,
     replace(): void,
   };
-
-  use = util.use;
-  serverUse = util.serverUse;
 
   constructor(derby, name, filename, options: AppOptions) {
     super(derby, name, filename, options);
