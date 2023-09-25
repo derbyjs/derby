@@ -8,6 +8,10 @@
     "url": "git://github.com/derbyjs/derby.git"
   },
   "main": "dist/index.js",
+  "exports": {
+    ".": "./index.js",
+    "./parsing": "./parsing/index.js"
+  },
   "files": [
     "dist/**/*.js"
   ],
