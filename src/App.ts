@@ -201,7 +201,7 @@ export abstract class AppBase extends EventEmitter {
     page.model.set('$render.query', page.params.query);
     // If transitional
     if (done) {
-      const _done = function() {
+      const _done = () => {
         this.emit('routeDone', page, 'transition');
         done();
       };
@@ -401,14 +401,14 @@ export class App extends AppBase {
 
   _autoRefresh(_backend?: unknown) {
     const connection = this.model.connection;
-    connection.on('connected', function() {
+    connection.on('connected', () => {
       connection.send({
         derby: 'app',
         name: this.name,
         hash: this.scriptHash
       });
     });
-    connection.on('receive', function(request) {
+    connection.on('receive', (request) => {
       if (request.data.derby) {
         const message = request.data;
         request.data = null;
