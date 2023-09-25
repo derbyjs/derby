@@ -12,6 +12,8 @@
     ".": "./dist/index.js",
     "./parsing": "./dist/parsing/index.js",
     "./templates": "./dist/templates/index.js",
+    "./App": "./dist/App.js",
+    "./lib/App": "./dist/App.js",
     "./AppForServer": "./dist/AppForServer.js"
   },
   "files": [
