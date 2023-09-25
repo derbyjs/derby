@@ -386,7 +386,8 @@ export class App extends AppBase {
 
   createPage() {
     this._destroyCurrentPage();
-    const page = new Page(this, this.model);
+    const ClientPage = this.Page as unknown as typeof Page;
+    const page = new ClientPage(this, this.model);
     this.page = page;
     return page;
   }

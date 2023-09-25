@@ -140,7 +140,9 @@ export class AppForServer extends AppBase {
   createPage(req, res, next) {
     const model = req.model || new racer.Model();
     this.emit('model', model);
-    const page = new PageForServer(this, model, req, res);
+
+    const Page = this.Page as unknown as typeof PageForServer;
+    const page = new Page(this, model, req, res);
     if (next) {
       model.on('error', function(err) {
         model.hasErrored = true;
