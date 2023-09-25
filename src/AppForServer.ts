@@ -72,6 +72,7 @@ export class AppForServer extends AppBase {
 
   constructor(derby, name, filename, options) {
     super(derby, name, filename, options);
+    this._init(options);
   }
 
   _init(options) {
