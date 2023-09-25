@@ -318,6 +318,10 @@ export class App extends AppBase {
       onDOMReady();
     }
 
+    const finishInit = () => {
+      this._finishInit();
+    }
+
     // Handle when the DOM is ready
     function onDOMReady() {
       // Make sure that the DOM is not already loaded
@@ -327,9 +331,7 @@ export class App extends AppBase {
       // Remember that the DOM is ready
       isReady = true;
       // Make sure this is always async and then finishing init
-      setTimeout(() => {
-        this._finishInit();
-      }, 0);
+      setTimeout(finishInit, 0);
     }
 
     // The DOM ready check for Internet Explorer
