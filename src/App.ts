@@ -50,6 +50,7 @@ export abstract class AppBase extends EventEmitter {
   tracksRoutes: any;
   model: Model;
   page: PageBase;
+  _pendingComponentMap: any;
 
   use = util.use;
   serverUse = util.serverUse;
@@ -72,10 +73,119 @@ export abstract class AppBase extends EventEmitter {
   abstract _init(options?: AppOptions);
   loadViews(_viewFilename, _viewName) { }
   loadStyles(_filename, _options) { }
+
+  component(name: string, constructor: ComponentConstructor, isDependency: boolean) {
+    if (typeof name === 'function') {
+      constructor = name;
+      name = null;
+    }
+    if (typeof constructor !== 'function') {
+      throw new Error('Missing component constructor argument');
+    }
+
+    const viewProp = constructor.view;
+    let viewIs, viewFilename, viewSource, viewDependencies;
+    // Always using an object for the static `view` property is preferred
+    if (viewProp && typeof viewProp === 'object') {
+      viewIs = viewProp.is;
+      viewFilename = viewProp.file;
+      viewSource = viewProp.source;
+      viewDependencies = viewProp.dependencies;
+    } else {
+      // Ignore other properties when `view` is an object. It is possible that
+      // properties could be inherited from a parent component when extending it.
+      //
+      // DEPRECATED: constructor.prototype.name and constructor.prototype.view
+      // use the equivalent static properties instead
+      // @ts-expect-error Ignore deprecated props
+      viewIs = constructor.is || constructor.prototype.name;
+      viewFilename = constructor.view || constructor.prototype.view;
+    }
+    const viewName = name || viewIs ||
+      (viewFilename && basename(viewFilename, '.html'));
+
+    if (!viewName) {
+      throw new Error('No view specified for component');
+    }
+    if (viewFilename && viewSource) {
+      throw new Error('Component may not specify both a view file and source');
+    }
+
+    // TODO: DRY. This is copy-pasted from ./templates
+    const mapName = viewName.replace(/:index$/, '');
+    const currentView = this.views.nameMap[mapName];
+    const currentConstructor = (currentView && currentView.componentFactory) ?
+      currentView.componentFactory.constructorFn :
+      this._pendingComponentMap[mapName];
+
+    // Avoid registering the same component twice; we want to avoid the overhead
+    // of loading view files from disk again. This is also what prevents
+    // circular dependencies from infinite looping
+    if (currentConstructor === constructor) return;
+
+    // Calling app.component() overrides existing views or components. Prevent
+    // dependencies from doing this without warning
+    if (isDependency && currentView && !currentView.fromSerialized) {
+      throw new Error('Dependencies cannot override existing views. Already registered "' + viewName + '"');
+    }
+
+    // This map is used to prevent infinite loops from circular dependencies
+    this._pendingComponentMap[mapName] = constructor;
+
+    // Recursively register component dependencies
+    if (viewDependencies) {
+      for (let i = 0; i < viewDependencies.length; i++) {
+        const dependency = viewDependencies[i];
+        if (Array.isArray(dependency)) {
+          this.component(dependency[0], dependency[1], true);
+        } else {
+          this.component(null, dependency, true);
+        }
+      }
+    }
+
+    // Register or find views specified by the component
+    let view;
+    if (viewFilename) {
+      this.loadViews(viewFilename, viewName);
+      view = this.views.find(viewName);
+
+    } else if (viewSource) {
+      this.addViews(viewSource, viewName);
+      view = this.views.find(viewName);
+
+    } else if (name) {
+      view = this.views.find(viewName);
+
+    } else {
+      view = this.views.register(viewName, '');
+    }
+    if (!view) {
+      const message = this.views.findErrorMessage(viewName);
+      throw new Error(message);
+    }
+
+    // Inherit from Component
+    components.extendComponent(constructor);
+    // Associate the appropriate view with the component constructor
+    view.componentFactory = components.createFactory(constructor);
+
+    delete this._pendingComponentMap[mapName];
+
+    // Make chainable
+    return this;
+  }
+
+  // This function is overriden by requiring 'derby/parsing'
+  addViews(_viewFileName: string, _namespace: string) {
+    throw new Error(
+      'Parsing not available. Registering a view from source should not be used ' +
+      'in application code. Instead, specify a filename with view.file.'
+    );
+  }
 }
 
 export class App extends AppBase {
-  _pendingComponentMap: any;
   _waitForAttach: boolean;
   _cancelAttach: boolean;
   page: Page;
@@ -248,116 +358,6 @@ export class App extends AppBase {
 
   _getAppStateScript() {
     return document.querySelector('script[data-derby-app-state]');
-  }
-
-  // This function is overriden by requiring 'derby/parsing'
-  addViews(_viewFileName: string, _namespace: string) {
-    throw new Error(
-      'Parsing not available. Registering a view from source should not be used ' +
-      'in application code. Instead, specify a filename with view.file.'
-    );
-  }
-
-  component(name: string, constructor: ComponentConstructor, isDependency: boolean) {
-    if (typeof name === 'function') {
-      constructor = name;
-      name = null;
-    }
-    if (typeof constructor !== 'function') {
-      throw new Error('Missing component constructor argument');
-    }
-
-    const viewProp = constructor.view;
-    let viewIs, viewFilename, viewSource, viewDependencies;
-    // Always using an object for the static `view` property is preferred
-    if (viewProp && typeof viewProp === 'object') {
-      viewIs = viewProp.is;
-      viewFilename = viewProp.file;
-      viewSource = viewProp.source;
-      viewDependencies = viewProp.dependencies;
-    } else {
-      // Ignore other properties when `view` is an object. It is possible that
-      // properties could be inherited from a parent component when extending it.
-      //
-      // DEPRECATED: constructor.prototype.name and constructor.prototype.view
-      // use the equivalent static properties instead
-      // @ts-expect-error Ignore deprecated props
-      viewIs = constructor.is || constructor.prototype.name;
-      viewFilename = constructor.view || constructor.prototype.view;
-    }
-    const viewName = name || viewIs ||
-      (viewFilename && basename(viewFilename, '.html'));
-
-    if (!viewName) {
-      throw new Error('No view specified for component');
-    }
-    if (viewFilename && viewSource) {
-      throw new Error('Component may not specify both a view file and source');
-    }
-
-    // TODO: DRY. This is copy-pasted from ./templates
-    const mapName = viewName.replace(/:index$/, '');
-    const currentView = this.views.nameMap[mapName];
-    const currentConstructor = (currentView && currentView.componentFactory) ?
-      currentView.componentFactory.constructorFn :
-      this._pendingComponentMap[mapName];
-
-    // Avoid registering the same component twice; we want to avoid the overhead
-    // of loading view files from disk again. This is also what prevents
-    // circular dependencies from infinite looping
-    if (currentConstructor === constructor) return;
-
-    // Calling app.component() overrides existing views or components. Prevent
-    // dependencies from doing this without warning
-    if (isDependency && currentView && !currentView.fromSerialized) {
-      throw new Error('Dependencies cannot override existing views. Already registered "' + viewName + '"');
-    }
-
-    // This map is used to prevent infinite loops from circular dependencies
-    this._pendingComponentMap[mapName] = constructor;
-
-    // Recursively register component dependencies
-    if (viewDependencies) {
-      for (let i = 0; i < viewDependencies.length; i++) {
-        const dependency = viewDependencies[i];
-        if (Array.isArray(dependency)) {
-          this.component(dependency[0], dependency[1], true);
-        } else {
-          this.component(null, dependency, true);
-        }
-      }
-    }
-
-    // Register or find views specified by the component
-    let view;
-    if (viewFilename) {
-      this.loadViews(viewFilename, viewName);
-      view = this.views.find(viewName);
-
-    } else if (viewSource) {
-      this.addViews(viewSource, viewName);
-      view = this.views.find(viewName);
-
-    } else if (name) {
-      view = this.views.find(viewName);
-
-    } else {
-      view = this.views.register(viewName, '');
-    }
-    if (!view) {
-      const message = this.views.findErrorMessage(viewName);
-      throw new Error(message);
-    }
-
-    // Inherit from Component
-    components.extendComponent(constructor);
-    // Associate the appropriate view with the component constructor
-    view.componentFactory = components.createFactory(constructor);
-
-    delete this._pendingComponentMap[mapName];
-
-    // Make chainable
-    return this;
   }
 
   createPage() {
