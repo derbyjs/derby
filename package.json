@@ -9,8 +9,10 @@
   },
   "main": "dist/index.js",
   "exports": {
-    ".": "./index.js",
-    "./parsing": "./parsing/index.js"
+    ".": "./dist/index.js",
+    "./parsing": "./dist/parsing/index.js",
+    "./templates": "./dist/templates/index.js",
+    "./AppForServer": "./dist/AppForServer.js"
   },
   "files": [
     "dist/**/*.js"
