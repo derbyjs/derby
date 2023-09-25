@@ -51,6 +51,8 @@ export abstract class AppBase extends EventEmitter {
   model: Model;
   page: PageBase;
   _pendingComponentMap: any;
+  _waitForAttach: boolean;
+  _cancelAttach: boolean;
 
   use = util.use;
   serverUse = util.serverUse;
@@ -184,11 +186,33 @@ export abstract class AppBase extends EventEmitter {
       'in application code. Instead, specify a filename with view.file.'
     );
   }
+
+  onRoute(callback: OnRouteCallback, page: Page, next: () => void, done: () => void) {
+    if (this._waitForAttach) {
+      // Cancel any routing before the initial page attachment. Instead, do a
+      // render once derby is ready
+      this._cancelAttach = true;
+      return;
+    }
+    this.emit('route', page);
+    // HACK: To update render in transitional routes
+    page.model.set('$render.params', page.params);
+    page.model.set('$render.url', page.params.url);
+    page.model.set('$render.query', page.params.query);
+    // If transitional
+    if (done) {
+      const _done = function() {
+        this.emit('routeDone', page, 'transition');
+        done();
+      };
+      callback.call(page, page, page.model, page.params, next, _done);
+      return;
+    }
+    callback.call(page, page, page.model, page.params, next);
+  }
 }
 
 export class App extends AppBase {
-  _waitForAttach: boolean;
-  _cancelAttach: boolean;
   page: Page;
   history: {
     refresh(): void,
@@ -372,30 +396,6 @@ export class App extends AppBase {
       this.emit('destroyPage', this.page);
       this.page.destroy();
     }
-  }
-
-  onRoute(callback: OnRouteCallback, page: Page, next: () => void, done: () => void) {
-    if (this._waitForAttach) {
-      // Cancel any routing before the initial page attachment. Instead, do a
-      // render once derby is ready
-      this._cancelAttach = true;
-      return;
-    }
-    this.emit('route', page);
-    // HACK: To update render in transitional routes
-    page.model.set('$render.params', page.params);
-    page.model.set('$render.url', page.params.url);
-    page.model.set('$render.query', page.params.query);
-    // If transitional
-    if (done) {
-      const _done = function() {
-        this.emit('routeDone', page, 'transition');
-        done();
-      };
-      callback.call(page, page, page.model, page.params, next, _done);
-      return;
-    }
-    callback.call(page, page, page.model, page.params, next);
   }
 
   _autoRefresh(_backend?: unknown) {
