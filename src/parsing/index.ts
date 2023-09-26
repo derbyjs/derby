@@ -5,15 +5,12 @@ import htmlUtil = require('html-util');
 import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
 import { App } from '../App';
-import derbyTemplates = require('../templates');
+import { templates, expressions } from '../templates';
 import { Expression } from '../templates/expressions';
 import { MarkupHook, View } from '../templates/templates';
 
 export { createPathExpression } from './createPathExpression';
 export { markup } from './markup';
-
-const templates = derbyTemplates.templates;
-const expressions = derbyTemplates.expressions;
 
 declare module '../App' {
   interface App {
