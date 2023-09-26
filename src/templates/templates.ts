@@ -1689,10 +1689,10 @@ function getDependencies(expression: HasDependencies, context: Context, options:
   return expression.dependencies(context, options);
 }
 
-export abstract class MarkupHook<T> {
+export class MarkupHook<T> {
   module = Template.prototype.module;
   name: string;
-  abstract emit(context: Context, target: T): void;
+  emit(_context: Context, _target: T): void {}
 }
 
 class Hook extends MarkupHook<any> {
