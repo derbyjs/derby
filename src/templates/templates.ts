@@ -14,6 +14,9 @@ export type Attributes = Record<string, Attribute>;
 type PathSegment = string | number;
 export type Dependency = Array<PathSegment | Context>;
 
+// namespace these are exported under; used when serializing views
+const NAMESPACE = 'templates'
+
 declare global {
   interface Node {
     $bindItemStart?: RangeBinding;
@@ -105,7 +108,7 @@ export const NAMESPACE_URIS = {
 };
 
 export class Template {
-  module = 'templates';
+  module = NAMESPACE;
   type = 'Template';
   content: Template[];
   source: string;
@@ -1690,13 +1693,12 @@ function getDependencies(expression: HasDependencies, context: Context, options:
 }
 
 export abstract class MarkupHook<T> {
-  module = Template.prototype.module;
+  module = NAMESPACE;
   name: string;
   abstract emit(context: Context, target: T): void;
 }
 
 class Hook extends MarkupHook<any> {
-  module = Template.prototype.module;
   name = 'hook';
   emit(context: Context, node: Node & { $component: Controller }) {
     node.$component = context.controller;

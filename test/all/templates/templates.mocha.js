@@ -39,3 +39,22 @@ describe('Views', function() {
   });
 
 });
+
+describe('Hooks', function() {
+  it('derives valid module attribute from base class', function() {
+    class TestHook extends templates.MarkupHook {
+      constructor() {
+        super();
+        this.name = 'TestHook';
+      }
+    }
+    var testHook = new TestHook();
+    expect(testHook.name).to.equal('TestHook');
+    expect(testHook.module).to.equal('templates');
+  });
+  it('has valid module name', function() {
+    var hook = new templates.ComponentOn('foo');
+    expect(hook.name).to.equal('foo');
+    expect(hook.module).to.equal('templates');
+  });
+});
