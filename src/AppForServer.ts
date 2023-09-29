@@ -14,6 +14,10 @@ import { PageForServer } from './PageForServer';
 import parsing = require('./parsing');
 import * as derbyTemplates from './templates';
 
+interface Agent {
+  send(message: Record<string, unknown>): void;
+}
+
 // Avoid Browserifying these dependencies
 let chokidar, files, fs, path;
 if (module.require) {
@@ -38,6 +42,8 @@ function htmlCompiler(file) {
   return file;
 }
 
+type CompilerFunciton = (file: string, filename?: string, options?: unknown) => unknown;
+
 function watchOnce(filenames, callback) {
   const watcher = chokidar.watch(filenames);
   let closed = false;
@@ -54,23 +60,23 @@ function watchOnce(filenames, callback) {
 }
 
 export class AppForServer extends AppBase {
-  agents: any;
-  compilers: any;
-  scriptBaseUrl: any;
-  scriptCrossOrigin: any;
-  scriptFilename: null;
-  scriptMapBaseUrl: any;
-  scriptMapFilename: null;
-  scriptMapUrl: any;
-  scriptUrl: any;
+  agents: Record<string, Agent>;
+  compilers: Record<string, CompilerFunciton>;
+  scriptBaseUrl: string;
+  scriptCrossOrigin: boolean;
+  scriptFilename: string;
+  scriptMapBaseUrl: string;
+  scriptMapFilename: string;
+  scriptMapUrl: string;
+  scriptUrl: string;
   serializedBase: string;
-  serializedDir: any;
+  serializedDir: string;
   styleExtensions: string[];
   viewExtensions: string[];
-  watchFiles: any;
+  watchFiles: boolean;
   router: any;
 
-  constructor(derby, name, filename, options) {
+  constructor(derby, name: string, filename: string, options) {
     super(derby, name, filename, options);
     this._init(options);
   }
@@ -329,9 +335,8 @@ export class AppForServer extends AppBase {
 
   _addAgent(agent) {
     this.agents[agent.clientId] = agent;
-    const app = this;
-    agent.stream.once('end', function() {
-      delete app.agents[agent.clientId];
+    agent.stream.once('end', () => {
+      delete this.agents[agent.clientId];
     });
   }
 

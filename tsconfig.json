@@ -6,8 +6,10 @@
     "module": "CommonJS",
     "noImplicitUseStrict": true,
     "outDir": "dist",
-    "sourceMap": false,
-    "target": "ES5"
+    "target": "ES5",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
   },
   "include": [
     "src/**/*"

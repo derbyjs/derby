@@ -14,8 +14,10 @@ import tracks = require('tracks');
 
 import components = require('./components');
 import { type ComponentConstructor } from './components';
+import { type Derby } from './Derby';
 import { Page, type PageBase } from './Page';
 import * as derbyTemplates from './templates';
+import { type Views } from './templates/templates';
 
 const { templates } = derbyTemplates;
 
@@ -37,8 +39,10 @@ interface AppOptions {
 
 type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: any, done?: () => void) => void;
 
+type Routes = [string, string, any][]
+
 export abstract class AppBase extends EventEmitter {
-  derby: any;
+  derby: Derby;
   name: string;
   filename: string;
   scriptHash: string;
@@ -46,11 +50,11 @@ export abstract class AppBase extends EventEmitter {
   appMetadata: Record<string, string>;
   Page: typeof PageBase;
   proto: any;
-  views: any;
-  tracksRoutes: any;
+  views: Views;
+  tracksRoutes: Routes;
   model: Model;
   page: PageBase;
-  _pendingComponentMap: any;
+  _pendingComponentMap: Record<string, ComponentConstructor>;
   _waitForAttach: boolean;
   _cancelAttach: boolean;
 

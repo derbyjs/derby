@@ -2129,7 +2129,7 @@ export class Views {
     this.elementMap = this.tagMap;
   }
 
-  find(name: string, namespace: string) {
+  find(name: string, namespace?: string) {
     const map = this.nameMap;
 
     // Exact match lookup
@@ -2189,7 +2189,7 @@ export class Views {
     }
   }
 
-  serialize(options: { server: any; minify: any; }) {
+  serialize(options?: { server?: boolean; minify?: boolean; }) {
     const forServer = options && options.server;
     const minify = options && options.minify;
     const items = [];
@@ -2225,7 +2225,7 @@ export class Views {
       'views.deserialize([' + items.join(',') + '])}';
   }
 
-  findErrorMessage(name: string, contextView: { name: string; source: string; }) {
+  findErrorMessage(name: string, contextView?: { name: string; source: string; }) {
     const names = Object.keys(this.nameMap);
     let message = 'Cannot find view "' + name + '" in' +
       [''].concat(names).join('\n  ') + '\n';

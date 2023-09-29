@@ -18,6 +18,7 @@ export abstract class DerbyBase extends Racer {
 export class Derby extends DerbyBase {
   App = App;
   Page = Page;
+  Model: typeof racer.Model;
 
   createApp(name: string, filename: string, options) {
     return new this.App(this, name, filename, options);
