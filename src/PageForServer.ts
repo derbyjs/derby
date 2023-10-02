@@ -1,18 +1,22 @@
+import type { Request, Response } from 'express';
+import { type Model } from 'racer';
+
+import { type AppBase } from './App';
 import { PageBase } from './Page';
 
 export class PageForServer extends PageBase {
-  req: any;
-  res: any;
+  req: Request;
+  res: Response;
   page: PageForServer;
 
-  constructor(app, model, req, res) {
+  constructor(app: AppBase, model: Model, req: Request, res: Response) {
     super(app, model);
     this.req = req;
     this.res = res;
     this.page = this;
   }
 
-  render(status, ns) {
+  render(status?: number, ns?: string) {
     if (typeof status !== 'number') {
       ns = status;
       status = null;
@@ -48,7 +52,7 @@ export class PageForServer extends PageBase {
     });
   }
 
-  renderStatic(status, ns) {
+  renderStatic(status?: number, ns?: string) {
     if (typeof status !== 'number') {
       ns = status;
       status = null;
@@ -70,7 +74,7 @@ export class PageForServer extends PageBase {
 
 function stringifyBundle(bundle) {
   const json = JSON.stringify(bundle);
-  return json.replace(/<[\/!]/g, function(match) {
+  return json.replace(/<[/!]/g, function(match) {
     // Replace the end tag sequence with an equivalent JSON string to make
     // sure the script is not prematurely closed
     if (match === '</') return '<\\/';
@@ -82,7 +86,7 @@ function stringifyBundle(bundle) {
 }
 
 // TODO: Cleanup; copied from tracks
-function pageParams(req) {
+function pageParams(req: Request) {
   const params = {
     url: req.url,
     body: req.body,
