@@ -1,5 +1,7 @@
+import { type Model } from 'racer';
 import util = require('racer/lib/util');
 
+import { type AppBase, type App } from './App';
 import components = require('./components');
 import { Controller } from './Controller';
 import documentListeners = require('./documentListeners');
@@ -19,14 +21,14 @@ const {
 export abstract class PageBase extends Controller {
   params: any;
   context: Context;
-  create: (model: any, dom: any) => void;
-  init?: (model: any) => void;
+  create: (model: Model, dom: any) => void;
+  init?: (model: Model) => void;
   _components: Record<string, components.Component>
   _eventModel: any;
   _removeModelListeners: () => void = () => {};
   page: PageBase;
 
-  constructor(app, model) {
+  constructor(app: AppBase, model: Model) {
     super(app, null, model);
     this.params = null;
     this._eventModel = null;
@@ -107,16 +109,16 @@ export abstract class PageBase extends Controller {
 }
 
 export class Page extends PageBase {
-  constructor(app, model) {
+  constructor(app: App, model: Model) {
     super(app, model);
     this._addListeners();
   }
 
-  $preventDefault(e) {
+  $preventDefault(e: Event) {
     e.preventDefault();
   }
 
-  $stopPropagation(e) {
+  $stopPropagation(e: Event) {
     e.stopPropagation();
   }
 
@@ -150,13 +152,13 @@ export class Page extends PageBase {
     this.app.emit('routeDone', this, 'render');
   }
 
-  _addListeners() {
+  private _addListeners() {
     const eventModel = this._eventModel = new EventModel();
     this._addModelListeners(eventModel);
     this._addContextListeners(eventModel);
   }
 
-  _addModelListeners(eventModel) {
+  private _addModelListeners(eventModel) {
     const model = this.model;
     if (!model) return;
     // Registering model listeners with the *Immediate events helps to prevent
@@ -209,7 +211,7 @@ export class Page extends PageBase {
     };
   }
 
-  _addModelListenersLegacy(eventModel) {
+  private _addModelListenersLegacy(eventModel) {
     const model = this.model;
     if (!model) return;
 
@@ -258,7 +260,7 @@ export class Page extends PageBase {
     };
   }
 
-  _addContextListeners(eventModel) {
+  private _addContextListeners(eventModel) {
     this.context.meta.addBinding = addBinding;
     this.context.meta.removeBinding = removeBinding;
     this.context.meta.removeNode = removeNode;

@@ -81,14 +81,14 @@ export class AppForServer extends AppBase {
     this._init(options);
   }
 
-  _init(options) {
+  protected _init(options) {
     this._initBundle(options);
     this._initRefresh();
     this._initLoad();
     this._initViews();
   }
 
-  _initBundle(options) {
+  private _initBundle(options) {
     this.scriptFilename = null;
     this.scriptMapFilename = null;
     this.scriptBaseUrl = (options && options.scriptBaseUrl) || '';
@@ -98,18 +98,18 @@ export class AppForServer extends AppBase {
     this.scriptMapUrl = null;
   }
 
-  _initRefresh() {
+  private _initRefresh() {
     this.watchFiles = !util.isProduction;
     this.agents = null;
   }
 
-  _initLoad() {
+  private _initLoad() {
     this.styleExtensions = STYLE_EXTENSIONS.slice();
     this.viewExtensions = VIEW_EXTENSIONS.slice();
     this.compilers = util.copyObject(COMPILERS);
   }
   
-  _initViews() {
+  private _initViews() {
     this.serializedDir = path.dirname(this.filename || '') + '/derby-serialized';
     this.serializedBase = this.serializedDir + '/' + this.name;
     if (fs.existsSync(this.serializedBase + '.json')) {
@@ -171,7 +171,7 @@ export class AppForServer extends AppBase {
     );
   }
 
-  _viewsSource(options?) {
+  private _viewsSource(options?) {
     return `/*DERBY_SERIALIZED_VIEWS ${this.name}*/\n` +
       'module.exports = ' + this.views.serialize(options) + ';\n' +
       `/*DERBY_SERIALIZED_VIEWS_END ${this.name}*/\n`;
@@ -224,7 +224,7 @@ export class AppForServer extends AppBase {
     return this;
   }
 
-  _loadStyles(filename, options) {
+  private _loadStyles(filename, options) {
     const styles = files.loadStylesSync(this, filename, options);
 
     let filepath = '';
@@ -250,7 +250,7 @@ export class AppForServer extends AppBase {
     return styles;
   }
 
-  _watchViews(filenames, filename, namespace) {
+  private _watchViews(filenames, filename, namespace) {
     watchOnce(filenames, () => {
       this.loadViews(filename, namespace);
       this._updateScriptViews();
@@ -258,7 +258,7 @@ export class AppForServer extends AppBase {
     });
   }
 
-  _watchStyles(filenames, filename, options) {
+  private _watchStyles(filenames, filename, options) {
     watchOnce(filenames, () => {
       const styles = this._loadStyles(filename, options);
       this._updateScriptViews();
@@ -266,7 +266,7 @@ export class AppForServer extends AppBase {
     });
   }
 
-  _watchBundle(filenames) {
+  private _watchBundle(filenames) {
     if (!process.send) return;
     watchOnce(filenames, function() {
       process.send({ type: 'reload' });
@@ -274,7 +274,7 @@ export class AppForServer extends AppBase {
   }
 
 
-  _updateScriptViews() {
+  private _updateScriptViews() {
     if (!this.scriptFilename) return;
     const script = fs.readFileSync(this.scriptFilename, 'utf8');
     const startIndex = script.indexOf('/*DERBY_SERIALIZED_VIEWS*/');
@@ -285,7 +285,7 @@ export class AppForServer extends AppBase {
     fs.writeFileSync(this.scriptFilename, before + viewsSource + after, 'utf8');
   }
 
-  _autoRefresh(backend) {
+  private _autoRefresh(backend) {
     // already been setup if agents is defined
     if (this.agents) return;
     this.agents = {};
@@ -321,7 +321,7 @@ export class AppForServer extends AppBase {
     });
   }
 
-  _handleMessageServer(agent, action, message) {
+  private _handleMessageServer(agent, action, message) {
     if (action === 'app') {
       if (message.name !== this.name) {
         return;
@@ -333,14 +333,14 @@ export class AppForServer extends AppBase {
     }
   }
 
-  _addAgent(agent) {
+  private _addAgent(agent) {
     this.agents[agent.clientId] = agent;
     agent.stream.once('end', () => {
       delete this.agents[agent.clientId];
     });
   }
 
-  _refreshClients() {
+  private _refreshClients() {
     if (!this.agents) return;
     const views = this.views.serialize({ minify: true });
     const message = {
@@ -352,7 +352,7 @@ export class AppForServer extends AppBase {
     }
   }
 
-  _refreshStyles(filename, styles) {
+  private _refreshStyles(filename, styles) {
     if (!this.agents) return;
     const message = {
       derby: 'refreshStyles',

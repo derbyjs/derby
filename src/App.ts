@@ -54,9 +54,9 @@ export abstract class AppBase extends EventEmitter {
   tracksRoutes: Routes;
   model: Model;
   page: PageBase;
-  _pendingComponentMap: Record<string, ComponentConstructor>;
-  _waitForAttach: boolean;
-  _cancelAttach: boolean;
+  protected _pendingComponentMap: Record<string, ComponentConstructor>;
+  protected _waitForAttach: boolean;
+  protected _cancelAttach: boolean;
 
   use = util.use;
   serverUse = util.serverUse;
@@ -77,7 +77,7 @@ export abstract class AppBase extends EventEmitter {
     this._pendingComponentMap = {};
   }
 
-  abstract _init(options?: AppOptions);
+  protected abstract _init(options?: AppOptions);
   loadViews(_viewFilename, _viewName) { }
   loadStyles(_filename, _options) { }
 
@@ -230,7 +230,7 @@ export class App extends AppBase {
   }
 
   // Overriden on server
-  _init(_options) {
+  protected _init(_options) {
     this._waitForAttach = true;
     this._cancelAttach = false;
     this.model = new this.derby.Model();
@@ -241,11 +241,11 @@ export class App extends AppBase {
     this._contentReady();
   }
 
-  _views() {
+  private _views() {
     return require('./_views');
   }
 
-  _finishInit() {
+  private _finishInit() {
     const data = this._getAppData();
     util.isProduction = data.nodeEnv === 'production';
 
@@ -295,7 +295,7 @@ export class App extends AppBase {
     this.emit('load', page);
   }
 
-  _getAppData() {
+  private _getAppData() {
     const script = this._getAppStateScript();
     if (script) {
       return App._parseInitialData(script.textContent);
@@ -305,7 +305,7 @@ export class App extends AppBase {
   }
 
   // Modified from: https://github.com/addyosmani/jquery.parts/blob/master/jquery.documentReady.js
-  _contentReady() {
+  private _contentReady() {
     // Is the DOM ready to be used? Set to true once it occurs.
     let isReady = false;
 
@@ -386,7 +386,7 @@ export class App extends AppBase {
     }
   }
 
-  _getAppStateScript() {
+  private _getAppStateScript() {
     return document.querySelector('script[data-derby-app-state]');
   }
 
@@ -398,14 +398,14 @@ export class App extends AppBase {
     return page;
   }
 
-  _destroyCurrentPage() {
+  private _destroyCurrentPage() {
     if (this.page) {
       this.emit('destroyPage', this.page);
       this.page.destroy();
     }
   }
 
-  _autoRefresh(_backend?: unknown) {
+  private _autoRefresh(_backend?: unknown) {
     const connection = this.model.connection;
     connection.on('connected', () => {
       connection.send({
@@ -423,7 +423,7 @@ export class App extends AppBase {
     });
   }
 
-  _handleMessage(action: string, message: { views: string, filename: string, css: string}) {
+  private _handleMessage(action: string, message: { views: string, filename: string, css: string}) {
     if (action === 'refreshViews') {
       const fn = new Function('return ' + message.views)(); // jshint ignore:line
       fn(derbyTemplates, this.views);
