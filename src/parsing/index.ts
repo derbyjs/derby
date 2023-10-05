@@ -866,7 +866,7 @@ function parseAlias(source: string) {
 }
 
 App.prototype.addViews = function(file: string, namespace: string) {
-  const views = exports.parseViews(file, namespace);
+  const views = parseViews(file, namespace);
   registerParsedViews(this, views);
 };
 
@@ -880,7 +880,7 @@ export function getImportNamespace(namespace: string, attrs: Record<string, stri
     namespace || relativeNamespace || '';
 }
 
-export function parseViews(file: string, namespace: string, filename: string, onImport: (attrs) => void) {
+export function parseViews(file: string, namespace: string, filename?: string, onImport?: (attrs) => void) {
   const views = [];
   const prefix = (namespace) ? namespace + ':' : '';
 
