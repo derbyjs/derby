@@ -21,9 +21,9 @@ export class ContextMeta {
   pauseCount = 0;
 }
 
-export class Context<T extends Controller = Controller> {
+export class Context {
   meta: ContextMeta;
-  controller: T;
+  controller: Controller;
   parent?: Context;
   unbound?: boolean;
   expression?: Expression;
@@ -38,7 +38,7 @@ export class Context<T extends Controller = Controller> {
   _id?: number;
   _eventModels?: any;
 
-  constructor(meta: ContextMeta, controller: T, parent?: Context, unbound?: boolean, expression?: Expression) {
+  constructor(meta: ContextMeta, controller: Controller, parent?: Context, unbound?: boolean, expression?: Expression) {
     // Required properties //
 
     // Properties which are globally inherited for the entire page
