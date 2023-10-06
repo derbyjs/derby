@@ -14,10 +14,14 @@
     "./templates": "./dist/templates/index.js",
     "./App": "./dist/App.js",
     "./lib/App": "./dist/App.js",
-    "./AppForServer": "./dist/AppForServer.js"
+    "./AppForServer": "./dist/AppForServer.js",
+    "./lib/components": "./dist/components.js",
+    "./lib/Page": "./dist/Page.js",
+    "./test-utils/*": "./test-utils/*.js"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "test-utils/"
   ],
   "scripts": {
     "build": "node_modules/.bin/tsc",

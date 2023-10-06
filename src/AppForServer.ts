@@ -115,7 +115,7 @@ export class AppForServer extends AppBase {
     if (fs.existsSync(this.serializedBase + '.json')) {
       this.deserialize();
       this.loadViews = function(_filename, _namespace) { return this; };
-      this.loadStyles = function(_filname, _options) { return this; };
+      this.loadStyles = function(_filename, _options) { return this; };
       return;
     }
 
