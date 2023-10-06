@@ -6,16 +6,10 @@ import * as operatorFns from './operatorFns';
 import { ContextClosure, Dependency, Template } from './templates';
 import { concat } from './util';
 import { Component } from '../components';
-import { Controller } from '../Controller';
-import { Page } from '../Page';
 
 type SegmentOrContext = string | number | { item: number } | Context;
 type Segment = string | number;
 type Value = any; // global | Page | ModelData
-
-function isPage(controller: Controller): controller is Page {
-  return !Object.prototype.hasOwnProperty.call((controller as Page), '_scope');
-}
 
 export function lookup(segments: Segment[] | undefined, value: Value) {
   if (!segments) return value;
@@ -685,12 +679,9 @@ export class FnExpression extends Expression {
       if (fn) {
         break;
       }
-      if (isPage(controller)) {
-        controller = undefined;
-        break;
-      }
-      const component = controller as Component;
-      controller = component.parent;
+      // controller could be a Component or a PageBase in practice,
+      // using `as Component` to avoid a runtime instanceof check.
+      controller = (controller as Component).parent;
     }
     const setFn = fn && fn.set;
     if (!setFn) throw new Error('No setter function for: ' + this.segments.join('.'));

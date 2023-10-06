@@ -4,7 +4,7 @@ import htmlUtil = require('html-util');
 
 import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
-import { App } from '../App';
+import { App, AppBase } from '../App';
 import { templates, expressions } from '../templates';
 import { Expression } from '../templates/expressions';
 import { MarkupHook, View } from '../templates/templates';
@@ -16,6 +16,13 @@ declare module '../App' {
   interface App {
     addViews(file: string, namespace: string): void;
   }
+}
+
+interface ParsedView {
+  name: string;
+  source: string;
+  options: unknown;
+  filename?: string;
 }
 
 // View.prototype._parse is defined here, so that it doesn't have to
@@ -881,7 +888,7 @@ export function getImportNamespace(namespace: string, attrs: Record<string, stri
 }
 
 export function parseViews(file: string, namespace: string, filename?: string, onImport?: (attrs) => void) {
-  const views = [];
+  const views: ParsedView[] = [];
   const prefix = (namespace) ? namespace + ':' : '';
 
   htmlUtil.parse(file + '\n', {
@@ -933,7 +940,7 @@ export function parseViews(file: string, namespace: string, filename?: string, o
   return views;
 }
 
-export function registerParsedViews(app, items) {
+export function registerParsedViews(app: AppBase, items: ParsedView[]) {
   for (let i = 0, len = items.length; i < len; i++) {
     const item = items[i];
     app.views.register(item.name, item.source, item.options);

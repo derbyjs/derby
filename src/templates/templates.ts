@@ -2006,7 +2006,7 @@ export class DynamicViewInstance extends BaseViewInstance {
     const contextView = context.getView();
     const namespace = contextView && contextView.namespace;
     const view = name && context.meta.views.find(name, namespace);
-    return view || exports.emptyTemplate;
+    return view || emptyTemplate;
   }
 
   dependencies(context: Context, options: { ignoreTemplate?: Template; }) {
@@ -2203,7 +2203,7 @@ export class Views {
         // For views with the `server` option, serialize them with a blank
         // template body. This allows them to be used from other views on the
         // browser, but they will output nothing on the browser
-        if (view.options.server) template = exports.emptyTemplate;
+        if (view.options.server) template = emptyTemplate;
       }
       // Serializing views as a function allows them to be constructed lazily upon
       // first use. This can improve initial load times of the application when

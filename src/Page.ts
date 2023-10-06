@@ -68,9 +68,7 @@ export abstract class PageBase extends Controller {
 
   destroy() {
     this.emit('destroy');
-    if (this._removeModelListeners) {
-      this._removeModelListeners();
-    }
+    this._removeModelListeners();
     for (const id in this._components) {
       const component = this._components[id];
       component.destroy();
