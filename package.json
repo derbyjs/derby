@@ -17,6 +17,7 @@
     "./AppForServer": "./dist/AppForServer.js",
     "./lib/components": "./dist/components.js",
     "./lib/Page": "./dist/Page.js",
+    "./test-utils": "./test-utils/index.js",
     "./test-utils/*": "./test-utils/*.js"
   },
   "files": [
