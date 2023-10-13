@@ -15,6 +15,7 @@
     "./templates": "./dist/templates/index.js",
     "./App": "./dist/App.js",
     "./AppForServer": "./dist/AppForServer.js",
+    "./server": "./dist/server.js",
     "./Page": "./dist/Page.js",
     "./test-utils": "./test-utils/index.js",
     "./test-utils/*": "./test-utils/*.js"
