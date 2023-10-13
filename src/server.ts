@@ -1,29 +1,16 @@
 import cluster from 'cluster';
 
-import { AppForServer } from './AppForServer';
-import { DerbyBase } from './Derby';
-import { PageForServer } from './PageForServer';
-
 const isProduction = process.env.NODE_ENV === 'production';
 
-export class DerbyForServer extends DerbyBase {
-  App = AppForServer;
-  Page = PageForServer;
-
-  createApp(name: string, filename: string, options) {
-    return new this.App(this, name, filename, options);
+export function run(createServer: () => void) {
+  // In production
+  if (isProduction) return createServer();
+  if (cluster.isPrimary) {
+    console.log('Primary PID ', process.pid);
+    startWorker();
+  } else {
+    createServer();
   }
-
-  run = function(createServer) {
-    // In production
-    if (isProduction) return createServer();
-    if (cluster.isPrimary) {
-      console.log('Primary PID ', process.pid);
-      startWorker();
-    } else {
-      createServer();
-    }
-  };
 }
 
 function startWorker() {
