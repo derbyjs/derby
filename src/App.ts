@@ -39,7 +39,7 @@ interface AppOptions {
 
 type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: any, done?: () => void) => void;
 
-type Routes = [string, string, any][]
+type Routes = [string, string, any][];
 
 export abstract class AppBase extends EventEmitter {
   derby: Derby;
@@ -81,7 +81,9 @@ export abstract class AppBase extends EventEmitter {
   loadViews(_viewFilename, _viewName) { }
   loadStyles(_filename, _options) { }
 
-  component(name: string, constructor: ComponentConstructor, isDependency: boolean) {
+  component(constructor: ComponentConstructor): this;
+  component(name: string, constructor: ComponentConstructor, isDependency: boolean): this;
+  component(name: string | ComponentConstructor, constructor?: ComponentConstructor, isDependency?: boolean): this {
     if (typeof name === 'function') {
       constructor = name;
       name = null;

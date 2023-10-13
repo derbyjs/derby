@@ -28,7 +28,7 @@ export interface ComponentConstructor extends Component {
   DataConstructor?: DataConstructor;
 }
 
-export abstract class Component extends Controller {
+export abstract class Component<T = object> extends Controller<T> {
   context: Context;
   id: string;
   init?: (model: Model) => void;
@@ -319,7 +319,7 @@ export abstract class Component extends Controller {
   }
 }
 
-function _safeWrap(component: Component, callback: () => void) {
+function _safeWrap(component: Component<unknown>, callback: () => void) {
   return function() {
     if (component.isDestroyed) return;
     callback.call(component);

@@ -6,11 +6,11 @@ import { type AppBase } from './App';
 import Dom = require('./Dom');
 import { PageBase } from './Page';
 
-export class Controller extends EventEmitter {
+export class Controller<T = object> extends EventEmitter {
   dom: Dom;
   app: AppBase;
   page: PageBase;
-  model: Model;
+  model: Model<T>;
   markerNode: Node;
 
   constructor(app: AppBase, page: PageBase, model: Model) {
