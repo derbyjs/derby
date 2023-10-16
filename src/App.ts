@@ -12,12 +12,12 @@ import { type Model } from 'racer';
 import * as util from 'racer/lib/util';
 
 import components = require('./components');
-import { type ComponentConstructor } from './components';
+import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
 import { type Derby } from './Derby';
 import { Page, type PageBase } from './Page';
+import { routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
-import { routes } from './routes';
 
 const { templates } = derbyTemplates;
 
@@ -81,9 +81,9 @@ export abstract class AppBase extends EventEmitter {
   loadViews(_viewFilename, _viewName) { }
   loadStyles(_filename, _options) { }
 
-  component(constructor: ComponentConstructor): this;
-  component(name: string, constructor: ComponentConstructor, isDependency: boolean): this;
-  component(name: string | ComponentConstructor, constructor?: ComponentConstructor, isDependency?: boolean): this {
+  component(constructor: ComponentConstructor | SingletonComponentConstructor): this;
+  component(name: string, constructor: ComponentConstructor | SingletonComponentConstructor, isDependency: boolean): this;
+  component(name: string | ComponentConstructor | SingletonComponentConstructor, constructor?: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this {
     if (typeof name === 'function') {
       constructor = name;
       name = null;

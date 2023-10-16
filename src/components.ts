@@ -23,15 +23,32 @@ export interface DataConstructor extends Record<string, unknown> {
   new(): Record<string, unknown>
 }
 
-export interface ComponentConstructor<T = object> extends Component<T> {
-  new(context?: Context, data?: ModelData): Component<T>;
+export interface ComponentConstructor<T = object> {
+  new(context: Context, data: ModelData): Component<T>;
   DataConstructor?: DataConstructor;
+  singleton?: boolean,
+  view?: {
+    is: string,
+    dependencies?: ComponentConstructor[],
+    source?: string,
+    file?: string,
+  }
+}
+
+export interface SingletonComponentConstructor {
+  new(): Component
+  singleton: true;
+  view?: {
+    is: string,
+    dependencies?: ComponentConstructor[],
+    source?: string,
+    file?: string,
+  }
 }
 
 export abstract class Component<T = object> extends Controller<T> {
   context: Context;
   id: string;
-  init?: (model: Model<T>) => void;
   isDestroyed: boolean;
   page: PageBase;
   parent: Controller;
@@ -70,6 +87,8 @@ export abstract class Component<T = object> extends Controller<T> {
     this.page._components[id] = this;
     this.isDestroyed = false;
   }
+
+  init(_model: Model<T>): void {}
 
   destroy() {
     this.emit('destroy');
@@ -437,7 +456,7 @@ export class ComponentFactory{
     this.constructorFn = constructorFn;
   }
 
-  init(context) {
+  init(context: Context) {
     const DataConstructor = this.constructorFn.DataConstructor || ComponentModelData;
     const data = new DataConstructor();
     // eslint-disable-next-line new-cap
@@ -473,7 +492,7 @@ export class ComponentFactory{
 function noop() {}
 
 class SingletonComponentFactory{
-  constructorFn: ComponentConstructor;
+  constructorFn: SingletonComponentConstructor;
   isSingleton: true;
   component: Component;
 
@@ -548,7 +567,7 @@ const _extendComponent = (Object.setPrototypeOf && Object.getPrototypeOf) ?
     util.mergeInto(constructor.prototype, prototype);
   };
 
-export function extendComponent(constructor) {
+export function extendComponent(constructor: SingletonComponentConstructor | ComponentConstructor) {
   // Don't do anything if the constructor already extends Component
   if (constructor.prototype instanceof Component) return;
   // Otherwise, append Component.prototype to constructor's prototype chain
