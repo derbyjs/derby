@@ -23,15 +23,15 @@ export interface DataConstructor extends Record<string, unknown> {
   new(): Record<string, unknown>
 }
 
-export interface ComponentConstructor extends Component {
-  new(context?: Context, data?: ModelData): Component;
+export interface ComponentConstructor<T = object> extends Component<T> {
+  new(context?: Context, data?: ModelData): Component<T>;
   DataConstructor?: DataConstructor;
 }
 
 export abstract class Component<T = object> extends Controller<T> {
   context: Context;
   id: string;
-  init?: (model: Model) => void;
+  init?: (model: Model<T>) => void;
   isDestroyed: boolean;
   page: PageBase;
   parent: Controller;
