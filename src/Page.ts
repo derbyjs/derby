@@ -134,7 +134,7 @@ export class Page extends PageBase {
     }
   }
 
-  render(ns: string) {
+  render(ns: string, _status?: number) {
     this.app.emit('render', this);
     this.context.pause();
     this._setRenderParams(ns);

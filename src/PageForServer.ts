@@ -16,7 +16,7 @@ export class PageForServer extends PageBase {
     this.page = this;
   }
 
-  render(status?: number, ns?: string) {
+  render(ns?: string, status?: number) {
     if (typeof status !== 'number') {
       ns = status;
       status = null;
