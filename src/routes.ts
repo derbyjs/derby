@@ -9,7 +9,7 @@ export function routes(app: AppBase) {
 }
 
 // From tracks/lib/router.js
-interface PageParams extends ReadonlyArray<unknown> {
+export interface PageParams extends ReadonlyArray<unknown> {
   /** Previous URL path + querystring */
   previous?: string;
   /** Current URL path + querystring */
@@ -24,25 +24,25 @@ interface PageParams extends ReadonlyArray<unknown> {
   routes: unknown;
 }
 
-interface QueryParams {
+export interface QueryParams {
   [param: string]: unknown;
 }
 
-interface TransitionalRoute {
+export interface TransitionalRoute {
   from: string;
   to: string;
 }
 
-interface RouteMethod {
+export interface RouteMethod {
   (routePattern: string, routeHandler: RouteHandler): void;
   (routePattern: TransitionalRoute, routeHandler: TransitionalRouteHandler): void;
 }
 
-interface RouteHandler {
+export interface RouteHandler {
   (page: PageBase, model: Model, params: PageParams, next: (err?: Error) => void): void;
 }
 
-interface TransitionalRouteHandler {
+export interface TransitionalRouteHandler {
   (
     page: PageBase,
     model: Model,
@@ -59,5 +59,11 @@ declare module './App' {
     history: unknown;
     post: RouteMethod;
     put: RouteMethod;
+  }
+}
+declare module './Page' {
+  interface Page {
+    params: Readonly<PageParams>;
+    redirect(url: string, status?: number): void;
   }
 }
