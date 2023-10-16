@@ -10,7 +10,6 @@ import { basename } from 'path';
 
 import { type Model } from 'racer';
 import * as util from 'racer/lib/util';
-import tracks = require('tracks');
 
 import components = require('./components');
 import { type ComponentConstructor } from './components';
@@ -18,6 +17,7 @@ import { type Derby } from './Derby';
 import { Page, type PageBase } from './Page';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
+import { routes } from './routes';
 
 const { templates } = derbyTemplates;
 
@@ -71,7 +71,7 @@ export abstract class AppBase extends EventEmitter {
     this.Page = createAppPage(derby);
     this.proto = this.Page.prototype;
     this.views = new templates.Views();
-    this.tracksRoutes = tracks.setup(this);
+    this.tracksRoutes = routes(this);
     this.model = null;
     this.page = null;
     this._pendingComponentMap = {};
