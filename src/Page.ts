@@ -84,6 +84,8 @@ export abstract class PageBase extends Controller {
     }
   }
 
+  render(_ns: string, _status?: number) {}
+
   _createContext() {
     const contextMeta = new contexts.ContextMeta();
     contextMeta.views = this.app && this.app.views;
