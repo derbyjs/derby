@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { type Model } from 'racer';
 
 import { type AppBase } from './App';
-import Dom = require('./Dom');
+import { Dom }  from './Dom';
 import { PageBase } from './Page';
 
 export class Controller<T = object> extends EventEmitter {

@@ -21,6 +21,8 @@ if (util.isServer) {
 export { Component } from './components';
 export { AppClass as App };
 export { PageClass as Page };
+export { type PageParams, type QueryParams } from './routes';
+export { Dom } from './Dom';
 
 export function createApp(name: string, filename: string, options) {
   if (util.isServer) {
