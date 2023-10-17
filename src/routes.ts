@@ -56,14 +56,17 @@ declare module './App' {
   interface AppBase {
     del: RouteMethod;
     get: RouteMethod;
-    history: unknown;
+    history: {
+      push: (url: string, render?: boolean, state?: object, e?: any) => void,
+      replace: (url: string, render?: boolean, state?: object, e?: any) => void,
+      refresh: () => void,
+    };
     post: RouteMethod;
     put: RouteMethod;
   }
 }
 declare module './Page' {
-  interface Page {
-    params: Readonly<PageParams>;
+  interface PageBase {
     redirect(url: string, status?: number): void;
   }
 }

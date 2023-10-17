@@ -3,6 +3,7 @@ import { type Model } from 'racer';
 
 import { type AppForServer } from './AppForServer';
 import { PageBase } from './Page';
+import { type PageParams } from './routes';
 
 export class PageForServer extends PageBase {
   req: Request;
@@ -86,7 +87,7 @@ function stringifyBundle(bundle) {
 }
 
 // TODO: Cleanup; copied from tracks
-function pageParams(req: Request) {
+function pageParams(req) {
   const params = {
     url: req.url,
     body: req.body,
@@ -95,5 +96,5 @@ function pageParams(req: Request) {
   for (const key in req.params) {
     params[key] = req.params[key];
   }
-  return params;
+  return params as unknown as PageParams;
 }

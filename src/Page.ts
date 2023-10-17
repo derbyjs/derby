@@ -6,6 +6,7 @@ import components = require('./components');
 import { Controller } from './Controller';
 import documentListeners = require('./documentListeners');
 import EventModel = require('./eventmodel');
+import { type PageParams } from './routes';
 import * as derbyTemplates from './templates';
 import { Context } from './templates/contexts';
 import { Expression } from './templates/expressions';
@@ -19,7 +20,7 @@ const {
 } = derbyTemplates;
 
 export abstract class PageBase extends Controller {
-  params: any;
+  params: Readonly<PageParams>;
   context: Context;
   create: (model: Model, dom: any) => void;
   init?: (model: Model) => void;
