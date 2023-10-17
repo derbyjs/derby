@@ -220,7 +220,7 @@ export abstract class Component<T = object> extends Controller<T> {
   //
   // Like component.bind(), will no longer call back once the component is
   // destroyed, which avoids possible bugs and memory leaks.
-  debounce<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay: number): (...args: Parameters<F>) => void {
+  debounce<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
     delay = delay || 0;
     if (typeof delay !== 'number') {
       throw new Error('Second argument must be a number');
@@ -267,7 +267,7 @@ export abstract class Component<T = object> extends Controller<T> {
   //
   // Like component.bind(), will no longer call back once the component is
   // destroyed, which avoids possible bugs and memory leaks.
-  debounceAsync<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay: number = 0): (...args: Parameters<F>) => void {
+  debounceAsync<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
     const applyArguments = callback.length !== 1;
     delay = delay || 0;
     if (typeof delay !== 'number') {
