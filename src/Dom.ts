@@ -1,5 +1,10 @@
 import { type Controller } from './Controller';
 
+export type Target =
+  | Element
+  | Document
+  | Window;
+
 export class Dom {
   controller: Controller;
   _listeners: DomListener[];
@@ -32,7 +37,7 @@ export class Dom {
 
   // type: string, target: function, listener: boolean
   // addListener(type: string, listener: Function, useCapture: boolean): void;
-  addListener(type: string, target: Element, listener: EventListenerOrEventListenerObject, useCapture: boolean) {
+  addListener(type: string, target: Target, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
     if (typeof target === 'function') {
       // useCapture = listener;
       // listener = target;
@@ -48,7 +53,7 @@ export class Dom {
     domListener.add();
   }
 
-  on(type: string, target: Element, listener: EventListenerOrEventListenerObject, useCapture: boolean) {
+  on(type: string, target: Target, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
     this.addListener(type, target, listener, useCapture);
   }
 
@@ -80,11 +85,11 @@ export class Dom {
 
 export class DomListener{
   type: string;
-  target: Element;
+  target: Target;
   listener: EventListenerOrEventListenerObject;
   useCapture: boolean;
 
-  constructor(type: string, target: Element, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
+  constructor(type: string, target: Target, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
     this.type = type;
     this.target = target;
     this.listener = listener;
@@ -108,7 +113,7 @@ export class DomListener{
 }
 
 export class DestroyListener extends DomListener{
-  constructor(target: Element, listener: EventListenerOrEventListenerObject) {
+  constructor(target: Target, listener: EventListenerOrEventListenerObject) {
     super('destroy', target, listener);
     DomListener.call(this, 'destroy', target, listener);
   }

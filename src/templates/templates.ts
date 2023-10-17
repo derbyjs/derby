@@ -23,8 +23,17 @@ declare global {
     $bindStart?: RangeBinding;
     $bindAttributes?: AttributeBindingsMap;
   }
+
   interface Element {
-    $destroyListeners?: any[];
+    $destroyListeners?: EventListenerOrEventListenerObject[];
+  }
+
+  interface Document {
+    $destroyListeners?: EventListenerOrEventListenerObject[];
+  }
+
+  interface Window {
+    $destroyListeners?: EventListenerOrEventListenerObject[];
   }
 }
 
