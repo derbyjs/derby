@@ -23,15 +23,18 @@ export interface DataConstructor extends Record<string, unknown> {
   new(): Record<string, unknown>
 }
 
+type AnyVoidFunction = (...args: any[]) => void;
+
 export interface ComponentConstructor<T = object> {
   new(context: Context, data: ModelData): Component<T>;
   DataConstructor?: DataConstructor;
   singleton?: boolean,
   view?: {
-    is: string,
-    dependencies?: ComponentConstructor[],
-    source?: string,
+    dependencies?: any[],
     file?: string,
+    is: string,
+    source?: string,
+    viewPartialDependencies?: string[],
   }
 }
 
@@ -217,7 +220,7 @@ export abstract class Component<T = object> extends Controller<T> {
   //
   // Like component.bind(), will no longer call back once the component is
   // destroyed, which avoids possible bugs and memory leaks.
-  debounce(callback: (...args: unknown[]) => void, delay: number) {
+  debounce<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay: number): (...args: Parameters<F>) => void {
     delay = delay || 0;
     if (typeof delay !== 'number') {
       throw new Error('Second argument must be a number');
@@ -241,7 +244,7 @@ export abstract class Component<T = object> extends Controller<T> {
         callback.apply(component, args);
       }
     };
-    return function componentDebounceWrapper(...args) {
+    return function componentDebounceWrapper(...args: Parameters<F>) {
       nextArgs = slice.call(args);
       if (timeout) clearTimeout(timeout);
       timeout = setTimeout(boundCallback, delay);
@@ -264,7 +267,7 @@ export abstract class Component<T = object> extends Controller<T> {
   //
   // Like component.bind(), will no longer call back once the component is
   // destroyed, which avoids possible bugs and memory leaks.
-  debounceAsync(callback: (...args: unknown[]) => void, delay: number) {
+  debounceAsync<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay: number = 0): (...args: Parameters<F>) => void {
     const applyArguments = callback.length !== 1;
     delay = delay || 0;
     if (typeof delay !== 'number') {
@@ -294,7 +297,7 @@ export abstract class Component<T = object> extends Controller<T> {
         running = false;
       }
     }
-    return function componentDebounceAsyncWrapper(...args) {
+    return function componentDebounceAsyncWrapper(...args: Parameters<F>) {
       nextArgs = (applyArguments) ? slice.call(args) : [];
       if (timeout) clearTimeout(timeout);
       if (running) return;
@@ -338,7 +341,7 @@ export abstract class Component<T = object> extends Controller<T> {
   }
 }
 
-function _safeWrap(component: Component<unknown>, callback: () => void) {
+function _safeWrap<T extends object>(component: Component<T>, callback: () => void) {
   return function() {
     if (component.isDestroyed) return;
     callback.call(component);
