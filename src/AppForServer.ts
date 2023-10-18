@@ -59,7 +59,7 @@ function watchOnce(filenames, callback) {
   });
 }
 
-export class AppForServer extends AppBase {
+export class AppForServer<T = object> extends AppBase<T> {
   agents: Record<string, Agent>;
   compilers: Record<string, CompilerFunciton>;
   scriptBaseUrl: string;
@@ -81,7 +81,7 @@ export class AppForServer extends AppBase {
     this._init(options);
   }
 
-  protected _init(options) {
+  _init(options) {
     this._initBundle(options);
     this._initRefresh();
     this._initLoad();

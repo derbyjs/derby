@@ -1,4 +1,4 @@
-import { type Model } from 'racer';
+import { type ChildModel } from 'racer';
 import util = require('racer/lib/util');
 
 import { type AppBase, type App } from './App';
@@ -19,17 +19,17 @@ const {
   templates,
 } = derbyTemplates;
 
-export abstract class PageBase extends Controller {
+export abstract class PageBase<T = object> extends Controller<T> {
   params: Readonly<PageParams>;
   context: Context;
-  create: (model: Model, dom: any) => void;
-  init?: (model: Model) => void;
+  create: (model: ChildModel<T>, dom: any) => void;
+  init?: (model: ChildModel<T>) => void;
   _components: Record<string, components.Component>
   _eventModel: any;
   _removeModelListeners: () => void = () => {};
   page: PageBase;
 
-  constructor(app: AppBase, model: Model) {
+  constructor(app: AppBase, model: ChildModel<T>) {
     super(app, null, model);
     this.params = null;
     this._eventModel = null;
@@ -109,8 +109,8 @@ export abstract class PageBase extends Controller {
   }
 }
 
-export class Page extends PageBase {
-  constructor(app: App, model: Model) {
+export class Page<T = object> extends PageBase<T> {
+  constructor(app: App, model: ChildModel<T>) {
     super(app, model);
     this._addListeners();
   }

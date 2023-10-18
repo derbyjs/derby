@@ -7,7 +7,7 @@
  *
  */
 
-import { type Model, type ModelData } from 'racer';
+import { type ChildModel, type ModelData } from 'racer';
 import util = require('racer/lib/util');
 
 import { Controller } from './Controller';
@@ -91,7 +91,7 @@ export abstract class Component<T = object> extends Controller<T> {
     this.isDestroyed = false;
   }
 
-  init(_model: Model<T>): void {}
+  init(_model: ChildModel<T>): void {}
 
   destroy() {
     this.emit('destroy');
@@ -321,14 +321,14 @@ export abstract class Component<T = object> extends Controller<T> {
       this.app.views.find(viewName, contextView.namespace) : contextView;
   }
 
-  getAttribute(key: string) {
+  getAttribute<T>(key: string) {
     const attributeContext = this.context.forAttribute(key);
     if (!attributeContext) return;
     let value = attributeContext.attributes[key];
     if (value instanceof expressions.Expression) {
       value = value.get(attributeContext);
     }
-    return expressions.renderValue(value, this.context);
+    return expressions.renderValue(value, this.context) as T;
   }
 
   setAttribute(key: string, value: Attribute) {
@@ -348,12 +348,12 @@ function _safeWrap<T extends object>(component: Component<T>, callback: () => vo
   };
 }
 
-export class ComponentAttribute{
+export class ComponentAttribute<T = object> {
   expression: Expression;
-  model: any;
-  key: any;
+  model: ChildModel<T>;
+  key: string;
 
-  constructor(expression: Expression, model: Model, key: string) {
+  constructor(expression: Expression, model: ChildModel<T>, key: string) {
     this.expression = expression;
     this.model = model;
     this.key = key;
@@ -380,7 +380,7 @@ export class ComponentAttributeBinding extends Binding {
   }
 }
 
-function setModelAttributes(context: Context, model: Model) {
+function setModelAttributes<T = object>(context: Context, model: ChildModel<T>) {
   const attributes = context.parent.attributes;
   if (!attributes) return;
   // Set attribute values on component model
@@ -390,7 +390,7 @@ function setModelAttributes(context: Context, model: Model) {
   }
 }
 
-function setModelAttribute(context: Context, model: Model, key: string, value: unknown) {
+function setModelAttribute<T = object>(context: Context, model: ChildModel<T>, key: string, value: unknown) {
   // If an attribute is an Expression, set its current value in the model
   // and keep it up to date. When it is a resolvable path, use a Racer ref,
   // which makes it a two-way binding. Otherwise, set to the current value

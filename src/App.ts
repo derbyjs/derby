@@ -8,14 +8,14 @@
 import { EventEmitter } from 'events';
 import { basename } from 'path';
 
-import { type Model } from 'racer';
+import { type ChildModel } from 'racer';
 import * as util from 'racer/lib/util';
 
 import components = require('./components');
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
 import { type Derby } from './Derby';
 import { Page, type PageBase } from './Page';
-import { routes } from './routes';
+import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
 
@@ -37,11 +37,11 @@ interface AppOptions {
   scriptHash?: string,
 }
 
-type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: any, done?: () => void) => void;
+type OnRouteCallback<T = object> = (arg0: Page, arg1: Page, model: ChildModel<T>, params: PageParams, done?: () => void) => void;
 
 type Routes = [string, string, any][];
 
-export abstract class AppBase extends EventEmitter {
+export abstract class AppBase<T = object> extends EventEmitter {
   derby: Derby;
   name: string;
   filename: string;
@@ -52,7 +52,7 @@ export abstract class AppBase extends EventEmitter {
   proto: any;
   views: Views;
   tracksRoutes: Routes;
-  model: Model;
+  model: ChildModel<T>;
   page: PageBase;
   protected _pendingComponentMap: Record<string, ComponentConstructor>;
   protected _waitForAttach: boolean;
@@ -77,12 +77,12 @@ export abstract class AppBase extends EventEmitter {
     this._pendingComponentMap = {};
   }
 
-  protected abstract _init(options?: AppOptions);
+  abstract _init(options?: AppOptions);
   loadViews(_viewFilename, _viewName) { }
   loadStyles(_filename, _options) { }
 
   component(constructor: ComponentConstructor | SingletonComponentConstructor): this;
-  component(name: string, constructor: ComponentConstructor | SingletonComponentConstructor, isDependency: boolean): this;
+  component(name: string, constructor: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this;
   component(name: string | ComponentConstructor | SingletonComponentConstructor, constructor?: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this {
     if (typeof name === 'function') {
       constructor = name;
@@ -232,7 +232,7 @@ export class App extends AppBase {
   }
 
   // Overriden on server
-  protected _init(_options) {
+  _init(_options) {
     this._waitForAttach = true;
     this._cancelAttach = false;
     this.model = new this.derby.Model();
