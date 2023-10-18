@@ -5,6 +5,8 @@ export type Target =
   | Document
   | Window;
 
+export type EventListener<T extends Event> = (event: T) => void;
+
 export class Dom {
   controller: Controller;
   _listeners: DomListener[];
@@ -36,16 +38,17 @@ export class Dom {
   }
 
   // type: string, target: function, listener: boolean
-  // addListener(type: string, listener: Function, useCapture: boolean): void;
-  addListener(type: string, target: Target, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
+  addListener<T extends Event>(type: string, listener: EventListener<T>, useCapture?: boolean): void;
+  addListener<T extends Event>(type: string, target: Target, listener?: EventListener<T>, useCapture?: boolean): void;
+  addListener<T extends Event>(type: string, target: Target | EventListener<T>, listener?: EventListener<T> | boolean, useCapture?: boolean): void {
     if (typeof target === 'function') {
-      // useCapture = listener;
-      // listener = target;
-      // target = document;
+      useCapture = !!(listener as boolean);
+      listener = target as EventListener<T>;
+      target = document as Target;
     }
-    const domListener =
-    (type === 'destroy') ? new DestroyListener(target, listener) :
-      new DomListener(type, target, listener, useCapture);
+    const domListener = (type === 'destroy')
+      ? new DestroyListener(target as Target, listener as EventListener<T>)
+      : new DomListener(type, target as Target, listener as EventListener<T>, useCapture);
     if (-1 === this._listenerIndex(domListener)) {
       const listeners = this._listeners || this._initListeners();
       listeners.push(domListener);
@@ -53,8 +56,14 @@ export class Dom {
     domListener.add();
   }
 
-  on(type: string, target: Target, listener: EventListenerOrEventListenerObject, useCapture?: boolean) {
-    this.addListener(type, target, listener, useCapture);
+  on<T extends Event>(type: string, listener: EventListener<T>, useCapture?: boolean): void;
+  on<T extends Event>(type: string, target: Target, listener: EventListener<T>, useCapture?: boolean): void;
+  on<T extends Event>(type: string, target: Target | EventListener<T>, listener?: EventListener<T> | boolean, useCapture?: boolean): void {
+    if (typeof target === 'function') {
+      listener = target as EventListener<T>;
+      target = document as Target;
+    }
+    this.addListener(type, target as Target, listener as EventListener<T>, useCapture);
   }
 
   once(type, target, listener, useCapture) {
@@ -70,11 +79,11 @@ export class Dom {
     this.addListener(type, target, wrappedListener, useCapture);
   }
 
-  removeListener(type, target, listener, useCapture) {
+  removeListener<T extends Event>(type: string, target: Target, listener: EventListener<T>, useCapture?: boolean) {
     if (typeof target === 'function') {
-      useCapture = listener;
-      listener = target;
-      target = document;
+      useCapture = !!(listener);
+      listener = target as EventListener<T>;
+      target = document as Target;
     }
     const domListener = new DomListener(type, target, listener, useCapture);
     domListener.remove();
