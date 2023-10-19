@@ -4,11 +4,14 @@
  *
  */
 import racer = require('racer');
-import Racer = require('racer/lib/Racer');
+
 
 import { App, type AppBase } from './App';
 import { Component } from './components';
 import { Page } from './Page';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Racer = require('racer/lib/Racer');
 
 export abstract class DerbyBase extends Racer {
   Component = Component;
