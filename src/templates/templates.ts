@@ -24,16 +24,8 @@ declare global {
     $bindAttributes?: AttributeBindingsMap;
   }
 
-  interface Element {
-    $destroyListeners?: EventListenerOrEventListenerObject[];
-  }
-
-  interface Document {
-    $destroyListeners?: EventListenerOrEventListenerObject[];
-  }
-
-  interface Window {
-    $destroyListeners?: EventListenerOrEventListenerObject[];
+  interface EventTarget {
+    $destroyListeners?: any[];
   }
 }
 
