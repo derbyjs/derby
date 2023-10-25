@@ -3,13 +3,13 @@
  * Meant to be the entry point for the framework.
  *
  */
-import racer = require('racer');
-
 
 import { App, type AppBase } from './App';
 import { Component } from './components';
 import { Page } from './Page';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const racer = require('racer');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Racer = require('racer/lib/Racer');
 
