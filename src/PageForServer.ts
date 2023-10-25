@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { type ChildModel } from 'racer';
+import { type Model } from 'racer';
 
 import { type AppForServer } from './AppForServer';
 import { PageBase } from './Page';
@@ -10,7 +10,7 @@ export class PageForServer<T = object> extends PageBase<T> {
   res: Response;
   page: PageForServer;
 
-  constructor(app: AppForServer, model: ChildModel<T>, req: Request, res: Response) {
+  constructor(app: AppForServer, model: Model<T>, req: Request, res: Response) {
     super(app, model);
     this.req = req;
     this.res = res;

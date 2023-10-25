@@ -1,4 +1,4 @@
-import { type RootModel } from 'racer';
+import { type Model } from 'racer';
 import tracks = require('tracks');
 
 import { type AppBase } from './App';
@@ -39,13 +39,13 @@ export interface RouteMethod {
 }
 
 export interface RouteHandler {
-  (page: PageBase, model: RootModel, params: PageParams, next: (err?: Error) => void): void;
+  (page: PageBase, model: Model, params: PageParams, next: (err?: Error) => void): void;
 }
 
 export interface TransitionalRouteHandler {
   (
     page: PageBase,
-    model: RootModel,
+    model: Model,
     params: PageParams,
     next: (err?: Error) => void,
     done: () => void

@@ -8,7 +8,7 @@
 import { EventEmitter } from 'events';
 import { basename } from 'path';
 
-import { type ChildModel } from 'racer';
+import { type Model } from 'racer';
 import * as util from 'racer/lib/util';
 
 import components = require('./components');
@@ -37,7 +37,7 @@ interface AppOptions {
   scriptHash?: string,
 }
 
-type OnRouteCallback<T = object> = (arg0: Page, arg1: Page, model: ChildModel<T>, params: PageParams, done?: () => void) => void;
+type OnRouteCallback<T = object> = (arg0: Page, arg1: Page, model: Model<T>, params: PageParams, done?: () => void) => void;
 
 type Routes = [string, string, any][];
 
@@ -52,7 +52,7 @@ export abstract class AppBase<T = object> extends EventEmitter {
   proto: any;
   views: Views;
   tracksRoutes: Routes;
-  model: ChildModel<T>;
+  model: Model<T>;
   page: PageBase;
   protected _pendingComponentMap: Record<string, ComponentConstructor>;
   protected _waitForAttach: boolean;

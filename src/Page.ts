@@ -1,4 +1,4 @@
-import { type ChildModel } from 'racer';
+import { type Model } from 'racer';
 import util = require('racer/lib/util');
 
 import { type AppBase, type App } from './App';
@@ -22,14 +22,14 @@ const {
 export abstract class PageBase<T = object> extends Controller<T> {
   params: Readonly<PageParams>;
   context: Context;
-  create: (model: ChildModel<T>, dom: any) => void;
-  init?: (model: ChildModel<T>) => void;
+  create: (model: Model<T>, dom: any) => void;
+  init?: (model: Model<T>) => void;
   _components: Record<string, components.Component>
   _eventModel: any;
   _removeModelListeners: () => void = () => {};
   page: PageBase;
 
-  constructor(app: AppBase, model: ChildModel<T>) {
+  constructor(app: AppBase, model: Model<T>) {
     super(app, null, model);
     this.params = null;
     this._eventModel = null;
@@ -110,7 +110,7 @@ export abstract class PageBase<T = object> extends Controller<T> {
 }
 
 export class Page<T = object> extends PageBase<T> {
-  constructor(app: App, model: ChildModel<T>) {
+  constructor(app: App, model: Model<T>) {
     super(app, model);
     this._addListeners();
   }
