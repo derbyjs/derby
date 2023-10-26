@@ -26,6 +26,14 @@ export class Derby extends DerbyBase {
   createApp(name: string, filename: string, options) {
     return new this.App(this, name, filename, options);
   }
+
+  use(plugin, options) {
+    return racer.util.use.call(this, plugin, options);
+  }
+
+  serverUse(plugin, options) {
+    return racer.util.serverUse.call(this, plugin, options);
+  }
 }
 
 if (!racer.util.isServer) {

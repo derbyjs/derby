@@ -7,9 +7,9 @@
     "noImplicitUseStrict": true,
     "outDir": "dist",
     "target": "ES5",
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "sourceMap": false,
+    "declaration": false,
+    "declarationMap": false,
   },
   "include": [
     "src/**/*"
