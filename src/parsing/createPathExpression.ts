@@ -1,18 +1,18 @@
-var derbyTemplates = require('../templates');
-var expressions = derbyTemplates.expressions;
-var operatorFns = derbyTemplates.operatorFns;
-var esprima = require('esprima-derby');
-var Syntax = esprima.Syntax;
+import * as esprima from 'esprima-derby';
+import type * as estree from 'estree';
 
-module.exports = createPathExpression;
+import { expressions, operatorFns } from '../templates';
+const { Syntax } = esprima;
 
-function createPathExpression(source) {
-  var node = esprima.parse(source).expression;
+export function createPathExpression(source: string) {
+  // @ts-expect-error `parse` not declared in @types/esprima
+  const parsed = esprima.parse(source);
+  const node = parsed.expression;
   return reduce(node);
 }
 
-function reduce(node) {
-  var type = node.type;
+function reduce(node: estree.Node) {
+  const type = node.type;
   if (type === Syntax.MemberExpression) {
     return reduceMemberExpression(node);
   } else if (type === Syntax.Identifier) {
@@ -41,14 +41,14 @@ function reduce(node) {
   unexpected(node);
 }
 
-function reduceMemberExpression(node, afterSegments) {
+function reduceMemberExpression(node, afterSegments?: string[]) {
   if (node.computed) {
     // Square brackets
     if (node.property.type === Syntax.Literal) {
       return reducePath(node, node.property.value, afterSegments);
     }
-    var before = reduce(node.object);
-    var inside = reduce(node.property);
+    const before = reduce(node.object);
+    const inside = reduce(node.property);
     return new expressions.BracketsExpression(before, inside, afterSegments);
   }
   // Dot notation
@@ -58,10 +58,10 @@ function reduceMemberExpression(node, afterSegments) {
   unexpected(node);
 }
 
-function reducePath(node, segment, afterSegments) {
-  var segments = [segment];
+function reducePath(node, segment: string, afterSegments?: string[]) {
+  let segments = [segment];
   if (afterSegments) segments = segments.concat(afterSegments);
-  var relative = false;
+  let relative = false;
   while ((node = node.object)) {
     if (node.type === Syntax.MemberExpression) {
       if (node.computed) {
@@ -91,26 +91,26 @@ function reducePath(node, segment, afterSegments) {
 }
 
 function reduceIdentifier(node) {
-  var segments = [node.name];
+  const segments = [node.name];
   return createSegmentsExpression(segments);
 }
 
-function reduceThis(node) {
-  var segments = [];
+function reduceThis(_node) {
+  const segments = [];
   return new expressions.RelativePathExpression(segments);
 }
 
-function createSegmentsExpression(segments) {
-  var firstSegment = segments[0];
-  var firstChar = firstSegment.charAt && firstSegment.charAt(0);
+function createSegmentsExpression(segments: string[]) {
+  const firstSegment = segments[0];
+  const firstChar = firstSegment.charAt && firstSegment.charAt(0);
 
   if (firstChar === '#') {
-    var alias = firstSegment;
+    const alias = firstSegment;
     segments.shift();
     return new expressions.AliasPathExpression(alias, segments);
 
   } else if (firstChar === '@') {
-    var attribute = firstSegment.slice(1);
+    const attribute = firstSegment.slice(1);
     segments.shift();
     return new expressions.AttributePathExpression(attribute, segments);
 
@@ -119,84 +119,83 @@ function createSegmentsExpression(segments) {
   }
 }
 
-function reduceCallExpression(node, afterSegments) {
+function reduceCallExpression(node: estree.CallExpression, afterSegments?: string[]) {
   return reduceFnExpression(node, afterSegments, expressions.FnExpression);
 }
 
-function reduceNewExpression(node, afterSegments) {
+function reduceNewExpression(node: estree.NewExpression, afterSegments?: string[]) {
   return reduceFnExpression(node, afterSegments, expressions.NewExpression);
 }
 
-function reduceFnExpression(node, afterSegments, Constructor) {
-  var args = node.arguments.map(reduce);
-  var callee = node.callee;
+function reduceFnExpression(node: estree.CallExpression, afterSegments, Constructor) {
+  const args = node.arguments.map(reduce);
+  const callee = node.callee;
   if (callee.type === Syntax.Identifier) {
     if (callee.name === '$at') {
       return new expressions.ScopedModelExpression(args[0]);
     }
-    var segments = [callee.name];
-    return new Constructor(segments, args, afterSegments);
+    return new Constructor([callee.name], args, afterSegments);
   } else if (callee.type === Syntax.MemberExpression) {
-    var segments = reduceMemberExpression(callee).segments;
+    const segments = reduceMemberExpression(callee).segments;
     return new Constructor(segments, args, afterSegments);
   } else {
     unexpected(node);
   }
 }
 
-function reduceLiteral(node) {
+function reduceLiteral(node: estree.Literal) {
   return new expressions.LiteralExpression(node.value);
 }
 
-function reduceUnaryExpression(node) {
+function reduceUnaryExpression(node: estree.UnaryExpression) {
   // `-` and `+` can be either unary or binary, so all unary operators are
   // postfixed with `U` to differentiate
-  var operator = node.operator + 'U';
-  var expression = reduce(node.argument);
+  const operator = node.operator + 'U';
+  const expression = reduce(node.argument);
   if (expression instanceof expressions.LiteralExpression) {
-    var fn = operatorFns.get[operator];
+    const fn = operatorFns.get[operator];
     expression.value = fn(expression.value);
     return expression;
   }
   return new expressions.OperatorExpression(operator, [expression]);
 }
 
-function reduceBinaryExpression(node) {
-  var operator = node.operator;
-  var left = reduce(node.left);
-  var right = reduce(node.right);
+function reduceBinaryExpression(node: estree.BinaryExpression | estree.LogicalExpression) {
+  const operator = node.operator;
+  const left = reduce(node.left);
+  const right = reduce(node.right);
   if (
     left instanceof expressions.LiteralExpression &&
     right instanceof expressions.LiteralExpression
   ) {
-    var fn = operatorFns.get[operator];
-    var value = fn(left.value, right.value);
+    const fn = operatorFns.get[operator];
+    const value = fn(left.value, right.value);
     return new expressions.LiteralExpression(value);
   }
   return new expressions.OperatorExpression(operator, [left, right]);
 }
 
-function reduceConditionalExpression(node) {
-  var test = reduce(node.test);
-  var consequent = reduce(node.consequent);
-  var alternate = reduce(node.alternate);
+function reduceConditionalExpression(node: estree.ConditionalExpression) {
+  const test = reduce(node.test);
+  const consequent = reduce(node.consequent);
+  const alternate = reduce(node.alternate);
   if (
     test instanceof expressions.LiteralExpression &&
     consequent instanceof expressions.LiteralExpression &&
     alternate instanceof expressions.LiteralExpression
   ) {
-    var value = (test.value) ? consequent.value : alternate.value;
+    const value = (test.value) ? consequent.value : alternate.value;
     return new expressions.LiteralExpression(value);
   }
   return new expressions.OperatorExpression('?', [test, consequent, alternate]);
 }
 
-function reduceArrayExpression(node) {
-  var literal = [];
-  var items = [];
-  var isLiteral = true;
-  for (var i = 0; i < node.elements.length; i++) {
-    var expression = reduce(node.elements[i]);
+function reduceArrayExpression(node: estree.ArrayExpression) {
+  const literal = [];
+  const items = [];
+  let isLiteral = true;
+  for (let i = 0; i < node.elements.length; i++) {
+    const expression = reduce(node.elements[i]);
     items.push(expression);
     if (isLiteral && expression instanceof expressions.LiteralExpression) {
       literal.push(expression.value);
@@ -209,19 +208,28 @@ function reduceArrayExpression(node) {
     new expressions.ArrayExpression(items);
 }
 
-function reduceObjectExpression(node) {
-  var literal = {};
-  var properties = {};
-  var isLiteral = true;
-  for (var i = 0; i < node.properties.length; i++) {
-    var property = node.properties[i];
-    var key = getKeyName(property.key);
-    var expression = reduce(property.value);
-    properties[key] = expression;
-    if (isLiteral && expression instanceof expressions.LiteralExpression) {
-      literal[key] = expression.value;
+function isProperty(property: estree.Property | estree.SpreadElement): property is estree.Property {
+  return (property as estree.Property).type === Syntax.Property;
+}
+
+function reduceObjectExpression(node: estree.ObjectExpression) {
+  const literal = {};
+  const properties = {};
+  let isLiteral = true;
+  for (let i = 0; i < node.properties.length; i++) {
+    const property = node.properties[i];
+    if (isProperty(property)) {
+      const key = getKeyName(property.key);
+      const expression = reduce(property.value);
+      properties[key] = expression;
+      if (isLiteral && expression instanceof expressions.LiteralExpression) {
+        literal[key] = expression.value;
+      } else {
+        isLiteral = false;
+      }
     } else {
-      isLiteral = false;
+      // actually a estree.SpreadElement and not supported
+      unexpected(node);
     }
   }
   return (isLiteral) ?
@@ -229,13 +237,13 @@ function reduceObjectExpression(node) {
     new expressions.ObjectExpression(properties);
 }
 
-function getKeyName(key) {
-  return (key.type === Syntax.Identifier) ? key.name :
-    (key.type === Syntax.Literal) ? key.value :
-      unexpected(key);
+function getKeyName(node): string {
+  return (node.type === Syntax.Identifier) ? node.name :
+    (node.type === Syntax.Literal) ? node.value :
+      unexpected(node);
 }
 
-function reduceSequenceExpression(node, afterSegments) {
+function reduceSequenceExpression(node: estree.SequenceExpression, afterSegments?: string[]) {
   // Note that sequence expressions are not reduced to a literal if they only
   // contain literals. There isn't any utility to such an expression, so it
   // isn't worth optimizing.
@@ -243,10 +251,10 @@ function reduceSequenceExpression(node, afterSegments) {
   // The fact that expressions separated by commas always parse into a sequence
   // is relied upon in parsing template tags that have comma-separated
   // arguments following a keyword
-  var args = node.expressions.map(reduce);
+  const args = node.expressions.map(reduce);
   return new expressions.SequenceExpression(args, afterSegments);
 }
 
-function unexpected(node) {
+function unexpected(node: estree.Node) {
   throw new Error('Unexpected Esprima node: ' + JSON.stringify(node, null, 2));
 }

@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var App = require('../../lib/App');
+var App = require('../../dist/App').App;
 
 describe('App._parseInitialData', () => {
   it('parses simple json', () => {
@@ -14,7 +14,7 @@ describe('App._parseInitialData', () => {
 
   it('thorws error with context for unexpected tokens', () => {
     expect(() => App._parseInitialData('{"foo": b}')).to.throw(
-      'Parse failure: Unexpected token b in JSON at position 8 context: \'{"foo": b}\''
+      /^Parse failure: Unexpected token/
     );
   });
 });

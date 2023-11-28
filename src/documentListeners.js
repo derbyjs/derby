@@ -34,7 +34,7 @@ function addDocumentListeners(doc) {
     // the user clicks 'delete' from a context menu when right clicking on selected text.
     // So although this event fires overly aggressively, it's the only real way
     // to ensure that we can detect all changes to the input value in IE <= 9
-    doc.addEventListener('selectionchange', function(e){
+    doc.addEventListener('selectionchange', function(){
       if (document.activeElement) {
         documentInput({target: document.activeElement}); // selectionchange evts don't have the e.target we need
       }

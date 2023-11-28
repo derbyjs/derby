@@ -1,7 +1,7 @@
 // `-` and `+` can be either unary or binary, so all unary operators are
 // postfixed with `U` to differentiate
 
-exports.get = {
+export const get = {
   // Unary operators
   '!U': function(value) {
     return !value;
@@ -97,12 +97,12 @@ exports.get = {
     return (test) ? consequent : alternate;
   },
   // Sequence
-  ',': function() {
-    return arguments[arguments.length - 1];
+  ',': function(...args) {
+    return args[args.length - 1];
   }
 };
 
-exports.set = {
+export const set = {
   // Unary operators
   '!U': function(value) {
     return [!value];

@@ -59,7 +59,7 @@ function mochaHooksForNode(runner, options) {
     nodeGlobal.window = runner.window;
     nodeGlobal.document = runner.document;
     // Initialize "input" and "change" listeners on the document.
-    require('../lib/documentListeners').add(runner.document);
+    require('../dist/documentListeners').add(runner.document);
   });
 
   global.afterEach(function() {

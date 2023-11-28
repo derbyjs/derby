@@ -48,7 +48,6 @@ describe('forms', function() {
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
-      var key = page.model.at('_page.key');
       text.set('Hi');
       var fragment = page.getFragment('Body');
       var textarea = fragment.firstChild;
@@ -66,11 +65,9 @@ describe('forms', function() {
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
-      var key = page.model.at('_page.key');
       text.set('Hi');
       var fragment = page.getFragment('Body');
       var textarea = fragment.firstChild;
-      var textNode = textarea.firstChild;
       // Insert the fragment in the document so that Derby captures events
       this.fixture.appendChild(fragment);
       textarea.value = 'Yo';
@@ -83,11 +80,9 @@ describe('forms', function() {
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
-      var key = page.model.at('_page.key');
       text.set('Hi');
       var fragment = page.getFragment('Body');
       var textarea = fragment.firstChild;
-      var textNode = textarea.firstChild;
       // Insert the fragment in the document so that Derby captures events
       this.fixture.appendChild(fragment);
       textarea.value = 'Yo';

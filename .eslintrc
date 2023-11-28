@@ -9,6 +9,7 @@
     "window": false,
     "document": false
   },
+  "root": true,
   "rules": {
     "comma-style": [
       2,
@@ -33,7 +34,9 @@
     "no-cond-assign": [
       2,
       "except-parens"
-    ]
+    ],
+    "no-unused-vars": ["off", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   },
   "overrides": [
     {
@@ -47,6 +50,40 @@
     {
       "files": ["test/**/*.js"],
       "env": {"mocha": true, "node": true}
+    },
+    {
+      "files": ["src/**/*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint", "prettier", "import"],
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:import/recommended",
+        "plugin:import/typescript"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": ["warn", { "ignoreRestArgs": false }],
+        "import/no-unresolved": "error",
+        "import/order": [
+          "error",
+          {
+            "groups": [
+              "builtin",
+              "external",
+              "internal",
+              ["sibling", "parent"],
+              "index",
+              "unknown"
+            ],
+            "newlines-between": "always",
+            "alphabetize": {
+              "order": "asc",
+              "caseInsensitive": true
+            }
+          }
+        ]
+      }
     }
   ]
 }

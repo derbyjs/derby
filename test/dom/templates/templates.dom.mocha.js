@@ -1,6 +1,6 @@
 var chai = require('chai');
 var expect = chai.expect;
-var saddle = require('../../../lib/templates/templates');
+var saddle = require('../../../dist/templates/templates');
 var domTestRunner = require('../../../test-utils/domTestRunner');
 
 describe('templates rendering', function() {

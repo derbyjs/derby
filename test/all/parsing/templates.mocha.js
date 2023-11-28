@@ -1,8 +1,8 @@
 var expect = require('chai').expect;
-var derbyTemplates = require('../../../lib/templates');
+var derbyTemplates = require('../../../dist/templates');
 var contexts = derbyTemplates.contexts;
 var templates = derbyTemplates.templates;
-var parsing = require('../../../lib/parsing');
+var parsing = require('../../../dist/parsing');
 
 var model = {
   data: {
@@ -108,7 +108,7 @@ describe('Parse and render dynamic text and blocks', function() {
       var source = '{{with _page.greeting as greeting}}{{/with}}';
       expect(function() {
         var template = parsing.createTemplate(source);
-        console.log(template.content[0]);
+        // console.log(template.content[0]);
       }).to.throw(/Alias must be an identifier starting with "#"/);
     });
 

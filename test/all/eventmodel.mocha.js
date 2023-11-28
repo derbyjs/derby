@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var EventModel = require('../../lib/eventmodel');
+var EventModel = require('../../dist/eventmodel');
 
 describe('eventmodel', function() {
   beforeEach(function() {
@@ -56,7 +56,7 @@ describe('eventmodel', function() {
       expect(binding.eventModels).to.eq(undefined);
       em.addBinding(['x'], binding);
       expect(binding.eventModels).to.be.instanceOf(Object);
-      console.log(em.at(['x']));
+      // console.log(em.at(['x']));
       expect(em.at(['x'])).has.ownProperty('bindings').instanceOf(Object);
     });
   });
@@ -94,10 +94,9 @@ describe('eventmodel', function() {
   });
 
   describe('lists', function() {
-    it('Does not update an item binding inside a list item when something is inserted around it', function() {
+    it.skip('Does not update an item binding inside a list item when something is inserted around it', function() {
       //var ctx = {item:1};
       //this.em.addBinding(['list', ctx], this.binding);
-
     });
   });
 
