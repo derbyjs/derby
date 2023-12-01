@@ -18,10 +18,6 @@ export class PageForServer<T = object> extends PageBase<T> {
   }
 
   render(ns?: string, status?: number) {
-    if (typeof status !== 'number') {
-      ns = status;
-      status = null;
-    }
     this.app.emit('render', this);
 
     if (status) this.res.statusCode = status;
