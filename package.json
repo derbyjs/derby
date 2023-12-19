@@ -40,7 +40,7 @@
     "esprima-derby": "^0.1.0",
     "html-util": "^0.2.3",
     "qs": "^6.11.0",
-    "racer": "^1.0.3",
+    "racer": "git+ssh://git@github.com/derbyjs/racer.git#racer-2",
     "resolve": "^1.22.1",
     "serialize-object": "^1.0.0",
     "tracks": "^0.5.8"
