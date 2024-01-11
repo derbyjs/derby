@@ -7,7 +7,7 @@ export class DerbyForServer extends DerbyBase {
   App: typeof AppForServer = AppForServer;
   Page: typeof PageForServer = PageForServer;
 
-  createApp(name: string, filename: string, options: any): AppBase<object> {
+  createApp(name: string, filename: string, options: any): AppBase {
     return new this.App(this, name, filename, options);
   }
 }

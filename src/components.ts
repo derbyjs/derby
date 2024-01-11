@@ -7,8 +7,7 @@
  *
  */
 
-import { type ChildModel, type ModelData } from 'racer';
-import util = require('racer/lib/util');
+import { type ChildModel, type ModelData, util } from 'racer';
 
 import { Controller } from './Controller';
 import { PageBase } from './Page';
@@ -25,8 +24,8 @@ export interface DataConstructor extends Record<string, unknown> {
 
 type AnyVoidFunction = (...args: any[]) => void;
 
-export interface ComponentConstructor<T = object> {
-  new(context: Context, data: ModelData): Component<T>;
+export interface ComponentConstructor {
+  new(context: Context, data: ModelData): Component;
   DataConstructor?: DataConstructor;
   singleton?: boolean,
   view?: {
@@ -49,7 +48,7 @@ export interface SingletonComponentConstructor {
   }
 }
 
-export abstract class Component<T = object> extends Controller<T> {
+export abstract class Component extends Controller {
   context: Context;
   id: string;
   isDestroyed: boolean;
@@ -91,7 +90,7 @@ export abstract class Component<T = object> extends Controller<T> {
     this.isDestroyed = false;
   }
 
-  init(_model: ChildModel<T>): void {}
+  init(_model: ChildModel): void {}
 
   destroy() {
     this.emit('destroy');
@@ -341,19 +340,19 @@ export abstract class Component<T = object> extends Controller<T> {
   }
 }
 
-function _safeWrap<T extends object>(component: Component<T>, callback: () => void) {
+function _safeWrap(component: Component, callback: () => void) {
   return function() {
     if (component.isDestroyed) return;
     callback.call(component);
   };
 }
 
-export class ComponentAttribute<T = object> {
+export class ComponentAttribute {
   expression: Expression;
-  model: ChildModel<T>;
+  model: ChildModel;
   key: string;
 
-  constructor(expression: Expression, model: ChildModel<T>, key: string) {
+  constructor(expression: Expression, model: ChildModel, key: string) {
     this.expression = expression;
     this.model = model;
     this.key = key;
@@ -380,7 +379,7 @@ export class ComponentAttributeBinding extends Binding {
   }
 }
 
-function setModelAttributes<T = object>(context: Context, model: ChildModel<T>) {
+function setModelAttributes(context: Context, model: ChildModel) {
   const attributes = context.parent.attributes;
   if (!attributes) return;
   // Set attribute values on component model
@@ -390,7 +389,7 @@ function setModelAttributes<T = object>(context: Context, model: ChildModel<T>) 
   }
 }
 
-function setModelAttribute<T = object>(context: Context, model: ChildModel<T>, key: string, value: unknown) {
+function setModelAttribute(context: Context, model: ChildModel, key: string, value: unknown) {
   // If an attribute is an Expression, set its current value in the model
   // and keep it up to date. When it is a resolvable path, use a Racer ref,
   // which makes it a two-way binding. Otherwise, set to the current value

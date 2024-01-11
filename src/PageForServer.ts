@@ -5,12 +5,12 @@ import { type AppForServer } from './AppForServer';
 import { PageBase } from './Page';
 import { type PageParams } from './routes';
 
-export class PageForServer<T = object> extends PageBase<T> {
+export class PageForServer extends PageBase {
   req: Request;
   res: Response;
   page: PageForServer;
 
-  constructor(app: AppForServer, model: Model<T>, req: Request, res: Response) {
+  constructor(app: AppForServer, model: Model, req: Request, res: Response) {
     super(app, model);
     this.req = req;
     this.res = res;

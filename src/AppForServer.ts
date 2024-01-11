@@ -6,7 +6,7 @@
  *
  */
 
-import racer = require('racer');
+import * as racer from 'racer';
 
 const util = racer.util;
 import { AppBase } from './App';
@@ -59,7 +59,7 @@ function watchOnce(filenames, callback) {
   });
 }
 
-export class AppForServer<T = object> extends AppBase<T> {
+export class AppForServer extends AppBase {
   agents: Record<string, Agent>;
   compilers: Record<string, CompilerFunciton>;
   scriptBaseUrl: string;

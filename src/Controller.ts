@@ -6,14 +6,14 @@ import { type AppBase } from './App';
 import { Dom }  from './Dom';
 import { PageBase } from './Page';
 
-export class Controller<T = object> extends EventEmitter {
+export class Controller extends EventEmitter {
   dom: Dom;
   app: AppBase;
   page: PageBase;
-  model: Model<T>;
+  model: Model;
   markerNode: Node;
 
-  constructor(app: AppBase, page: PageBase, model: Model<T>) {
+  constructor(app: AppBase, page: PageBase, model: Model) {
     super();
     this.dom = new Dom(this);
     this.app = app;

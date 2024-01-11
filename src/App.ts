@@ -9,7 +9,7 @@ import { EventEmitter } from 'events';
 import { basename } from 'path';
 
 import { type Model } from 'racer';
-import * as util from 'racer/lib/util';
+import { util } from 'racer';
 
 import components = require('./components');
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
@@ -37,11 +37,11 @@ interface AppOptions {
   scriptHash?: string,
 }
 
-type OnRouteCallback<T = object> = (arg0: Page, arg1: Page, model: Model<T>, params: PageParams, done?: () => void) => void;
+type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: PageParams, done?: () => void) => void;
 
 type Routes = [string, string, any][];
 
-export abstract class AppBase<T = object> extends EventEmitter {
+export abstract class AppBase extends EventEmitter {
   derby: Derby;
   name: string;
   filename: string;
@@ -52,7 +52,7 @@ export abstract class AppBase<T = object> extends EventEmitter {
   proto: any;
   views: Views;
   tracksRoutes: Routes;
-  model: Model<T>;
+  model: Model;
   page: PageBase;
   protected _pendingComponentMap: Record<string, ComponentConstructor>;
   protected _waitForAttach: boolean;

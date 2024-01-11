@@ -8,7 +8,7 @@
     "outDir": "dist",
     "target": "ES5",
     "sourceMap": false,
-    "declaration": false,
+    "declaration": true,
     "declarationMap": false,
   },
   "include": [
