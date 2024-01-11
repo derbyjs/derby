@@ -65,7 +65,7 @@ export abstract class Component extends Controller {
   }
   static DataConstructor?: DataConstructor;
 
-  constructor(context: Context, data: ModelData) {
+  constructor(context: Context, data: ComponentModelData) {
     const parent = context.controller;
     const id = context.id();
     const scope = ['$components', id];
@@ -446,9 +446,11 @@ function emitInitHooks(context, component) {
   }
 }
 
-class ComponentModelData {
-  id = null;
+export class ComponentModelData {
+  id: string = null;
   $controller = null;
+  $element: any;
+  $event: any; 
 }
 
 export class ComponentFactory{

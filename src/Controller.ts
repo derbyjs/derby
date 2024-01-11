@@ -3,6 +3,7 @@ import { EventEmitter } from 'events';
 import { type Model } from 'racer';
 
 import { type AppBase } from './App';
+import { type ComponentModelData } from './components';
 import { Dom }  from './Dom';
 import { PageBase } from './Page';
 
@@ -19,7 +20,7 @@ export class Controller extends EventEmitter {
     this.app = app;
     this.model = model;
     this.page = page;
-    model.data.$controller = this;
+    (model.data as ComponentModelData).$controller = this;
   }
 
   emitCancellable(...args: unknown[]) {
