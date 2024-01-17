@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git://github.com/derbyjs/derby.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
