@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { type Model } from 'racer';
+import { type Model } from '@derbyjs/racer';
 
 import { type AppBase } from './App';
 import { type ComponentModelData } from './components';

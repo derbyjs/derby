@@ -1,14 +1,14 @@
-import 'racer';
+import '@derbyjs/racer';
 
-declare module 'racer' {
+declare module '@derbyjs/racer' {
   interface util {
     isProduction: boolean;
   }
   interface Model {
-    hasErrored: boolean;
+    hasErrored?: boolean;
   }
 }
 
-declare module 'racer/lib/util' {
+declare module '@derbyjs/racer/lib/util' {
   export let isProduction: boolean;
 }

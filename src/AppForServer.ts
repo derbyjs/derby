@@ -6,7 +6,7 @@
  *
  */
 
-import * as racer from 'racer';
+import * as racer from '@derbyjs/racer';
 
 const util = racer.util;
 import { AppBase } from './App';

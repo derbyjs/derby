@@ -1,4 +1,4 @@
-import { type Model, util } from 'racer';
+import { type Model, util } from '@derbyjs/racer';
 
 import { type AppBase, type App } from './App';
 import components = require('./components');

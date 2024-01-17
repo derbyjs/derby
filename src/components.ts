@@ -7,7 +7,7 @@
  *
  */
 
-import { type ChildModel, type ModelData, util } from 'racer';
+import { type ChildModel, type ModelData, util } from '@derbyjs/racer';
 
 import { Controller } from './Controller';
 import { PageBase } from './Page';

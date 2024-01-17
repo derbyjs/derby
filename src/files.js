@@ -4,9 +4,10 @@
  *
  */
 
+import * as racer from '@derbyjs/racer';
+
 var fs = require('fs');
 var path = require('path');
-var util = require('racer/lib/util');
 var resolve = require('resolve');
 var parsing = require('./parsing');
 
@@ -55,7 +56,7 @@ function loadViewsSync(app, sourceFilename, namespace) {
 
 function loadStylesSync(app, sourceFilename, options) {
   if (options == null) {
-    options = { compress: util.isProduction };
+    options = { compress: racer.util.isProduction };
   }
   var resolved = resolve.sync(sourceFilename, {
     extensions: app.styleExtensions,
