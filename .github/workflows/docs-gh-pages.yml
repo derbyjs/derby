@@ -1,10 +1,12 @@
 # Based on https://github.com/actions/starter-workflows/blob/main/pages/jekyll.yml
-name: Deploy Jekyll site to Pages
+name: Build Jekyll site, Deploy to Pages when on default branch
 
 on:
-  # Runs on pushes targeting the default branch
+  # Run workflow on any branch push.
+  # Conditionals are used to only trigger deploy on the default branch.
   push:
-    branches: ["master"]
+    # Uncomment to only run on specific branch pushes.
+    # branches: ["master"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -15,10 +17,10 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Allow only one concurrent deployment per branch, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow the deployments to complete.
 concurrency:
-  group: "pages"
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: false
 
 jobs:
@@ -41,17 +43,20 @@ jobs:
         # Outputs to the './_site' directory by default
         # If changing the name of the 'docs' directory, also change the path input
         # in upload-pages-artifact below.
-        run: cd docs && bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        run: cd docs && bundle install && bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         env:
           JEKYLL_ENV: production
       - name: Upload artifact
-        # Automatically uploads an artifact from the './_site' directory by default
+        if: github.ref == 'refs/heads/master' # Only upload when on default branch
         uses: actions/upload-pages-artifact@v3
         with:
+          # If changing the name of the 'docs' directory, also change the `cd docs` above.
+          # Default path is './_site'.
           path: "./docs/_site"
 
   # Deployment job
   deploy:
+    if: github.ref == 'refs/heads/master' # Only deploy when on default branch
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
