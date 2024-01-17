@@ -1,6 +1,9 @@
 # Based on https://github.com/actions/starter-workflows/blob/main/pages/jekyll.yml
 name: Build Jekyll site, Deploy to Pages when on default branch
 
+env:
+  DOCS_DIR: docs
+
 on:
   # Run workflow on any branch push.
   # Conditionals are used to only trigger deploy on the default branch.
@@ -34,25 +37,23 @@ jobs:
         uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42 # v1.161.0
         with:
           ruby-version: '3.2' # Not needed with a .ruby-version file
-          # bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-          # cache-version: 0 # Increment this number if you need to re-download cached gems
+          working-directory: ${{ env.DOCS_DIR }}
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+          # cache-version: 0 # Increment this number if the cache gets corrupted and you need to force-update cached gems
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
-        # If changing the name of the 'docs' directory, also change the path input
-        # in upload-pages-artifact below.
-        run: cd docs && bundle install && bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        run: cd $DOCS_DIR && bundle install && bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         env:
           JEKYLL_ENV: production
       - name: Upload artifact
         if: github.ref == 'refs/heads/master' # Only upload when on default branch
         uses: actions/upload-pages-artifact@v3
         with:
-          # If changing the name of the 'docs' directory, also change the `cd docs` above.
           # Default path is './_site'.
-          path: "./docs/_site"
+          path: "./${{ env.DOCS_DIR }}/_site"
 
   # Deployment job
   deploy:
