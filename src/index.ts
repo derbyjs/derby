@@ -1,4 +1,4 @@
-import { util } from '@derbyjs/racer';
+import { util } from 'racer';
 
 import { Derby } from './Derby';
 

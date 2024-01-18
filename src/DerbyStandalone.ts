@@ -1,5 +1,5 @@
-// import Model = require('@derbyjs/racer/lib/Model/ModelStandalone');
-// import util = require('@derbyjs/racer/lib/util');
+// import Model = require('racer/lib/Model/ModelStandalone');
+// import util = require('racer/lib/util');
 
 // import { App } from './App';
 // import * as components from './components';

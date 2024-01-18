@@ -8,8 +8,8 @@
 import { EventEmitter } from 'events';
 import { basename } from 'path';
 
-import { type Model } from '@derbyjs/racer';
-import { util } from '@derbyjs/racer';
+import { type Model } from 'racer';
+import { util } from 'racer';
 
 import components = require('./components');
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';

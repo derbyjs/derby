@@ -4,7 +4,7 @@
  *
  */
 
-import * as racer from '@derbyjs/racer';
+import * as racer from 'racer';
 
 var fs = require('fs');
 var path = require('path');

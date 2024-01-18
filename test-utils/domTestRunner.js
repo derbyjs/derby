@@ -1,4 +1,4 @@
-var util = require('@derbyjs/racer').util;
+var util = require('racer').util;
 var registerAssertions = require('./assertions');
 var ComponentHarness = require('./ComponentHarness');
 

@@ -4,7 +4,7 @@
  *
  */
 
-import { Racer, util, type Model} from '@derbyjs/racer';
+import { Racer, util, type Model} from 'racer';
 
 import { App, type AppBase } from './App';
 import { Component } from './components';

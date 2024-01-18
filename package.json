@@ -39,7 +39,7 @@
     "test-browser": "node test/server.js"
   },
   "dependencies": {
-    "@derbyjs/racer": "^2.0.0-beta.1",
+    "racer": "^2.0.0-beta.1",
     "chokidar": "^3.5.3",
     "esprima-derby": "^0.1.0",
     "html-util": "^0.2.3",

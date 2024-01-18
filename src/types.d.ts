@@ -1,6 +1,6 @@
-import '@derbyjs/racer';
+import 'racer';
 
-declare module '@derbyjs/racer' {
+declare module 'racer' {
   interface util {
     isProduction: boolean;
   }
@@ -9,6 +9,6 @@ declare module '@derbyjs/racer' {
   }
 }
 
-declare module '@derbyjs/racer/lib/util' {
+declare module 'racer/lib/util' {
   export let isProduction: boolean;
 }

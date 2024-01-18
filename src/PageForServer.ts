@@ -1,4 +1,4 @@
-import { type Model } from '@derbyjs/racer';
+import { type Model } from 'racer';
 import type { Request, Response } from 'express';
 
 import { type AppForServer } from './AppForServer';

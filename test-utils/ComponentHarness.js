@@ -1,8 +1,8 @@
 var EventEmitter = require('events').EventEmitter;
 var qs = require('qs');
 var urlParse = require('url').parse;
-var Model = require('@derbyjs/racer').Model;
-var racerUtil = require('@derbyjs/racer/lib/util');
+var Model = require('racer').Model;
+var racerUtil = require('racer/lib/util');
 var App = require('../dist/App').App;
 var AppForServer = require('../dist/AppForServer').AppForServer;
 
