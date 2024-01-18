@@ -1,5 +1,5 @@
 {
-  "name": "@derbyjs/derby",
+  "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
   "version": "4.0.0-beta.1",
   "homepage": "http://derbyjs.com/",
