@@ -1,7 +1,7 @@
 var EventEmitter = require('events').EventEmitter;
 var qs = require('qs');
 var urlParse = require('url').parse;
-var Model = require('racer').Model;
+var RootModel = require('racer').RootModel;
 var racerUtil = require('racer/lib/util');
 var App = require('../dist/App').App;
 var AppForServer = require('../dist/AppForServer').AppForServer;
@@ -42,7 +42,7 @@ module.exports = ComponentHarness;
 function ComponentHarness() {
   EventEmitter.call(this);
   this.app = new AppForHarness(this);
-  this.model = new Model();
+  this.model = new RootModel();
 
   if (arguments.length > 0) {
     this.setup.apply(this, arguments);
