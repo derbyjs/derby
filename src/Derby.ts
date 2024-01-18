@@ -8,16 +8,19 @@ import { Racer, util, type Model} from 'racer';
 
 import { App, type AppBase } from './App';
 import { Component } from './components';
-import { Page } from './Page';
+import { PageForClient } from './Page';
 
 export abstract class DerbyBase extends Racer {
   Component = Component;
+  // App: typeof AppBase;
+  // Page: typeof PageBase;
+  Model: typeof Model;
   abstract createApp(name: string, filename: string, options): AppBase
 }
 
 export class Derby extends DerbyBase {
   App = App;
-  Page = Page;
+  Page = PageForClient;
   Model: typeof Model;
 
   createApp(name: string, filename: string, options) {

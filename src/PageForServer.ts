@@ -1,5 +1,5 @@
-import { type Model } from 'racer';
 import type { Request, Response } from 'express';
+import { type Model } from 'racer';
 
 import { type AppForServer } from './AppForServer';
 import { PageBase } from './Page';

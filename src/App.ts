@@ -14,7 +14,7 @@ import { util } from 'racer';
 import components = require('./components');
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
 import { type Derby } from './Derby';
-import { Page, type PageBase } from './Page';
+import { PageForClient, type PageBase } from './Page';
 import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
@@ -25,7 +25,7 @@ const { templates } = derbyTemplates;
 global.APPS = global.APPS || {};
 
 export function createAppPage(derby): typeof PageBase {
-  const pageCtor = ((derby && derby.Page) || Page) as typeof PageBase;
+  const pageCtor = ((derby && derby.Page) || PageForClient) as typeof PageBase;
   // Inherit from Page/PageForServer so that we can add controller functions as prototype
   // methods on this app's pages
   class AppPage extends pageCtor { }
@@ -37,7 +37,7 @@ interface AppOptions {
   scriptHash?: string,
 }
 
-type OnRouteCallback = (arg0: Page, arg1: Page, model: Model, params: PageParams, done?: () => void) => void;
+type OnRouteCallback = (arg0: PageForClient, arg1: PageForClient, model: Model, params: PageParams, done?: () => void) => void;
 
 type Routes = [string, string, any][];
 
@@ -193,7 +193,7 @@ export abstract class AppBase extends EventEmitter {
     );
   }
 
-  onRoute(callback: OnRouteCallback, page: Page, next: () => void, done: () => void) {
+  onRoute(callback: OnRouteCallback, page: PageForClient, next: () => void, done: () => void) {
     if (this._waitForAttach) {
       // Cancel any routing before the initial page attachment. Instead, do a
       // render once derby is ready
@@ -219,7 +219,7 @@ export abstract class AppBase extends EventEmitter {
 }
 
 export class App extends AppBase {
-  page: Page;
+  page: PageForClient;
   history: {
     refresh(): void,
     push(): void,
@@ -394,7 +394,7 @@ export class App extends AppBase {
 
   createPage() {
     this._destroyCurrentPage();
-    const ClientPage = this.Page as unknown as typeof Page;
+    const ClientPage = this.Page as unknown as typeof PageForClient;
     const page = new ClientPage(this, this.model);
     this.page = page;
     return page;

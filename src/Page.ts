@@ -108,7 +108,9 @@ export abstract class PageBase extends Controller {
   }
 }
 
-export class Page extends PageBase {
+export interface Page extends PageBase {}
+
+export class PageForClient extends PageBase {
   constructor(app: App, model: Model) {
     super(app, model);
     this._addListeners();
