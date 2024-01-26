@@ -41,6 +41,21 @@ type OnRouteCallback = (arg0: PageForClient, arg1: PageForClient, model: Model, 
 
 type Routes = [string, string, any][];
 
+
+/**
+ * APP EVENTS
+ *
+  'error', Error
+  'pageRendered', Page
+  'destroy'
+  'model', Model
+  'route', Page
+  'routeDone', Page, transition: boolean
+  'ready', Page
+  'load', Page
+  'destroyPage', Page
+ */
+
 export abstract class AppBase extends EventEmitter {
   derby: Derby;
   name: string;

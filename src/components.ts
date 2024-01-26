@@ -27,7 +27,7 @@ type AnyVoidFunction = (...args: any[]) => void;
 export interface ComponentConstructor {
   new(context: Context, data: ModelData): Component;
   DataConstructor?: DataConstructor;
-  singleton?: boolean,
+  singleton?: true | undefined,
   view?: {
     dependencies?: any[],
     file?: string,
