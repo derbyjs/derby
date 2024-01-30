@@ -163,7 +163,7 @@ export abstract class AppBase<T = object> extends EventEmitter {
       this.addViews(viewSource, viewName);
       view = this.views.find(viewName);
 
-    } else if (name) {
+    } else if (viewName) {
       view = this.views.find(viewName);
 
     } else {
