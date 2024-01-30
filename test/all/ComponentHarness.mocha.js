@@ -258,8 +258,6 @@ describe('ComponentHarness', function() {
     });
 
     it('gets overridden without error', function() {
-      function ConflictingClown() {}
-      ConflictingClown.view = {is: 'clown'};
       function Clown() {}
       Clown.view = {
         is: 'clown',
@@ -277,6 +275,8 @@ describe('ComponentHarness', function() {
             '</div>',
         dependencies: [Clown]
       };
+      function ConflictingClown() {}
+      ConflictingClown.view = {is: 'clown', source: '<index:>'};
       var html = new ComponentHarness(
         '<view is="box" />', Box, ConflictingClown
       ).renderHtml().html;

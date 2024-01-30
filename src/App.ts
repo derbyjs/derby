@@ -164,8 +164,12 @@ export abstract class AppBase<T = object> extends EventEmitter {
       view = this.views.find(viewName);
 
     } else if (viewName) {
+      // Look for a previously registered view matching the component name.
       view = this.views.find(viewName);
-
+      // If no match, register a new empty view, for backwards compatibility.
+      if (!view) {
+        view = this.views.register(viewName, '');
+      }
     } else {
       view = this.views.register(viewName, '');
     }
