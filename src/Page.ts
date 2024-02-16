@@ -100,7 +100,7 @@ export abstract class PageBase extends Controller {
     this.model.set('$render.prefix', prefix);
   }
 
-  _setRenderParams(ns) {
+  _setRenderParams(ns?: string) {
     this.model.set('$render.ns', ns);
     this.model.set('$render.params', this.params);
     this.model.set('$render.url', this.params && this.params.url);

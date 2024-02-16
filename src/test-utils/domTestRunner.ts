@@ -1,6 +1,7 @@
 import { util } from 'racer';
-import { assertions as registerAssertions } from "./assertions";
-import { ComponentHarness } from "./ComponentHarness";
+
+import { assertions as registerAssertions } from './assertions';
+import { ComponentHarness } from './ComponentHarness';
 
 export class DomTestRunner{
   window?: any;
@@ -15,7 +16,7 @@ export class DomTestRunner{
 
   installMochaHooks(options) {
     options = options || {};
-    var jsdomOptions = options.jsdomOptions;
+    const jsdomOptions = options.jsdomOptions;
 
     // Set up runner's `window` and `document`.
     if (util.isServer) {
@@ -25,27 +26,28 @@ export class DomTestRunner{
     } else {
       mochaHooksForBrowser(this);
     }
-  };
+  }
 
   createHarness() {
-    var harness = new ComponentHarness();
+    const harness = new ComponentHarness();
     if (arguments.length > 0) {
+      // eslint-disable-next-line prefer-spread, prefer-rest-params
       harness.setup.apply(harness, arguments);
     }
     this.harnesses.push(harness);
     return harness;
-  };
+  }
 }
 
 function mochaHooksForNode(runner, options) {
-  var jsdomOptions = options.jsdomOptions;
+  const jsdomOptions = options.jsdomOptions;
 
   // Use an indirect require so that Browserify doesn't try to bundle JSDOM.
-  var JSDOM = util.serverRequire(module, 'jsdom').JSDOM;
+  const JSDOM = util.serverRequire(module, 'jsdom').JSDOM;
 
-  var nodeGlobal = global;
+  const nodeGlobal = global;
   // Keep a direct reference so that we're absolutely sure we clean up our own JSDOM.
-  var jsdom;
+  let jsdom;
 
   global.beforeEach(function() {
     jsdom = new JSDOM('', jsdomOptions);
@@ -55,7 +57,7 @@ function mochaHooksForNode(runner, options) {
     nodeGlobal.window = runner.window;
     nodeGlobal.document = runner.document;
     // Initialize "input" and "change" listeners on the document.
-    require('../dist/documentListeners').add(runner.document);
+    module.require('../documentListeners').add(runner.document);
   });
 
   global.afterEach(function() {
@@ -71,9 +73,7 @@ function mochaHooksForNode(runner, options) {
     jsdom.window.close();
     runner.window = null;
     runner.document = null;
-    // @ts-expect-error delete on non-optional attr
     delete nodeGlobal.window;
-    // @ts-expect-error delete on non-optional attr
     delete nodeGlobal.document;
   });
 }
@@ -90,11 +90,11 @@ function mochaHooksForBrowser(runner) {
   });
 }
 
-var runner = new DomTestRunner();
+const runner = new DomTestRunner();
 // Set up Chai assertion chain methods: `#html` and `#render`
-registerAssertions(runner, require('chai').Assertion);
+registerAssertions(runner, module.require('chai').Assertion);
 
 export function install(options) {
   runner.installMochaHooks(options);
   return runner;
-};
+}

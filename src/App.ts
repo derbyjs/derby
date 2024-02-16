@@ -237,8 +237,8 @@ export class App extends AppBase {
   page: PageForClient;
   history: {
     refresh(): void,
-    push(): void,
-    replace(): void,
+    push(url: string): void,
+    replace(url: string): void,
   };
 
   constructor(derby, name, filename, options: AppOptions) {

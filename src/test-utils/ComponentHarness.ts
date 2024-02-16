@@ -1,14 +1,17 @@
-import qs from 'qs';
 import { EventEmitter } from 'events';
 import { parse as urlParse } from 'url';
-import { RootModel, util as racerUtil } from 'racer';
-import { App } from '../src/App';
-import { AppForServer } from '../src/AppForServer';
-import { Component, ComponentConstructor } from '../src/components';
-import { Page, PageForClient } from '../src/Page';
-import { instance as derby } from '../src';
+
+import * as qs from 'qs';
+import { RootModel } from 'racer';
+
+import { instance as derby } from '..';
+import { App } from '../App';
+import { AppForServer } from '../AppForServer';
+import { Component, ComponentConstructor } from '../components';
+import { PageForClient } from '../Page';
 
 class PageForHarness extends PageForClient {
+  component?: Component;
   fragment?: any;
   html?: any;
 }
@@ -24,10 +27,10 @@ class AppForHarness extends App {
   }
 
   createPage() {
-    var page = new PageForHarness(this, this._harness.model);
+    const page = new PageForHarness(this, this._harness.model);
     this._pages.push(page);
     return page;
-  };
+  }
 
   // Load views by filename. The client version of this method is a no-op
   loadViews(...args) {
@@ -63,12 +66,13 @@ export class ComponentHarness extends EventEmitter {
     this.model = new RootModel();
   
     if (arguments.length > 0) {
+      // eslint-disable-next-line prefer-spread, prefer-rest-params
       this.setup.apply(this, arguments);
     }
   }
 
-/** @typedef { {view: {is: string, source?: string}} } InlineComponent */
-/**
+  /** @typedef { {view: {is: string, source?: string}} } InlineComponent */
+  /**
  * Sets up the harness with a HTML template, which should contain a `<view is="..."/>` for the
  * component under test, and the components to register for the test.
  *
@@ -83,7 +87,7 @@ export class ComponentHarness extends EventEmitter {
     // Remaining variable arguments are components
     components.forEach(constructor => this.app.component(constructor));
     return this;
-  };
+  }
   
   /**
    * Stubs out view names with empty view or the provided source.
@@ -98,8 +102,9 @@ export class ComponentHarness extends EventEmitter {
    *   );
    */
   stub() {
-    for (var i = 0; i < arguments.length; i++) {
-      var arg = arguments[i];
+    for (let i = 0; i < arguments.length; i++) {
+      // eslint-disable-next-line prefer-rest-params
+      const arg = arguments[i];
       if (typeof arg === 'string') {
         this.app.views.register(arg, '');
       } else if (arg && arg.is) {
@@ -109,7 +114,7 @@ export class ComponentHarness extends EventEmitter {
       }
     }
     return this;
-  };
+  }
 
   /**
    * Stubs out view names as components.
@@ -121,14 +126,15 @@ export class ComponentHarness extends EventEmitter {
    *     .stubComponent('common:file-picker', {is: 'footer', as: 'stubFooter'});
    */
   stubComponent() {
-    for (var i = 0; i < arguments.length; i++) {
-      var arg = arguments[i];
-      var options = (typeof arg === 'string') ? {is: arg} : arg;
-      var Stub = createStubComponent(options);
+    for (let i = 0; i < arguments.length; i++) {
+      // eslint-disable-next-line prefer-rest-params
+      const arg = arguments[i];
+      const options = (typeof arg === 'string') ? {is: arg} : arg;
+      const Stub = createStubComponent(options);
       this.app.component(Stub);
     }
     return this;
-  };
+  }
   
   /**
    * @typedef {Object} RenderOptions
@@ -145,7 +151,7 @@ export class ComponentHarness extends EventEmitter {
     return this._get(function(page) {
       page.html = page.get('$harness');
     }, options);
-  };
+  }
   
   /**
    * Renders the harness into a `DocumentFragment`, as client-side rendering would do.
@@ -158,15 +164,15 @@ export class ComponentHarness extends EventEmitter {
     return this._get(function(page) {
       page.fragment = page.getFragment('$harness');
     }, options);
-  };
+  }
   
   attachTo(parentNode, node) {
     return this._get(function(page) {
-      var view = page.getView('$harness');
-      var targetNode = node || parentNode.firstChild;
+      const view = page.getView('$harness');
+      const targetNode = node || parentNode.firstChild;
       view.attachTo(parentNode, targetNode, page.context);
     });
-  };
+  }
   
   /**
    * @param {(page: PageForHarness) => void} render
@@ -174,9 +180,9 @@ export class ComponentHarness extends EventEmitter {
    */
   _get(renderFn: (page: PageForHarness) => void, options?) {
     options = options || {};
-    var url = options.url || '';
+    const url = options.url || '';
   
-    var page = this.app.createPage();
+    const page = this.app.createPage();
     // Set `page.params`, which is usually created in tracks during `Page#render`:
     // https://github.com/derbyjs/tracks/blob/master/lib/index.js
     function setPageUrl(url) {
@@ -192,7 +198,7 @@ export class ComponentHarness extends EventEmitter {
     // Fake some methods from tracks/lib/History.js.
     // JSDOM doesn't really support updating the window URL, but this should work for Derby code that
     // pulls URL info from the model or page.
-    this.app.history = { push: setPageUrl, replace: setPageUrl };
+    this.app.history = { push: setPageUrl, replace: setPageUrl, refresh: () => {} };
   
     // The `#render` assertion in assertions.js wants to compare the results of HTML and DOM
     // rendering, to make sure they match. However, component `create()` methods can modify the DOM
@@ -202,7 +208,7 @@ export class ComponentHarness extends EventEmitter {
     // get called. This is done by pausing the context, which prevents create() methods from getting
     // called until the pause-count drops to 0.
     page.context.pause();
-    render(page);
+    renderFn(page);
     this.emit('pageRendered', page);
     page.context.unpause();
   
@@ -219,7 +225,7 @@ export class ComponentHarness extends EventEmitter {
     // This may need to be updated if the internal workings of Derby change.
     page.component = page._components._1;
     return page;
-  };
+  }
 
   static createStubComponent(options) {
     return createStubComponent(options);
@@ -248,22 +254,21 @@ function createStubComponent(options) {
   }
 
   function pageArrayInit() {
-    var page = this.page;
-    var component = this;
+    const page = this.page;
     if (page[asArray]) {
       page[asArray].push(this);
     } else {
       page[asArray] = [this];
     }
-    this.on('destroy', function() {
-      var index = page[asArray].indexOf(component);
+    this.on('destroy', () => {
+      const index = page[asArray].indexOf(this);
       if (index === -1) return;
       page[asArray].splice(index, 1);
     });
   }
 
   function pageInit() {
-    var page = this.page;
+    const page = this.page;
     page[as] = this;
     this.on('destroy', function() {
       page[as] = undefined;
