@@ -50,19 +50,19 @@ export abstract class PageBase extends Controller {
     return classNames.join(' ');
   }
 
-  get(viewName: string, ns: string, unescaped?) {
+  get(viewName: string, ns?: string, unescaped?) {
     this._setRenderPrefix(ns);
     const view = this.getView(viewName, ns);
     return view.get(this.context, unescaped);
   }
 
-  getFragment(viewName: string, ns: string) {
+  getFragment(viewName: string, ns?: string) {
     this._setRenderPrefix(ns);
     const view = this.getView(viewName, ns);
     return view.getFragment(this.context);
   }
 
-  getView(viewName: string, ns: string) {
+  getView(viewName: string, ns?: string) {
     return this.app.views.find(viewName, ns);
   }
 

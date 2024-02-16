@@ -1,45 +1,41 @@
-var util = require('racer').util;
-var registerAssertions = require('./assertions');
-var ComponentHarness = require('./ComponentHarness');
+import { util } from 'racer';
+import { assertions as registerAssertions } from "./assertions";
+import { ComponentHarness } from "./ComponentHarness";
 
-var runner = new DomTestRunner();
-// Set up Chai assertion chain methods: `#html` and `#render`
-registerAssertions(runner, require('chai').Assertion);
+export class DomTestRunner{
+  window?: any;
+  document?: any;
+  harnesses: ComponentHarness[];
 
-exports.install = function(options) {
-  runner.installMochaHooks(options);
-  return runner;
-};
+  constructor() {
+    this.window = null;
+    this.document = null;
+    this.harnesses = [];
+  }
 
-exports.DomTestRunner = DomTestRunner;
-function DomTestRunner() {
-  this.window = null;
-  this.document = null;
-  this.harnesses = [];
+  installMochaHooks(options) {
+    options = options || {};
+    var jsdomOptions = options.jsdomOptions;
+
+    // Set up runner's `window` and `document`.
+    if (util.isServer) {
+      mochaHooksForNode(this, {
+        jsdomOptions: jsdomOptions
+      });
+    } else {
+      mochaHooksForBrowser(this);
+    }
+  };
+
+  createHarness() {
+    var harness = new ComponentHarness();
+    if (arguments.length > 0) {
+      harness.setup.apply(harness, arguments);
+    }
+    this.harnesses.push(harness);
+    return harness;
+  };
 }
-
-DomTestRunner.prototype.installMochaHooks = function(options) {
-  options = options || {};
-  var jsdomOptions = options.jsdomOptions;
-
-  // Set up runner's `window` and `document`.
-  if (util.isServer) {
-    mochaHooksForNode(this, {
-      jsdomOptions: jsdomOptions
-    });
-  } else {
-    mochaHooksForBrowser(this);
-  }
-};
-
-DomTestRunner.prototype.createHarness = function() {
-  var harness = new ComponentHarness();
-  if (arguments.length > 0) {
-    harness.setup.apply(harness, arguments);
-  }
-  this.harnesses.push(harness);
-  return harness;
-};
 
 function mochaHooksForNode(runner, options) {
   var jsdomOptions = options.jsdomOptions;
@@ -75,7 +71,9 @@ function mochaHooksForNode(runner, options) {
     jsdom.window.close();
     runner.window = null;
     runner.document = null;
+    // @ts-expect-error delete on non-optional attr
     delete nodeGlobal.window;
+    // @ts-expect-error delete on non-optional attr
     delete nodeGlobal.document;
   });
 }
@@ -91,3 +89,12 @@ function mochaHooksForBrowser(runner) {
     runner.document = null;
   });
 }
+
+var runner = new DomTestRunner();
+// Set up Chai assertion chain methods: `#html` and `#render`
+registerAssertions(runner, require('chai').Assertion);
+
+export function install(options) {
+  runner.installMochaHooks(options);
+  return runner;
+};

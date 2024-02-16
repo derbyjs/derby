@@ -1,4 +1,4 @@
-var ComponentHarness = require('./ComponentHarness');
+import { ComponentHarness } from './ComponentHarness';
 
 /**
  * @param { {window: Window } } [dom] - _optional_ - An object that will have a `window` property
@@ -6,7 +6,7 @@ var ComponentHarness = require('./ComponentHarness');
  * @param {Assertion} [chai.Assertion] - _optional_ - Chai's Assertion class. If provided, the
  *   chainable expect methods `#html(expected)` and `#render(expected)` will be added to Chai.
  */
-module.exports = function(dom, Assertion) {
+export function assertions(dom, Assertion) {
   var getWindow = dom ?
     function() { return dom.window; } :
     function() { return window; };

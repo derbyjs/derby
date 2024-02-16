@@ -103,7 +103,7 @@ export class AppForServer extends AppBase {
     this.agents = null;
   }
 
-  private _initLoad() {
+  _initLoad() {
     this.styleExtensions = STYLE_EXTENSIONS.slice();
     this.viewExtensions = VIEW_EXTENSIONS.slice();
     this.compilers = util.copyObject(COMPILERS);
