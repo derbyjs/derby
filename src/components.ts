@@ -462,7 +462,8 @@ export class ComponentFactory{
 
   init(context: Context) {
     const DataConstructor = this.constructorFn.DataConstructor || ComponentModelData;
-    const data = new DataConstructor();
+    // @TODO: verify types form DataConstructor, is there more appropriate type?
+    const data = new DataConstructor() as ModelData;
     // eslint-disable-next-line new-cap
     const component = new this.constructorFn(context, data);
     // Detect whether the component constructor already called super by checking

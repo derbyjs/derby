@@ -286,7 +286,8 @@ export class App extends AppBase {
     this.model.unbundle(data);
 
     const page = this.createPage();
-    page.params = this.model.get('$render.params');
+    // @ts-expect-error TODO resolve type error
+    page.params = this.model.get<Readonly<PageParams>>('$render.params');
     this.emit('ready', page);
 
     this._waitForAttach = false;
@@ -444,7 +445,7 @@ export class App extends AppBase {
     if (action === 'refreshViews') {
       const fn = new Function('return ' + message.views)(); // jshint ignore:line
       fn(derbyTemplates, this.views);
-      const ns = this.model.get('$render.ns');
+      const ns = this.model.get<string>('$render.ns');
       this.page.render(ns);
 
     } else if (action === 'refreshStyles') {

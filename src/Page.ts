@@ -126,7 +126,7 @@ export class PageForClient extends PageBase {
 
   attach() {
     this.context.pause();
-    const ns = this.model.get('$render.ns');
+    const ns = this.model.get<string>('$render.ns');
     const titleView = this.getView('TitleElement', ns);
     const bodyView = this.getView('BodyElement', ns);
     const titleElement = document.getElementsByTagName('title')[0];
