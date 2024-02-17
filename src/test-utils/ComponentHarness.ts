@@ -8,7 +8,7 @@ import { instance as derby } from '..';
 import { App } from '../App';
 import { AppForServer } from '../AppForServer';
 import { Component, ComponentConstructor } from '../components';
-import { PageForClient } from '../Page';
+import { PageBase, PageForClient } from '../Page';
 
 class PageForHarness extends PageForClient {
   component?: Component;
@@ -19,6 +19,8 @@ class PageForHarness extends PageForClient {
 class AppForHarness extends App {
   _harness: any;
   _pages: PageForHarness[];
+  page: PageForHarness;
+  Page = PageForHarness;
 
   constructor(harness) {
     super(derby, 'ComponentHarness_App', '', {});
@@ -26,7 +28,7 @@ class AppForHarness extends App {
     this._pages = [];
   }
 
-  createPage() {
+  createPage(): PageForHarness {
     const page = new PageForHarness(this, this._harness.model);
     this._pages.push(page);
     return page;
@@ -39,9 +41,9 @@ class AppForHarness extends App {
 
   // `_init()` does setup for loading views from files on the server and loading
   // serialized views and data on the client
-  _init = function() {
+  _init() {
     this._initLoad();
-  };
+  }
 
   // Register default compilers so that AppForHarness can load views & styles from
   // the filesystem
@@ -178,7 +180,7 @@ export class ComponentHarness extends EventEmitter {
    * @param {(page: PageForHarness) => void} render
    * @param {RenderOptions} [options]
    */
-  _get(renderFn: (page: PageForHarness) => void, options?) {
+  _get(renderFn: (page: PageForHarness) => void, options?): PageForHarness {
     options = options || {};
     const url = options.url || '';
   
@@ -189,6 +191,7 @@ export class ComponentHarness extends EventEmitter {
       page.params = {
         url: url,
         query: qs.parse(urlParse(url).query),
+        // @ts-expect-error 'body' does not exist in type 'Readonly<PageParams>'
         body: {},
       };
       // Set "$render.params", "$render.query", "$render.url" based on `page.params`.

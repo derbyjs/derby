@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var ComponentHarness = require('../../test-utils').ComponentHarness;
+var ComponentHarness = require('../../dist/test-utils').ComponentHarness;
 
 describe('ComponentHarness', function() {
   describe('file loading', function() {

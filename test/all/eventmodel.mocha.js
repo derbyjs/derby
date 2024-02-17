@@ -56,7 +56,6 @@ describe('eventmodel', function() {
       expect(binding.eventModels).to.eq(undefined);
       em.addBinding(['x'], binding);
       expect(binding.eventModels).to.be.instanceOf(Object);
-      // console.log(em.at(['x']));
       expect(em.at(['x'])).has.ownProperty('bindings').instanceOf(Object);
     });
   });

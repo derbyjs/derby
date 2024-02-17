@@ -107,15 +107,14 @@ describe('Parse and render dynamic text and blocks', function() {
     it('no pound sign at start of alias', function() {
       var source = '{{with _page.greeting as greeting}}{{/with}}';
       expect(function() {
-        var template = parsing.createTemplate(source);
-        // console.log(template.content[0]);
+        parsing.createTemplate(source);
       }).to.throw(/Alias must be an identifier starting with "#"/);
     });
 
     it('trailing parenthesis in alias', function() {
       var source = '{{with _page.greeting as #greeting)}}{{/with}}';
       expect(function() {
-        var template = parsing.createTemplate(source);
+        parsing.createTemplate(source);
       }).to.throw(/Unexpected token \)/);
     });
 
