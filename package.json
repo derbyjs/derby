@@ -34,7 +34,6 @@
     "lint:ts": "npx eslint src/**/*.ts",
     "lint:fix": "npm run lint:ts -- --fix",
     "prepare": "npm run build",
-    "pretest": "npm run build",
     "test": "npx mocha -r ts-node/register 'test/all/**/*.mocha.*' 'test/dom/**/*.mocha.*' 'test/server/**/*.mocha.*'",
     "test-browser": "node test/server.js"
   },

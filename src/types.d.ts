@@ -8,7 +8,3 @@ declare module 'racer' {
     hasErrored?: boolean;
   }
 }
-
-declare module 'racer/lib/util' {
-  export let isProduction: boolean;
-}

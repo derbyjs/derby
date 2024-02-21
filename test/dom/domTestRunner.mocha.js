@@ -1,4 +1,4 @@
-var domTestRunner = require('../../dist/test-utils/domTestRunner');
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('domTestRunner', function() {
   describe('with JSDOM option pretendToBeVisual', function() {

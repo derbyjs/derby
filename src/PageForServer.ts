@@ -5,6 +5,12 @@ import { type AppForServer } from './AppForServer';
 import { PageBase } from './Page';
 import { type PageParams } from './routes';
 
+declare module 'racer' {
+  interface Model {
+    hasErrored?: boolean;
+  }
+}
+
 export class PageForServer extends PageBase {
   req: Request;
   res: Response;

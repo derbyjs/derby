@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var domTestRunner = require('../../dist/test-utils/domTestRunner');
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('bindings', function() {
   var runner = domTestRunner.install();

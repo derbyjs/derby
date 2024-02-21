@@ -19,6 +19,10 @@ import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
 
+declare module 'racer/lib/util' {
+  export let isProduction: boolean;
+}
+
 const { templates } = derbyTemplates;
 
 // TODO: Change to Map once we officially drop support for ES5.

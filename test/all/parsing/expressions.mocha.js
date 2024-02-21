@@ -1,8 +1,8 @@
 var expect = require('chai').expect;
-var derbyTemplates = require('../../../dist/templates');
+var derbyTemplates = require('../../../src/templates');
 var contexts = derbyTemplates.contexts;
 var expressions = derbyTemplates.expressions;
-var create = require('../../../dist/parsing/createPathExpression').createPathExpression;
+var create = require('../../../src/parsing/createPathExpression').createPathExpression;
 
 var controller = {
   plus: function(a, b) {
