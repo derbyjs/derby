@@ -8,7 +8,7 @@ import { instance as derby } from '..';
 import { App } from '../App';
 import { AppForServer } from '../AppForServer';
 import { Component, ComponentConstructor } from '../components';
-import { PageBase, PageForClient } from '../Page';
+import { PageForClient } from '../Page';
 
 class PageForHarness extends PageForClient {
   component?: Component;
@@ -26,10 +26,12 @@ class AppForHarness extends App {
     super(derby, 'ComponentHarness_App', '', {});
     this._harness = harness;
     this._pages = [];
+    // required for calling funcitons from views
+    this.proto = PageForHarness.prototype;
   }
 
   createPage(): PageForHarness {
-    const page = new PageForHarness(this, this._harness.model);
+    const page = new this.Page(this, this._harness.model);
     this._pages.push(page);
     return page;
   }
