@@ -11,7 +11,7 @@ import { basename } from 'path';
 import { type Model } from 'racer';
 import { util } from 'racer';
 
-import components = require('./components');
+import * as components from './components';
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
 import { type Derby } from './Derby';
 import { PageForClient, type PageBase } from './Page';
@@ -86,13 +86,11 @@ export abstract class AppBase extends EventEmitter {
     this.name = name;
     this.filename = filename;
     this.scriptHash = options.scriptHash ?? '';
-    this.appMetadata = options.appMetadata;
+    this.appMetadata = options.appMetadata || {};
     this.Page = createAppPage(derby);
     this.proto = this.Page.prototype;
     this.views = new templates.Views();
     this.tracksRoutes = routes(this);
-    this.model = null;
-    this.page = null;
     this._pendingComponentMap = {};
   }
 
@@ -102,7 +100,7 @@ export abstract class AppBase extends EventEmitter {
 
   component(constructor: ComponentConstructor | SingletonComponentConstructor): this;
   component(name: string, constructor: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this;
-  component(name: string | ComponentConstructor | SingletonComponentConstructor, constructor?: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this {
+  component(name: string | ComponentConstructor | SingletonComponentConstructor | null, constructor?: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this {
     if (typeof name === 'function') {
       constructor = name;
       name = null;

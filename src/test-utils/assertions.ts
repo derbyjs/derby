@@ -7,36 +7,36 @@ import { ComponentHarness } from './ComponentHarness';
  *   chainable expect methods `#html(expected)` and `#render(expected)` will be added to Chai.
  */
 export function assertions(dom, Assertion) {
-  var getWindow = dom ?
+  const getWindow = dom ?
     function() { return dom.window; } :
     function() { return window; };
 
   function removeComments(node) {
-    var domDocument = getWindow().document;
-    var clone = domDocument.importNode(node, true);
+    const domDocument = getWindow().document;
+    const clone = domDocument.importNode(node, true);
     // last two arguments for createTreeWalker are required in IE
     // NodeFilter.SHOW_COMMENT === 128
-    var treeWalker = domDocument.createTreeWalker(clone, 128, null, false);
-    var toRemove = [];
-    for (var item = treeWalker.nextNode(); item != null; item = treeWalker.nextNode()) {
+    const treeWalker = domDocument.createTreeWalker(clone, 128, null, false);
+    const toRemove = [];
+    for (let item = treeWalker.nextNode(); item != null; item = treeWalker.nextNode()) {
       toRemove.push(item);
     }
-    for (var i = toRemove.length; i--;) {
+    for (let i = toRemove.length; i--;) {
       toRemove[i].parentNode.removeChild(toRemove[i]);
     }
     return clone;
   }
 
   function getHtml(node, parentTag) {
-    var domDocument = getWindow().document;
+    const domDocument = getWindow().document;
     // We use the <ins> element, because it has a transparent content model:
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_categories#Transparent_content_model
     //
     // In practice, DOM validity isn't enforced by browsers when using
     // appendChild and innerHTML, so specifying a valid parentTag for the node
     // should not be necessary
-    var el = domDocument.createElement(parentTag || 'ins');
-    var clone = domDocument.importNode(node, true);
+    const el = domDocument.createElement(parentTag || 'ins');
+    const clone = domDocument.importNode(node, true);
     el.appendChild(clone);
     return el.innerHTML;
   }
@@ -48,8 +48,8 @@ export function assertions(dom, Assertion) {
   // model's state between the rendering passes.
   function resetPageModel(page) {
     page._removeModelListeners();
-    for (var componentId in page._components) {
-      var component = page._components[componentId];
+    for (const componentId in page._components) {
+      const component = page._components[componentId];
       component.destroy();
     }
     page.model.silent().destroy('$components');
@@ -57,16 +57,16 @@ export function assertions(dom, Assertion) {
 
   if (Assertion) {
     Assertion.addMethod('html', function(expected, options) {
-      var obj = this._obj;
-      var includeComments = options && options.includeComments;
-      var parentTag = options && options.parentTag;
-      var domNode = getWindow().Node;
+      const obj = this._obj;
+      const includeComments = options && options.includeComments;
+      const parentTag = options && options.parentTag;
+      const domNode = getWindow().Node;
 
       new Assertion(obj).instanceOf(domNode);
       new Assertion(expected).is.a('string');
 
-      var fragment = (includeComments) ? obj : removeComments(obj);
-      var html = getHtml(fragment, parentTag);
+      const fragment = (includeComments) ? obj : removeComments(obj);
+      const html = getHtml(fragment, parentTag);
 
       this.assert(
         html === expected,
@@ -78,20 +78,20 @@ export function assertions(dom, Assertion) {
     });
 
     Assertion.addMethod('render', function(expected, options) {
-      var harness = this._obj;
+      const harness = this._obj;
       if (expected && typeof expected === 'object') {
         options = expected;
         expected = null;
       }
-      var domDocument = getWindow().document;
-      var parentTag = (options && options.parentTag) || 'ins';
-      var firstFailureMessage, actual;
+      const domDocument = getWindow().document;
+      const parentTag = (options && options.parentTag) || 'ins';
+      let firstFailureMessage, actual;
 
       new Assertion(harness).instanceOf(ComponentHarness);
 
       // Render to a HTML string.
-      var renderResult = harness.renderHtml(options);
-      var htmlString = renderResult.html;
+      let renderResult = harness.renderHtml(options);
+      const htmlString = renderResult.html;
 
       // Normalize `htmlString` into the same form as the DOM would give for `element.innerHTML`.
       //
@@ -99,9 +99,9 @@ export function assertions(dom, Assertion) {
       // HTML entities like '&nbsp;' to their corresponding Unicode characters. However, for this
       // assertion, if the `expected` string is provided, it will not have that same transformation.
       // To make the assertion work properly, normalize the actual `htmlString`.
-      var html = normalizeHtml(htmlString);
+      const html = normalizeHtml(htmlString);
 
-      var htmlRenderingOk;
+      let htmlRenderingOk;
       if (expected == null) {
         // If `expected` is not provided, then we skip this check.
         // Set `expected` as the normalized HTML string for subsequent checks.
@@ -125,7 +125,7 @@ export function assertions(dom, Assertion) {
       // Check DOM rendering is also equivalent.
       // This uses the harness "pageRendered" event to grab the rendered DOM *before* any component
       // `create()` methods are called, as `create()` methods can do DOM mutations.
-      var domRenderingOk;
+      let domRenderingOk;
       harness.once('pageRendered', function(page) {
         try {
           new Assertion(page.fragment).html(expected, options);
@@ -142,10 +142,10 @@ export function assertions(dom, Assertion) {
       resetPageModel(renderResult.page);
 
       // Try attaching. Attachment will throw an error if HTML doesn't match
-      var el = domDocument.createElement(parentTag);
+      const el = domDocument.createElement(parentTag);
       el.innerHTML = htmlString;
-      var innerHTML = el.innerHTML;
-      var attachError;
+      const innerHTML = el.innerHTML;
+      let attachError;
       try {
         harness.attachTo(el);
       } catch (err) {
@@ -156,7 +156,7 @@ export function assertions(dom, Assertion) {
           actual = innerHTML;
         }
       }
-      var attachOk = !attachError;
+      const attachOk = !attachError;
 
       // TODO: Would be nice to add a diff of the expected and actual HTML
       this.assert(
@@ -180,8 +180,8 @@ export function assertions(dom, Assertion) {
      * - Certain single characters, e.g. ">" or a non-breaking space, are converted
      *   into their escaped HTML entity forms, e.g. "&gt;" or "&nbsp;".
      */
-    var normalizeHtml = function(html) {
-      var normalizerElement = window.document.createElement('ins');
+    const normalizeHtml = function(html) {
+      const normalizerElement = window.document.createElement('ins');
       normalizerElement.innerHTML = html;
       return normalizerElement.innerHTML;
     };
@@ -191,4 +191,4 @@ export function assertions(dom, Assertion) {
     removeComments: removeComments,
     getHtml: getHtml
   };
-};
+}
