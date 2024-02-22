@@ -1,5 +1,17 @@
 import { ComponentHarness } from './ComponentHarness';
 
+import 'chai';
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-unused-vars
+  export namespace Chai {
+    interface Assertion {
+      html(expectedText: string | undefined, options): void;
+      render(expectedText: string | undefined, options): void;
+    }
+  }
+}
+
 /**
  * @param { {window: Window } } [dom] - _optional_ - An object that will have a `window` property
  *   set during test execution. If not provided, the global `window` will be used.

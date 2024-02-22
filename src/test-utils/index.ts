@@ -1,3 +1,3 @@
 export { assertions } from './assertions';
-export { ComponentHarness } from './ComponentHarness';
-export { install as domTestRunner } from './domTestRunner';
+export { ComponentHarness, type RenderOptions, PageForHarness } from './ComponentHarness';
+export { install as domTestRunner, DomTestRunner } from './domTestRunner';

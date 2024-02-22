@@ -7,16 +7,20 @@ import { RootModel } from 'racer';
 import { instance as derby } from '..';
 import { App } from '../App';
 import { AppForServer } from '../AppForServer';
-import { Component, ComponentConstructor } from '../components';
+import { Component, ComponentConstructor, extendComponent, createFactory } from '../components';
 import { PageForClient } from '../Page';
 
-class PageForHarness extends PageForClient {
+export interface RenderOptions {
+  url?: string;
+}
+
+export class PageForHarness extends PageForClient {
   component?: Component;
   fragment?: any;
   html?: any;
 }
 
-class AppForHarness extends App {
+export class AppForHarness extends App {
   _harness: any;
   _pages: PageForHarness[];
   page: PageForHarness;
@@ -61,8 +65,9 @@ class AppForHarness extends App {
  */
 export class ComponentHarness extends EventEmitter {
   app: AppForHarness;
-  page: PageForHarness;
+  document: Document;
   model: RootModel;
+  page: PageForHarness;
   
   constructor() {
     super();
@@ -105,8 +110,8 @@ export class ComponentHarness extends EventEmitter {
    *     {is: 'dialog:buttons', source: '<button>OK</button>'}
    *   );
    */
-  stub() {
-    for (let i = 0; i < arguments.length; i++) {
+  stub(...args: Array<string | { is: string }>) {
+    for (let i = 0; i < args.length; i++) {
       // eslint-disable-next-line prefer-rest-params
       const arg = arguments[i];
       if (typeof arg === 'string') {
@@ -129,8 +134,8 @@ export class ComponentHarness extends EventEmitter {
    *   var harness = new ComponentHarness('<view is="dialog"/>', Dialog)
    *     .stubComponent('common:file-picker', {is: 'footer', as: 'stubFooter'});
    */
-  stubComponent() {
-    for (let i = 0; i < arguments.length; i++) {
+  stubComponent(...args: Array<string | { is: string }>) {
+    for (let i = 0; i < args.length; i++) {
       // eslint-disable-next-line prefer-rest-params
       const arg = arguments[i];
       const options = (typeof arg === 'string') ? {is: arg} : arg;
@@ -230,6 +235,30 @@ export class ComponentHarness extends EventEmitter {
     // This may need to be updated if the internal workings of Derby change.
     page.component = page._components._1;
     return page;
+  }
+
+  /**
+   * Instantiates a component and calls its `init()` if present, without rendering it.
+   *
+   * This can be used in place of `new MyComponent()` in old tests that were written prior to the
+   * component test framework being developed.
+   *
+   * @param Ctor - class (constructor) for the component to instantiate
+   * @param rootModel - a root model
+   * @returns a newly instantiated component, with its `init()` already called if present
+   */
+  createNonRenderedComponent(Ctor: ComponentConstructor, rootModel: RootModel) {
+    // If the component doesn't already extend Component, then do so.
+    // This normally happens when calling `app.component(Ctor)` to register a component:
+    // https://github.com/derbyjs/derby/blob/2ababe7c805c59e51ddef0153cb8c5f6b66dd4ce/lib/App.js#L278-L279
+    extendComponent(Ctor);
+
+    // Mimic Derby's component creation process:
+    // createFactory: https://github.com/derbyjs/derby/blob/57d28637e8489244cc8438041e6c61d9468cd344/lib/components.js#L346
+    // Factory#init: https://github.com/derbyjs/derby/blob/57d28637e8489244cc8438041e6c61d9468cd344/lib/components.js#L370-L392
+    // new Page: https://github.com/derbyjs/derby/blob/57d28637e8489244cc8438041e6c61d9468cd344/lib/Page.js#L15
+    // Context#controller: https://github.com/derbyjs/derby-templates/blob/master/lib/contexts.js#L19-L25
+    return createFactory(Ctor).init(new PageForClient(this.app, rootModel).context).controller;
   }
 
   static createStubComponent(options) {

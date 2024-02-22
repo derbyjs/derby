@@ -58,10 +58,11 @@ export abstract class Component extends Controller {
   _scope: string[];
   // new style view prop
   view?: {
-    dependencies: ComponentConstructor[],
+    dependencies?: ComponentConstructor[],
     file: string,
     is: string,
     source: string,
+    viewPartialDependencies?: ComponentConstructor[],
   }
   static DataConstructor?: DataConstructor;
 
@@ -453,7 +454,7 @@ export class ComponentModelData {
   $event: any; 
 }
 
-export class ComponentFactory{
+export class ComponentFactory {
   constructorFn: ComponentConstructor;
 
   constructor(constructorFn: ComponentConstructor) {
