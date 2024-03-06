@@ -1,23 +1,20 @@
 /*
- * files.js
+ * files.ts
  * load templates and styles from disk
  *
  */
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 import * as racer from 'racer';
+import * as resolve from 'resolve';
 
-var fs = require('fs');
-var path = require('path');
-var resolve = require('resolve');
-var parsing = require('./parsing');
+import * as parsing from './parsing';
 
-exports.loadViewsSync = loadViewsSync;
-exports.loadStylesSync = loadStylesSync;
-
-function loadViewsSync(app, sourceFilename, namespace) {
-  var views = [];
-  var files = [];
-  var filename = resolve.sync(sourceFilename, {
+export function loadViewsSync(app, sourceFilename, namespace) {
+  let views = [];
+  let files = [];
+  const filename = resolve.sync(sourceFilename, {
     extensions: app.viewExtensions,
     packageFilter: deleteMain}
   );
@@ -25,52 +22,52 @@ function loadViewsSync(app, sourceFilename, namespace) {
     throw new Error('View template file not found: ' + sourceFilename);
   }
 
-  var file = fs.readFileSync(filename, 'utf8');
+  const file = fs.readFileSync(filename, 'utf8');
 
-  var extension = path.extname(filename);
-  var compiler = app.compilers[extension];
+  const extension = path.extname(filename);
+  const compiler = app.compilers[extension];
   if (!compiler) {
     throw new Error('Unable to find compiler for: ' + extension);
   }
 
   function onImport(attrs) {
-    var dir = path.dirname(filename);
-    var importFilename = resolve.sync(attrs.src, {
+    const dir = path.dirname(filename);
+    const importFilename = resolve.sync(attrs.src, {
       basedir: dir,
       extensions: app.viewExtensions,
       packageFilter: deleteMain
     });
-    var importNamespace = parsing.getImportNamespace(namespace, attrs, importFilename);
-    var imported = loadViewsSync(app, importFilename, importNamespace);
+    const importNamespace = parsing.getImportNamespace(namespace, attrs, importFilename);
+    const imported = loadViewsSync(app, importFilename, importNamespace);
     views = views.concat(imported.views);
     files = files.concat(imported.files);
   }
 
-  var htmlFile = compiler(file, filename);
-  var parsedViews = parsing.parseViews(htmlFile, namespace, filename, onImport);
+  const htmlFile = compiler(file, filename);
+  const parsedViews = parsing.parseViews(htmlFile, namespace, filename, onImport);
   return {
     views: views.concat(parsedViews),
     files: files.concat(filename)
   };
 }
 
-function loadStylesSync(app, sourceFilename, options) {
+export function loadStylesSync(app, sourceFilename, options) {
   if (options == null) {
     options = { compress: racer.util.isProduction };
   }
-  var resolved = resolve.sync(sourceFilename, {
+  const resolved = resolve.sync(sourceFilename, {
     extensions: app.styleExtensions,
     packageFilter: deleteMain}
   );
   if (!resolved) {
     throw new Error('Style file not found: ' + sourceFilename);
   }
-  var extension = path.extname(resolved);
-  var compiler = app.compilers[extension];
+  const extension = path.extname(resolved);
+  const compiler = app.compilers[extension];
   if (!compiler) {
     throw new Error('Unable to find compiler for: ' + extension);
   }
-  var file = fs.readFileSync(resolved, 'utf8');
+  const file = fs.readFileSync(resolved, 'utf8');
   return compiler(file, resolved, options);
 }
 
