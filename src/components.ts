@@ -28,13 +28,7 @@ export interface ComponentConstructor {
   new(context: Context, data: ModelData): Component;
   DataConstructor?: DataConstructor;
   singleton?: true | undefined,
-  view?: {
-    dependencies?: any[],
-    file?: string,
-    is: string,
-    source?: string,
-    viewPartialDependencies?: string[],
-  }
+  view?: ComponentViewDefinition,
 }
 
 export interface SingletonComponentConstructor {
@@ -48,6 +42,14 @@ export interface SingletonComponentConstructor {
   }
 }
 
+export interface ComponentViewDefinition {
+  dependencies?: ComponentConstructor[],
+  file?: string,
+  is?: string,
+  source?: string,
+  viewPartialDependencies?: Array<string | { is: string }>,
+}
+
 export abstract class Component extends Controller {
   context: Context;
   id: string;
@@ -57,13 +59,7 @@ export abstract class Component extends Controller {
   singleton?: true;
   _scope: string[];
   // new style view prop
-  view?: {
-    dependencies?: ComponentConstructor[],
-    file: string,
-    is: string,
-    source: string,
-    viewPartialDependencies?: ComponentConstructor[],
-  }
+  view?: ComponentViewDefinition;
   static DataConstructor?: DataConstructor;
 
   constructor(context: Context, data: ComponentModelData) {

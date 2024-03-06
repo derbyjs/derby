@@ -5,7 +5,7 @@ import { Derby, type DerbyBase } from './Derby';
 export { type App } from './App';
 export { type Page, type PageBase, PageForClient } from './Page';
 export { PageForServer } from './PageForServer';
-export { Component, type ComponentConstructor } from './components';
+export { Component, type ComponentConstructor, type ComponentViewDefinition } from './components';
 export { type PageParams } from './routes';
 
 const DerbyClass = util.isServer
@@ -16,4 +16,5 @@ const instance: DerbyBase = new DerbyClass();
 export {
   Derby,
   instance,
+  util,
 }

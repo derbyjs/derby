@@ -21,7 +21,8 @@
     "./server": "./dist/server.js",
     "./Page": "./dist/Page.js",
     "./test-utils": "./dist/test-utils/index.js",
-    "./test-utils/*": "./dist/test-utils/*.js"
+    "./test-utils/*": "./dist/test-utils/*.js",
+    "./file-utils": "./dist/files.js"
   },
   "files": [
     "dist/",
