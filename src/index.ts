@@ -3,7 +3,7 @@ import { util } from 'racer';
 import { Derby, type DerbyBase } from './Derby';
 
 export { type App } from './App';
-export { type Page, type PageBase, PageForClient } from './Page';
+export { Page, PageForClient } from './Page';
 export { PageForServer } from './PageForServer';
 export { Component, type ComponentConstructor, type ComponentViewDefinition } from './components';
 export { type PageParams } from './routes';

@@ -14,7 +14,7 @@ import { util } from 'racer';
 import * as components from './components';
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
 import { type Derby } from './Derby';
-import { PageForClient, type PageBase } from './Page';
+import { PageForClient, type Page } from './Page';
 import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
@@ -28,8 +28,8 @@ const { templates } = derbyTemplates;
 // TODO: Change to Map once we officially drop support for ES5.
 global.APPS = global.APPS || {};
 
-export function createAppPage(derby): typeof PageBase {
-  const pageCtor = ((derby && derby.Page) || PageForClient) as typeof PageBase;
+export function createAppPage(derby): typeof Page {
+  const pageCtor = ((derby && derby.Page) || PageForClient) as typeof Page;
   // Inherit from Page/PageForServer so that we can add controller functions as prototype
   // methods on this app's pages
   class AppPage extends pageCtor { }
@@ -67,12 +67,12 @@ export abstract class AppBase extends EventEmitter {
   scriptHash: string;
   // bundledAt: string;
   appMetadata: Record<string, string>;
-  Page: typeof PageBase;
+  Page: typeof Page;
   proto: any;
   views: Views;
   tracksRoutes: Routes;
   model: Model;
-  page: PageBase;
+  page: Page;
   protected _pendingComponentMap: Record<string, ComponentConstructor>;
   protected _waitForAttach: boolean;
   protected _cancelAttach: boolean;

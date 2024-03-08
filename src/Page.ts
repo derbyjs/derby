@@ -18,7 +18,7 @@ const {
   templates,
 } = derbyTemplates;
 
-export abstract class PageBase extends Controller {
+export abstract class Page extends Controller {
   params: Readonly<PageParams>;
   context: Context;
   create: (model: Model, dom: any) => void;
@@ -26,7 +26,7 @@ export abstract class PageBase extends Controller {
   _components: Record<string, components.Component>
   _eventModel: any;
   _removeModelListeners: () => void = () => {};
-  page: PageBase;
+  page: Page;
 
   constructor(app: AppBase, model: Model) {
     super(app, null, model);
@@ -108,10 +108,8 @@ export abstract class PageBase extends Controller {
   }
 }
 
-export interface Page extends PageBase {}
-
-export class PageForClient extends PageBase {
-  constructor(app: App, model: Model) {
+export class PageForClient extends Page {
+  constructor(app: AppBase, model: Model) {
     super(app, model);
     this._addListeners();
   }

@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { type Model } from 'racer';
 
 import { type AppForServer } from './AppForServer';
-import { PageBase } from './Page';
+import { Page } from './Page';
 import { type PageParams } from './routes';
 
 declare module 'racer' {
@@ -11,7 +11,7 @@ declare module 'racer' {
   }
 }
 
-export class PageForServer extends PageBase {
+export class PageForServer extends Page {
   req: Request;
   res: Response;
   page: PageForServer;

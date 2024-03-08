@@ -10,7 +10,7 @@
 import { type ChildModel, type ModelData, util } from 'racer';
 
 import { Controller } from './Controller';
-import { PageBase } from './Page';
+import { Page } from './Page';
 import derbyTemplates = require('./templates');
 import { Context } from './templates/contexts';
 import { Expression } from './templates/expressions';
@@ -54,7 +54,7 @@ export abstract class Component extends Controller {
   context: Context;
   id: string;
   isDestroyed: boolean;
-  page: PageBase;
+  page: Page;
   parent: Controller;
   singleton?: true;
   _scope: string[];

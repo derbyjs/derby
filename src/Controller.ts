@@ -5,16 +5,16 @@ import { type Model } from 'racer';
 import { type AppBase } from './App';
 import { type ComponentModelData } from './components';
 import { Dom }  from './Dom';
-import { PageBase } from './Page';
+import { Page } from './Page';
 
 export class Controller extends EventEmitter {
   dom: Dom;
   app: AppBase;
-  page: PageBase;
+  page: Page;
   model: Model;
   markerNode: Node;
 
-  constructor(app: AppBase, page: PageBase, model: Model) {
+  constructor(app: AppBase, page: Page, model: Model) {
     super();
     this.dom = new Dom(this);
     this.app = app;
