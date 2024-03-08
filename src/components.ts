@@ -7,7 +7,7 @@
  *
  */
 
-import { type ChildModel, type ModelData, util } from 'racer';
+import { type ChildModel, util } from 'racer';
 
 import { Controller } from './Controller';
 import { Page } from './Page';
@@ -25,7 +25,7 @@ export interface DataConstructor extends Record<string, unknown> {
 type AnyVoidFunction = (...args: any[]) => void;
 
 export interface ComponentConstructor {
-  new(context: Context, data: ModelData): Component;
+  new(context: Context, data: Record<string, unknown>): Component;
   DataConstructor?: DataConstructor;
   singleton?: true | undefined,
   view?: ComponentViewDefinition,
@@ -62,7 +62,7 @@ export abstract class Component extends Controller {
   view?: ComponentViewDefinition;
   static DataConstructor?: DataConstructor;
 
-  constructor(context: Context, data: ComponentModelData) {
+  constructor(context: Context, data: Record<string, unknown>) {
     const parent = context.controller;
     const id = context.id();
     const scope = ['$components', id];
@@ -444,10 +444,11 @@ function emitInitHooks(context, component) {
 }
 
 export class ComponentModelData {
-  id: string = null;
-  $controller = null;
+  id: string;
+  $controller: Controller;
   $element: any;
-  $event: any; 
+  $event: any;
+  [key: string]: unknown;
 }
 
 export class ComponentFactory {
@@ -460,7 +461,7 @@ export class ComponentFactory {
   init(context: Context) {
     const DataConstructor = this.constructorFn.DataConstructor || ComponentModelData;
     // @TODO: verify types form DataConstructor, is there more appropriate type?
-    const data = new DataConstructor() as ModelData;
+    const data = new DataConstructor();
     // eslint-disable-next-line new-cap
     const component = new this.constructorFn(context, data);
     // Detect whether the component constructor already called super by checking
