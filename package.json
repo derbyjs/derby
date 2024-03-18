@@ -55,6 +55,7 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.3.1",
     "@types/qs": "^6.9.11",
+    "@types/resolve": "^1.20.6",
     "@types/sharedb": "^3.3.10",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
