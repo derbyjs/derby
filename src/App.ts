@@ -36,7 +36,7 @@ export function createAppPage(derby): typeof Page {
   return AppPage;
 }
 
-interface AppOptions {
+export interface AppOptions {
   appMetadata?: Record<string, string>,
   scriptHash?: string,
 }

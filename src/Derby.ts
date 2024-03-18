@@ -3,10 +3,9 @@
  * Meant to be the entry point for the framework.
  *
  */
-
 import { Racer, util, type Model} from 'racer';
 
-import { App, type AppBase } from './App';
+import { App, type AppBase, type AppOptions } from './App';
 import { Component } from './components';
 import { PageForClient } from './Page';
 
@@ -15,7 +14,7 @@ export abstract class DerbyBase extends Racer {
   // App: typeof AppBase;
   // Page: typeof PageBase;
   Model: typeof Model;
-  abstract createApp(name: string, filename: string, options): AppBase
+  abstract createApp(name?: string, filename?: string, options?: AppOptions): AppBase
 }
 
 export class Derby extends DerbyBase {
@@ -23,7 +22,7 @@ export class Derby extends DerbyBase {
   Page = PageForClient;
   Model: typeof Model;
 
-  createApp(name: string, filename: string, options) {
+  createApp(name?: string, filename?: string, options?: AppOptions) {
     return new this.App(this, name, filename, options);
   }
 }
