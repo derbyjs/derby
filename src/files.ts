@@ -9,9 +9,10 @@ import * as path from 'node:path';
 import * as racer from 'racer';
 import * as resolve from 'resolve';
 
+import { type AppForServer } from './AppForServer';
 import * as parsing from './parsing';
 
-export function loadViewsSync(app, sourceFilename, namespace) {
+export function loadViewsSync(app: AppForServer, sourceFilename: string, namespace: string) {
   let views = [];
   let files = [];
   const filename = resolve.sync(sourceFilename, {
@@ -43,7 +44,7 @@ export function loadViewsSync(app, sourceFilename, namespace) {
     files = files.concat(imported.files);
   }
 
-  const htmlFile = compiler(file, filename);
+  const htmlFile = compiler(file, filename) as string;
   const parsedViews = parsing.parseViews(htmlFile, namespace, filename, onImport);
   return {
     views: views.concat(parsedViews),
@@ -51,7 +52,11 @@ export function loadViewsSync(app, sourceFilename, namespace) {
   };
 }
 
-export function loadStylesSync(app, sourceFilename, options) {
+export interface StyleCompilerOptions extends Record<string, unknown> {
+  compress?: boolean;
+}
+
+export function loadStylesSync(app: AppForServer, sourceFilename: string, options?: StyleCompilerOptions) {
   if (options == null) {
     options = { compress: racer.util.isProduction };
   }

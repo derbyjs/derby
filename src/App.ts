@@ -98,7 +98,7 @@ export abstract class AppBase extends EventEmitter {
   }
 
   abstract _init(options?: AppOptions);
-  loadViews(_viewFilename, _viewName) { }
+  loadViews(_viewFilename, _viewName?) { }
   loadStyles(_filename, _options) { }
 
   component(constructor: ComponentConstructor | SingletonComponentConstructor): this;
