@@ -80,13 +80,16 @@ export abstract class AppBase extends EventEmitter {
   use = util.use;
   serverUse = util.serverUse;
 
-  constructor(derby, name, filename, options: AppOptions = {}) {
+  constructor(derby, name?: string, filename?: string, options?: AppOptions) {
     super();
+    if (options == null) {
+      options = {};
+    }
     this.derby = derby;
     this.name = name;
     this.filename = filename;
     this.scriptHash = options.scriptHash ?? '';
-    this.appMetadata = options.appMetadata || {};
+    this.appMetadata = options.appMetadata ?? {};
     this.Page = createAppPage(derby);
     this.proto = this.Page.prototype;
     this.views = new templates.Views();
