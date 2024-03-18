@@ -1,20 +1,20 @@
 import { EventEmitter } from 'events';
 
-import { type Model } from 'racer';
+import { DefualtType, type ChildModel } from 'racer';
 
 import { type AppBase } from './App';
 import { type ComponentModelData } from './components';
 import { Dom }  from './Dom';
 import { Page } from './Page';
 
-export class Controller extends EventEmitter {
+export class Controller<T = DefualtType> extends EventEmitter {
   dom: Dom;
   app: AppBase;
   page: Page;
-  model: Model;
+  model: ChildModel<T>;
   markerNode: Node;
 
-  constructor(app: AppBase, page: Page, model: Model) {
+  constructor(app: AppBase, page: Page, model: ChildModel<T>) {
     super();
     this.dom = new Dom(this);
     this.app = app;

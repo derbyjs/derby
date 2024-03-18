@@ -73,7 +73,7 @@ export abstract class AppBase extends EventEmitter {
   tracksRoutes: Routes;
   model: Model;
   page: Page;
-  protected _pendingComponentMap: Record<string, ComponentConstructor>;
+  protected _pendingComponentMap: Record<string, ComponentConstructor | SingletonComponentConstructor>;
   protected _waitForAttach: boolean;
   protected _cancelAttach: boolean;
 

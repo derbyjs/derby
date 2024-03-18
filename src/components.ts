@@ -7,7 +7,7 @@
  *
  */
 
-import { type ChildModel, util } from 'racer';
+import { type ChildModel, util, DefualtType } from 'racer';
 
 import { Controller } from './Controller';
 import { Page } from './Page';
@@ -27,30 +27,25 @@ type AnyVoidFunction = (...args: any[]) => void;
 export interface ComponentConstructor {
   new(context: Context, data: Record<string, unknown>): Component;
   DataConstructor?: DataConstructor;
-  singleton?: true | undefined,
+  singleton?: undefined,
   view?: ComponentViewDefinition,
 }
 
 export interface SingletonComponentConstructor {
-  new(): Component
+  new(): object;
   singleton: true;
-  view?: {
-    is: string,
-    dependencies?: ComponentConstructor[],
-    source?: string,
-    file?: string,
-  }
+  view?: ComponentViewDefinition
 }
 
 export interface ComponentViewDefinition {
-  dependencies?: ComponentConstructor[],
+  dependencies?: Array<ComponentConstructor | SingletonComponentConstructor>,
   file?: string,
   is?: string,
   source?: string,
   viewPartialDependencies?: Array<string | { is: string }>,
 }
 
-export abstract class Component extends Controller {
+export abstract class Component<T = DefualtType> extends Controller<T> {
   context: Context;
   id: string;
   isDestroyed: boolean;
@@ -66,13 +61,13 @@ export abstract class Component extends Controller {
     const parent = context.controller;
     const id = context.id();
     const scope = ['$components', id];
-    const model = parent.model.root.eventContext(id);
+    const model = parent.model.root.eventContext(id) as ChildModel<T>;
     model._at = scope.join('.');
     data.id = id;
     model._set(scope, data);
     // Store a reference to the component's scope such that the expression
     // getters are relative to the component
-    model.data = data;
+    model.data = data as T;
     // IMPORTANT: call super _after_ model created
     super(context.controller.app, context.controller.page, model);
 
@@ -427,10 +422,10 @@ function setModelAttribute(context: Context, model: ChildModel, key: string, val
   model.set(key, value);
 }
 
-export function createFactory(constructor: ComponentConstructor) {
+export function createFactory(constructor: ComponentConstructor | SingletonComponentConstructor) {
   // DEPRECATED: constructor.prototype.singleton is deprecated. "singleton"
   // static property on the constructor is preferred
-  return (constructor.singleton || constructor.prototype.singleton) ?
+  return (constructor.singleton === true) ?
     new SingletonComponentFactory(constructor) :
     new ComponentFactory(constructor);
 }
@@ -509,7 +504,7 @@ class SingletonComponentFactory{
 
   init(context) {
     // eslint-disable-next-line new-cap
-    if (!this.component) this.component = new this.constructorFn();
+    if (!this.component) this.component = new this.constructorFn() as Component;
     return context.componentChild(this.component);
   }
 
