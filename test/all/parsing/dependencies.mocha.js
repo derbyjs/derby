@@ -1,8 +1,8 @@
 var expect = require('chai').expect;
-var derbyTemplates = require('../../../dist/templates');
+var derbyTemplates = require('../../../src/templates');
 var contexts = derbyTemplates.contexts;
 var templates = derbyTemplates.templates;
-var parsing = require('../../../dist/parsing');
+var parsing = require('../../../src/parsing');
 var createExpression = parsing.createExpression;
 var createTemplate = parsing.createTemplate;
 

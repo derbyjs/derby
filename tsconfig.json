@@ -8,8 +8,8 @@
     "outDir": "dist",
     "target": "ES5",
     "sourceMap": false,
-    "declaration": false,
-    "declarationMap": false,
+    "declaration": true,
+    "declarationMap": false
   },
   "include": [
     "src/**/*"

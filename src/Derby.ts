@@ -3,39 +3,30 @@
  * Meant to be the entry point for the framework.
  *
  */
+import { Racer, util, type Model} from 'racer';
 
-import { App, type AppBase } from './App';
+import { App, type AppBase, type AppOptions } from './App';
 import { Component } from './components';
-import { Page } from './Page';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const racer = require('racer');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Racer = require('racer/lib/Racer');
+import { PageForClient } from './Page';
 
 export abstract class DerbyBase extends Racer {
   Component = Component;
-  abstract createApp(name: string, filename: string, options): AppBase
+  // App: typeof AppBase;
+  // Page: typeof PageBase;
+  Model: typeof Model;
+  abstract createApp(name?: string, filename?: string, options?: AppOptions): AppBase
 }
 
 export class Derby extends DerbyBase {
   App = App;
-  Page = Page;
-  Model: typeof racer.Model;
+  Page = PageForClient;
+  Model: typeof Model;
 
-  createApp(name: string, filename: string, options) {
+  createApp(name?: string, filename?: string, options?: AppOptions) {
     return new this.App(this, name, filename, options);
-  }
-
-  use(plugin, options) {
-    return racer.util.use.call(this, plugin, options);
-  }
-
-  serverUse(plugin, options) {
-    return racer.util.serverUse.call(this, plugin, options);
   }
 }
 
-if (!racer.util.isServer) {
+if (!util.isServer) {
   module.require('./documentListeners').add(document);
 }

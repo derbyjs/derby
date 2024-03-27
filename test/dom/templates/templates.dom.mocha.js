@@ -1,7 +1,7 @@
 var chai = require('chai');
 var expect = chai.expect;
-var saddle = require('../../../dist/templates/templates');
-var domTestRunner = require('../../../test-utils/domTestRunner');
+var saddle = require('../../../src/templates/templates');
+var domTestRunner = require('../../../src/test-utils/domTestRunner');
 
 describe('templates rendering', function() {
   domTestRunner.install({jsdomOptions: {pretendToBeVisual: true}});

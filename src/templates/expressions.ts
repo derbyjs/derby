@@ -8,7 +8,7 @@ import { concat } from './util';
 import { Component } from '../components';
 
 type SegmentOrContext = string | number | { item: number } | Context;
-type Segment = string | number;
+type Segment = string;
 type Value = any; // global | Page | ModelData
 
 export function lookup(segments: Segment[] | undefined, value: Value) {
@@ -141,7 +141,7 @@ export class Expression {
   module = 'expressions';
   type = 'Expression';
   meta?: ExpressionMeta;
-  segments: Array<string | number>;
+  segments: string[];
 
   constructor(meta?: ExpressionMeta) {
     this.meta = meta;

@@ -9,81 +9,101 @@ import { EventEmitter } from 'events';
 import { basename } from 'path';
 
 import { type Model } from 'racer';
-import * as util from 'racer/lib/util';
+import { util } from 'racer';
 
-import components = require('./components');
+import * as components from './components';
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
 import { type Derby } from './Derby';
-import { Page, type PageBase } from './Page';
+import { PageForClient, type Page } from './Page';
 import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
+
+declare module 'racer/lib/util' {
+  export let isProduction: boolean;
+}
 
 const { templates } = derbyTemplates;
 
 // TODO: Change to Map once we officially drop support for ES5.
 global.APPS = global.APPS || {};
 
-export function createAppPage(derby): typeof PageBase {
-  const pageCtor = ((derby && derby.Page) || Page) as typeof PageBase;
+export function createAppPage(derby): typeof Page {
+  const pageCtor = ((derby && derby.Page) || PageForClient) as typeof Page;
   // Inherit from Page/PageForServer so that we can add controller functions as prototype
   // methods on this app's pages
   class AppPage extends pageCtor { }
   return AppPage;
 }
 
-interface AppOptions {
+export interface AppOptions {
   appMetadata?: Record<string, string>,
   scriptHash?: string,
 }
 
-type OnRouteCallback<T = object> = (arg0: Page, arg1: Page, model: Model<T>, params: PageParams, done?: () => void) => void;
+type OnRouteCallback = (arg0: PageForClient, arg1: PageForClient, model: Model, params: PageParams, done?: () => void) => void;
 
 type Routes = [string, string, any][];
 
-export abstract class AppBase<T = object> extends EventEmitter {
+
+/**
+ * APP EVENTS
+ *
+  'error', Error
+  'pageRendered', Page
+  'destroy'
+  'model', Model
+  'route', Page
+  'routeDone', Page, transition: boolean
+  'ready', Page
+  'load', Page
+  'destroyPage', Page
+ */
+
+export abstract class AppBase extends EventEmitter {
   derby: Derby;
   name: string;
   filename: string;
   scriptHash: string;
   // bundledAt: string;
   appMetadata: Record<string, string>;
-  Page: typeof PageBase;
+  Page: typeof Page;
   proto: any;
   views: Views;
   tracksRoutes: Routes;
-  model: Model<T>;
-  page: PageBase;
-  protected _pendingComponentMap: Record<string, ComponentConstructor>;
+  model: Model;
+  page: Page;
+  protected _pendingComponentMap: Record<string, ComponentConstructor | SingletonComponentConstructor>;
   protected _waitForAttach: boolean;
   protected _cancelAttach: boolean;
 
   use = util.use;
   serverUse = util.serverUse;
 
-  constructor(derby, name, filename, options: AppOptions = {}) {
+  constructor(derby, name?: string, filename?: string, options?: AppOptions) {
     super();
+    if (options == null) {
+      options = {};
+    }
     this.derby = derby;
     this.name = name;
     this.filename = filename;
     this.scriptHash = options.scriptHash ?? '';
-    this.appMetadata = options.appMetadata;
+    this.appMetadata = options.appMetadata ?? {};
     this.Page = createAppPage(derby);
     this.proto = this.Page.prototype;
     this.views = new templates.Views();
     this.tracksRoutes = routes(this);
-    this.model = null;
-    this.page = null;
     this._pendingComponentMap = {};
   }
 
   abstract _init(options?: AppOptions);
-  loadViews(_viewFilename, _viewName) { }
+  loadViews(_viewFilename, _viewName?) { }
   loadStyles(_filename, _options) { }
 
   component(constructor: ComponentConstructor | SingletonComponentConstructor): this;
   component(name: string, constructor: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this;
-  component(name: string | ComponentConstructor | SingletonComponentConstructor, constructor?: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this {
+  component(name: string | ComponentConstructor | SingletonComponentConstructor | null, constructor?: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this {
     if (typeof name === 'function') {
       constructor = name;
       name = null;
@@ -197,7 +217,7 @@ export abstract class AppBase<T = object> extends EventEmitter {
     );
   }
 
-  onRoute(callback: OnRouteCallback, page: Page, next: () => void, done: () => void) {
+  onRoute(callback: OnRouteCallback, page: PageForClient, next: () => void, done: () => void) {
     if (this._waitForAttach) {
       // Cancel any routing before the initial page attachment. Instead, do a
       // render once derby is ready
@@ -223,11 +243,11 @@ export abstract class AppBase<T = object> extends EventEmitter {
 }
 
 export class App extends AppBase {
-  page: Page;
+  page: PageForClient;
   history: {
     refresh(): void,
-    push(): void,
-    replace(): void,
+    push(url: string): void,
+    replace(url: string): void,
   };
 
   constructor(derby, name, filename, options: AppOptions) {
@@ -275,7 +295,8 @@ export class App extends AppBase {
     this.model.unbundle(data);
 
     const page = this.createPage();
-    page.params = this.model.get('$render.params');
+    // @ts-expect-error TODO resolve type error
+    page.params = this.model.get<Readonly<PageParams>>('$render.params');
     this.emit('ready', page);
 
     this._waitForAttach = false;
@@ -398,7 +419,7 @@ export class App extends AppBase {
 
   createPage() {
     this._destroyCurrentPage();
-    const ClientPage = this.Page as unknown as typeof Page;
+    const ClientPage = this.Page as unknown as typeof PageForClient;
     const page = new ClientPage(this, this.model);
     this.page = page;
     return page;
@@ -433,7 +454,7 @@ export class App extends AppBase {
     if (action === 'refreshViews') {
       const fn = new Function('return ' + message.views)(); // jshint ignore:line
       fn(derbyTemplates, this.views);
-      const ns = this.model.get('$render.ns');
+      const ns = this.model.get<string>('$render.ns');
       this.page.render(ns);
 
     } else if (action === 'refreshStyles') {

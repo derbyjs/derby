@@ -6,13 +6,16 @@
  *
  */
 
-import racer = require('racer');
+import * as racer from 'racer';
 
-const util = racer.util;
 import { AppBase } from './App';
+import { type DerbyBase } from './Derby';
+import { type StyleCompilerOptions } from './files';
 import { PageForServer } from './PageForServer';
 import parsing = require('./parsing');
 import * as derbyTemplates from './templates';
+
+const util = racer.util;
 
 interface Agent {
   send(message: Record<string, unknown>): void;
@@ -42,7 +45,7 @@ function htmlCompiler(file) {
   return file;
 }
 
-type CompilerFunciton = (file: string, filename?: string, options?: unknown) => unknown;
+type CompilerFunciton = (file: string, filename?: string, options?: unknown) => string;
 
 function watchOnce(filenames, callback) {
   const watcher = chokidar.watch(filenames);
@@ -59,7 +62,7 @@ function watchOnce(filenames, callback) {
   });
 }
 
-export class AppForServer<T = object> extends AppBase<T> {
+export class AppForServer extends AppBase {
   agents: Record<string, Agent>;
   compilers: Record<string, CompilerFunciton>;
   scriptBaseUrl: string;
@@ -76,7 +79,7 @@ export class AppForServer<T = object> extends AppBase<T> {
   watchFiles: boolean;
   router: any;
 
-  constructor(derby, name: string, filename: string, options) {
+  constructor(derby: DerbyBase, name: string, filename: string, options) {
     super(derby, name, filename, options);
     this._init(options);
   }
@@ -103,7 +106,7 @@ export class AppForServer<T = object> extends AppBase<T> {
     this.agents = null;
   }
 
-  private _initLoad() {
+  _initLoad() {
     this.styleExtensions = STYLE_EXTENSIONS.slice();
     this.viewExtensions = VIEW_EXTENSIONS.slice();
     this.compilers = util.copyObject(COMPILERS);
@@ -208,7 +211,7 @@ export class AppForServer<T = object> extends AppBase<T> {
     this.scriptMapUrl = (this.scriptMapBaseUrl || serialized.scriptMapBaseUrl) + serialized.scriptMapUrl;
   }
 
-  loadViews(filename, namespace) {
+  loadViews(filename: string, namespace?: string) {
     const data = files.loadViewsSync(this, filename, namespace);
     parsing.registerParsedViews(this, data.views);
     if (this.watchFiles) this._watchViews(data.files, filename, namespace);
@@ -216,7 +219,7 @@ export class AppForServer<T = object> extends AppBase<T> {
     return this;
   }
 
-  loadStyles(filename, options) {
+  loadStyles(filename: string, options?: StyleCompilerOptions) {
     this._loadStyles(filename, options);
     const stylesView = this.views.find('Styles');
     stylesView.source += '<view is="' + filename + '"></view>';
@@ -224,7 +227,7 @@ export class AppForServer<T = object> extends AppBase<T> {
     return this;
   }
 
-  private _loadStyles(filename, options) {
+  private _loadStyles(filename: string, options?: StyleCompilerOptions) {
     const styles = files.loadStylesSync(this, filename, options);
 
     let filepath = '';

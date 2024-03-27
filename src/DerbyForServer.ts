@@ -4,10 +4,10 @@ import { DerbyBase } from './Derby';
 import { PageForServer } from './PageForServer';
 
 export class DerbyForServer extends DerbyBase {
-  App: typeof AppForServer = AppForServer;
-  Page: typeof PageForServer = PageForServer;
+  App = AppForServer;
+  Page = PageForServer;
 
-  createApp(name: string, filename: string, options: any): AppBase<object> {
+  createApp(name: string, filename: string, options: any): AppBase {
     return new this.App(this, name, filename, options);
   }
 }
