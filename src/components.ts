@@ -7,7 +7,7 @@
  *
  */
 
-import { type ChildModel, util, DefualtType } from 'racer';
+import { type ChildModel, util } from 'racer';
 
 import { Controller } from './Controller';
 import { Page } from './Page';
@@ -45,7 +45,7 @@ export interface ComponentViewDefinition {
   viewPartialDependencies?: Array<string | { is: string }>,
 }
 
-export abstract class Component<T = DefualtType> extends Controller<T> {
+export abstract class Component<T extends object = object> extends Controller<T> {
   context: Context;
   id: string;
   isDestroyed: boolean;
