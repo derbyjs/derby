@@ -26,6 +26,10 @@ export function createApp(name?: string, file?: string, options?: AppOptions) {
   return instance.createApp(name, file, options);
 }
 
+export function use<T = unknown>(plugin: (derby: Derby, options?: T) => Derby, options?: T) {
+  return instance.use(plugin, options);
+}
+
 export {
   Derby,
   instance,
