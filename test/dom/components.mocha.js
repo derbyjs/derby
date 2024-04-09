@@ -1,6 +1,6 @@
 var expect = require('chai').expect;
 var pathLib = require('node:path');
-var domTestRunner = require('../../src/test-utils/domTestRunner');
+var domTestRunner = require('../../test-utils/domTestRunner');
 
 describe('components', function() {
   var runner = domTestRunner.install();
