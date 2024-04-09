@@ -1,7 +1,11 @@
+import { util } from 'racer';
+
 import { AppBase } from './App';
 import { AppForServer } from './AppForServer';
 import { DerbyBase } from './Derby';
 import { PageForServer } from './PageForServer';
+
+util.isProduction = process.env.NODE_ENV === 'production';
 
 export class DerbyForServer extends DerbyBase {
   App = AppForServer;
