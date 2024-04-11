@@ -8,7 +8,7 @@
 import { EventEmitter } from 'events';
 import { basename } from 'path';
 
-import { type Model } from 'racer';
+import { type Model, type RootModel, createModel } from 'racer';
 import { util } from 'racer';
 
 import * as components from './components';
@@ -71,7 +71,7 @@ export abstract class AppBase extends EventEmitter {
   proto: any;
   views: Views;
   tracksRoutes: Routes;
-  model: Model;
+  model: RootModel;
   page: Page;
   protected _pendingComponentMap: Record<string, ComponentConstructor | SingletonComponentConstructor>;
   protected _waitForAttach: boolean;
@@ -99,7 +99,7 @@ export abstract class AppBase extends EventEmitter {
 
   abstract _init(options?: AppOptions);
   loadViews(_viewFilename, _viewName?) { }
-  loadStyles(_filename, _options) { }
+  loadStyles(_filename, _options?) { }
 
   component(constructor: ComponentConstructor | SingletonComponentConstructor): this;
   component(name: string, constructor: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this;
@@ -259,7 +259,7 @@ export class App extends AppBase {
   _init(_options) {
     this._waitForAttach = true;
     this._cancelAttach = false;
-    this.model = new this.derby.Model();
+    this.model = createModel();
     const serializedViews = this._views();
     serializedViews(derbyTemplates, this.views);
     // Must init async so that app.on('model') listeners can be added.

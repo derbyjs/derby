@@ -147,7 +147,7 @@ export class AppForServer extends AppBase {
 
   // overload w different signatures, but different use cases
   createPage(req, res, next) {
-    const model = req.model || new racer.Model();
+    const model = req.model || racer.createModel();
     this.emit('model', model);
 
     const Page = this.Page as unknown as typeof PageForServer;

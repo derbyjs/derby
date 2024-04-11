@@ -1,5 +1,6 @@
 import {
   type Model,
+  type RootModel,
   util,
   ChangeEvent,
   MoveEvent,
@@ -50,6 +51,7 @@ declare module 'racer' {
 }
 
 export abstract class Page extends Controller {
+  model: RootModel;
   params: Readonly<PageParams>;
   context: Context;
   create: (model: Model, dom: any) => void;
