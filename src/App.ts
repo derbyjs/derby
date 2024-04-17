@@ -18,6 +18,7 @@ import { PageForClient, type Page } from './Page';
 import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
+import { checkKeyIsSafe } from './templates/util';
 
 declare module 'racer/lib/util' {
   export let isProduction: boolean;
@@ -142,6 +143,7 @@ export abstract class AppBase extends EventEmitter {
 
     // TODO: DRY. This is copy-pasted from ./templates
     const mapName = viewName.replace(/:index$/, '');
+    checkKeyIsSafe(mapName);
     const currentView = this.views.nameMap[mapName];
     const currentConstructor = (currentView && currentView.componentFactory) ?
       currentView.componentFactory.constructorFn :

@@ -4,7 +4,7 @@ import { type Context } from './contexts';
 import { DependencyOptions } from './dependencyOptions';
 import * as operatorFns from './operatorFns';
 import { ContextClosure, Dependency, Template } from './templates';
-import { concat } from './util';
+import { checkKeyIsSafe, concat } from './util';
 import { Component } from '../components';
 
 type SegmentOrContext = string | number | { item: number } | Context;
@@ -88,6 +88,7 @@ function renderArrayProperties(array: Renderable[], context: Context) {
 function renderObjectProperties(object: Record<string, Renderable>, context: Context): Record<string, any> {
   const out = {};
   for (const key in object) {
+    checkKeyIsSafe(key);
     out[key] = renderValue(object[key], context);
   }
   return out;
@@ -547,6 +548,7 @@ export class ObjectExpression extends Expression {
   get(context: Context) {
     const object = {};
     for (const key in this.properties) {
+      checkKeyIsSafe(key);
       const value = this.properties[key].get(context);
       object[key] = value;
     }

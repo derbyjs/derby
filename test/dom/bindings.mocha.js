@@ -271,8 +271,29 @@ describe('bindings', function() {
         expect(page.box.myDiv).to.not.equal(initialElement);
         done();
       });
-    })
-  })
+    });
+
+    ['__proto__', 'constructor'].forEach(function(badKey) {
+      it(`disallows prototype modification with ${badKey}`, function() {
+        var harness = runner.createHarness(`
+          <view is="box"/>
+        `);
+        function Box() {}
+        Box.view = {
+          is: 'box',
+          source:`
+            <index:>
+              <div as="${badKey}">one</div>
+          `
+        };
+        var app = harness.app;
+        app.component(Box);
+        expect(() => harness.renderDom()).to.throw(`Unsafe key "${badKey}"`);
+        // Rendering to HTML string should still work, as that doesn't process `as` attributes
+        expect(harness.renderHtml().html).to.equal('<div>one</div>');
+      });
+    });
+  });
 
   function testArray(itemTemplate, itemData) {
     it('each on path', function() {
