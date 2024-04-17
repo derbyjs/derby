@@ -84,11 +84,11 @@ function stringifyBundle(bundle) {
 
 // TODO: Cleanup; copied from tracks
 function pageParams(req) {
-  const params = {
+  const params = Object.create(null, {
     url: req.url,
     body: req.body,
     query: req.query,
-  };
+  });
   for (const key in req.params) {
     params[key] = req.params[key];
   }

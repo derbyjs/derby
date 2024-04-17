@@ -8,6 +8,7 @@ import { App, AppBase } from '../App';
 import { templates, expressions } from '../templates';
 import { Expression } from '../templates/expressions';
 import { MarkupHook, View } from '../templates/templates';
+import { checkKeyIsSafe } from '../templates/util';
 
 export { createPathExpression } from './createPathExpression';
 export { markup } from './markup';
@@ -122,6 +123,7 @@ function parseHtmlStart(tag: string, tagName: string, attributes: Record<string,
 function parseAttributes(attributes: Record<string, string>) {
   let attributesMap;
   for (const key in attributes) {
+    checkKeyIsSafe(key);
     if (!attributesMap) attributesMap = {};
 
     const value = attributes[key];
@@ -384,6 +386,7 @@ function attributeValueFromContent(content, isWithin) {
 function viewAttributesFromElement(element) {
   const viewAttributes = {};
   for (const key in element.attributes) {
+    checkKeyIsSafe(key);
     const attribute = element.attributes[key];
     const camelCased = dashToCamelCase(key);
     viewAttributes[camelCased] =
@@ -555,6 +558,7 @@ function parseNameAttribute(element) {
 
 function parseAttributeElement(element, name, viewAttributes) {
   const camelName = dashToCamelCase(name);
+  checkKeyIsSafe(camelName);
   const isWithin = element.attributes && element.attributes.within;
   viewAttributes[camelName] = attributeValueFromContent(element.content, isWithin);
 }
@@ -564,6 +568,7 @@ function createAttributesExpression(attributes) {
   const literalAttributes = {};
   let isLiteral = true;
   for (const key in attributes) {
+    checkKeyIsSafe(key);
     const attribute = attributes[key];
     if (attribute instanceof expressions.Expression) {
       dynamicAttributes[key] = attribute;
@@ -588,6 +593,7 @@ function parseArrayElement(element, name, viewAttributes) {
   delete attributes.within;
   const expression = createAttributesExpression(attributes);
   const camelName = dashToCamelCase(name);
+  checkKeyIsSafe(camelName);
   const viewAttribute = viewAttributes[camelName];
 
   // If viewAttribute is already an ArrayExpression, push the expression for
@@ -662,6 +668,7 @@ function viewAttributesFromExpression(expression) {
 
   const viewAttributes = {};
   for (const key in object) {
+    checkKeyIsSafe(key);
     const value = object[key];
     viewAttributes[key] =
       (value instanceof expressions.LiteralExpression) ? value.value :

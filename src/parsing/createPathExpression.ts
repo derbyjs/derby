@@ -2,6 +2,7 @@ import * as esprima from 'esprima-derby';
 import type * as estree from 'estree';
 
 import { expressions, operatorFns } from '../templates';
+import { checkKeyIsSafe } from '../templates/util';
 const { Syntax } = esprima;
 
 export function createPathExpression(source: string) {
@@ -221,6 +222,7 @@ function reduceObjectExpression(node: estree.ObjectExpression) {
     if (isProperty(property)) {
       const key = getKeyName(property.key);
       const expression = reduce(property.value);
+      checkKeyIsSafe(key);
       properties[key] = expression;
       if (isLiteral && expression instanceof expressions.LiteralExpression) {
         literal[key] = expression.value;

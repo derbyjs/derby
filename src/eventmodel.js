@@ -1,4 +1,5 @@
 var expressions = require('./templates').expressions;
+var checkKeyIsSafe = require('./templates/util').checkKeyIsSafe;
 
 // The many trees of bindings:
 //
@@ -183,6 +184,7 @@ EventModel.prototype.child = function(segment) {
     segment = segment.item;
   }
 
+  checkKeyIsSafe(segment);
   return container[segment] || (container[segment] = new EventModel());
 };
 
