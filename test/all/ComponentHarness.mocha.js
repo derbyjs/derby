@@ -259,7 +259,7 @@ describe('ComponentHarness', function() {
 
     it('gets overridden without error', function() {
       function ConflictingClown() {}
-      ConflictingClown.view = {is: 'clown'};
+      ConflictingClown.view = {is: 'clown', source: '<index:>'};
       function Clown() {}
       Clown.view = {
         is: 'clown',
