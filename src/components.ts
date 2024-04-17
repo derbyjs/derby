@@ -16,6 +16,7 @@ import derbyTemplates = require('./templates');
 import { Context } from './templates/contexts';
 import { Expression } from './templates/expressions';
 import { Attribute, Binding } from './templates/templates';
+import { checkKeyIsSafe } from './templates/util';
 const { expressions, templates } = derbyTemplates;
 const slice = [].slice;
 
@@ -332,10 +333,12 @@ export abstract class Component<T = object> extends Controller<T> {
   }
 
   setAttribute(key: string, value: Attribute) {
+    checkKeyIsSafe(key);
     this.context.parent.attributes[key] = value;
   }
 
   setNullAttribute(key: string, value: Attribute) {
+    checkKeyIsSafe(key);
     const attributes = this.context.parent.attributes;
     if (attributes[key] == null) attributes[key] = value;
   }
@@ -354,6 +357,7 @@ export class ComponentAttribute<T = object> {
   key: string;
 
   constructor(expression: Expression, model: ChildModel<T>, key: string) {
+    checkKeyIsSafe(key);
     this.expression = expression;
     this.model = model;
     this.key = key;

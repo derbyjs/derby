@@ -6,7 +6,7 @@ if (typeof require === 'function') {
 import { type Context } from './contexts';
 import { DependencyOptions } from './dependencyOptions';
 import { type Expression } from './expressions';
-import { concat, hasKeys, traverseAndCreate } from './util';
+import { checkKeyIsSafe, concat, hasKeys, traverseAndCreate } from './util';
 import { Component } from '../components';
 import { Controller } from '../Controller';
 
@@ -1369,6 +1369,7 @@ function emitRemoved(context: Context, node: Node, ignore: Binding) {
 }
 
 function emitRemovedBinding(context: Context, ignore: Binding, node: Node, property: string) {
+  checkKeyIsSafe(property);
   const binding = node[property];
   if (binding) {
     node[property] = null;
@@ -1444,6 +1445,7 @@ export class AttributeBinding extends Binding {
   name: string;
 
   constructor(template: DynamicAttribute, context: Context, element: globalThis.Element, name: string) {
+    checkKeyIsSafe(name);
     super();
     this.template = template;
     this.context = context;
@@ -1728,6 +1730,7 @@ export class Marker extends Comment {
 function ViewAttributesMap(source: string) {
   const items = source.split(/\s+/);
   for (let i = 0, len = items.length; i < len; i++) {
+    checkKeyIsSafe(items[i]);
     this[items[i]] = true;
   }
 }
@@ -1736,6 +1739,7 @@ function ViewArraysMap(source: string) {
   const items = source.split(/\s+/);
   for (let i = 0, len = items.length; i < len; i++) {
     const item = items[i].split('/');
+    checkKeyIsSafe(item[0]);
     this[item[0]] = item[1] || item[0];
   }
 }
@@ -2159,6 +2163,7 @@ export class Views {
 
   register(name: string, source: string, options?: ViewOptions) {
     const mapName = name.replace(/:index$/, '');
+    checkKeyIsSafe(mapName);
     let view = this.nameMap[mapName];
     if (view) {
       // Recreate the view if it already exists. We re-apply the constructor
@@ -2173,6 +2178,7 @@ export class Views {
     this.nameMap[mapName] = view;
     // TODO: element is deprecated and should be removed with Derby 0.6.0
     const tagName = options && (options.tag || options.element);
+    checkKeyIsSafe(tagName);
     if (tagName) this.tagMap[tagName] = view;
     return view;
   }
@@ -2323,6 +2329,7 @@ abstract class AsPropertyBase<T> extends MarkupHook<T> {
 
   emit(context: Context, target: T) {
     const node = traverseAndCreate(context.controller, this.segments);
+    checkKeyIsSafe(this.lastSegment);
     node[this.lastSegment] = target;
     this.addListeners(target, node, this.lastSegment);
   }
@@ -2376,8 +2383,10 @@ export class AsObject extends AsProperty {
 
   emit(context: Context, target: any) {
     const node = traverseAndCreate(context.controller, this.segments);
+    checkKeyIsSafe(this.lastSegment);
     const object = node[this.lastSegment] || (node[this.lastSegment] = {});
     const key = this.keyExpression.get(context);
+    checkKeyIsSafe(key);
     object[key] = target;
     this.addListeners(target, object, key);
   }
@@ -2398,6 +2407,7 @@ abstract class AsArrayBase<T> extends AsPropertyBase<T> {
 
   emit(context: Context, target: any) {
     const node = traverseAndCreate(context.controller, this.segments);
+    checkKeyIsSafe(this.lastSegment);
     const array = node[this.lastSegment] || (node[this.lastSegment] = []);
 
     // Iterate backwards, since rendering will usually append

@@ -18,6 +18,7 @@ import { Page, type PageBase } from './Page';
 import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
+import { checkKeyIsSafe } from './templates/util';
 
 const { templates } = derbyTemplates;
 
@@ -122,6 +123,7 @@ export abstract class AppBase<T = object> extends EventEmitter {
 
     // TODO: DRY. This is copy-pasted from ./templates
     const mapName = viewName.replace(/:index$/, '');
+    checkKeyIsSafe(mapName);
     const currentView = this.views.nameMap[mapName];
     const currentConstructor = (currentView && currentView.componentFactory) ?
       currentView.componentFactory.constructorFn :
