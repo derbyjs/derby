@@ -60,7 +60,7 @@ type Routes = [string, string, any][];
   'destroyPage', Page
  */
 
-export abstract class AppBase extends EventEmitter {
+export abstract class App extends EventEmitter {
   derby: Derby;
   name: string;
   filename: string;
@@ -242,7 +242,7 @@ export abstract class AppBase extends EventEmitter {
   }
 }
 
-export class App extends AppBase {
+export class AppForClient extends App {
   page: PageForClient;
   history: {
     refresh(): void,
@@ -325,7 +325,7 @@ export class App extends AppBase {
   private _getAppData() {
     const script = this._getAppStateScript();
     if (script) {
-      return App._parseInitialData(script.textContent);
+      return AppForClient._parseInitialData(script.textContent);
     } else {
       return global.APPS[this.name].initialState;
     }

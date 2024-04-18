@@ -8,7 +8,7 @@
 
 import * as racer from 'racer';
 
-import { AppBase } from './App';
+import { App } from './App';
 import { type DerbyBase } from './Derby';
 import { type StyleCompilerOptions } from './files';
 import { PageForServer } from './PageForServer';
@@ -62,7 +62,7 @@ function watchOnce(filenames, callback) {
   });
 }
 
-export class AppForServer extends AppBase {
+export class AppForServer extends App {
   agents: Record<string, Agent>;
   compilers: Record<string, CompilerFunciton>;
   scriptBaseUrl: string;

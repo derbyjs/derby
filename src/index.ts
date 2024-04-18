@@ -3,7 +3,7 @@ import { util } from 'racer';
 import { type AppOptions } from './App';
 import { Derby, type DerbyBase } from './Derby';
 
-export { type App, type AppBase } from './App';
+export { type AppForClient, type App as AppBase } from './App';
 export { type AppForServer } from './AppForServer';
 export { Dom } from './Dom';
 export { Page, PageForClient } from './Page';

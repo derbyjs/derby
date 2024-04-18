@@ -9,7 +9,7 @@ import {
   UnloadEvent,
 } from 'racer';
 
-import { type AppBase } from './App';
+import { type App } from './App';
 import components = require('./components');
 import { Controller } from './Controller';
 import documentListeners = require('./documentListeners');
@@ -59,7 +59,7 @@ export abstract class Page extends Controller {
   _removeModelListeners: () => void = () => {};
   page: Page;
 
-  constructor(app: AppBase, model: Model) {
+  constructor(app: App, model: Model) {
     super(app, null, model);
     this.params = null;
     this._eventModel = null;
@@ -140,7 +140,7 @@ export abstract class Page extends Controller {
 }
 
 export class PageForClient extends Page {
-  constructor(app: AppBase, model: Model) {
+  constructor(app: App, model: Model) {
     super(app, model);
     this._addListeners();
   }

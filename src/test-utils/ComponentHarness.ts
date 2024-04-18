@@ -5,7 +5,7 @@ import * as qs from 'qs';
 import { RootModel } from 'racer';
 
 import { instance as derby } from '..';
-import { App } from '../App';
+import { AppForClient } from '../App';
 import { AppForServer } from '../AppForServer';
 import { Component, ComponentConstructor, extendComponent, createFactory } from '../components';
 import { PageForClient } from '../Page';
@@ -20,7 +20,7 @@ export class PageForHarness extends PageForClient {
   html?: any;
 }
 
-export class AppForHarness extends App {
+export class AppForHarness extends AppForClient {
   _harness: any;
   _pages: PageForHarness[];
   page: PageForHarness;

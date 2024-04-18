@@ -5,7 +5,7 @@
  */
 import { Racer, util, type Model} from 'racer';
 
-import { App, type AppBase, type AppOptions } from './App';
+import { AppForClient, type App, type AppOptions } from './App';
 import { Component } from './components';
 import { PageForClient } from './Page';
 
@@ -14,11 +14,11 @@ export abstract class DerbyBase extends Racer {
   // App: typeof AppBase;
   // Page: typeof PageBase;
   Model: typeof Model;
-  abstract createApp(name?: string, filename?: string, options?: AppOptions): AppBase
+  abstract createApp(name?: string, filename?: string, options?: AppOptions): App
 }
 
 export class Derby extends DerbyBase {
-  App = App;
+  App = AppForClient;
   Page = PageForClient;
   Model: typeof Model;
 

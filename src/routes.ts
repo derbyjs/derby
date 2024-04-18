@@ -1,10 +1,10 @@
 import { RootModel, type Model } from 'racer';
 import tracks = require('tracks');
 
-import { type AppBase } from './App';
+import { type App } from './App';
 import { type Page } from './Page';
 
-export function routes(app: AppBase) {
+export function routes(app: App) {
   return tracks.setup(app);
 }
 
@@ -53,7 +53,7 @@ export interface TransitionalRouteHandler {
 }
 
 declare module './App' {
-  interface AppBase {
+  interface App {
     del: RouteMethod;
     get: RouteMethod;
     history: {
