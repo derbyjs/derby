@@ -9,7 +9,7 @@
 import * as racer from 'racer';
 
 import { App } from './App';
-import { type DerbyBase } from './Derby';
+import { type Derby } from './Derby';
 import { type StyleCompilerOptions } from './files';
 import { PageForServer } from './PageForServer';
 import parsing = require('./parsing');
@@ -79,7 +79,7 @@ export class AppForServer extends App {
   watchFiles: boolean;
   router: any;
 
-  constructor(derby: DerbyBase, name: string, filename: string, options) {
+  constructor(derby: Derby, name: string, filename: string, options) {
     super(derby, name, filename, options);
     this._init(options);
   }

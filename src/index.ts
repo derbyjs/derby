@@ -1,10 +1,10 @@
 import { util } from 'racer';
 
 import { type AppOptions } from './App';
-import { Derby, type DerbyBase } from './Derby';
+import { DerbyForClient, type Derby } from './Derby';
 
-export { type AppForClient, type App as AppBase } from './App';
-export { type AppForServer } from './AppForServer';
+export { AppForClient, App } from './App';
+export { AppForServer } from './AppForServer';
 export { Dom } from './Dom';
 export { Page, PageForClient } from './Page';
 export { PageForServer } from './PageForServer';
@@ -19,8 +19,8 @@ export { type PageParams, type QueryParams } from './routes';
 
 const DerbyClass = util.isServer
   ? util.serverRequire(module, './DerbyForServer').DerbyForServer
-  : Derby;
-const instance: DerbyBase = new DerbyClass();
+  : DerbyForClient;
+const instance: Derby = new DerbyClass();
 
 export function createApp(name?: string, file?: string, options?: AppOptions) {
   return instance.createApp(name, file, options);
@@ -31,7 +31,7 @@ export function use<T = unknown>(plugin: (derby: Derby, options?: T) => Derby, o
 }
 
 export {
-  Derby,
+  DerbyForClient as Derby,
   instance,
   util,
 }

@@ -9,13 +9,13 @@ import { AppForClient, type App, type AppOptions } from './App';
 import { Component } from './components';
 import { PageForClient } from './Page';
 
-export abstract class DerbyBase extends Racer {
+export abstract class Derby extends Racer {
   Component = Component;
 
   abstract createApp(name?: string, filename?: string, options?: AppOptions): App
 }
 
-export class Derby extends DerbyBase {
+export class DerbyForClient extends Derby {
   App = AppForClient;
   Page = PageForClient;
 

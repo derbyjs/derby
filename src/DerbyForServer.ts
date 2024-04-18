@@ -2,12 +2,12 @@ import { util } from 'racer';
 
 import { App } from './App';
 import { AppForServer } from './AppForServer';
-import { DerbyBase } from './Derby';
+import { Derby } from './Derby';
 import { PageForServer } from './PageForServer';
 
 util.isProduction = process.env.NODE_ENV === 'production';
 
-export class DerbyForServer extends DerbyBase {
+export class DerbyForServer extends Derby {
   App = AppForServer;
   Page = PageForServer;
 

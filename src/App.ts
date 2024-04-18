@@ -13,7 +13,7 @@ import { util } from 'racer';
 
 import * as components from './components';
 import { type ComponentConstructor, type SingletonComponentConstructor } from './components';
-import { type Derby } from './Derby';
+import { type DerbyForClient } from './Derby';
 import { PageForClient, type Page } from './Page';
 import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
@@ -62,7 +62,7 @@ type Routes = [string, string, any][];
  */
 
 export abstract class App extends EventEmitter {
-  derby: Derby;
+  derby: DerbyForClient;
   name: string;
   filename: string;
   scriptHash: string;
