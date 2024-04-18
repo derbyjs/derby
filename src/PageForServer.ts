@@ -90,7 +90,8 @@ function stringifyBundle(bundle) {
 
 // TODO: Cleanup; copied from tracks
 function pageParams(req) {
-  const params = Object.create(null, {
+  const params = Object.create(null);
+  Object.assign(params, {
     url: req.url,
     body: req.body,
     query: req.query,
