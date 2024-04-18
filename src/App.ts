@@ -8,7 +8,7 @@
 import { EventEmitter } from 'events';
 import { basename } from 'path';
 
-import { type Model } from 'racer';
+import { type Model, type RootModel, createModel } from 'racer';
 import { util } from 'racer';
 
 import * as components from './components';
@@ -18,6 +18,7 @@ import { PageForClient, type Page } from './Page';
 import { PageParams, routes } from './routes';
 import * as derbyTemplates from './templates';
 import { type Views } from './templates/templates';
+import { checkKeyIsSafe } from './templates/util';
 
 declare module 'racer/lib/util' {
   export let isProduction: boolean;
@@ -71,7 +72,7 @@ export abstract class App extends EventEmitter {
   proto: any;
   views: Views;
   tracksRoutes: Routes;
-  model: Model;
+  model: RootModel;
   page: Page;
   protected _pendingComponentMap: Record<string, ComponentConstructor | SingletonComponentConstructor>;
   protected _waitForAttach: boolean;
@@ -99,7 +100,7 @@ export abstract class App extends EventEmitter {
 
   abstract _init(options?: AppOptions);
   loadViews(_viewFilename, _viewName?) { }
-  loadStyles(_filename, _options) { }
+  loadStyles(_filename, _options?) { }
 
   component(constructor: ComponentConstructor | SingletonComponentConstructor): this;
   component(name: string, constructor: ComponentConstructor | SingletonComponentConstructor, isDependency?: boolean): this;
@@ -142,6 +143,7 @@ export abstract class App extends EventEmitter {
 
     // TODO: DRY. This is copy-pasted from ./templates
     const mapName = viewName.replace(/:index$/, '');
+    checkKeyIsSafe(mapName);
     const currentView = this.views.nameMap[mapName];
     const currentConstructor = (currentView && currentView.componentFactory) ?
       currentView.componentFactory.constructorFn :
@@ -259,7 +261,7 @@ export class AppForClient extends App {
   _init(_options) {
     this._waitForAttach = true;
     this._cancelAttach = false;
-    this.model = new this.derby.Model();
+    this.model = createModel();
     const serializedViews = this._views();
     serializedViews(derbyTemplates, this.views);
     // Must init async so that app.on('model') listeners can be added.
