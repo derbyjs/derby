@@ -45,7 +45,7 @@ function htmlCompiler(file) {
   return file;
 }
 
-type CompilerFunciton = (file: string, filename?: string, options?: unknown) => string;
+type CompilerFunction = (file: string, filename?: string, options?: unknown) => string;
 
 function watchOnce(filenames, callback) {
   const watcher = chokidar.watch(filenames);
@@ -64,7 +64,7 @@ function watchOnce(filenames, callback) {
 
 export class AppForServer extends App {
   agents: Record<string, Agent>;
-  compilers: Record<string, CompilerFunciton>;
+  compilers: Record<string, CompilerFunction>;
   scriptBaseUrl: string;
   scriptCrossOrigin: boolean;
   scriptFilename: string;

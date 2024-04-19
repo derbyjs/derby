@@ -32,6 +32,5 @@ export function use<T = unknown>(plugin: (derby: Derby, options?: T) => Derby, o
 
 export {
   DerbyForClient as Derby,
-  instance,
   util,
 }
