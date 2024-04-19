@@ -4,10 +4,10 @@ import { parse as urlParse } from 'url';
 import * as qs from 'qs';
 import { RootModel } from 'racer';
 
-import { instance as derby } from '..';
 import { AppForClient } from '../App';
 import { AppForServer } from '../AppForServer';
 import { Component, ComponentConstructor, extendComponent, createFactory } from '../components';
+import { DerbyForClient } from '../Derby';
 import { PageForClient } from '../Page';
 
 export interface RenderOptions {
@@ -19,6 +19,8 @@ export class PageForHarness extends PageForClient {
   fragment?: any;
   html?: any;
 }
+
+const derby = new DerbyForClient();
 
 export class AppForHarness extends AppForClient {
   _harness: any;
