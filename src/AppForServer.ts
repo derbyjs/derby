@@ -162,12 +162,14 @@ export class AppForServer extends App {
     return page;
   }
 
+  // @DEPRECATED
   bundle(_backend, _options, _cb) {
     throw new Error(
       'bundle implementation missing; use racer-bundler for implementation, or remove call to this method and use another bundler',
     );
   }
 
+  // @DEPRECATED
   writeScripts(_backend, _dir, _options, _cb) {
     throw new Error(
       'writeScripts implementation missing; use racer-bundler for implementation, or remove call to this method and use another bundler',
