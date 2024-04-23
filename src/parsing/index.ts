@@ -4,7 +4,7 @@ import htmlUtil = require('html-util');
 
 import { createPathExpression } from './createPathExpression';
 import { markup } from './markup';
-import { AppForClient, App } from '../App';
+import { App } from '../App';
 import { templates, expressions } from '../templates';
 import { Expression } from '../templates/expressions';
 import { MarkupHook, View } from '../templates/templates';
@@ -879,7 +879,7 @@ function parseAlias(source: string) {
   throw new Error('Alias must be an identifier starting with "#": ' + source);
 }
 
-AppForClient.prototype.addViews = function(file: string, namespace: string) {
+App.prototype.addViews = function(file: string, namespace: string) {
   const views = parseViews(file, namespace);
   registerParsedViews(this, views);
 };
