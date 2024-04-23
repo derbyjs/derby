@@ -42,7 +42,7 @@ export interface AppOptions {
   scriptHash?: string,
 }
 
-type OnRouteCallback = (arg0: PageForClient, arg1: PageForClient, model: Model, params: PageParams, done?: () => void) => void;
+type OnRouteCallback = (this: Page, page: Page, model: Model, params: PageParams, done?: () => void) => void;
 
 type Routes = [string, string, any][];
 
