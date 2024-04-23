@@ -47,7 +47,7 @@ type OnRouteCallback = (this: Page, page: Page, model: Model, params: PageParams
 type Routes = [string, string, any][];
 
 
-/**
+/*
  * APP EVENTS
  *
   'error', Error
@@ -219,7 +219,7 @@ export abstract class App extends EventEmitter {
     );
   }
 
-  onRoute(callback: OnRouteCallback, page: PageForClient, next: () => void, done: () => void) {
+  onRoute(callback: OnRouteCallback, page: Page, next: () => void, done: () => void) {
     if (this._waitForAttach) {
       // Cancel any routing before the initial page attachment. Instead, do a
       // render once derby is ready
