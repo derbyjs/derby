@@ -247,9 +247,9 @@ export abstract class App extends EventEmitter {
 export class AppForClient extends App {
   page: PageForClient;
   history: {
-    refresh(): void,
-    push(url: string): void,
-    replace(url: string): void,
+    push: (url: string, render?: boolean, state?: object, e?: any) => void,
+    replace: (url: string, render?: boolean, state?: object, e?: any) => void,
+    refresh: () => void,
   };
 
   constructor(derby, name, filename, options: AppOptions) {
