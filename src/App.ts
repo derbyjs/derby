@@ -110,7 +110,10 @@ export abstract class App extends EventEmitter {
       name = null;
     }
     if (typeof constructor !== 'function') {
-      throw new Error('Missing component constructor argument');
+      if (typeof name === 'string') {
+        throw new Error(`Missing component constructor argument for ${name} with constructor of ${JSON.stringify(constructor)}`);
+      }
+      throw new Error(`Missing component constructor argument. Cannot use passed constructor of ${JSON.stringify(constructor)}`);
     }
 
     const viewProp = constructor.view;
