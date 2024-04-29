@@ -3,11 +3,11 @@ import { util } from 'racer';
 import { type AppOptions } from './App';
 import { DerbyForClient, type Derby } from './Derby';
 
-export { AppForClient, App } from './App';
-export { AppForServer } from './AppForServer';
+export type { AppForClient, App } from './App';
+export type { AppForServer } from './AppForServer';
 export { Dom } from './Dom';
-export { Page, PageForClient } from './Page';
-export { PageForServer } from './PageForServer';
+export type { Page, PageForClient } from './Page';
+export type { PageForServer } from './PageForServer';
 export {
   Component,
   ComponentModelData,
