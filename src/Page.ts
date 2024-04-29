@@ -2,12 +2,6 @@ import {
   type Model,
   type RootModel,
   util,
-  ChangeEvent,
-  MoveEvent,
-  RemoveEvent,
-  InsertEvent,
-  LoadEvent,
-  UnloadEvent,
 } from 'racer';
 
 import { type App } from './App';
@@ -27,28 +21,6 @@ const {
   expressions,
   templates,
 } = derbyTemplates;
-
-
-interface ModelOnImmediateEventMap {
-  changeImmediate: ChangeEvent,
-  insertImmediate: InsertEvent,
-  loadImmediate: LoadEvent,
-  moveImmediate: MoveEvent,
-  removeImmediate: RemoveEvent,
-  unloadImmediate: UnloadEvent,
-}
-
-declare module 'racer' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface Model<T> {
-    on<TEvent extends keyof ModelOnImmediateEventMap>(
-      eventType: TEvent,
-      listener: (captures: string[], event: ModelOnImmediateEventMap[TEvent]) => void,
-    );
-
-    removeListener(eventType: keyof ModelOnImmediateEventMap, listener: () => void): void;
-  }
-}
 
 export abstract class Page extends Controller {
   model: RootModel;
@@ -204,33 +176,27 @@ export class PageForClient extends Page {
     const changeListener = model.on('changeImmediate', function onChange(segments, event) {
       // The pass parameter is passed in for special handling of updates
       // resulting from stringInsert or stringRemove
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments, event.previous, event.passed);
+      eventModel.set(util.castSegments(segments), event.previous, event.passed);
     });
 
     const loadListener = model.on('loadImmediate', function onLoad(segments) {
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments);
+      eventModel.set(util.castSegments(segments));
     });
     
     const unloadListener = model.on('unloadImmediate', function onUnload(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments, event.previous);
+      eventModel.set(util.castSegments(segments), event.previous);
     });
 
     const insertListener = model.on('insertImmediate', function onInsert(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.insert(segments, event.index, event.values.length);
+      eventModel.insert(util.castSegments(segments), event.index, event.values.length);
     });
 
     const removeListener = model.on('removeImmediate', function onRemove(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.remove(segments, event.index, event.values.length);
+      eventModel.remove(util.castSegments(segments), event.index, event.values.length);
     });
 
     const moveListener = model.on('moveImmediate', function onMove(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.move(segments, event.from, event.to, event.howMany);
+      eventModel.move(util.castSegments(segments), event.from, event.to, event.howMany);
     });
 
     this._removeModelListeners = function() {
