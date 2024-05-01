@@ -1,13 +1,17 @@
-import { AppBase } from './App';
+import { util } from 'racer';
+
+import { App } from './App';
 import { AppForServer } from './AppForServer';
-import { DerbyBase } from './Derby';
+import { Derby } from './Derby';
 import { PageForServer } from './PageForServer';
 
-export class DerbyForServer extends DerbyBase {
-  App: typeof AppForServer = AppForServer;
-  Page: typeof PageForServer = PageForServer;
+util.isProduction = process.env.NODE_ENV === 'production';
 
-  createApp(name: string, filename: string, options: any): AppBase<object> {
+export class DerbyForServer extends Derby {
+  App = AppForServer;
+  Page = PageForServer;
+
+  createApp(name: string, filename: string, options: any): App {
     return new this.App(this, name, filename, options);
   }
 }

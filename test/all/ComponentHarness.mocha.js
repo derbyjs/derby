@@ -1,6 +1,6 @@
 var expect = require('chai').expect;
-var ComponentHarness = require('../../test-utils').ComponentHarness;
-var derbyTemplates = require('../../dist/templates');
+var ComponentHarness = require('../../src/test-utils').ComponentHarness;
+var derbyTemplates = require('../../src/templates');
 
 describe('ComponentHarness', function() {
   describe('renderHtml', function() {

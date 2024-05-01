@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var templates = require('../../dist/templates').templates;
+var templates = require('../../src/templates').templates;
 var derby = require('./util').derby;
 
 describe('components', function() {

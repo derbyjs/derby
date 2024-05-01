@@ -1,11 +1,14 @@
 {
   "name": "derby",
   "description": "MVC framework making it easy to write realtime, collaborative applications that run in both Node.js and browsers.",
-  "version": "3.0.2",
+  "version": "4.0.0-beta.18",
   "homepage": "http://derbyjs.com/",
   "repository": {
     "type": "git",
     "url": "git://github.com/derbyjs/derby.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "main": "dist/index.js",
   "exports": {
@@ -17,8 +20,9 @@
     "./AppForServer": "./dist/AppForServer.js",
     "./server": "./dist/server.js",
     "./Page": "./dist/Page.js",
-    "./test-utils": "./test-utils/index.js",
-    "./test-utils/*": "./test-utils/*.js"
+    "./test-utils": "./dist/test-utils/index.js",
+    "./test-utils/*": "./dist/test-utils/*.js",
+    "./file-utils": "./dist/files.js"
   },
   "files": [
     "dist/",
@@ -27,12 +31,11 @@
   "scripts": {
     "build": "node_modules/.bin/tsc",
     "checks": "npm run lint && npm test",
-    "lint": "npx eslint src/**/*.js test/**/*.js test-utils/**/*.js",
+    "lint": "npx eslint src/**/*.ts test/**/*.js",
     "lint:ts": "npx eslint src/**/*.ts",
     "lint:fix": "npm run lint:ts -- --fix",
     "prepare": "npm run build",
-    "pretest": "npm run build",
-    "test": "npx mocha 'test/all/**/*.mocha.js' 'test/dom/**/*.mocha.js' 'test/server/**/*.mocha.js'",
+    "test": "npx mocha -r ts-node/register 'test/all/**/*.mocha.*' 'test/dom/**/*.mocha.*' 'test/server/**/*.mocha.*'",
     "test-browser": "node test/server.js"
   },
   "dependencies": {
@@ -40,16 +43,20 @@
     "esprima-derby": "^0.1.0",
     "html-util": "^0.2.3",
     "qs": "^6.11.0",
-    "racer": "^1.0.3",
     "resolve": "^1.22.1",
     "serialize-object": "^1.0.0",
     "tracks": "^0.5.8"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.11",
     "@types/esprima-derby": "npm:@types/esprima@^4.0.3",
     "@types/estree": "^1.0.1",
     "@types/express": "^4.17.18",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^20.3.1",
+    "@types/qs": "^6.9.11",
+    "@types/resolve": "^1.20.6",
+    "@types/sharedb": "^3.3.10",
     "@typescript-eslint/eslint-plugin": "^6.2.1",
     "@typescript-eslint/parser": "^6.2.1",
     "async": "^3.2.4",
@@ -63,7 +70,12 @@
     "jsdom": "^20.0.1",
     "mocha": "^10.0.0",
     "prettier": "^3.0.1",
+    "racer": "^v2.0.0-beta.11",
+    "ts-node": "^10.9.2",
     "typescript": "~5.1.3"
+  },
+  "peerDependencies": {
+    "racer": "^v2.0.0-beta.8"
   },
   "optionalDependencies": {},
   "bugs": {

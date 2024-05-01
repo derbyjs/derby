@@ -1,6 +1,6 @@
 var expect = require('chai').expect;
-var Component = require('../../dist/components').Component;
-var domTestRunner = require('../../test-utils/domTestRunner');
+var Component = require('../../src/components').Component;
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('ComponentHarness', function() {
   var runner = domTestRunner.install();

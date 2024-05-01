@@ -7,7 +7,7 @@ import { type Context } from './contexts';
 import { DependencyOptions } from './dependencyOptions';
 import { type Expression } from './expressions';
 import { checkKeyIsSafe, concat, hasKeys, traverseAndCreate } from './util';
-import { Component } from '../components';
+import { Component, ComponentModelData } from '../components';
 import { Controller } from '../Controller';
 
 export type Attributes = Record<string, Attribute>;
@@ -2278,7 +2278,7 @@ export class ElementOn extends MarkupHook<globalThis.Element> {
   }
 
   apply(context: Context, element: any, event?: any) {
-    const modelData = context.controller.model.data;
+    const modelData = context.controller.model.data as ComponentModelData;
     modelData.$event = event;
     modelData.$element = element;
     const out = this.expression.apply(context);

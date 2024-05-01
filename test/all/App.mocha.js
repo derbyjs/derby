@@ -1,19 +1,19 @@
 var expect = require('chai').expect;
-var App = require('../../dist/App').App;
+var AppForClient = require('../../src/App').AppForClient;
 
 describe('App._parseInitialData', () => {
   it('parses simple json', () => {
-    var actual = App._parseInitialData('{"foo": "bar"}');
+    var actual = AppForClient._parseInitialData('{"foo": "bar"}');
     expect(actual).to.deep.equal({ foo: 'bar' });
   });
 
   it('parses escaped json', () => {
-    var actual = App._parseInitialData('{"foo": "<\\u0021bar><\\/bar>"}');
+    var actual = AppForClient._parseInitialData('{"foo": "<\\u0021bar><\\/bar>"}');
     expect(actual).to.deep.equal({ foo: '<!bar></bar>' });
   });
 
   it('thorws error with context for unexpected tokens', () => {
-    expect(() => App._parseInitialData('{"foo": b}')).to.throw(
+    expect(() => AppForClient._parseInitialData('{"foo": b}')).to.throw(
       /^Parse failure: Unexpected token/
     );
   });

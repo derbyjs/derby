@@ -2,15 +2,21 @@ import type { Request, Response } from 'express';
 import { type Model } from 'racer';
 
 import { type AppForServer } from './AppForServer';
-import { PageBase } from './Page';
+import { Page } from './Page';
 import { type PageParams } from './routes';
 
-export class PageForServer<T = object> extends PageBase<T> {
+declare module 'racer' {
+  interface Model {
+    hasErrored?: boolean;
+  }
+}
+
+export class PageForServer extends Page {
   req: Request;
   res: Response;
   page: PageForServer;
 
-  constructor(app: AppForServer, model: Model<T>, req: Request, res: Response) {
+  constructor(app: AppForServer, model: Model, req: Request, res: Response) {
     super(app, model);
     this.req = req;
     this.res = res;

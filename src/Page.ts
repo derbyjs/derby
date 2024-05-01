@@ -1,7 +1,10 @@
-import { type Model } from 'racer';
-import util = require('racer/lib/util');
+import {
+  type Model,
+  type RootModel,
+  util,
+} from 'racer';
 
-import { type AppBase, type App } from './App';
+import { type App } from './App';
 import components = require('./components');
 import { Controller } from './Controller';
 import documentListeners = require('./documentListeners');
@@ -19,17 +22,18 @@ const {
   templates,
 } = derbyTemplates;
 
-export abstract class PageBase<T = object> extends Controller<T> {
+export abstract class Page extends Controller {
+  model: RootModel;
   params: Readonly<PageParams>;
   context: Context;
-  create: (model: Model<T>, dom: any) => void;
-  init?: (model: Model<T>) => void;
+  create: (model: Model, dom: any) => void;
+  init?: (model: Model) => void;
   _components: Record<string, components.Component>
   _eventModel: any;
   _removeModelListeners: () => void = () => {};
-  page: PageBase;
+  page: Page;
 
-  constructor(app: AppBase, model: Model<T>) {
+  constructor(app: App, model: Model) {
     super(app, null, model);
     this.params = null;
     this._eventModel = null;
@@ -51,19 +55,19 @@ export abstract class PageBase<T = object> extends Controller<T> {
     return classNames.join(' ');
   }
 
-  get(viewName: string, ns: string, unescaped?) {
+  get(viewName: string, ns?: string, unescaped?) {
     this._setRenderPrefix(ns);
     const view = this.getView(viewName, ns);
     return view.get(this.context, unescaped);
   }
 
-  getFragment(viewName: string, ns: string) {
+  getFragment(viewName: string, ns?: string) {
     this._setRenderPrefix(ns);
     const view = this.getView(viewName, ns);
     return view.getFragment(this.context);
   }
 
-  getView(viewName: string, ns: string) {
+  getView(viewName: string, ns?: string) {
     return this.app.views.find(viewName, ns);
   }
 
@@ -101,7 +105,7 @@ export abstract class PageBase<T = object> extends Controller<T> {
     this.model.set('$render.prefix', prefix);
   }
 
-  _setRenderParams(ns) {
+  _setRenderParams(ns?: string) {
     this.model.set('$render.ns', ns);
     this.model.set('$render.params', this.params);
     this.model.set('$render.url', this.params && this.params.url);
@@ -109,8 +113,8 @@ export abstract class PageBase<T = object> extends Controller<T> {
   }
 }
 
-export class Page<T = object> extends PageBase<T> {
-  constructor(app: App, model: Model<T>) {
+export class PageForClient extends Page {
+  constructor(app: App, model: Model) {
     super(app, model);
     this._addListeners();
   }
@@ -125,7 +129,7 @@ export class Page<T = object> extends PageBase<T> {
 
   attach() {
     this.context.pause();
-    const ns = this.model.get('$render.ns');
+    const ns = this.model.get<string>('$render.ns');
     const titleView = this.getView('TitleElement', ns);
     const bodyView = this.getView('BodyElement', ns);
     const titleElement = document.getElementsByTagName('title')[0];
@@ -166,89 +170,33 @@ export class Page<T = object> extends PageBase<T> {
     // a bug with binding updates where a model listener causes a change to the
     // path being listened on, directly or indirectly.
 
-    // TODO: Remove this when upgrading Racer to the next major version. Feature
-    // detect which type of event listener to register by emitting a test event
-    if (useLegacyListeners(model)) {
-      return this._addModelListenersLegacy(eventModel);
-    }
-
     // `util.castSegments(segments)` is needed to cast string segments into
     // numbers, since EventModel#child does typeof checks against segments. This
     // could be done once in Racer's Model#emit, instead of in every listener.
     const changeListener = model.on('changeImmediate', function onChange(segments, event) {
       // The pass parameter is passed in for special handling of updates
       // resulting from stringInsert or stringRemove
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments, event.previous, event.passed);
+      eventModel.set(util.castSegments(segments), event.previous, event.passed);
     });
+
     const loadListener = model.on('loadImmediate', function onLoad(segments) {
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments);
+      eventModel.set(util.castSegments(segments));
     });
+    
     const unloadListener = model.on('unloadImmediate', function onUnload(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments, event.previous);
+      eventModel.set(util.castSegments(segments), event.previous);
     });
+
     const insertListener = model.on('insertImmediate', function onInsert(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.insert(segments, event.index, event.values.length);
+      eventModel.insert(util.castSegments(segments), event.index, event.values.length);
     });
+
     const removeListener = model.on('removeImmediate', function onRemove(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.remove(segments, event.index, event.values.length);
+      eventModel.remove(util.castSegments(segments), event.index, event.values.length);
     });
+
     const moveListener = model.on('moveImmediate', function onMove(segments, event) {
-      segments = util.castSegments(segments.slice());
-      eventModel.move(segments, event.from, event.to, event.howMany);
-    });
-
-    this._removeModelListeners = function() {
-      model.removeListener('changeImmediate', changeListener);
-      model.removeListener('loadImmediate', loadListener);
-      model.removeListener('unloadImmediate', unloadListener);
-      model.removeListener('insertImmediate', insertListener);
-      model.removeListener('removeImmediate', removeListener);
-      model.removeListener('moveImmediate', moveListener);
-    };
-  }
-
-  private _addModelListenersLegacy(eventModel) {
-    const model = this.model;
-    if (!model) return;
-
-    // `util.castSegments(segments)` is needed to cast string segments into
-    // numbers, since EventModel#child does typeof checks against segments. This
-    // could be done once in Racer's Model#emit, instead of in every listener.
-    const changeListener = model.on('changeImmediate', function onChange(segments, eventArgs) {
-      // eventArgs[0] is the new value, which Derby bindings don't use directly.
-      // The pass parameter is passed in for special handling of updates
-      // resulting from stringInsert or stringRemove
-      const [ previous, pass ] = eventArgs;
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments, previous, pass);
-    });
-    const loadListener = model.on('loadImmediate', function onLoad(segments) {
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments);
-    });
-    const unloadListener = model.on('unloadImmediate', function onUnload(segments) {
-      segments = util.castSegments(segments.slice());
-      eventModel.set(segments);
-    });
-    const insertListener = model.on('insertImmediate', function onInsert(segments, eventArgs) {
-      const [index, values] = eventArgs;
-      segments = util.castSegments(segments.slice());
-      eventModel.insert(segments, index, values.length);
-    });
-    const removeListener = model.on('removeImmediate', function onRemove(segments, eventArgs) {
-      const [index, values] = eventArgs;
-      segments = util.castSegments(segments.slice());
-      eventModel.remove(segments, index, values.length);
-    });
-    const moveListener = model.on('moveImmediate', function onMove(segments, eventArgs) {
-      const [from, to, howMany] = eventArgs;
-      segments = util.castSegments(segments.slice());
-      eventModel.move(segments, from, to, howMany);
+      eventModel.move(util.castSegments(segments), event.from, event.to, event.howMany);
     });
 
     this._removeModelListeners = function() {
@@ -305,18 +253,6 @@ export class Page<T = object> extends PageBase<T> {
       }
     }
   }
-}
-
-function useLegacyListeners(model) {
-  let useLegacy = true;
-  // model.once is broken in older racer, so manually remove event
-  const listener = model.on('changeImmediate', function(_segments, event) {
-    model.removeListener('changeImmediate', listener);
-    // Older Racer emits an array of eventArgs, whereas newer racer emits an event object
-    useLegacy = Array.isArray(event);
-  });
-  model.set('$derby.testEvent', true);
-  return useLegacy;
 }
 
 function addDependencies(eventModel, expression, binding) {

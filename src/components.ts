@@ -7,11 +7,10 @@
  *
  */
 
-import { type ChildModel, type ModelData } from 'racer';
-import util = require('racer/lib/util');
+import { type ChildModel, util } from 'racer';
 
 import { Controller } from './Controller';
-import { PageBase } from './Page';
+import { Page } from './Page';
 import derbyTemplates = require('./templates');
 import { Context } from './templates/contexts';
 import { Expression } from './templates/expressions';
@@ -26,58 +25,50 @@ export interface DataConstructor extends Record<string, unknown> {
 
 type AnyVoidFunction = (...args: any[]) => void;
 
-export interface ComponentConstructor<T = object> {
-  new(context: Context, data: ModelData): Component<T>;
+export interface ComponentConstructor {
+  new(context: Context, data: Record<string, unknown>): Component;
   DataConstructor?: DataConstructor;
-  singleton?: boolean,
-  view?: {
-    dependencies?: any[],
-    file?: string,
-    is: string,
-    source?: string,
-    viewPartialDependencies?: string[],
-  }
+  singleton?: undefined,
+  view?: ComponentViewDefinition,
 }
 
 export interface SingletonComponentConstructor {
-  new(): Component
+  new(): object;
   singleton: true;
-  view?: {
-    is: string,
-    dependencies?: ComponentConstructor[],
-    source?: string,
-    file?: string,
-  }
+  view?: ComponentViewDefinition
 }
 
-export abstract class Component<T = object> extends Controller<T> {
+export interface ComponentViewDefinition {
+  dependencies?: Array<ComponentConstructor | SingletonComponentConstructor>,
+  file?: string,
+  is?: string,
+  source?: string,
+  viewPartialDependencies?: Array<string | { is: string }>,
+}
+
+export abstract class Component<T extends object = object> extends Controller<T> {
   context: Context;
   id: string;
   isDestroyed: boolean;
-  page: PageBase;
+  page: Page;
   parent: Controller;
   singleton?: true;
   _scope: string[];
   // new style view prop
-  view?: {
-    dependencies: ComponentConstructor[],
-    file: string,
-    is: string,
-    source: string,
-  }
+  view?: ComponentViewDefinition;
   static DataConstructor?: DataConstructor;
 
-  constructor(context: Context, data: ModelData) {
+  constructor(context: Context, data: Record<string, unknown>) {
     const parent = context.controller;
     const id = context.id();
     const scope = ['$components', id];
-    const model = parent.model.root.eventContext(id);
+    const model = parent.model.root.eventContext(id) as ChildModel<T>;
     model._at = scope.join('.');
     data.id = id;
     model._set(scope, data);
     // Store a reference to the component's scope such that the expression
     // getters are relative to the component
-    model.data = data;
+    model.data = data as T;
     // IMPORTANT: call super _after_ model created
     super(context.controller.app, context.controller.page, model);
 
@@ -92,7 +83,7 @@ export abstract class Component<T = object> extends Controller<T> {
     this.isDestroyed = false;
   }
 
-  init(_model: ChildModel<T>): void {}
+  init(_model: ChildModel): void {}
 
   destroy() {
     this.emit('destroy');
@@ -344,19 +335,19 @@ export abstract class Component<T = object> extends Controller<T> {
   }
 }
 
-function _safeWrap<T extends object>(component: Component<T>, callback: () => void) {
+function _safeWrap(component: Component, callback: () => void) {
   return function() {
     if (component.isDestroyed) return;
     callback.call(component);
   };
 }
 
-export class ComponentAttribute<T = object> {
+export class ComponentAttribute {
   expression: Expression;
-  model: ChildModel<T>;
+  model: ChildModel;
   key: string;
 
-  constructor(expression: Expression, model: ChildModel<T>, key: string) {
+  constructor(expression: Expression, model: ChildModel, key: string) {
     checkKeyIsSafe(key);
     this.expression = expression;
     this.model = model;
@@ -384,7 +375,7 @@ export class ComponentAttributeBinding extends Binding {
   }
 }
 
-function setModelAttributes<T = object>(context: Context, model: ChildModel<T>) {
+function setModelAttributes(context: Context, model: ChildModel) {
   const attributes = context.parent.attributes;
   if (!attributes) return;
   // Set attribute values on component model
@@ -394,7 +385,7 @@ function setModelAttributes<T = object>(context: Context, model: ChildModel<T>) 
   }
 }
 
-function setModelAttribute<T = object>(context: Context, model: ChildModel<T>, key: string, value: unknown) {
+function setModelAttribute(context: Context, model: ChildModel, key: string, value: unknown) {
   // If an attribute is an Expression, set its current value in the model
   // and keep it up to date. When it is a resolvable path, use a Racer ref,
   // which makes it a two-way binding. Otherwise, set to the current value
@@ -435,10 +426,10 @@ function setModelAttribute<T = object>(context: Context, model: ChildModel<T>, k
   model.set(key, value);
 }
 
-export function createFactory(constructor: ComponentConstructor) {
+export function createFactory(constructor: ComponentConstructor | SingletonComponentConstructor) {
   // DEPRECATED: constructor.prototype.singleton is deprecated. "singleton"
   // static property on the constructor is preferred
-  return (constructor.singleton || constructor.prototype.singleton) ?
+  return (constructor.singleton === true) ?
     new SingletonComponentFactory(constructor) :
     new ComponentFactory(constructor);
 }
@@ -451,12 +442,15 @@ function emitInitHooks(context, component) {
   }
 }
 
-class ComponentModelData {
-  id = null;
-  $controller = null;
+export class ComponentModelData {
+  id: string;
+  $controller: Controller;
+  $element: any;
+  $event: any;
+  [key: string]: unknown;
 }
 
-export class ComponentFactory{
+export class ComponentFactory {
   constructorFn: ComponentConstructor;
 
   constructor(constructorFn: ComponentConstructor) {
@@ -513,7 +507,7 @@ class SingletonComponentFactory{
 
   init(context) {
     // eslint-disable-next-line new-cap
-    if (!this.component) this.component = new this.constructorFn();
+    if (!this.component) this.component = new this.constructorFn() as Component;
     return context.componentChild(this.component);
   }
 

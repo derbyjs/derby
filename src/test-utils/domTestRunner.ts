@@ -1,55 +1,53 @@
-var util = require('racer').util;
-var registerAssertions = require('./assertions');
-var ComponentHarness = require('./ComponentHarness');
+import { util } from 'racer';
 
-var runner = new DomTestRunner();
-// Set up Chai assertion chain methods: `#html` and `#render`
-registerAssertions(runner, require('chai').Assertion);
+import { assertions as registerAssertions } from './assertions';
+import { ComponentHarness } from './ComponentHarness';
 
-exports.install = function(options) {
-  runner.installMochaHooks(options);
-  return runner;
-};
+export class DomTestRunner{
+  window?: any;
+  document?: any;
+  harnesses: ComponentHarness[];
 
-exports.DomTestRunner = DomTestRunner;
-function DomTestRunner() {
-  this.window = null;
-  this.document = null;
-  this.harnesses = [];
+  constructor() {
+    this.window = null;
+    this.document = null;
+    this.harnesses = [];
+  }
+
+  installMochaHooks(options) {
+    options = options || {};
+    const jsdomOptions = options.jsdomOptions;
+
+    // Set up runner's `window` and `document`.
+    if (util.isServer) {
+      mochaHooksForNode(this, {
+        jsdomOptions: jsdomOptions
+      });
+    } else {
+      mochaHooksForBrowser(this);
+    }
+  }
+
+  createHarness() {
+    const harness = new ComponentHarness();
+    if (arguments.length > 0) {
+      // eslint-disable-next-line prefer-spread, prefer-rest-params
+      harness.setup.apply(harness, arguments);
+    }
+    this.harnesses.push(harness);
+    return harness;
+  }
 }
 
-DomTestRunner.prototype.installMochaHooks = function(options) {
-  options = options || {};
-  var jsdomOptions = options.jsdomOptions;
-
-  // Set up runner's `window` and `document`.
-  if (util.isServer) {
-    mochaHooksForNode(this, {
-      jsdomOptions: jsdomOptions
-    });
-  } else {
-    mochaHooksForBrowser(this);
-  }
-};
-
-DomTestRunner.prototype.createHarness = function() {
-  var harness = new ComponentHarness();
-  if (arguments.length > 0) {
-    harness.setup.apply(harness, arguments);
-  }
-  this.harnesses.push(harness);
-  return harness;
-};
-
 function mochaHooksForNode(runner, options) {
-  var jsdomOptions = options.jsdomOptions;
+  const jsdomOptions = options.jsdomOptions;
 
   // Use an indirect require so that Browserify doesn't try to bundle JSDOM.
-  var JSDOM = util.serverRequire(module, 'jsdom').JSDOM;
+  const JSDOM = util.serverRequire(module, 'jsdom').JSDOM;
 
-  var nodeGlobal = global;
+  const nodeGlobal = global;
   // Keep a direct reference so that we're absolutely sure we clean up our own JSDOM.
-  var jsdom;
+  let jsdom;
 
   global.beforeEach(function() {
     jsdom = new JSDOM('', jsdomOptions);
@@ -59,7 +57,7 @@ function mochaHooksForNode(runner, options) {
     nodeGlobal.window = runner.window;
     nodeGlobal.document = runner.document;
     // Initialize "input" and "change" listeners on the document.
-    require('../dist/documentListeners').add(runner.document);
+    module.require('../documentListeners').add(runner.document);
   });
 
   global.afterEach(function() {
@@ -90,4 +88,13 @@ function mochaHooksForBrowser(runner) {
     runner.window = null;
     runner.document = null;
   });
+}
+
+const runner = new DomTestRunner();
+// Set up Chai assertion chain methods: `#html` and `#render`
+registerAssertions(runner, module.require('chai').Assertion);
+
+export function install(options) {
+  runner.installMochaHooks(options);
+  return runner;
 }
