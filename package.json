@@ -14,14 +14,19 @@
   "exports": {
     ".": "./dist/index.js",
     "./components": "./dist/components.js",
+    "./dist/components": "./dist/components.js",
     "./parsing": "./dist/parsing/index.js",
+    "./dist/parsing": "./dist/parsing/index.js",
     "./templates": "./dist/templates/index.js",
+    "./dist/templates": "./dist/templates/index.js",
     "./App": "./dist/App.js",
     "./AppForServer": "./dist/AppForServer.js",
     "./server": "./dist/server.js",
     "./Page": "./dist/Page.js",
     "./test-utils": "./dist/test-utils/index.js",
     "./test-utils/*": "./dist/test-utils/*.js",
+    "./dist/test-utils": "./dist/test-utils/index.js",
+    "./dist/test-utils/*": "./dist/test-utils/*.js",
     "./file-utils": "./dist/files.js"
   },
   "files": [
