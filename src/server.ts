@@ -1,10 +1,12 @@
-import cluster from 'cluster';
+// import as namespace to avoid transform as cluster.default 
+import * as cluster from 'node:cluster';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 export function run(createServer: () => void) {
   // In production
   if (isProduction) return createServer();
+  // @ts-expect-error imported without default; need type update?
   if (cluster.isPrimary) {
     console.log('Primary PID ', process.pid);
     startWorker();
@@ -14,6 +16,7 @@ export function run(createServer: () => void) {
 }
 
 function startWorker() {
+  // @ts-expect-error imported without default; need type update?
   const worker = cluster.fork();
   
   worker.once('disconnect', function () {
