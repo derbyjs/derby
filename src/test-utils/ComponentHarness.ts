@@ -158,7 +158,7 @@ export class ComponentHarness extends EventEmitter {
    * @returns { Page & {html: string} } - a `Page` that has a `html` property with the rendered HTML
    *   string
    */
-  renderHtml(options) {
+  renderHtml(options?: RenderOptions) {
     return this._get(function(page) {
       page.html = page.get('$harness');
     }, options);
@@ -171,7 +171,7 @@ export class ComponentHarness extends EventEmitter {
    * @returns { Page & {fragment: DocumentFragment} } a `Page` that has a `fragment` property with the
    *   rendered `DocumentFragment`
    */
-  renderDom(options) {
+  renderDom(options?: RenderOptions) {
     return this._get(function(page) {
       page.fragment = page.getFragment('$harness');
     }, options);
@@ -189,7 +189,7 @@ export class ComponentHarness extends EventEmitter {
    * @param {(page: PageForHarness) => void} render
    * @param {RenderOptions} [options]
    */
-  _get(renderFn: (page: PageForHarness) => void, options?): PageForHarness {
+  _get(renderFn: (page: PageForHarness) => void, options?: RenderOptions): PageForHarness {
     options = options || {};
     const url = options.url || '';
   
