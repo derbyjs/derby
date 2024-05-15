@@ -16,8 +16,18 @@ export interface RenderOptions {
 
 export class PageForHarness extends PageForClient {
   component?: Component;
-  fragment?: any;
-  html?: any;
+  fragment?: DocumentFragment;
+  html?: string;
+}
+
+interface PageRenderedHtml extends PageForHarness {
+  html: string;
+  fragment: undefined;
+}
+
+interface PageRenderedFragment extends PageForHarness {
+  html: undefined;
+  fragment: DocumentFragment;
 }
 
 const derby = new DerbyForClient();
@@ -158,10 +168,10 @@ export class ComponentHarness extends EventEmitter {
    * @returns { Page & {html: string} } - a `Page` that has a `html` property with the rendered HTML
    *   string
    */
-  renderHtml(options?: RenderOptions) {
+  renderHtml(options?: RenderOptions): PageRenderedHtml {
     return this._get(function(page) {
       page.html = page.get('$harness');
-    }, options);
+    }, options) as PageRenderedHtml;
   }
   
   /**
@@ -171,10 +181,10 @@ export class ComponentHarness extends EventEmitter {
    * @returns { Page & {fragment: DocumentFragment} } a `Page` that has a `fragment` property with the
    *   rendered `DocumentFragment`
    */
-  renderDom(options?: RenderOptions) {
+  renderDom(options?: RenderOptions): PageRenderedFragment {
     return this._get(function(page) {
       page.fragment = page.getFragment('$harness');
-    }, options);
+    }, options) as PageRenderedFragment;
   }
   
   attachTo(parentNode, node) {
