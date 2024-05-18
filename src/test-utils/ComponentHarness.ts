@@ -122,7 +122,7 @@ export class ComponentHarness extends EventEmitter {
    *     {is: 'dialog:buttons', source: '<button>OK</button>'}
    *   );
    */
-  stub(...args: Array<string | { is: string }>) {
+  stub(...args: Array<string | { is: string, source?: string }>) {
     for (let i = 0; i < args.length; i++) {
       // eslint-disable-next-line prefer-rest-params
       const arg = arguments[i];
