@@ -37,18 +37,6 @@ It is possible to override another component's functionality while preserving it
 If you just want to reuse a view partial the `import` keyword is probably more appropriate. See the [namespaces and files](../views/namespaces-and-files#structuring-views-in-multiple-files) documentation for more details.
 
 
-## Programatic view management
-
-> `view = this.getView(name)`
-> * `name` the name of the view
-> * `view` a template object representing the view
-
-It is possible to access the views in a component's namespace from the controller. This may be used in conjunction with `setAttribute` to override a component's default rendering.
-An example use case would be to set a default template and then allow the user of the component to pass in a template to override the default.
-
-See the [attributes](scope#attributes-vs-model-data) documentation for more information on using `setAttribute`.
-
-
 ## Component tracking
 Derby components are tracked in the DOM with an HTML comment tag. This allows components to be responsible for arbitrary DOM content, for example two table rows that otherwise cannot be wrapped by any other DOM elements.
 
@@ -58,11 +46,11 @@ Derby components are tracked in the DOM with an HTML comment tag. This allows co
 
 ## Debugging
 
-A relatively quick way to inspect a component for debugging is to find it's comment in the browser's DOM inspector.
+A relatively quick way to inspect a component for debugging is to find its comment in the browser's DOM inspector.
 In modern browsers clicking on the comment allows you to reference it in the console with `$0`.
-Once you have a reference to the comment tag you can access it's controller with `$0.$component` and it's model data with `$0.$component.model.get()`
+Once you have a reference to the comment tag, you can access it's controller with `$0.$component` and its model data with `$0.$component.model.get()`
 
-<img src="/images/docs/charts-debug.png">
+<img src="./charts-debug.png">
 
 ### derby-debug
 There is a plugin which makes accessing your components from the console even more accessible that is recommended for development.

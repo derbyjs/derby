@@ -6,7 +6,7 @@ has_children: true
 
 # Overview
 
-Components are the building blocks of Derby applications. A component is a view associated with a controller class. The [view](views) is implemented as a Derby template and the controller is implemented as a JavaScript [class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) or [constructor function](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Object-oriented_JS). Derby creates an instance of the controller class each time it renders the component view.
+Components are the building blocks of Derby applications. A component is a view associated with a controller class. The [view](../views) is implemented as a Derby template and the controller is implemented as a JavaScript [class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) or [constructor function](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Object-oriented_JS). Derby creates an instance of the controller class each time it renders the component view.
 
 
 ## Reuse and organization

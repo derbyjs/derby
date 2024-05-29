@@ -44,7 +44,7 @@ If `model.filter()` is called with `null` for the function, it will create a lis
 
 There are two default named functions defined for sorting, `'asc'` and `'desc'`. These functions compare each item with Javascript's less than and greater than operators. See MDN for more info on [sorting non-ASCII characters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#Sorting_non-ASCII_characters).
 
-You may define functions to be used in `model.filter()` and `model.sort()` via [`model.fn()`](functions#named-functions).
+You may define functions to be used in `model.filter()` and `model.sort()` via [`model.fn()`](reactive-functions#named-functions).
 
 A filter may have both a filter function and a sort function by chaining the two calls:
 

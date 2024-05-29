@@ -13,11 +13,15 @@ In addition, to `is`, Derby treats the attributes `as`, `within`, `inherit`, `ex
 
 Other attribute names are custom to a view or component, and they are used to pass in data or options to a given view or component instance. We'll describe use of these custom attributes first.
 
-## Custom view attributes
+## User-defined view attributes
 
 Most view attributes are custom options particular to a view or component. They are analogous to the arguments of a function. They might provide data inputs, a two-way data binding, toggle options, or pass in a template.
 
-Custom attributes may be any [literal value](literals).
+### Basic attribute values
+
+Attribute values can be any JavaScript expression supported by Derby.
+
+[Literals](literals) are the simplest kinds of attribute values.
 
 ```derby
 <!-- As with HTML, values in quotes are passed in as strings -->
@@ -41,7 +45,7 @@ passed in as `true`. -->
 <view is="modal">Hello, World.</view>
 ```
 
-They may also be any other type of expression, such as a path expression, an expression that uses an operator, or a function expression.
+Other types of expressions are supported too, such as path expressions, expressions with operators, or a function expressions.
 
 ```derby
 <!-- Passing in a path to a model value with a path expression -->
@@ -59,6 +63,8 @@ They may also be any other type of expression, such as a path expression, an exp
 <!-- Path expression for the `content` attribute -->
 <view is="modal">{{modalBody}}</view>
 ```
+
+### HTML templates as attribute values
 
 Finally, an attribute value may be a template.
 
@@ -97,6 +103,8 @@ Beyond individual attribute values, it is common to want to pass in a list of it
 </view>
 ```
 
+### Custom attribute tags
+
 To make instantiating commonly used components more elegant, Derby supports the ability to declare a custom tag name that refers to a view as well as the attributes and array attributes that a view supports.
 
 Definition:
@@ -124,6 +132,8 @@ Usage:
   <pane title="Second tab">Greetings.</pane>
 </tabs>
 ```
+
+## Special Derby attributes
 
 ### `within` attributes
 
@@ -160,7 +170,46 @@ Within attributes are always passed in as Template objects, even if they contain
 
 If a `within` attribute is passed to a component, the component's `getAttribute()` method will return the meaning of the attribute as if it were rendered immediately inside of the component's main view. Thus, model paths will refer to model paths within the component.
 
-### Relation of view attributes to a component's model
+### `as` attribute
+
+The `as` attribute may be applied to both components and DOM elements. Before a component's `create` method is called, Derby will set these items as properties of the current controller. This provides easy access to these items within the controller code of a component.
+
+```derby
+<index:>
+  <div as="container">
+    <view is="modal" as="modal"></view>
+  </div>
+```
+
+```js
+// DOM element
+this.container.querySelectorAll('*');
+// component
+this.modal.close();
+```
+
+### `inherit` attribute
+
+Adding the `inherit` attribute changes the behavior of attribute lookup within the instantiated view. By default, attribute values are only defined in the view that they are passed into explicitly. Passing attribute values through one view into another normally requires manually repeating the attributes, such as `class="{{@class}}"`. `inherit` modifies the default behavior, making all attributes of the parent view instance implicitly available as well. Explicitly providing an attribute will take precedence over `inherit`.
+
+```derby
+<index:>
+  {{@foo}}
+  <view is="modal" inherit></view>
+
+<modal:>
+  {{@foo}}
+```
+
+### `extend` attribute
+
+Extend is used to render the view of a component **without** instantiating the component object that would normally be created. It can be useful if one component class would like to extend from the class of another component, and it does not wish to modify the component's view.
+
+### `on-` attributes
+
+View attributes beginning with `on-` attach event listeners to component events. See [Component Events](../../components/events).
+
+## Relation of view attributes to a component's model
 
 View attributes are the primary way to pass values into a component's model. Right before Derby calls a component's `init` method, it gets the current value for each view attribute and sets it on the component's model with the same name. Therefore, inside of a component, the model path can be used to access the value of the attribute.
 
@@ -205,42 +254,3 @@ In all cases, the value inside the component model is updated to remain consiste
 Derby creates a Model Reference (`model.ref()`) for attribute expressions where possible. Model References reflect changes in both directions, so this establishes a two-way binding. The expressions that can be represented with Model References are the ones that can be resolved to an equivalent path in the model: specific path expressions, aliases and attributes that refer to specific paths, and square bracket expressions.
 
  Any dynamic expression that cannot be resolved to an equivalent model path, such as an expression using a function, an operator, or an array or object literal, establishes a Component Attribute Binding. Currently, these are only implemented as one-way input bindings—the value of such an expression is set initially, and as its dependencies change, the value is recomputed and set on the component's model again. It is worth mentioning that function expressions and some operators define both a `get` and a `set` function, enabling them to be used in two-way bindings. For example, the `!` (not) operator supports a `set` function. These two-way function and operator bindings are supported by Derby's HTML element bindings, such as `<input type="checkbox" checked="{{!incomplete}}">`. However, component attributes do not support use of `set` functions yet. Therefore, two-way bindings like `<view is="checkbox" value="{{!incomplete}}"></view>` do not work currently. (They do work without the `!`, assuming Derby is able to make a Model Reference.)
-
-## `as` attribute
-
-The `as` attribute may be applied to both components and DOM elements. Before a component's `create` method is called, Derby will set these items as properties of the current controller. This provides easy access to these items within the controller code of a component.
-
-```derby
-<index:>
-  <div as="container">
-    <view is="modal" as="modal"></view>
-  </div>
-```
-
-```js
-// DOM element
-this.container.querySelectorAll('*');
-// component
-this.modal.close();
-```
-
-## `inherit` attribute
-
-Adding the `inherit` attribute changes the behavior of attribute lookup within the instantiated view. By default, attribute values are only defined in the view that they are passed into explicitly. Passing attribute values through one view into another normally requires manually repeating the attributes, such as `class="{{@class}}"`. `inherit` modifies the default behavior, making all attributes of the parent view instance implicitly available as well. Explicitly providing an attribute will take precedence over `inherit`.
-
-```derby
-<index:>
-  {{@foo}}
-  <view is="modal" inherit></view>
-
-<modal:>
-  {{@foo}}
-```
-
-## `extend` attribute
-
-Extend is used to render the view of a component **without** instantiating the component object that would normally be created. It can be useful if one component class would like to extend from the class of another component, and it does not wish to modify the component's view.
-
-## `on-` attributes
-
-View attributes beginning with `on-` attach event listeners to component events. See [Component Events](../../components/events).

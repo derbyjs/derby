@@ -28,7 +28,7 @@ _Introduced in [racer@0.9.6](https://github.com/derbyjs/racer/releases/tag/v0.9.
 
 > `eventCallback(event, captures)`
 > * `event` - _Object_ - An instance of an Event object (see below)
-> * `captures` - _Array<string | string[]>_ - The captured path segments, one item per wildcard in the pattern. Each `'*'` results in a string, and a `'**'` results in a sub-array of strings.
+> * `captures` - _Array<string \| string[]>_ - The captured path segments, one item per wildcard in the pattern. Each `'*'` results in a string, and a `'**'` results in a sub-array of strings.
 
 Event objects:
 

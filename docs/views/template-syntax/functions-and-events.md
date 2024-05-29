@@ -57,7 +57,7 @@ app.proto.sum = function() {
 ### Component events
 Components support custom events. Dashes are transformed into camelCase.
 
-See the [component events](components/events) documentation for more detail on using events and component functions.
+See the [component events](../../components/events) documentation for more detail on using events and component functions.
 ```derby
 <modal on-close="reset()" on-full-view="back.fade()"></modal>
 ```

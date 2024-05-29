@@ -57,7 +57,7 @@ Components can emit custom events to be handled by their parents.
 
 ## Calling peer component methods
 
-Components and elements can be set as a property on the current controller with the `as=` HTML attribute ([more detail](../views/template-syntax/paths#controller-properties)). This paired with how controller properties are looked up on function calls makes it easy to connect events on components or elements to methods on other components.
+Components and elements can be set as a property on the current controller with the `as=` HTML attribute ([more detail](../views/template-syntax/view-attributes#as-attribute)). This paired with how controller properties are looked up on function calls makes it easy to connect events on components or elements to methods on other components.
 
 ```derby
 <!-- Connecting an instance of a component to an event -->
