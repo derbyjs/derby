@@ -23,7 +23,7 @@ Attribute values can be any JavaScript expression supported by Derby.
 
 [Literals](literals) are the simplest kinds of attribute values.
 
-```derby
+```jinja
 <!-- As with HTML, values in quotes are passed in as strings -->
 <view is="modal" title="Introducing"></view>
 
@@ -47,7 +47,7 @@ passed in as `true`. -->
 
 Other types of expressions are supported too, such as path expressions, expressions with operators, or a function expressions.
 
-```derby
+```jinja
 <!-- Passing in a path to a model value with a path expression -->
 <view is="modal" title="{{modalTitle}}"></view>
 
@@ -68,7 +68,7 @@ Other types of expressions are supported too, such as path expressions, expressi
 
 Finally, an attribute value may be a template.
 
-```derby
+```jinja
 <!-- If an attribute contains more than a single expression, it becomes a
 template. Template blocks, such as {{if}} and {{each}} are supported, too. -->
 <view is="modal" title="Introducing, {{modalTitle}}">
@@ -81,7 +81,7 @@ template. Template blocks, such as {{if}} and {{each}} are supported, too. -->
 
 Derby's ability to pass in templates as attribute values is very powerful and can be highly expressive. By default, any template content between the opening and closing `<view>` tags is passed in as an attribute with the name `content`. However, a view instance may wish to specify an HTML template for another attribute as well. In these cases, an `<attribute>` tag may be used immediately within a view instance.
 
-```derby
+```jinja
 <view is="modal">
   <!-- Alternate syntax for passing in attribute values. This syntax allows for
   passing in HTML tags as part of templates as well. -->
@@ -93,7 +93,7 @@ Derby's ability to pass in templates as attribute values is very powerful and ca
 
 Beyond individual attribute values, it is common to want to pass in a list of items. This can be achieved with an array attribute. `<array>` tags produce an array of objects, where each HTML tag corresponds to an object in an array.
 
-```derby
+```jinja
 <view is="tabs">
   <!-- Creates a single attribute `panes`, which has the value:
   [{title: 'First tab', content: 'Hello!'},
@@ -109,7 +109,7 @@ To make instantiating commonly used components more elegant, Derby supports the 
 
 Definition:
 
-```derby
+```jinja
 <!-- attributes and arrays can be declared in space separated lists -->
 <!-- arrays can specify a singular and plural name separated by a slash -->
 <tabs: tag="tabs" attributes="selectedIndex size" arrays="pane/panes">
@@ -123,7 +123,7 @@ Definition:
 
 Usage:
 
-```derby
+```jinja
 <tabs selected-index="{{currentTab}}" panes="{{paneOptions}}"></tabs>
 
 <tabs>
@@ -147,7 +147,7 @@ Any attribute may be declared as `within`. Adding `within` to a view tag affect'
 
 Definition:
 
-```derby
+```jinja
 <dropdown: arrays="option/options">
   <ul>
     {{each @options as #option, #i}}
@@ -158,7 +158,7 @@ Definition:
 
 Usage:
 
-```derby
+```jinja
 <!-- A within content attribute -->
 <view is="dropdown" options="{{dropdownOptions}}" within>
   <!-- Notice use of alias names defined only inside of the view -->
@@ -174,7 +174,7 @@ If a `within` attribute is passed to a component, the component's `getAttribute(
 
 The `as` attribute may be applied to both components and DOM elements. Before a component's `create` method is called, Derby will set these items as properties of the current controller. This provides easy access to these items within the controller code of a component.
 
-```derby
+```jinja
 <index:>
   <div as="container">
     <view is="modal" as="modal"></view>
@@ -192,7 +192,7 @@ this.modal.close();
 
 Adding the `inherit` attribute changes the behavior of attribute lookup within the instantiated view. By default, attribute values are only defined in the view that they are passed into explicitly. Passing attribute values through one view into another normally requires manually repeating the attributes, such as `class="{{@class}}"`. `inherit` modifies the default behavior, making all attributes of the parent view instance implicitly available as well. Explicitly providing an attribute will take precedence over `inherit`.
 
-```derby
+```jinja
 <index:>
   {{@foo}}
   <view is="modal" inherit></view>
@@ -223,20 +223,20 @@ How an attribute value is set on the model differs depending on the value type. 
 Keeping these goals in mind, Derby will set values on a component model with one of four approaches:
 
 **1. Literal Value – Input**
-```derby
+```jinja
 value="Hello"
 value="{{42}}"
 <attribute is="message">Hello</attribute>
 ```
 
 **2. Model Reference – Input and Output**
-```derby
+```jinja
 value="{{inputText}}"
 value="{{todos[#id].text}}"
 ```
 
 **3. Value with Attribute Binding – Input (for now)**
-```derby
+```jinja
 disabled="{{!active}}"
 label="{{userLabel || 'User'}}"
 list="{{reverse(items)}}"
@@ -244,7 +244,7 @@ options="{{ {speed: currentSpeed} }}"
 ```
 
 **4. Template – Input**
-```derby
+```jinja
 class="{{if show}}visible{{/if}}"
 <attribute is="message"><b>Hello</b></attribute>
 ```

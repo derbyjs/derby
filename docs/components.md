@@ -24,7 +24,7 @@ Each component has a scoped model in its own namespace. Data or references to th
 ## Tabs Example
 
 ### index.html
-```derby
+```jinja
 <Body:>
   <view is="tabs">
     <pane title="One">
@@ -37,7 +37,7 @@ Each component has a scoped model in its own namespace. Data or references to th
 ```
 
 ### tabs.html
-```derby
+```jinja
 <index: arrays="pane">
   <ul class="tabs-nav">
     {{each @pane as #pane, #i}}
@@ -112,7 +112,7 @@ module.exports = class Tabs
 
 ## Todos example
 
-```derby
+```jinja
 <Body:>
   <view
     is="todos-new"

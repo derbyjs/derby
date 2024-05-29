@@ -32,7 +32,7 @@ Views are written in HTML files. These files are parsed and added to a Derby app
 
 Each view is wrapped in a tag that names it. This name must end in a colon to differentiate it from a normal HTML tag. These tags can't be nested, and they need not be closed.
 
-```derby
+```jinja
 <serious-title:>
   <h1>Hello, sir.</h1>
 
@@ -51,7 +51,7 @@ app.views.register('friendly-title', '<h1>Howdy!</h1>');
 
 You can instantiate a view in a template with the `<view>` tag, `{{view}}` expression, or by giving the view a tag name. Typically, you should use the `<view>` tag in HTML templates. The `{{view}}` expression is useful when writing string templates or wish to include a view in an HTML attribute, script tag, or style tag. Custom tag names are global to an application. They are recommended for general purpose components, like `<tabs>` or `<dropdown>`, but not for ordinary views.
 
-```derby
+```jinja
 <serious-title: tag="seriousness">
   <h1>Hello, sir.</h1>
 
@@ -69,7 +69,7 @@ You can instantiate a view in a template with the `<view>` tag, `{{view}}` expre
 
 Views may be looked up dynamically with an expression. If the view isn't found, nothing will be rendered.
 
-```derby
+```jinja
 <Body:>
   <!-- Dynamic view lookup based on an expression -->
   <view is="{{type}}-title"></view>

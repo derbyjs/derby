@@ -11,7 +11,7 @@ Derby supports creating JavaScript literals in templates. The syntax is identica
 
 ## Simple literals
 
-```derby
+```jinja
 <!-- Numbers -->
 {{0}}
 {{1.1e3}}
@@ -36,14 +36,14 @@ Derby supports creating JavaScript literals in templates. The syntax is identica
 
 For greater efficiency, simple literals are instantiated at the time of parsing. Object literals created at parse time will be passed by reference to controller functions, so be careful not to modify them.
 
-```derby
+```jinja
 <!-- CAUTION: This array will be the same object on each function call -->
 <button on-click="doStuff([1, 2, 3])"></button>
 ```
 
 It is possible to iterate over object literals in template expressions. In most cases, it makes more sense to define constants in the controller or use HTML, but this can be handy when prototyping and debugging.
 
-```derby
+```jinja
 <ul>
   {{each ['A', 'B', 'C'] as #letter}}
     <li>{{#letter}}</li>
@@ -60,7 +60,7 @@ It is possible to iterate over object literals in template expressions. In most 
 
 Literals containing paths are created at render time and populated with the appropriate values from the model.
 
-```derby
+```jinja
 <ul>
   {{each [first, 1, 2, 3] as #item}}
     <li>{{#item}}</li>

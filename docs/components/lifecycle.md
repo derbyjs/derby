@@ -103,7 +103,7 @@ Since singleton components do not have a model, only attribute paths may be used
 
 When a component is used many times on a page, such as a repeated item in a list or a commonly used UI element, it is best to write it statelessly for better performance. View partials are the most lightweight, singleton components allow use of custom JavaScript, and full components have their own model state.
 
-```derby
+```jinja
 <user-icon:>
   <div class="user-icon">
     {{getInitials(@user.fullName)}}

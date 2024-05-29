@@ -13,7 +13,7 @@ While a component's controller is associated with a single view, it can contain 
 ## Scope
 By default a view partial inherits the scope where it is instantiated.
 
-```derby
+```jinja
 <index:>
   {{foo}}
   {{with #root.bar as #bar}}
@@ -40,7 +40,7 @@ If you just want to reuse a view partial the `import` keyword is probably more a
 ## Component tracking
 Derby components are tracked in the DOM with an HTML comment tag. This allows components to be responsible for arbitrary DOM content, for example two table rows that otherwise cannot be wrapped by any other DOM elements.
 
-```derby
+```jinja
 <!-- namespace:component:name -->
 ```
 
