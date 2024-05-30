@@ -11,7 +11,7 @@ Jekyll has a dev server, which will auto-build the docs upon any changes to the 
 Setup:
 
 ```
-cd derby-docs && bundle install
+cd docs && bundle install
 ```
 
 Run the dev server:
@@ -27,7 +27,7 @@ The site is viewable at `http://localhost:4000/derby/`.
 One-time container creation:
 
 ```
-docker run --name derby-docs-ruby -v "$(pwd)/docs:/derby-docs" -p 127.0.0.1:4000:4000 ruby:2.7 bash -c 'cd derby-docs && bundle install && bundle exec jekyll serve -H 0.0.0.0 -P 4000 --trace'
+docker run --name derby-docs-ruby -v "$(pwd)/docs:/docs" -p 127.0.0.1:4000:4000 ruby:2.7 bash -c 'cd docs && bundle install && bundle exec jekyll serve -H 0.0.0.0 -P 4000 --trace'
 ```
 
 Subsequently, to run the dev server:
