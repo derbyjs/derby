@@ -1,7 +1,8 @@
-----
--layout: default
--title: Troubleshooting
-----
+---
+layout: default
+title: Troubleshooting
+parent: Guides
+---
 
 # Troubleshooting
 
