@@ -7,7 +7,7 @@ has_children: true
 
 # Backends
 
-Racer stores are backed by ShareDB, which is used to persist data, perform queries, keep a journal of all operations, and pub/sub operations and changes to queries. Currently, ShareDB has [two pub/sub adapters](https://github.com/share/sharedb#database-adapters): one for in memory and one for Redis based pub/sub. ShareDB supports in memory or MongoDB storage. The database adapter [ShareDBMongo](https://github.com/share/sharedb-mongo)
+Racer stores are backed by ShareDB, which is used to persist data, perform queries, keep a journal of all operations, and pub/sub operations and changes to queries. Currently, ShareDB has [two pub/sub adapters](https://share.github.io/sharedb/adapters/pub-sub): one for in memory and one for Redis based pub/sub. ShareDB supports in memory or MongoDB storage. The database adapter [ShareDBMongo](https://github.com/share/sharedb-mongo)
 is backed by a real Mongo database and full query support. ShareDB is written with support for additional database adapters in mind.
 
 Getting started with a single-process server and MongoDB:
@@ -51,8 +51,8 @@ collection.documentId.documentProperty
 ShareDB Mongo will add the following properties to Mongo documents for internal use:
 * `_m.ctime` - Timestamp when the ShareDB document was created
 * `_m.mtime` - Timestamp when the ShareDB document was last modified
-* `_type` - [OT type](https://github.com/share/sharedb#data-model)
-* `_v` - [Snapshot version](https://github.com/share/sharedb#data-model)
+* `_type` - [OT type](https://share.github.io/sharedb/types/)
+* `_v` - [Snapshot version](https://share.github.io/sharedb/api/snapshot)
 
 In addition to `ctime` and `mtime`, custom metadata properties can be added to `_m` with middleware that modifies `snapshot.m` in apply or commit.
 

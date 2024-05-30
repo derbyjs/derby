@@ -9,7 +9,7 @@ grand_parent: Views
 
 All non-assigment JavaScript operators and using parentheses for grouping expressions are supported. They work exactly the same as they do in Javascript. Operators that do an assignment, such as the `++` increment operator, are not supported. This avoids rendering having side effects.
 
-```derby
+```jinja
 <!-- Negate -->
 {{-value}}
 <!-- Convert to number -->
@@ -85,7 +85,7 @@ All non-assigment JavaScript operators and using parentheses for grouping expres
 
 In addition to getting values, operators for which there is a well defined opposite support two-way data bindings. These setters will make the relationship consistent with the value that is set.
 
-```derby
+```jinja
 <!-- The not operator works both on getting and setting -->
 <label>
   <input type="checkbox" checked="{{!showDetails}}"> Hide details

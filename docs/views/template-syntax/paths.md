@@ -15,7 +15,7 @@ What would be identifiers for variable names in JavaScript get a value from the 
 
 Examples of rendering model values:
 
-```derby
+```jinja
 {{user.name}}
 
 {{user.bestFriends[0].name}}
@@ -36,7 +36,7 @@ model.get('users.' + userId + '.name');
 
 Values are passed into views with attributes. Within the view, these values are accessed via paths that start with an at sign (`@`). In addition, there is an `@content` attribute created for any content inside of a view tag.
 
-```derby
+```jinja
 <Body:>
   <ul class="nav-links">
     <view is="nav-link" href="/">Home</view>
@@ -61,7 +61,7 @@ Aliases label path expressions. They must begin with a hash (`#`) character to m
 
 Aliases make it possible to refer to the scope of the current block or a parent block.
 
-```derby
+```jinja
 {{with user as #user}}
   <h1>{{#user.name}}</h1>
   <h2>{{#user.headline}}</h2>
@@ -83,7 +83,7 @@ Relative view paths begin with `this`. They refer to the expression in the conta
 
 Aliases are preferred to relative paths, as they are more clear. Relative paths came from implementing a syntax inspired by Handlebars, but Derby has been moving toward increased consistency with JavaScript, and the alternate use of the keyword `this` is confusing. Expect that this feature will be removed in a future version of Derby.
 
-```derby
+```jinja
 {{with user}}
   <h1>{{this.name}}</h1>
   <h2>{{this.headline}}</h2>

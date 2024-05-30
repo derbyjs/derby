@@ -8,7 +8,9 @@ Derby includes a powerful data synchronization engine called Racer that automati
 
 Derby applications load immediately and can be indexed by search engines, because the same templates render on both server and client. In addition, templates define bindings, which instantly update the view when the model changes and vice versa. Derby makes it simple to write applications that load as fast as a search engine, are as interactive as a document editor, and work offline.
 
-See docs here: **http://derbyjs.com/**
+See docs here: **https://derbyjs.github.io/derby/**
+
+Main site: **https://derbyjs.com/**
 
 Examples here: **https://github.com/derbyjs/derby-examples**
 

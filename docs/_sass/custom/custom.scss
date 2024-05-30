@@ -1,0 +1,27 @@
+// Derby template examples use "jinja" as the language with some style customizations,
+// as Derby's template syntax doesn't fully match that of Handlebars. Jinja formatting
+// with some style tweaks looks better than Handlebars, so we use Jinja.
+.language-jinja {
+  .highlight {
+    // Override Name.Attribute and Name.Builtin to use normal text color
+    // instead of being orange.
+    .na, .nv {
+      color: inherit;
+    }
+
+    // Jinja formatting treats double-curlies as italicized Comment.Preproc.
+    // Override to look like Handlebars formatting for double curlies.
+    .cp {
+      // Color from just-the-docs OneLightJekyll keyword color
+      color: #a625a4;
+      font-style: inherit;
+    }
+
+    // Disable syntax error styling for Derby template syntax that
+    // doesn't strictly match Jinja/Handlebars.
+    .err {
+      color: inherit;
+      background-color: inherit;
+    }
+  }
+}

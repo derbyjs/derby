@@ -8,7 +8,7 @@ parent: Views
 
 View names have colon (`:`) separated namespaces. Lookups of views are relative to the namespace in which they are used. Thus, sub-views within components or different sections of large applications are well encapsulated and won't cause naming conflicts.
 
-```derby
+```jinja
 <home:content:>
   ...
 
@@ -22,7 +22,7 @@ View names have colon (`:`) separated namespaces. Lookups of views are relative 
 
 In addition, similar to the way that CSS allows overriding of styles by using a more specific selector, you can define views at a general namespace and then redefine them at a more specific namespace.
 
-```derby
+```jinja
 <Title:>
   App
 
@@ -37,7 +37,7 @@ In addition, similar to the way that CSS allows overriding of styles by using a 
 
 A view can be turned into a custom HTML tag by specifying the `tag` property in it's definition. Custom tag names are global so care should be taken in their usage.
 
-```derby
+```jinja
 <!-- definition -->
 <message: tag="message">
   <div> {{data}} </div>
@@ -51,7 +51,7 @@ A view can be turned into a custom HTML tag by specifying the `tag` property in 
 
 Views should be broken into files that correspond to major pieces of functionality, different URLs, or components. Views are included from another file with the `<import:>` tag.
 
-```derby
+```jinja
 <!-- add views from about.html or about/index.html to the `about` namespace -->
 <import: src="./about">
 
@@ -65,7 +65,7 @@ Views should be broken into files that correspond to major pieces of functionali
 Typically, view namespaces have a one-to-one correspondence with directories and files. For example, a typical structure like:
 
 #### index.html
-```derby
+```jinja
 <import: src="./about">
 
 <Title:>
@@ -73,7 +73,7 @@ Typically, view namespaces have a one-to-one correspondence with directories and
 ```
 
 #### about/index.html
-```derby
+```jinja
 <import: src="./mission">
 
 <Title:>
@@ -81,7 +81,7 @@ Typically, view namespaces have a one-to-one correspondence with directories and
 ```
 
 #### about/mission.html
-```derby
+```jinja
 <Title:>
   Mission statement - App
 ```
@@ -89,7 +89,7 @@ Typically, view namespaces have a one-to-one correspondence with directories and
 would be equivalent to:
 
 `index.html`
-```derby
+```jinja
 <Title:>
   App
 
@@ -105,7 +105,7 @@ Rules for importing views work the same way as [Node.js module loading](https://
 As well, the name `index` can be used for a view that is returned for just the name of its namespace.
 
 #### index.html
-```derby
+```jinja
 <import: src="./home">
 
 <Body:>
@@ -113,7 +113,7 @@ As well, the name `index` can be used for a view that is returned for just the n
 ```
 
 #### home.html
-```derby
+```jinja
 <index:>
   <h1>
     <view is="message"></view>

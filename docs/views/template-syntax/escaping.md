@@ -15,14 +15,14 @@ Derby's templates also follow HTML escaping rules. Derby will parse the string `
 
 The `unescaped` keyword may be used to render an HTML string without escaping. It is *very unlikely* that you should use this feature. Derby has many ways of dynamically creating views. Unescaped HTML is unsafe, is typically slower, and is rarely necessary with Derby. This feature is intended only for rendering the output of a well-tested library that produces sanitized HTML, such as [Google Caja](https://developers.google.com/caja/).
 
-```derby
+```jinja
 <!-- WARNING: Avoid unescaped HTML. This is supported, but not recommended -->
 <div>{{unescaped rawHtml}}</div>
 ```
 
 Instead, prefer passing in a template as an attribute or dynamically selecting a view in most cases.
 
-```derby
+```jinja
 <!-- Typically, it is possible to pass templates to a view as an attribute -->
 <Body:>
   <view is="user-card" user-id="{{_session.userId}}">
@@ -36,7 +36,7 @@ Instead, prefer passing in a template as an attribute or dynamically selecting a
   </div>
 ```
 
-```derby
+```jinja
 <!-- Or select which view to render dynamically by name -->
 <view is="cards-{{cardType}}"></view>
 ```

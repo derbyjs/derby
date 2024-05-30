@@ -59,7 +59,7 @@ Racer also supports a special reference type created via `model.refList`. This t
 > `model.removeRefList(path)`
 > * `path` The location at which to remove the reference
 
-Note that if objects are inserted into a refList without an `id` property, a unique id from [`model.id()`](#guids) will be automatically added to the object.
+Note that if objects are inserted into a refList without an `id` property, a unique id from [`model.id()`](paths#guids) will be automatically added to the object.
 
 ```js
 // refLists should consist of objects with an id matching

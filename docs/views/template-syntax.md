@@ -24,7 +24,7 @@ Derby's HTML parser is quite simple, so you must write **valid HTML**, you must 
 HTML attribute values only need to be quoted if they are the empty string or if they contain a space, equals sign, or greater than sign. Derby parses unquoted attributes correctly, but always using **quotes around all attribute values** is recommended.
 
 #### Invalid template expression placements
-```derby
+```jinja
 <!-- INVALID: Within element names -->
 <{{tagName}}>Bad bad!</{{tagName}}>
 
@@ -39,7 +39,7 @@ HTML attribute values only need to be quoted if they are the empty string or if 
 ```
 
 #### Valid placements
-```derby
+```jinja
 <!-- Within text -->
 Let's go <b>{{activity}}</b>!
 
@@ -60,7 +60,7 @@ Before parsing, all HTML comments, leading and trailing whitespace, and new line
 
 If you do want whitespace at the beginning or end or a line, add the non-standard `&sp;` character entity, which is replaced with a space. You can avoid whitespace minification for a view by specifying the `unminified` option.
 
-```derby
+```jinja
 <Body:>
   <view is="person-data"></view>
 
@@ -73,7 +73,7 @@ If you do want whitespace at the beginning or end or a line, add the non-standar
 
 HTML comments are removed, except for those with square brackets immediately inside of them. This syntax is used by Internet Explorer's conditional comments. It can also be used to include comments for copyright notices or the like.
 
-```derby
+```jinja
 <Body:>
   <!-- This comment is removed from the template output -->
   <!--[if IE]><p>This comment is not removed</p><![endif]-->

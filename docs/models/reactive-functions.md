@@ -13,7 +13,7 @@ Reactive functions may be run any number of times, so they should be [pure funct
 To execute a model function, you then call `model.start()` or `model.evaluate()`.
 * `evaluate()` runs a function once and returns the result.
 * `start()` also sets up event listeners that continually re-evaluate the
-* function whenever any of its input or output paths are changed.
+  function whenever any of its input or output paths are changed.
 
 > ```
 > value = model.start(path, inputPaths, [options], fn)
@@ -25,9 +25,9 @@ To execute a model function, you then call `model.start()` or `model.evaluate()`
 > value = model.evaluate(inputPaths..., [options], fn)
 > ```
 >
-> * `path` - _string | ChildModel_ - The output path at which to set the value,
+> * `path` - _string \| ChildModel_ - The output path at which to set the value,
 >   keeping it updated as input paths change
-> * `inputPaths` - _Array<string | ChildModel>_ - One or more paths whose values
+> * `inputPaths` - _Array<string \| ChildModel>_ - One or more paths whose values
 >   will be retrieved from the model and passed to the function as inputs
 > * `options` - _Object_ (optional)
 >   * `copy` - Controls automatic deep copying of the inputs and output of the
@@ -61,7 +61,7 @@ To execute a model function, you then call `model.start()` or `model.evaluate()`
 >       that does a `model.get()` on the output path or any paths downstream
 >       of the output, since changes to an input path won't immediately result
 >       in the output being updated.
-> * `fn` - _Function | string_ -  A function or the name of a function defined
+> * `fn` - _Function \| string_ -  A function or the name of a function defined
 >   via `model.fn()`
 >   * The function gets invoked with the values at the input paths, one input
 >     per argument, and should return the computed output value.

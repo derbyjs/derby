@@ -9,7 +9,7 @@ grand_parent: Views
 
 Attributes beginning with `on-` add listeners to DOM events and component events. Under the hood, events on elements are added with `element.addEventListener()` and events on components are added with `component.on()`. Adding events declaritively with attributes is easier than CSS selectors and less prone to unexpectedly breaking when refactoring templates or classes for styling.
 
-```derby
+```jinja
 <!-- Any event name can be added to an element -->
 <input on-mousedown="mousedownInput($event)" on-blur="blurInput(), update()">
 ```
@@ -29,7 +29,7 @@ input.addEventListener('blur', function(event) {
 
 Functions are looked up on the current component's controller, the page, and the global, in that order. The majority of functions are defined on component prototypes, generic shared utility functions are defined on the page prototype, and the global provides access to functions like `new Date()` and `console.log()`.
 
-```derby
+```jinja
 <!-- Call component method -->
 <button on-click="delUser(#user.id)"></button>
 <!-- Call utility function on page -->
@@ -57,8 +57,8 @@ app.proto.sum = function() {
 ### Component events
 Components support custom events. Dashes are transformed into camelCase.
 
-See the [component events](components/events) documentation for more detail on using events and component functions.
-```derby
+See the [component events](../../components/events) documentation for more detail on using events and component functions.
+```jinja
 <modal on-close="reset()" on-full-view="back.fade()"></modal>
 ```
 
@@ -77,14 +77,14 @@ modal.on('fullView', function() {
 
 As a convenience, an `on-click` listener can be added to a link without an `href`. Derby will add an `href="#"` and prevent the default action automatically if no href is specified.
 
-```derby
+```jinja
 <!-- Derby will add an href="#" when there is a click handler -->
 <a on-click="alert('hi')">Hi</a>
 ```
 
 HTML forms have very useful behavior, but their default action on submit will navigate away from the current page. If an `on-submit` handler is added to a form with no `action` attribute, the default will be prevented.
 
-```derby
+```jinja
 <form on-submit="console.log()">
   <input value="{{newValue}}">
   <button type="submit">Add</button>
@@ -98,7 +98,7 @@ HTML forms have very useful behavior, but their default action on submit will na
 
 For functions invoked by DOM events only, the special arguments `$event` or `$element` may be specified. The `$event` argument is the DOM Event object passed to the listener function for `addEventListener()`. The `$element` argument is a reference to the element on which the listener attribute is specified. These arguments are only passed to functions if explicitly specified.
 
-```derby
+```jinja
 <table>
   <tbody>
     {{each rows as #row}}
@@ -132,7 +132,7 @@ UserList.prototype.clickRow = function(e, tr) {
 
 Functions can be passed the value of any view path. In some cases, it can be convenient to get a [scoped model](../../models/paths#scoped-models) to the view name instead. To pass a scoped model, you can wrap the view path in `$at()`. Instead of getting the value for a view path, this will return a scoped model. It will return undefined if no scoped model can be created for a view path.
 
-```derby
+```jinja
 <button on-click="toggle($at(showDetail))"></button>
 ```
 

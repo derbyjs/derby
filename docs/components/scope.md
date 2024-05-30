@@ -12,7 +12,7 @@ Each component instance has its own scoped model, providing it isolation from mo
 
 The most direct way to get data into a component is to pass in a reference or a literal as a view attribute.
 
-```derby
+```jinja
 <Body:>
   <view is="user-list" data="{{users}}" num="{{7}}"></view>
 
@@ -32,7 +32,7 @@ See [view attributes](../views/template-syntax/view-attributes) for more informa
 
 There are times when accessing data in the root model is desirable from within the component. This can be achieved both in the template and in the controller.
 
-```derby
+```jinja
 <index:>
   <!-- dynamically look up a user in the users collection -->
   {{#root.users[userId]}}

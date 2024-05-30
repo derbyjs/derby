@@ -71,7 +71,7 @@ Components are Node.js event emitters, so they inherit the `on`, `once`, `emit`,
 >
 > Derby calls this method when removing a component's marker comment from the DOM. `destroy()` emits the `'destroy'` event on the component. Listen for the destroy event in order to implement custom cleanup logic. This method should not be invoked manually.
 
-```derby
+```jinja
 <view is="my-component" on-destroy="handleDestroy()"></view>
 ```
 
@@ -143,7 +143,7 @@ class MyComponent extends Component {
 >
 > Like `component.bind()`, will no longer call back once the component is destroyed, which avoids possible bugs and memory leaks.
 
-```derby
+```jinja
 <my-component:>
   <input as="textInput" value="{{value}}">
 ```
@@ -168,7 +168,7 @@ class MyComponent extends Component {
 >
 > Like `component.bind()`, will no longer call back once the component is destroyed, which avoids possible bugs and memory leaks.
 
-```derby
+```jinja
 <my-component:>
   <input as="textInput" value="{{value}}">
 ```

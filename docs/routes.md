@@ -19,7 +19,7 @@ Routes map URL patterns to actions. Derby routes are powered by [Express](https:
 >
 > * `callback`: Function invoked when a request for a URL matching the appropriate HTTP method and pattern is received. Note that this function is called both on the server and the client.
 >
-> * `page`: Object with the methods [`page.render()`](#pagerender)  and `page.redirect()`. All app routes should call one of these two methods or pass control by calling `next()`.
+> * `page`: Object with the methods [`page.render()`](#page) and `page.redirect()`. All app routes should call one of these two methods or pass control by calling `next()`.
 >
 > * `model`: Derby model object
 >
@@ -37,7 +37,7 @@ Unlike Express, which provides direct access to the `req` and `res` objects crea
 
 > `page.render ( viewName )`
 >
-> * `viewName`: The name of the view to render, see [Namespaces and files](../views/namespaces-and-files) for more details.
+> * `viewName`: The name of the view to render, see [Namespaces and files](./views/namespaces-and-files) for more details.
 >
 >
 > `page.renderStatic ( statusCode, content )`
@@ -57,7 +57,7 @@ Unlike Express, which provides direct access to the `req` and `res` objects crea
 
 ### Middleware
 
-It is possible to directly use [express middleware](https://expressjs.com/guide/using-middleware.html) and get access to a [Racer model](../models#methods).
+It is possible to directly use [express middleware](https://expressjs.com/guide/using-middleware.html) and get access to a [Racer model](./models#methods).
 
 
 ## History

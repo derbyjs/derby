@@ -38,6 +38,7 @@ gh_edit_view_mode: "tree" # "tree" or "edit" if you want the user to jump into t
 markdown: kramdown
 # remote_theme: just-the-docs/just-the-docs
 theme: just-the-docs
+color_scheme: derby-light # just-the-docs theme customization
 permalink: /:path/:name
 
 # Front matter defaults

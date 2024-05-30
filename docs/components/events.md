@@ -23,7 +23,7 @@ If the functions to be called aren't defined on the component, their respective 
 ## Custom events
 
 Components support custom events. Dashes are transformed into camelCase.
-```derby
+```jinja
 <modal on-close="reset()" on-full-view="back.fade()"></modal>
 ```
 ```js
@@ -39,7 +39,7 @@ modal.on('fullView', function() {
 ## Emitting events
 Components can emit custom events to be handled by their parents.
 
-```derby
+```jinja
 <index:>
   <modal on-full-view="back.fade()"></modal>
 ```
@@ -57,15 +57,15 @@ Components can emit custom events to be handled by their parents.
 
 ## Calling peer component methods
 
-Components and elements can be set as a property on the current controller with the `as=` HTML attribute ([more detail](../views/template-syntax/paths#controller-properties)). This paired with how controller properties are looked up on function calls makes it easy to connect events on components or elements to methods on other components.
+Components and elements can be set as a property on the current controller with the `as=` HTML attribute ([more detail](../views/template-syntax/view-attributes#as-attribute)). This paired with how controller properties are looked up on function calls makes it easy to connect events on components or elements to methods on other components.
 
-```derby
+```jinja
 <!-- Connecting an instance of a component to an event -->
 <modal as="modal"></modal>
 <button on-click="modal.open()"></button>
 ```
 
-```derby
+```jinja
 <!-- `page` is available on all controllers, even in separate components -->
 <flash as="page.flash"></flash>
 ...
@@ -76,7 +76,7 @@ Components and elements can be set as a property on the current controller with 
 
 Component events implicitly pass through any emitted arguments. These arguments are added after any explicitly specified arguments in the expression.
 
-```derby
+```jinja
 <!-- Will log any arguments emitted by the submit event -->
 <dropdown on-submit="console.log()"></dropdown>
 <!-- Will log 'dropdown' followed by any emitted arguments -->
