@@ -48,15 +48,33 @@ export interface ComponentViewDefinition {
 
 export abstract class Component<T extends object = object> extends Controller<T> {
   context: Context;
+  /**
+   * Unique ID assigned to the component
+   */
   id: string;
+  /**
+   * Whether the component instance is fully destroyed. Initially set to false.
+   */
   isDestroyed: boolean;
   page: Page;
+  /**
+   * Reference to the containing controller
+   */
   parent: Controller;
   singleton?: true;
   _scope: string[];
   // new style view prop
   view?: ComponentViewDefinition;
   static DataConstructor?: DataConstructor;
+  /**
+   * Method called by Derby once a component is loaded and ready in the DOM.
+   *
+   * Any model listeners (`this.model.on(...)`) and DOM listeners (`this.dom.addListener(...)`)
+   * should be added here.
+   *
+   * This will only be called in the browser.
+   */
+  create?: (() => void) | (() => Promise<void>);
 
   constructor(context: Context, data: Record<string, unknown>) {
     const parent = context.controller;
@@ -83,6 +101,14 @@ export abstract class Component<T extends object = object> extends Controller<T>
     this.isDestroyed = false;
   }
 
+  /**
+   * Method called by Derby after instantiating a component.
+   *
+   * This should initialize any data needed by the component, like with `this.model.start(...)`.
+   *
+   * `init()` could be called from the server and the browser, so do not use any DOM-only methods
+   * here. Put those in `create()` instead.
+   */
   init(_model: ChildModel): void {}
 
   destroy() {
@@ -189,29 +215,35 @@ export abstract class Component<T extends object = object> extends Controller<T>
     throw new Error('Second argument must be a delay function or number');
   }
 
-  // Checks that component is not destroyed before calling callback function
-  // which avoids possible bugs and memory leaks.
+  /**
+   * Safe wrapper around `window.requestAnimationFrame` that ensures function not invoked
+   * when component has been destroyed
+   * @param fn A function to be invoked with the component instance as its `this` value.
+   */
   requestAnimationFrame(callback: () => void) {
     const safeCallback = _safeWrap(this, callback);
     window.requestAnimationFrame(safeCallback);
   }
 
-  // Checks that component is not destroyed before calling callback function
-  // which avoids possible bugs and memory leaks.
+  /**
+   * Safe wrapper around `process.nextTick` that ensures function not invoked
+   * when component has been destroyed
+   * @param fn A function to be invoked with the component instance as its `this` value.
+   */
   nextTick(callback: () => void) {
     const safeCallback = _safeWrap(this, callback);
     process.nextTick(safeCallback);
   }
 
-  // Suppresses calls until the function is no longer called for that many
-  // milliseconds. This should be used for delaying updates triggered by user
-  // input, such as window resizing, or typing text that has a live preview or
-  // client-side validation. This should not be used for inputs that trigger
-  // server requests, such as search autocomplete; use debounceAsync for those
-  // cases instead.
-  //
-  // Like component.bind(), will no longer call back once the component is
-  // destroyed, which avoids possible bugs and memory leaks.
+  /**
+   * Suppresses calls until the function is no longer called for that many milliseconds.
+   * This should be used for delaying updates triggered by user input or typing text.
+   *
+   * @param fn A function to be invoked with the component instance as its `this` value.
+   * @param delay Amount of time (in ms) to wait until invoking `fn`. Default '0'.
+   *
+   * @returns a bound function
+   */
   debounce<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
     delay = delay || 0;
     if (typeof delay !== 'number') {
@@ -243,22 +275,29 @@ export abstract class Component<T extends object = object> extends Controller<T>
     };
   }
 
-  // Forked from: https://github.com/juliangruber/async-debounce
-  //
-  // Like debounce(), suppresses calls until the function is no longer called for
-  // that many milliseconds. In addition, suppresses calls while the callback
-  // function is running. In other words, the callback will not be called again
-  // until the supplied done() argument is called. When the debounced function is
-  // called while the callback is running, the callback will be called again
-  // immediately after done() is called. Thus, the callback will always receive
-  // the last value passed to the debounced function.
-  //
-  // This avoids the potential for multiple callbacks to execute in parallel and
-  // complete out of order. It also acts as an adaptive rate limiter. Use this
-  // method to debounce any field that triggers an async call as the user types.
-  //
-  // Like component.bind(), will no longer call back once the component is
-  // destroyed, which avoids possible bugs and memory leaks.
+  /**
+   * Like debounce(), suppresses calls until the function is no longer called for
+   * that many milliseconds. In addition, suppresses calls while the callback
+   * function is running. In other words, the callback will not be called again
+   * until the supplied done() argument is called. When the debounced function is
+   * called while the callback is running, the callback will be called again
+   * immediately after done() is called. Thus, the callback will always receive
+   * the last value passed to the debounced function.
+   *
+   * This avoids the potential for multiple callbacks to execute in parallel and
+   * complete out of order. It also acts as an adaptive rate limiter. Use this
+   * method to debounce any field that triggers an async call as the user types.
+   *
+   * Like component.bind(), will no longer call back once the component is
+   * destroyed, which avoids possible bugs and memory leaks.
+   * 
+   * Forked from: https://github.com/juliangruber/async-debounce
+   *
+   * @param fn A function to be invoked with the component instance as its `this` value.
+   * @param delay Amount of time (in ms) to wait until invoking `fn`. Default '0'.
+   *
+   * @returns a bound function
+   */
   debounceAsync<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
     const applyArguments = callback.length !== 1;
     delay = delay || 0;
@@ -312,7 +351,14 @@ export abstract class Component<T extends object = object> extends Controller<T>
     return (viewName) ?
       this.app.views.find(viewName, contextView.namespace) : contextView;
   }
-
+  /**
+   * Retrieve the appropriate view attribute's value for a given view instance
+   *
+   * @param attrName the name of the view attribute used with a component instance
+   * @returns any of the possible values that can be expressed with a view attribute
+   *
+   * @see https://derbyjs.com/docs/derby-0.10/views/template-syntax/view-attributes
+   */
   getAttribute<T>(key: string) {
     const attributeContext = this.context.forAttribute(key);
     if (!attributeContext) return;
@@ -536,7 +582,7 @@ const _extendComponent = (Object.setPrototypeOf && Object.getPrototypeOf) ?
     // Find the end of the prototype chain
     const rootPrototype = getRootPrototype(constructor.prototype);
 
-    // This guard is a workaroud to a bug that has occurred in Chakra when
+    // This guard is a workaround to a bug that has occurred in Chakra when
     // app.component() is invoked twice on the same constructor. In that case,
     // the `instanceof Component` check in extendComponent incorrectly returns
     // false after the prototype has already been set to `Component.prototype`.
