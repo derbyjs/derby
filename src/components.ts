@@ -66,15 +66,6 @@ export abstract class Component<T extends object = object> extends Controller<T>
   // new style view prop
   view?: ComponentViewDefinition;
   static DataConstructor?: DataConstructor;
-  /**
-   * Method called by Derby once a component is loaded and ready in the DOM.
-   *
-   * Any model listeners (`this.model.on(...)`) and DOM listeners (`this.dom.addListener(...)`)
-   * should be added here.
-   *
-   * This will only be called in the browser.
-   */
-  create?: (() => void) | (() => Promise<void>);
 
   constructor(context: Context, data: Record<string, unknown>) {
     const parent = context.controller;
@@ -102,7 +93,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
   }
 
   /**
-   * Method called by Derby after instantiating a component.
+   * Method called by Derby after instantiating a component and before rendering the template.
    *
    * This should initialize any data needed by the component, like with `this.model.start(...)`.
    *
@@ -110,6 +101,16 @@ export abstract class Component<T extends object = object> extends Controller<T>
    * here. Put those in `create()` instead.
    */
   init(_model: ChildModel): void {}
+
+  /**
+   * Method called by Derby once a component is loaded and ready in the DOM.
+   *
+   * Any model listeners (`this.model.on(...)`) and DOM listeners (`this.dom.addListener(...)`)
+   * should be added here.
+   *
+   * This will only be called in the browser.
+   */
+  create?: (() => void) | (() => Promise<void>);
 
   destroy() {
     this.emit('destroy');
@@ -357,7 +358,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
    * @param attrName the name of the view attribute used with a component instance
    * @returns any of the possible values that can be expressed with a view attribute
    *
-   * @see https://derbyjs.com/docs/derby-0.10/views/template-syntax/view-attributes
+   * @see https://derbyjs.github.io/derby/views/template-syntax/view-attributes
    */
   getAttribute<T>(key: string) {
     const attributeContext = this.context.forAttribute(key);
