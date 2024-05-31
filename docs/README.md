@@ -11,7 +11,7 @@ Jekyll has a dev server, which will auto-build the docs upon any changes to the 
 Setup:
 
 ```
-cd derby-docs && bundle install
+cd docs && bundle install
 ```
 
 Run the dev server:
