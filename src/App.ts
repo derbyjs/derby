@@ -51,14 +51,13 @@ type Routes = [string, string, any][];
  * APP EVENTS
  *
   'error', Error
-  'pageRendered', Page
-  'destroy'
-  'model', Model
-  'route', Page
-  'routeDone', Page, transition: boolean
-  'ready', Page
-  'load', Page
-  'destroyPage', Page
+  'model', Model - a new root model was created by the app, server and client
+  'page', Page - a new Page was created by the app, server and client
+  'ready', Page - app is ready to attach to server-rendered HTML, client only
+  'load', Page - app is fully loaded, client only
+  'destroyPage', Page - current Page is about to be destroyed, client only
+  'route', Page - app is about to invoke a route handler, client only
+  'routeDone', Page, routeType - app has finished running a route handler, client only
  */
 
 export abstract class App extends EventEmitter {
@@ -427,6 +426,7 @@ export class AppForClient extends App {
     const ClientPage = this.Page as unknown as typeof PageForClient;
     const page = new ClientPage(this, this.model);
     this.page = page;
+    this.emit('page', page);
     return page;
   }
 

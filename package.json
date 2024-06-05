@@ -77,6 +77,7 @@
     "mocha": "^10.0.0",
     "prettier": "^3.0.1",
     "racer": "^v2.0.0-beta.11",
+    "sinon": "^18.0.0",
     "ts-node": "^10.9.2",
     "typescript": "~5.1.3"
   },

@@ -159,6 +159,7 @@ export class AppForServer extends App {
       });
       page.on('error', next);
     }
+    this.emit('page', page);
     return page;
   }
 
