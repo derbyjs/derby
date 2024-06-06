@@ -11,6 +11,9 @@ export class Controller<T = DefualtType> extends EventEmitter {
   dom: Dom;
   app: App;
   page: Page;
+  /**
+   * Model scoped to this instance's "private" data.
+   */
   model: ChildModel<T>;
   markerNode: Node;
 

@@ -10,16 +10,25 @@ export function routes(app: App) {
 
 // From tracks/lib/router.js
 export interface PageParams extends ReadonlyArray<unknown> {
-  /** Previous URL path + querystring */
+  /**
+   * Previous URL path + querystring
+   */
   previous?: string;
-  /** Current URL path + querystring */
+
+  /**
+   * Current URL path + querystring
+   */
   url: string;
+
   /**
    * Parsed query parameters
    * @see https://www.npmjs.com/package/qs
    */
   query: Readonly<QueryParams>;
-  /** HTTP method for the currently rendered page */
+
+  /**
+   * HTTP method for the currently rendered page
+   */
   method: string;
   routes: unknown;
 }
