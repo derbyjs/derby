@@ -15,14 +15,16 @@ Racer emits events whenever it mutates data via `model.set()`, `model.push()`, e
 `model.on()` and `model.once()` accept a second argument for these mutation events. The second argument is a path pattern that will filter emitted events, calling the handler function only when a mutator matches the pattern. Path patterns support a single segment wildcard (`*`) anywhere in a path, and a multi-segment wildcard (`**`) at the end of the path. The multi-segment wildcard alone (`'**'`) matches all paths.
 
 > `listener = model.on(method, path, [options], eventCallback)`
-> * `method` Name of the mutator method: `'change'`, `'insert'`, `'remove'`, `'move'`, `'load'`, `'unload'`, or `'all'`
-> * `path` Pattern matching the path being mutated. For example: `'_page.user'`, `'users.*.name'`, `'users.*'`, `'users.**'` / `'users**'`, or `'**'`. `**` is valid only by itself or at the end of the path.
+> * `method` Name of the event to listen to: `'change'`, `'insert'`, `'remove'`, `'move'`, `'load'`, `'unload'`, or `'all'`
+> * `path` Pattern matching the path to listen to. For example: `'_page.user'`, `'users.*.name'`, `'users.*'`, `'users.**'` / `'users**'`, or `'**'`. `**` is valid only by itself or at the end of the path.
 > * `options` (optional)
 >   * `useEventObjects` - If true, the callback is called with a structured event object instead of with a variable number of arguments. _Introduced in [racer@0.9.6](https://github.com/derbyjs/racer/releases/tag/v0.9.6)._
 > * `eventCallback` Function to call when a matching method and path are mutated
 > * Returns `listener` - the listener function subscribed to the event emitter. This is the function that should be passed to `model.removeListener`
 
-### `eventCallback` with `{useEventObjects: true}`
+New code should use the `{useEventObjects: true}` option, since the structured event objects are easier to work with. The TypeScript definitions _require_ the option, since the legacy callback's dynamic arguments are impossible to type correctly.
+
+## Event callbacks with `{useEventObjects: true}`
 
 _Introduced in [racer@0.9.6](https://github.com/derbyjs/racer/releases/tag/v0.9.6)._
 
@@ -81,7 +83,11 @@ model.on('all', '**', {useEventObjects: true}, function(event, captures) {
 });
 ```
 
-### `eventCallback` when `useEventObjects` is false or undefined
+## Legacy event callbacks, when `useEventObjects` is false or undefined
+
+<details markdown="block">
+
+<summary>Click here to show documentation for legacy event callbacks</summary>
 
 The event callback receives a number of arguments based on the path pattern and method. The arguments are:
 
@@ -133,7 +139,9 @@ model.on('all', '**', function(path, event, args...) {
 });
 ```
 
-### Passing data to event listeners
+</details>
+
+## Passing data to event listeners
 
 > `model.pass(object)`
 > * `object` An object whose properties will each be set on the `passed` argument

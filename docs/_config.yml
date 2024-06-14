@@ -41,6 +41,15 @@ theme: just-the-docs
 color_scheme: derby-light # just-the-docs theme customization
 permalink: /:path/:name
 
+# just-the-docs customization
+callouts:
+  warning-red:
+    title: Warning
+    color: red
+  warning-yellow:
+    title: Warning
+    color: yellow
+
 # Front matter defaults
 defaults:
   -

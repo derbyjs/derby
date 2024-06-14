@@ -92,31 +92,64 @@ It is not possible to set or delete an entire collection, or get the list of col
 
 ## Loading data into a model
 
-The `subscribe`, `fetch`, `unsubscribe`, and `unfetch` methods are used to load and unload data from ShareJS. These methods don't return data directly. Rather, they load the data into a model. Once loaded, the data are then accessed via model getter methods.
+The `subscribe`, `fetch`, `unsubscribe`, and `unfetch` methods are used to load and unload data from the database. These methods don't return data directly. Rather, they load the data into a model. Once loaded, the data are then accessed via model getter methods.
 
-`subscribe` and `fetch` both return data initially, but subscribe also registers with pub/sub on the server to receive ongoing updates as the data change.
+`subscribe` and `fetch` both load the requested data into the model. Subscribe also registers with pub/sub, automatically applying remote updates to the locally loaded data.
 
-> `model.subscribe(items..., callback(err))`  
-> `model.fetch(items..., callback(err))`   
-> `model.unsubscribe(items..., callback(err))`  
-> `model.unfetch(items..., callback(err))`  
-> * `items` Accepts one or more subscribe-able items, including a document path, scoped model, or query
-> * `callback` Calls back once all of the data for each query and document has been loaded or when an error is encountered
+> `model.subscribe(items, callback)`
+> `model.fetch(items, callback)`
+> `model.unsubscribe(items, callback)`
+> `model.unfetch(items, callback)`
+> * `items` - `string | ChildModel | Query | Array<string | ChildModel | Query>` - Specifier(s) for one or more loadable items, such as a document path, scoped model, or query
+> * `callback` - `(error?: Error) => void` - Calls back once all of the data for each item has been loaded or when an error is encountered
+
+There are also promise-based versions of the methods, available since racer@1.1.0.
+
+> `model.subscribePromised(items)`
+> `model.fetchPromised(items)`
+> `model.unsubscribePromised(items)`
+> `model.unfetchPromised(items)`
+> * These each return a `Promise<void>` that is resolved when the requested item(s) are loaded or rejected on errors.
 
 Avoid subscribing or fetching queries by document id like `model.query('users', {_id: xxx})`. You can achieve the same result passing `'users.xxx'` or `model.at('users.xxx')` to subscribe or fetch, and it is much more efficient.
 
 If you only have one argument in your call to subscribe or fetch, you can also call `subscribe`, `fetch`, `unsubscribe`, and `unfetch` on the query or scoped model directly.
 
 ```js
-var user = model.at('users.' + userId);
-var todosQuery = model.query('todos', {creatorId: userId});
-model.subscribe(user, todosQuery, function(err) {
+// Subscribing to a single document with a path string.
+const userPath = `users.${userId}`;
+model.subscribe(userPath, (error) => {
   if (err) return next(err);
-  console.log(user.get(), todosQuery.get());
-  page.render();
+  console.log(model.get(userPath));
 });
+// Subscribing to two things at once: a document via child model and a query.
+const userModel = model.at(userPath);
+const todosQuery = model.query('todos', {creatorId: userId});
+model.subscribe([userModel, todosQuery], function(err) {
+  if (err) return next(err);
+  console.log(userModel.get(), todosQuery.get());
+});
+
+// Promise-based API
+model.subscribePromised(userPath).then(
+  () => {
+    console.log(model.get(userPath));
+  },
+  (error) => { next(error); }
+);
+// Promise-based API with async/await
+try {
+  await model.subscribePromised([userModel, todosQuery]);
+  console.log(userModel.get(), todosQuery.get());
+} catch (error) {
+  // Handle subscribe error
+}
 ```
 
-Racer internally keeps track of the context in which you call subscribe or fetch, and it counts the number of times that each item is subscribed or fetched. To actually unload a document from the model, you must call the unsubscribe method the same number of times that subscribe is called and the unfetch method the same number of times that fetch is called. However, you generally don't need to worry about calling unsubscribe and unfetch manually.
+Racer internally keeps track of the context in which you call subscribe or fetch, and it counts the number of times that each item is subscribed or fetched. To actually unload a document from the model, you must call the unsubscribe method the same number of times that subscribe is called and the unfetch method the same number of times that fetch is called.
 
-Instead, the `model.unload()` method can be called to unsubscribe and unfetch from all of the subscribes and fetches performed since the last call to unload. Derby calls this method on every full page render right before entering a route. By default, the actual unsubscribe and unfetch happens after a short delay, so if something gets resubscribed during routing, the item will never end up getting unsubscribed and it will callback immediately.
+However, you generally don't need to worry about calling unsubscribe and unfetch manually. Instead, the `model.unload()` method can be called to unsubscribe and unfetch from all of the subscribes and fetches performed since the last call to unload.
+
+Derby unloads all contexts when doing a full page render, right before invoking route handlers. By default, the actual unsubscribe and unfetch happens after a short delay, so if something gets resubscribed during routing, the item will never end up getting unsubscribed and it will callback immediately.
+
+See the [Contexts documentation](contexts) for more details.

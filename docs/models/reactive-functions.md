@@ -8,21 +8,22 @@ parent: Models
 
 Reactive functions provide a simple way to update a computed value whenever one or more objects change. While model events respond to specific model methods and path patterns, reactive functions will be re-evaluated whenever any of their inputs or nested properties change in any way.
 
-Reactive functions may be run any number of times, so they should be [pure functions](https://en.wikipedia.org/wiki/Pure_function). In other words, they should always return the same results given the same input arguments, and they should be side effect free. By default, the inputs to the function are retrieved directly from the model, so be sure not to modify any object or array input arguments. For example, slice an array input before you sort it. The output of the model function is deep cloned by default.
+Reactive functions may be run any number of times, so they should be [pure functions](https://en.wikipedia.org/wiki/Pure_function). In other words, they should always return the same results given the same input arguments, and they should be side effect free.
+
+By default, the inputs to the function are retrieved directly from the model, so be sure not to modify any input arguments in-place. For example, if you need to sort an array, make a copy with `array.slice()` and sort the copy. The output of the reactive function is deep cloned by default, so you don't have to worry about incidental output modifications affecting the inputs.
 
 To execute a model function, you then call `model.start()` or `model.evaluate()`.
+* `start()` immediately evaluates the function, sets the returned value to the output path,
+  and also sets up event listeners that continually re-evaluate the function and update the
+  output whenever any of its input paths are changed.
 * `evaluate()` runs a function once and returns the result.
-* `start()` also sets up event listeners that continually re-evaluate the
-  function whenever any of its input or output paths are changed.
 
 > ```
 > value = model.start(path, inputPaths, [options], fn)
-> value = model.evaluate(inputPaths, [options], fn)
 > ```
 > ```
-> // Legacy (racer &lt;= 0.9.5)
+> // Legacy (racer <= 0.9.5)
 > value = model.start(path, inputPaths..., [options], fn)
-> value = model.evaluate(inputPaths..., [options], fn)
 > ```
 >
 > * `path` - _string \| ChildModel_ - The output path at which to set the value,
@@ -31,14 +32,12 @@ To execute a model function, you then call `model.start()` or `model.evaluate()`
 >   will be retrieved from the model and passed to the function as inputs
 > * `options` - _Object_ (optional)
 >   * `copy` - Controls automatic deep copying of the inputs and output of the
->     function. _Model#evaluate never deep-copies output, since the return
->     value is not set onto the model._
+>     function.
 >     - `'output'` (default) - Deep-copy the return value of the function
 >     - `'input'` - Deep-copy the inputs to the function
 >     - `'both'` - Deep-copy both inputs and output
 >     - `'none'` - Do not automatically copy anything
->   * `mode` - The `model.set*` method to use when setting the output. _This has
->     no effect in Model#evaluate._
+>   * `mode` - The `model.set*` method to use when setting the output.
 >     - `'diffDeep'` (default) - Do a recursive deep-equal comparison on old
 >       and new output values, attempting to issue fine-grained ops on subpaths
 >       where possible.
@@ -77,6 +76,27 @@ To execute a model function, you then call `model.start()` or `model.evaluate()`
 >       defensive and check inputs' existence before using them.
 > * Return `value` - The initial value computed by the function
 
+> ```
+> value = model.evaluate(inputPaths, [options], fn)
+> ```
+> ```
+> // Legacy (racer <= 0.9.5)
+> value = model.evaluate(inputPaths..., [options], fn)
+> ```
+>
+> * `path` - _string \| ChildModel_ - The output path at which to set the value,
+>   keeping it updated as input paths change
+> * `inputPaths` - _Array<string \| ChildModel>_ - One or more paths whose values
+>   will be retrieved from the model and passed to the function as inputs
+> * `options` - _Object_ (optional)
+>   * `copy` - Controls automatic deep copying of the inputs to the function.
+>     - `'input'` - Deep-copy the inputs to the function
+>     - `'none'` - Do not automatically copy anything (default behavior)
+> * `fn` - _Function \| string_ -  A function or the name of a function defined
+>   via `model.fn()`
+>   * See the `model.start` docs above for details.
+> * Return `value` - The value returned by the function
+
 > `model.stop(path)`
 > * `path` The path at which the output should no longer update. Note that the value is not deleted; it is just no longer updated
 
@@ -84,7 +104,7 @@ In DerbyJS, `model.start()` functions should typically be established in the `in
 
 ```js
 MyComponent.prototype.init = function(model) {
-  model.start('total', 'first', 'second', function sum(x, y) {
+  model.start('total', ['first', 'second'], function sum(x, y) {
     return (x || 0) + (y || 0);
   });
 };

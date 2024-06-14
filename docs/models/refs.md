@@ -6,7 +6,7 @@ parent: Models
 
 # References
 
-References make it possible to write business logic and templates that interact with the model in a general way. They redirect model operations from a reference path to the underlying data, and they set up event listeners that emit model events on both the reference and the actual object's path.
+Model references work like [symlinks in filesystems](https://en.wikipedia.org/wiki/Symbolic_link), redirecting model operations from a reference path to the underlying data, and they set up event listeners that emit model events on both the reference and the actual object's path.
 
 References must be declared per model, since calling `model.ref` creates a number of event listeners in addition to setting a ref object in the model. When a reference is created or removed, a `change` model event is emitted. References are not actually stored in the model data, but they can be used from getter and setter methods as if they are.
 
@@ -59,7 +59,7 @@ Racer also supports a special reference type created via `model.refList`. This t
 > `model.removeRefList(path)`
 > * `path` The location at which to remove the reference
 
-Note that if objects are inserted into a refList without an `id` property, a unique id from [`model.id()`](paths#guids) will be automatically added to the object.
+Note that if objects are inserted into a refList without an `id` property, a unique id from [`model.id()`](paths#uuids) will be automatically added to the object.
 
 ```js
 // refLists should consist of objects with an id matching

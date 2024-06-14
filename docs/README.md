@@ -24,7 +24,7 @@ The site is viewable at `http://localhost:4000/derby/`.
 
 ## With Ruby in Docker container
 
-One-time container creation:
+One-time container creation, with current directory pointing at this repo's root:
 
 ```
 docker run --name derby-docs-ruby -v "$(pwd)/docs:/derby-docs" -p 127.0.0.1:4000:4000 ruby:2.7 bash -c 'cd derby-docs && bundle install && bundle exec jekyll serve -H 0.0.0.0 -P 4000 --trace'

@@ -58,9 +58,9 @@ The server includes an app with a standard Node.js require statement. It can
 then use the `app.router()` method to create a router middleware for Express
 that handles all of the app's routes.
 
-The server also needs to create a `store` object, which is what creates models,
+The server also needs to create a `backend` object, which is what creates models,
 coordinates data syncing, and interfaces with databases. Stores are created via
-the `derby.createStore()` method. See [Backends](models/backends).
+the `derby.createBackend()` method. See [Backends](models/backends).
 
 > A typical setup can be seen in the [derby-starter](https://github.com/derbyjs/derby-starter/blob/master/lib/server.js) project, which is a node module for getting started with Derby.
 >
