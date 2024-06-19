@@ -4,7 +4,9 @@ title: Mutators
 parent: Models
 ---
 
-# Setters
+# Mutators
+
+Mutator methods synchronously update data in the local model, then for remote (DB-backed) collections, they  will also send the operation to the server. If there's an error committing the op, the local model will roll back the mutation so that the local model reflects the database state.
 
 Models allow getting and setting to nested undefined paths. Setting such a path first sets each undefined or null parent to an empty object or empty array. Whether or not a path segment is a number determines whether the implied parent is created as an object or array.
 
@@ -14,9 +16,27 @@ model.set('cars.DeLorean.DMC12.color', 'silver');
 console.log(model.get());
 ```
 
-All model mutators modify data and emit events synchronously. This is only safe to do, because all remote data is synchronized with Operational Transformation, and every client will eventually see a consistent view of the same data. With a more naive approach to syncing data to the server and other clients, updates to the data would need to wait until they were confirmed successful from the server.
+## Error handling
 
-As well as a synchronous interface, model mutators have an optional callback with an error argument `callback(err)`. This callback is called when the operation is confirmed from the server, which may be desired to confirm that data was saved before updating the UI in some rare cases. This callback should be used very rarely in practice, and data updates should be treated as sychronous, so that the UI responds immediately even if a user has a high latency connection or is currently disconnected.
+In frontend Derby apps, it's usually fine to use the mutator methods synchronously, since ShareDB's operational transform logic allows the local model to optimisically reflect the update before it's committed to the database.
+
+Unhandled mutation errors are emitted as `'error'` events on the root model. For frontend code, these can be handled at the top level like this:
+
+```js
+// The 'ready' event is only emitted in the browser.
+app.on('ready', () => {
+  app.model.on('error', (error) => {
+    // Handle the error appropriately, such as displaying an error message
+    // to the user and asking them to refresh.
+    displayErrorMessage();
+    // Report the error to your error-handling tool manually, or
+    // just re-throw for reporting.
+    throw error;
+  });
+});
+```
+
+To handle errors in individual mutation calls via callbacks or promises, see the [Confirming mutations](#confirming-mutations) section below.
 
 ## General methods
 
@@ -24,20 +44,19 @@ As well as a synchronous interface, model mutators have an optional callback wit
 > * `path` Model path to set
 > * `value` Value to assign
 > * `previous` Returns the value that was set at the path previously
-> * `callback` *(optional)* Invoked upon completion of a successful or failed operation
 
 > `obj = model.del(path, [callback])`
-> * `path` Model path of object to delete
-> * `obj` Returns the deleted object
+> * `path` Model path of value to delete
+> * `obj` Returns the deleted value
 
 > `obj = model.setNull(path, value, [callback])`
 > * `path` Model path to set
-> * `value` Value to assign only if the path is null or undefined
+> * `value` Value to assign only if the current value is null or undefined
 > * `obj` Returns the object at the path if it is not null or undefined. Otherwise, returns the new value
 
 > `previous = model.setDiff(path, value, [callback])`
 > * `path` Model path to set
-> * `value` Value to be set if not strictly equal to the current value
+> * `value` Value to be set only if the current value is not strictly equal (`===`) to the current value
 > * `previous` Returns the value that was set at the path previously
 
 > `model.setDiffDeep(path, value, [callback])`
@@ -48,9 +67,9 @@ As well as a synchronous interface, model mutators have an optional callback wit
 
 ## Object methods
 
-> `id = model.add(path, object, [callback])`
-> * `path` Model path to set
-> * `object` A document to add. If the document has an `id` property, it will be set at that value underneath the path. Otherwise, an id from `model.id()` will be set on the object first
+> `id = model.add(collectionName, object, [callback])`
+> * `collectionName` Name of the collection to add an object to
+> * `object` A document to add. If the document has an `id` property, it will be used as the new object's key in the collection. Otherwise, an UUID from `model.id()` will be set on the object first
 > * `id` Returns `object.id`
 
 > `model.setEach(path, object, [callback])`
@@ -120,3 +139,49 @@ The string methods support collaborative text editing, and Derby uses string met
 > * `path` Model path to a string
 > * `index` Starting character index of the string at which to remove
 > * `howMany` Number of characters to remove
+
+## Confirming mutations
+
+In backend code or certain kinds of frontend code, it's often necessary to know when the mutation is actually committed, and handling errors from specific mutations can be useful. There are a couple ways of doing so:
+
+- **Callback function**
+  - All mutator methods take a final optional `callback` parameter, `(error?: Error) => void`.
+  - The callback is called with no error when the mutation is successfully commited to the database, and it's called with an error if the mutation failed to commit.
+- **Promise API** _(since racer@1.1.0)_
+  - Each mutator method has a promise-based version `___Promised()`. For example, `set(path, value)` has `setPromised(path, value)`.
+  - The promise is resolved when the mutation is successfully commited to the database, and it's rejected with an error if the mutation failed to commit.
+  - Most mutator promises are `Promise<void>`, resolving with no value. The one exception is `addPromised`, which resolves with the string `id` of the new document.
+
+Even when using these, the mutation is still synchronously applied to the local model, so that the UI responds immediately even if a user has a high latency connection or is currently disconnected.
+
+```js
+// Callback API
+model.set('note-1.title', 'Hello world', (error) => {
+  if (error) {
+    return handleError(error);
+  }
+  console.log('Update successful!');
+});
+// Promise API
+try {
+  await model.setPromised('note-1.title', 'Hello world');
+} catch (error) {
+  return handleError(error);
+}
+console.log('Update successful!');
+```
+
+### `whenNothingPending()`
+
+In rare situations, such as backend batch-update code, you might be makes many synchronous-style mutations without callbacks/promises, and you want to know when ALL pending mutations, fetches, and subscribes on a model are finished.
+
+`whenNothingPending()` can do that, but keep in mind these warnings:
+* It can end up waiting on unrelated operations issued by other code using the same model, so only use it if you're sure the model isn't actively being used elsewhere.
+* Performance can be bad if there are tons of documents and queries in the model.
+* You do _not_ need to call this prior to `model.close()`, since that already waits internally for pending requests to finish.
+
+> `model.whenNothingPending(callback)`
+> * `callback` - `() => void` - Optional callback, called when the model has no more pending mutations, fetches, or subscribes.
+
+> `nothingPendingPromise = model.whenNothingPendingPromised()`
+> * Returns a `Promise<void>` that resolves when the model has no more pending mutations, fetches, or subscribes. The promise will never be rejected.
