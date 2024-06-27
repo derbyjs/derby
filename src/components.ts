@@ -48,9 +48,18 @@ export interface ComponentViewDefinition {
 
 export abstract class Component<T extends object = object> extends Controller<T> {
   context: Context;
+  /**
+   * Unique ID assigned to the component
+   */
   id: string;
+  /**
+   * Whether the component instance is fully destroyed. Initially set to false.
+   */
   isDestroyed: boolean;
   page: Page;
+  /**
+   * Reference to the containing controller
+   */
   parent: Controller;
   singleton?: true;
   _scope: string[];
@@ -83,7 +92,25 @@ export abstract class Component<T extends object = object> extends Controller<T>
     this.isDestroyed = false;
   }
 
+  /**
+   * Method called by Derby after instantiating a component and before rendering the template.
+   *
+   * This should initialize any data needed by the component, like with `this.model.start(...)`.
+   *
+   * `init()` could be called from the server and the browser, so do not use any DOM-only methods
+   * here. Put those in `create()` instead.
+   */
   init(_model: ChildModel): void {}
+
+  /**
+   * Method called by Derby once a component is loaded and ready in the DOM.
+   *
+   * Any model listeners (`this.model.on(...)`) and DOM listeners (`this.dom.addListener(...)`)
+   * should be added here.
+   *
+   * This will only be called in the browser.
+   */
+  create?: (() => void) | (() => Promise<void>);
 
   destroy() {
     this.emit('destroy');
@@ -97,42 +124,58 @@ export abstract class Component<T extends object = object> extends Controller<T>
     this.isDestroyed = true;
   }
 
-  // Apply calls to the passed in function with the component as the context.
-  // Stop calling back once the component is destroyed, which avoids possible bugs
-  // and memory leaks.
-  bind(callback: (...args: unknown[]) => void) {
+  /**
+   * Generate a function, bound function to the component instance's `this`.
+   * The returned function will no longer be invoked once the component is destroyed.
+   *
+   * @param fn - A function to be invoked with the component as its `this` value.
+   * @returns a bound function, similar to JavaScript's Function.bind()
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_objects/Function/bind
+   */
+  bind(fn: (...args: unknown[]) => void) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let _component = this;
-    let _callback = callback;
+    let _fn = fn;
     this.on('destroy', function() {
       // Reduce potential for memory leaks by removing references to the component
       // and the passed in callback, which could have closure references
       _component = null;
       // Cease calling back after component is removed from the DOM
-      _callback = null;
+      _fn = null;
     });
     return function componentBindWrapper(...args) {
-      if (!_callback) return;
-      return _callback.apply(_component, ...args);
+      if (!_fn) return;
+      return _fn.apply(_component, ...args);
     };
   }
 
-  // When passing in a numeric delay, calls the function at most once per that
-  // many milliseconds. Like Underscore, the function will be called on the
-  // leading and the trailing edge of the delay as appropriate. Unlike Underscore,
-  // calls are consistently called via setTimeout and are never synchronous. This
-  // should be used for reducing the frequency of ongoing updates, such as scroll
-  // events or other continuous streams of events.
-  //
-  // Additionally, implements an interface intended to be used with
-  // window.requestAnimationFrame or process.nextTick. If one of these is passed,
-  // it will be used to create a single async call following any number of
-  // synchronous calls. This mode is typically used to coalesce many synchronous
-  // events (such as multiple model events) into a single async event.
-  //
-  // Like component.bind(), will no longer call back once the component is
-  // destroyed, which avoids possible bugs and memory leaks.
-  throttle(callback: (...args: unknown[]) => void, delayArg?: number | ((fn: () => void) => void)) {
+  /**
+   * Generate a function that, when passing in a numeric delay, calls the function at
+   * most once per that many milliseconds. Additionally, implements an interface
+   * intended to be used with window.requestAnimationFrame, process.nextTick, or window.setImmediate.
+   *
+   * @param fn - A function to be invoked with the component instance as its `this` value.
+   * @param delayArg - Amount of time (in ms) to wait until invoking `fn` again. Default '0'.
+   *
+   * When passing in a numeric delay, calls the function at most once per that
+   * many milliseconds. Like Underscore, the function will be called on the
+   * leading and the trailing edge of the delay as appropriate. Unlike Underscore,
+   * calls are consistently called via setTimeout and are never synchronous. This
+   * should be used for reducing the frequency of ongoing updates, such as scroll
+   * events or other continuous streams of events.
+   *
+   * Additionally, implements an interface intended to be used with
+   * window.requestAnimationFrame or process.nextTick. If one of these is passed,
+   * it will be used to create a single async call following any number of
+   * synchronous calls. This mode is typically used to coalesce many synchronous
+   * events (such as multiple model events) into a single async event.
+   * Like component.bind(), will no longer call back once the component is
+-  * destroyed, which avoids possible bugs and memory leaks.
+   *
+   * @returns a bound function
+   */
+  throttle(fn: (...args: unknown[]) => void, delayArg?: number | ((fn: () => void) => void)) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let _component = this;
     this.on('destroy', function() {
@@ -140,7 +183,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
       // and the passed in callback, which could have closure references
       _component = null;
       // Cease calling back after component is removed from the DOM
-      callback = null;
+      fn = null;
     });
 
     // throttle(callback)
@@ -153,8 +196,8 @@ export abstract class Component<T extends object = object> extends Controller<T>
         const args = nextArgs;
         nextArgs = null;
         previous = +new Date();
-        if (callback && args) {
-          callback.apply(_component, args);
+        if (fn && args) {
+          fn.apply(_component, args);
         }
       };
       return function componentThrottleWrapper(...args) {
@@ -175,8 +218,8 @@ export abstract class Component<T extends object = object> extends Controller<T>
       const boundCallback = function() {
         const args = nextArgs;
         nextArgs = null;
-        if (callback && args) {
-          callback.apply(_component, args);
+        if (fn && args) {
+          fn.apply(_component, args);
         }
       };
       return function componentThrottleWrapper(...args) {
@@ -189,30 +232,36 @@ export abstract class Component<T extends object = object> extends Controller<T>
     throw new Error('Second argument must be a delay function or number');
   }
 
-  // Checks that component is not destroyed before calling callback function
-  // which avoids possible bugs and memory leaks.
-  requestAnimationFrame(callback: () => void) {
-    const safeCallback = _safeWrap(this, callback);
+  /**
+   * Safe wrapper around `window.requestAnimationFrame` that ensures function not invoked
+   * when component has been destroyed
+   * @param fn - A function to be invoked with the component instance as its `this` value.
+   */
+  requestAnimationFrame(fn: () => void) {
+    const safeCallback = _safeWrap(this, fn);
     window.requestAnimationFrame(safeCallback);
   }
 
-  // Checks that component is not destroyed before calling callback function
-  // which avoids possible bugs and memory leaks.
-  nextTick(callback: () => void) {
-    const safeCallback = _safeWrap(this, callback);
+  /**
+   * Safe wrapper around `process.nextTick` that ensures function not invoked
+   * when component has been destroyed
+   * @param fn - A function to be invoked with the component instance as its `this` value.
+   */
+  nextTick(fn: () => void) {
+    const safeCallback = _safeWrap(this, fn);
     process.nextTick(safeCallback);
   }
 
-  // Suppresses calls until the function is no longer called for that many
-  // milliseconds. This should be used for delaying updates triggered by user
-  // input, such as window resizing, or typing text that has a live preview or
-  // client-side validation. This should not be used for inputs that trigger
-  // server requests, such as search autocomplete; use debounceAsync for those
-  // cases instead.
-  //
-  // Like component.bind(), will no longer call back once the component is
-  // destroyed, which avoids possible bugs and memory leaks.
-  debounce<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
+  /**
+   * Suppresses calls until the function is no longer called for that many milliseconds.
+   * This should be used for delaying updates triggered by user input or typing text.
+   *
+   * @param fn - A function to be invoked with the component instance as its `this` value.
+   * @param delay - Amount of time (in ms) to wait until invoking `fn`. Default '0'.
+   *
+   * @returns a bound function
+   */
+  debounce<F extends AnyVoidFunction>(fn: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
     delay = delay || 0;
     if (typeof delay !== 'number') {
       throw new Error('Second argument must be a number');
@@ -224,7 +273,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
       // and the passed in callback, which could have closure references
       component = null;
       // Cease calling back after component is removed from the DOM
-      callback = null;
+      fn = null;
     });
     let nextArgs;
     let timeout;
@@ -232,8 +281,8 @@ export abstract class Component<T extends object = object> extends Controller<T>
       const args = nextArgs;
       nextArgs = null;
       timeout = null;
-      if (callback && args) {
-        callback.apply(component, args);
+      if (fn && args) {
+        fn.apply(component, args);
       }
     };
     return function componentDebounceWrapper(...args: Parameters<F>) {
@@ -243,24 +292,31 @@ export abstract class Component<T extends object = object> extends Controller<T>
     };
   }
 
-  // Forked from: https://github.com/juliangruber/async-debounce
-  //
-  // Like debounce(), suppresses calls until the function is no longer called for
-  // that many milliseconds. In addition, suppresses calls while the callback
-  // function is running. In other words, the callback will not be called again
-  // until the supplied done() argument is called. When the debounced function is
-  // called while the callback is running, the callback will be called again
-  // immediately after done() is called. Thus, the callback will always receive
-  // the last value passed to the debounced function.
-  //
-  // This avoids the potential for multiple callbacks to execute in parallel and
-  // complete out of order. It also acts as an adaptive rate limiter. Use this
-  // method to debounce any field that triggers an async call as the user types.
-  //
-  // Like component.bind(), will no longer call back once the component is
-  // destroyed, which avoids possible bugs and memory leaks.
-  debounceAsync<F extends AnyVoidFunction>(callback: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
-    const applyArguments = callback.length !== 1;
+  /**
+   * Like debounce(), suppresses calls until the function is no longer called for
+   * that many milliseconds. In addition, suppresses calls while the callback
+   * function is running. In other words, the callback will not be called again
+   * until the supplied done() argument is called. When the debounced function is
+   * called while the callback is running, the callback will be called again
+   * immediately after done() is called. Thus, the callback will always receive
+   * the last value passed to the debounced function.
+   *
+   * This avoids the potential for multiple callbacks to execute in parallel and
+   * complete out of order. It also acts as an adaptive rate limiter. Use this
+   * method to debounce any field that triggers an async call as the user types.
+   *
+   * Like component.bind(), will no longer call back once the component is
+   * destroyed, which avoids possible bugs and memory leaks.
+   * 
+   * Forked from: https://github.com/juliangruber/async-debounce
+   *
+   * @param fn - A function to be invoked with the component instance as its `this` value.
+   * @param delay - Amount of time (in ms) to wait until invoking `fn`. Default '0'.
+   *
+   * @returns a bound function
+   */
+  debounceAsync<F extends AnyVoidFunction>(fn: (...args: Parameters<F>) => void, delay?: number): (...args: Parameters<F>) => void {
+    const applyArguments = fn.length !== 1;
     delay = delay || 0;
     if (typeof delay !== 'number') {
       throw new Error('Second argument must be a number');
@@ -272,7 +328,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
       // and the passed in callback, which could have closure references
       component = null;
       // Cease calling back after component is removed from the DOM
-      callback = null;
+      fn = null;
     });
     let running = false;
     let nextArgs;
@@ -281,10 +337,10 @@ export abstract class Component<T extends object = object> extends Controller<T>
       const args = nextArgs;
       nextArgs = null;
       timeout = null;
-      if (callback && args) {
+      if (fn && args) {
         running = true;
         args.push(done);
-        callback.apply(component, args);
+        fn.apply(component, args);
       } else {
         running = false;
       }
@@ -313,10 +369,19 @@ export abstract class Component<T extends object = object> extends Controller<T>
       this.app.views.find(viewName, contextView.namespace) : contextView;
   }
 
-  getAttribute<T>(key: string) {
-    const attributeContext = this.context.forAttribute(key);
+  /**
+   * Retrieve the appropriate view attribute's value for a given view instance.
+   * If the value is a template, it will be rendered prior to being returned.
+   *
+   * @param attrName the name of the view attribute used with a component instance
+   * @returns any of the possible values that can be expressed with a view attribute
+   *
+   * @see https://derbyjs.github.io/derby/views/template-syntax/view-attributes
+   */
+  getAttribute<T>(attrName: string) {
+    const attributeContext = this.context.forAttribute(attrName);
     if (!attributeContext) return;
-    let value = attributeContext.attributes[key];
+    let value = attributeContext.attributes[attrName];
     if (value instanceof expressions.Expression) {
       value = value.get(attributeContext);
     }
@@ -548,7 +613,7 @@ const _extendComponent = (Object.setPrototypeOf && Object.getPrototypeOf) ?
     // Find the end of the prototype chain
     const rootPrototype = getRootPrototype(constructor.prototype);
 
-    // This guard is a workaroud to a bug that has occurred in Chakra when
+    // This guard is a workaround to a bug that has occurred in Chakra when
     // app.component() is invoked twice on the same constructor. In that case,
     // the `instanceof Component` check in extendComponent incorrectly returns
     // false after the prototype has already been set to `Component.prototype`.

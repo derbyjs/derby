@@ -80,7 +80,12 @@ export class ComponentHarness extends EventEmitter {
   document: Document;
   model: RootModel;
   page: PageForHarness;
-  
+
+  /**
+   * Creates a `ComponentHarness`.
+   *
+   * If arguments are provided, then `#setup` is called with the arguments.
+   */
   constructor() {
     super();
     this.app = new AppForHarness(this);
@@ -94,15 +99,15 @@ export class ComponentHarness extends EventEmitter {
 
   /** @typedef { {view: {is: string, source?: string}} } InlineComponent */
   /**
- * Sets up the harness with a HTML template, which should contain a `<view is="..."/>` for the
- * component under test, and the components to register for the test.
- *
- * @param {string} source - HTML template for the harness page
- * @param {...(Component | InlineComponent} components - components to register for the test
- *
- * @example
- *   var harness = new ComponentHarness().setup('<view is="dialog"/>', Dialog);
- */
+   * Sets up the harness with a HTML template, which should contain a `<view is="..."/>` for the
+   * component under test, and the components to register for the test.
+   *
+   * @param {string} source - HTML template for the harness page
+   * @param {...(Component | InlineComponent} components - components to register for the test
+   *
+   * @example
+   *   var harness = new ComponentHarness().setup('<view is="dialog"/>', Dialog);
+   */
   setup(source: string, ...components: ComponentConstructor[]) {
     this.app.views.register('$harness', source);
     // Remaining variable arguments are components

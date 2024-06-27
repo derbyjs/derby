@@ -8,6 +8,9 @@ import { Controller } from '../Controller';
 
 function noop() { }
 
+/**
+ * Properties and methods which are globally inherited for the entire page
+ */
 export class ContextMeta {
   addBinding: (binding: any) => void = noop;
   removeBinding: (binding: any) => void = noop;
@@ -82,6 +85,11 @@ export class Context {
     this._eventModels = null;
   }
 
+  /**
+   * Generate unique Id
+   * 
+   * @returns namespaced Id
+   */
   id() {
     const count = ++this.meta.idCount;
     return this.meta.idNamespace + '_' + count.toString(36);
@@ -136,7 +144,13 @@ export class Context {
     return new Context(this.meta, component, this, this.unbound);
   }
 
-  // Make a context for an item in an each block
+  /**
+   * Make a context for an item in an each block
+   * 
+   * @param expression 
+   * @param item 
+   * @returns new Context
+   */
   eachChild(expression, item) {
     const context = new Context(this.meta, this.controller, this, this.unbound, expression);
     context.item = item;
@@ -210,6 +224,11 @@ export class Context {
     }
   }
 
+  /**
+   * Gets the current `context` view or closest `context.parent` view
+   * 
+   * @returns view
+   */
   getView() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let context: Context = this;

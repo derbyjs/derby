@@ -40,6 +40,8 @@ markdown: kramdown
 theme: just-the-docs
 color_scheme: derby-light # just-the-docs theme customization
 permalink: /:path/:name
+keep_files:
+  - api/
 
 # just-the-docs customization
 callouts:
@@ -63,6 +65,14 @@ defaults:
       path: "assets" # an empty string here means all files in the project
     values:
       render_with_liquid: true
+
+nav_external_links:
+  - title: Derby API
+    url: /api
+    opens_in_new_tab: true
+  - title: Racer API
+    url: https://derbyjs.github.io/racer
+    opens_in_new_tab: true
 
 # Exclude from processing.
 # The following items will not be processed, by default.
