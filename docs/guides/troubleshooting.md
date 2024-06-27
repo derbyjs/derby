@@ -67,3 +67,17 @@ Here are a few common possibilities:
 * sorting lists on in `init()` might cause the output to be non-deterministic (like alphabetizing / capitalization). Basically a data "bug" would end-up generated different HTML.
 * putting links in links, which has undefined behavior in HTML
 * inserting a conditional `<div>` such as `{{if thisIsTrue}}<div>stuff</div>{{/if}}` without restarting the server
+
+## Error when attempting to use local model paths in singleton components
+
+A [singleton component](../components/lifecycle#singleton-stateless-components) does not have a local model, so trying to use a local model path like `{{value}}` in its view will fail with this error:
+
+```
+TypeError: Cannot read properties of undefined (reading 'data')
+  at PathExpression.get
+  ...
+```
+
+To resolve the issue, bind the data via an attribute and refer to it with an attribute path `{{@value}}`. See the linked singleton component documentation for an example.
+
+Alternatively, if you don't need component controller functions, switch to using a plain [view partial](../components/view-partials) instead.
