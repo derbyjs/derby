@@ -40,6 +40,8 @@ markdown: kramdown
 theme: just-the-docs
 color_scheme: derby-light # just-the-docs theme customization
 permalink: /:path/:name
+keep_files:
+  - api/
 
 # Front matter defaults
 defaults:
@@ -58,11 +60,9 @@ defaults:
 nav_external_links:
   - title: Derby API
     url: /api
-    hide_icon: true
     opens_in_new_tab: true
   - title: Racer API
     url: https://derbyjs.github.io/racer
-    hide_icon: true
     opens_in_new_tab: true
 
 # Exclude from processing.

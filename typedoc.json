@@ -6,7 +6,7 @@
       "typedoc-plugin-missing-exports",
       "./typedocExcludeUnderscore.mjs"
     ],
-    "out": "docs/api",
+    "out": "docs/_site/api",
     "visibilityFilters": {
       "protected": false,
       "private": false,
