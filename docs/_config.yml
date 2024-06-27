@@ -55,6 +55,16 @@ defaults:
     values:
       render_with_liquid: true
 
+nav_external_links:
+  - title: Derby API
+    url: /api
+    hide_icon: true
+    opens_in_new_tab: true
+  - title: Racer API
+    url: https://derbyjs.github.io/racer
+    hide_icon: true
+    opens_in_new_tab: true
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
