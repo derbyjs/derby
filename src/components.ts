@@ -370,7 +370,8 @@ export abstract class Component<T extends object = object> extends Controller<T>
   }
 
   /**
-   * Retrieve the appropriate view attribute's value for a given view instance
+   * Retrieve the appropriate view attribute's value for a given view instance.
+   * If the value is a template, it will be rendered prior to being returned.
    *
    * @param attrName the name of the view attribute used with a component instance
    * @returns any of the possible values that can be expressed with a view attribute
