@@ -81,3 +81,22 @@ TypeError: Cannot read properties of undefined (reading 'data')
 To resolve the issue, bind the data via an attribute and refer to it with an attribute path `{{@value}}`. See the linked singleton component documentation for an example.
 
 Alternatively, if you don't need component controller functions, switch to using a plain [view partial](../components/view-partials) instead.
+
+## Mutation on uncreated remote document
+
+To perform mutations on a DB-backed document, it must first be loaded in the model. If not, an error `Error: Mutation on uncreated remote document` will be thrown.
+
+There are a few ways to load a document into the model:
+- [Fetching or subscribing to the document](../models/backends#loading-data-into-a-model), either directly via doc id or via a query
+- Creating a new document, e.g. via `model.add()`
+
+When a document is loaded with a [projection](https://share.github.io/sharedb/projections), the mutation must be done using the same projection name.
+- For example, if a doc was loaded only with a projection name `model.fetch('notes_title.note-12')`, then mutations must be done with the projection name, `model.set('notes_title.note-12.title', 'Intro')`.
+- Trying to mutate using the base collection name in that case, `model.set('notes.note-12.title')`, will result in the "Mutation on uncreated remote document" error.
+- If a doc is loaded both with the base collection name and with projections, then mutations can be done with any collection or projection name the doc was loaded with.
+
+## Invalid op submitted. Operation invalid in projected collection
+
+Make sure the field being mutated is one of the fields defined in the [projection](https://share.github.io/sharedb/projections).
+
+If that's not feasible, then fetch/subscribe the doc using its base collection name and do the mutation using the base collection.
