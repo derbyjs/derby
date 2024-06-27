@@ -99,7 +99,7 @@ Creating a model per component, binding component attributes, and cleaning up co
 
 In this case, it is best to declare the component as a "singleton" component. A singleton component is also implemented with a JavaScript class for a controller, but Derby will only instantiate the class once and reuse the same instance of the class each time the component's view is rendered. Derby will not create a model or other properties on the controller, since its instance can be used in multiple places simultaneously. In addition, rendering a singleton component does not invoke `init()`, `create()`, or `destroy()`.
 
-Since singleton components do not have a model, only attribute paths may be used in views. Singleton controllers should consist of only pure functions.
+Since singleton components do not have a model, only attribute paths prefixed with `@` may be used in views. Singleton controllers should consist of only pure functions.
 
 When a component is used many times on a page, such as a repeated item in a list or a commonly used UI element, it is best to write it statelessly for better performance. View partials are the most lightweight, singleton components allow use of custom JavaScript, and full components have their own model state.
 
@@ -108,6 +108,9 @@ When a component is used many times on a page, such as a repeated item in a list
   <div class="user-icon">
     {{getInitials(@user.fullName)}}
   </div>
+
+<example:>
+  <view is="user-icon" user="{{ { fullName: 'Ali Jones' } }}">
 ```
 
 ```js

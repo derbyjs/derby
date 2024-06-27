@@ -475,7 +475,19 @@ export class ComponentFactory {
     // play nice with how CoffeeScript extends class constructors
     emitInitHooks(context, component);
     component.emit('init', component);
-    if (component.init) component.init(component.model);
+    if (component.init) {
+      if (util.isProduction) {
+        component.init(component.model);
+      } else {
+        const initReturn: unknown = component.init(component.model);
+        if (initReturn instanceof Promise) {
+          console.warn(
+            `Component ${component.constructor.name} init() should not be an async function:`,
+            component.init
+          );
+        }
+      }
+    }
 
     return component.context;
   }
@@ -492,7 +504,7 @@ export class ComponentFactory {
 
 function noop() {}
 
-class SingletonComponentFactory{
+class SingletonComponentFactory {
   constructorFn: SingletonComponentConstructor;
   isSingleton: true;
   component: Component;
@@ -569,8 +581,18 @@ const _extendComponent = (Object.setPrototypeOf && Object.getPrototypeOf) ?
   };
 
 export function extendComponent(constructor: SingletonComponentConstructor | ComponentConstructor) {
-  // Don't do anything if the constructor already extends Component
-  if (constructor.prototype instanceof Component) return;
-  // Otherwise, append Component.prototype to constructor's prototype chain
+  if (constructor.singleton) {
+    if (constructor.prototype instanceof Component) {
+      throw new Error('Singleton compoment must not extend the Component class');
+    } else {
+      return;
+    }
+  }
+  // Normal components' constructors must extend Component.
+  if (constructor.prototype instanceof Component) {
+    return;
+  }
+  // For backwards compatibility, if a normal component doesn't already extend Component,
+  // then append Component.prototype to the constructor's prototype chain
   _extendComponent(constructor);
 }
