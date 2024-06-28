@@ -40,8 +40,7 @@ markdown: kramdown
 theme: just-the-docs
 color_scheme: derby-light # just-the-docs theme customization
 permalink: /:path/:name
-keep_files:
-  - api/
+keep_files: [api]
 
 # just-the-docs customization
 callouts:
