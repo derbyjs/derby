@@ -100,7 +100,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
    * `init()` could be called from the server and the browser, so do not use any DOM-only methods
    * here. Put those in `create()` instead.
    */
-  init(_model: ChildModel): void {}
+  init?(_model: ChildModel): void;
 
   /**
    * Method called by Derby once a component is loaded and ready in the DOM.
@@ -110,7 +110,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
    *
    * This will only be called in the browser.
    */
-  create?: (() => void) | (() => Promise<void>);
+  create?(): void;
 
   destroy() {
     this.emit('destroy');
