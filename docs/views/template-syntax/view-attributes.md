@@ -188,6 +188,42 @@ this.container.querySelectorAll('*');
 this.modal.close();
 ```
 
+
+### `asArray` attribute
+
+Similar to the `as` attribute, a property with the name of the attribute value is made available on the component but in this case is an `array`. Used by views in a `each` block to provide a reference in the controller to the individual item.
+
+```jinja
+{{each items as #item, #index}}
+  <input as-array="itemEditor">{{#item}}</input>
+{{/each}}
+```
+
+```js
+this.itemEditor[index]; // references the Component or DOM element for item at `index`
+```
+
+### `asObject` attribute
+
+Similar to the `as-array` attribute, a property with the name of the attribute value is made available on the component. This attribute takes a second argument that is the proptery key to use as the property on the object.
+
+```jinja
+<ul>
+  {{each _page.items as #item}}
+    <li as-object="listItems, #item.id">{{#item.name}}
+  {{/each}}
+</ul>v
+```
+
+```js
+this.page.model.set('_page.items', [
+  {id: 'a', name: 'Item A'},
+  {id: 'b', name: 'Item B'},
+]);
+
+this.listItems.a // references the Component or DOM element for "Item A"
+```
+
 ### `inherit` attribute
 
 Adding the `inherit` attribute changes the behavior of attribute lookup within the instantiated view. By default, attribute values are only defined in the view that they are passed into explicitly. Passing attribute values through one view into another normally requires manually repeating the attributes, such as `class="{{@class}}"`. `inherit` modifies the default behavior, making all attributes of the parent view instance implicitly available as well. Explicitly providing an attribute will take precedence over `inherit`.
