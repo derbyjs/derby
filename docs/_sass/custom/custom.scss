@@ -25,3 +25,8 @@
     }
   }
 }
+
+h3 > code {
+  // fix font size of code block in heading
+  font-size: 1.0rem;
+}
