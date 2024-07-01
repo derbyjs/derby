@@ -189,7 +189,7 @@ this.modal.close();
 ```
 
 
-### `asArray` attribute
+### `as-array` attribute
 
 Similar to the `as` attribute, a property with the name of the attribute value is made available on the component but in this case is an `array`. Used by views in a `each` block to provide a reference in the controller to the individual item.
 
@@ -203,7 +203,7 @@ Similar to the `as` attribute, a property with the name of the attribute value i
 this.itemEditor[index]; // references the Component or DOM element for item at `index`
 ```
 
-### `asObject` attribute
+### `as-object` attribute
 
 Similar to the `as-array` attribute, a property with the name of the attribute value is made available on the component. This attribute takes a second argument that is the proptery key to use as the property on the object.
 
