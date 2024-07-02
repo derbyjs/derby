@@ -1,9 +1,19 @@
 var expect = require('chai').expect;
-var derby = require('./util').derby;
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('as', function() {
+  var runner = domTestRunner.install({
+    jsdomOptions: {
+      // solution for `SecurityError: localStorage is not available for opaque origins`
+      // Racer interfaces with localStorage and the `as-object` tests use `page.model`
+      // methods causing the SecurityError if `url` is not set. Does not appear to impact
+      // `as-array` tests even though they also use `pae.model` methods so 🤷
+      url: 'http://localhost/'
+    }
+  });
+
   it('HTML element `as` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body', '<div as="nested[0]"></div>');
     var page = app.createPage();
     var fragment = page.getFragment('Body');
@@ -12,7 +22,7 @@ describe('as', function() {
   });
 
   it('Component `as` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body', '<view is="item" as="nested[0]"></view>');
     app.views.register('item', '<div></div>')
     function Item() {};
@@ -25,7 +35,7 @@ describe('as', function() {
   });
 
   it('HTML element `as-object` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +
@@ -66,7 +76,7 @@ describe('as', function() {
   });
 
   it('Component `as-object` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +
@@ -115,12 +125,13 @@ describe('as', function() {
     expect(fragment).html('<ul><li>D</li><li>A</li><li>C</li></ul>');
 
     page.model.del('_page.items');
+    console.log('_page.items', items.get());
     expect(page.nested.map).eql({});
     expect(fragment).html('<ul></ul>');
   });
 
   it('HTML element `as-array` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +
@@ -162,7 +173,7 @@ describe('as', function() {
   });
 
   it('Component `as-array` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +

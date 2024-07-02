@@ -1,12 +1,13 @@
 var expect = require('chai').expect;
 var templates = require('../../src/templates').templates;
-var derby = require('./util').derby;
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('components', function() {
+  const runner = domTestRunner.install();
 
   describe('destroy', function() {
     it('emits a "destroy" event when the component is removed from the DOM', function(done) {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body',
         '{{unless _page.hide}}' +
@@ -26,7 +27,7 @@ describe('components', function() {
     });
 
     it('emits an event declared in the template with `on-destroy`', function(done) {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body',
         '{{unless _page.hide}}' +
@@ -44,7 +45,7 @@ describe('components', function() {
     });
 
     it('sets `this.isDestroyed` property to true after a component has been fully destroyed', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body',
         '{{unless _page.hide}}' +
@@ -64,7 +65,7 @@ describe('components', function() {
 
   describe('bind', function() {
     it('calls a function with `this` being the component and passed in arguments', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div>{{area}}</div>');
@@ -93,7 +94,7 @@ describe('components', function() {
       options = options || {};
 
       it('calls a function once with `this` being the component', function(done) {
-        var app = derby.createApp();
+        const { app } = runner.createHarness();
         var page = app.createPage();
         app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
@@ -117,7 +118,7 @@ describe('components', function() {
       });
 
       it('resets and calls again', function(done) {
-        var app = derby.createApp();
+        const { app } = runner.createHarness();
         var page = app.createPage();
         app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
@@ -149,7 +150,7 @@ describe('components', function() {
       });
 
       it('calls with the most recent arguments', function(done) {
-        var app = derby.createApp();
+        const { app } = runner.createHarness();
         var page = app.createPage();
         app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
@@ -222,7 +223,7 @@ describe('components', function() {
       });
     });
     it('debounceAsync does not apply arguments if callback has only one argument', function(done) {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body', '<view is="box" as="box"></view>');
       app.views.register('box', '<div></div>');
@@ -245,7 +246,7 @@ describe('components', function() {
       page.box.update('a', 1);
     });
     it('debounceAsync debounces until the async call completes', function(done) {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div></div>');
       var calls = 0;
@@ -279,7 +280,7 @@ describe('components', function() {
       app.component('box', Box);
     });
     it('throttle calls no more frequently than delay', function(done) {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div></div>');
       var delay = 10;
@@ -319,7 +320,7 @@ describe('components', function() {
 
   describe('dependencies', function() {
     it('gets dependencies rendered inside of components', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body',
         '<view is="box" title="{{_page.title}}, friend">' +
@@ -345,7 +346,7 @@ describe('components', function() {
     });
 
     it('does not return dependencies for local paths within components', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body',
         '<view is="box" title="{{_page.title}}"></view>'

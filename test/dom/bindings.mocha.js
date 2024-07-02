@@ -2,7 +2,7 @@ var expect = require('chai').expect;
 var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('bindings', function() {
-  var runner = domTestRunner.install();
+  const runner = domTestRunner.install();
 
   describe('bracket dependencies', function() {
     it('bracket inner dependency change', function() {

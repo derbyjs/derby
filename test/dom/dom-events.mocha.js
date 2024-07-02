@@ -1,9 +1,11 @@
 var expect = require('chai').expect;
-var derby = require('./util').derby;
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('DOM events', function() {
+  const runner = domTestRunner.install();
+
   it('HTML element markup custom `create` event', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<div on-create="createDiv($element)">' +
         '<span on-create="createSpan($element)"></span>' +
@@ -24,7 +26,7 @@ describe('DOM events', function() {
   });
 
   it('HTML element markup custom `destroy` event', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<div>' +
         '{{unless _page.hide}}' +
@@ -47,7 +49,7 @@ describe('DOM events', function() {
   });
 
   it('dom.on custom `destroy` event', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<div>' +
         '{{unless _page.hide}}' +
