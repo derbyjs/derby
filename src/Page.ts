@@ -5,14 +5,14 @@ import {
 } from 'racer';
 
 import { type App } from './App';
-import components = require('./components');
+import * as components from './components';
 import { Controller } from './Controller';
-import documentListeners = require('./documentListeners');
-import EventModel = require('./eventmodel');
+import { EventModel } from './eventmodel';
 import { type PageParams } from './routes';
 import * as derbyTemplates from './templates';
 import { Context } from './templates/contexts';
 import { Expression } from './templates/expressions';
+import documentListeners = require('./documentListeners');
 import textDiff = require('./textDiff');
 
 const {
