@@ -119,7 +119,7 @@ export class EventModel {
   refChildren: RefChildrenMap | null;
   refOut: RefOutMap | null;
 
-  cosntructor() {
+  constructor() {
     this.id = nextId++;
 
     // Most of these won't ever be filled in, so I'm just leaving them null.
