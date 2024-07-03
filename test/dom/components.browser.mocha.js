@@ -379,7 +379,7 @@ describe('components', function() {
 
   describe('attribute to model binding', function() {
     it('updates model when path attribute changes', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.color', 'blue');
       this.app.views.register('Body',
@@ -398,7 +398,7 @@ describe('components', function() {
     });
 
     it('updates model when expression attribute changes', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.color', 'blue');
       this.app.proto.concat = function() {
@@ -423,7 +423,7 @@ describe('components', function() {
     });
 
     it('updates model when template attribute changes', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.color', 'blue');
       this.app.proto.concat = function() {
@@ -448,7 +448,7 @@ describe('components', function() {
     });
 
     it('updates view expression', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.color', 'blue');
       this.page.model.set('_page.view', 'back');
@@ -479,7 +479,7 @@ describe('components', function() {
     });
 
     it('updates when template attribute is updated to new value inside component model', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.color', 'blue');
       this.app.proto.concat = function() {
@@ -505,7 +505,7 @@ describe('components', function() {
     });
 
     it('renders template attribute passed through component and partial with correct context', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.color', 'blue');
       // `Body` uses the `picture-exhibit` component, passing in the `swatch` template as a
@@ -541,7 +541,7 @@ describe('components', function() {
     });
 
     it('updates within template content', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.width', 10);
       this.page.model.set('_page.color', 'blue');
@@ -567,7 +567,7 @@ describe('components', function() {
     });
 
     it('updates within template attribute', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -592,7 +592,7 @@ describe('components', function() {
     });
 
     it('updates within template attribute in model', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -617,7 +617,7 @@ describe('components', function() {
     });
 
     it('updates within expression attribute by making it a template', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -645,7 +645,7 @@ describe('components', function() {
     });
 
     it('updates within attribute bound to component model path', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -667,7 +667,7 @@ describe('components', function() {
     });
 
     it('updates array within template attribute', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -702,7 +702,7 @@ describe('components', function() {
     });
 
     it('updates array within template attribute with content alias', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -739,7 +739,7 @@ describe('components', function() {
     });
 
     it('updates array within template attribute in model', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -769,7 +769,7 @@ describe('components', function() {
     });
 
     it('updates array within template attribute in model from partial', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -802,7 +802,7 @@ describe('components', function() {
     });
 
     it('updates array within attribute bound to component model path', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -835,7 +835,7 @@ describe('components', function() {
     });
 
     it('updates array within expression attribute by making it a template', function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.app.views.register('Body',
         '<view is="swatch">' +
@@ -868,7 +868,7 @@ describe('components', function() {
 
   describe('rendering', function() {
     beforeEach(function() {
-      this.app = derby.createApp();
+      this.app = runner.createHarness().app;
       this.page = this.app.createPage();
       this.page.model.set('_page.title', 'Good day');
       this.app.views.register('Body',
