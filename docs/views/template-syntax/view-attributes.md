@@ -205,7 +205,7 @@ this.itemEditor[index]; // references the Component or DOM element for item at `
 
 ### `as-object` attribute
 
-Similar to the `as-array` attribute, a property with the name of the attribute value is made available on the component. This attribute takes a second argument that is the proptery key to use as the property on the object.
+Similar to the `as-array` attribute, a property with the provided name is made available on the component, but with the value being a map-like object. The second argument to `as-object` specifies the key for each entry.
 
 ```jinja
 <ul>
