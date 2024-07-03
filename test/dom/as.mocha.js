@@ -34,7 +34,11 @@ describe('as', function() {
     expect(fragment).html('<div></div>');
   });
 
-  it('HTML element `as-object` property', function() {
+  async function nextTick() {
+    return new Promise((resolve) => process.nextTick(resolve));
+  }
+
+  it('HTML element `as-object` property', async function() {
     const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
@@ -58,12 +62,18 @@ describe('as', function() {
     expect(fragment).html('<ul><li>A</li><li>B</li><li>C</li></ul>');
 
     page.model.remove('_page.items', 1);
+
+    // templates.ts#L2342 not processing delete of property until nexttick
+    // https://github.com/derbyjs/derby/blob/master/src/templates/templates.ts#L2342-L2347
+    // unsure if this is a change since these were run in browser
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c');
     expect(page.nested.map.a).html('<li>A</li>');
     expect(page.nested.map.c).html('<li>C</li>');
     expect(fragment).html('<ul><li>A</li><li>C</li></ul>');
 
     page.model.unshift('_page.items', {id: 'd', text: 'D'});
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c', 'd');
     expect(page.nested.map.a).html('<li>A</li>');
     expect(page.nested.map.c).html('<li>C</li>');
@@ -71,11 +81,12 @@ describe('as', function() {
     expect(fragment).html('<ul><li>D</li><li>A</li><li>C</li></ul>');
 
     page.model.del('_page.items');
+    await nextTick();
     expect(page.nested.map).eql({});
     expect(fragment).html('<ul></ul>');
   });
 
-  it('Component `as-object` property', function() {
+  it('Component `as-object` property', async function() {
     const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
@@ -107,6 +118,10 @@ describe('as', function() {
     expect(fragment).html('<ul><li>A</li><li>B</li><li>C</li></ul>');
 
     page.model.remove('_page.items', 1);
+    // templates.ts#L2342 not processing delete of property until nexttick
+    // https://github.com/derbyjs/derby/blob/master/src/templates/templates.ts#L2342-L2347
+    // unsure if this is a change since these were run in browser
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c');
     expect(page.nested.map.a).instanceof(Item);
     expect(page.nested.map.c).instanceof(Item);
@@ -115,6 +130,7 @@ describe('as', function() {
     expect(fragment).html('<ul><li>A</li><li>C</li></ul>');
 
     page.model.unshift('_page.items', {id: 'd', text: 'D'});
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c', 'd');
     expect(page.nested.map.a).instanceof(Item);
     expect(page.nested.map.c).instanceof(Item);
@@ -125,7 +141,7 @@ describe('as', function() {
     expect(fragment).html('<ul><li>D</li><li>A</li><li>C</li></ul>');
 
     page.model.del('_page.items');
-    console.log('_page.items', items.get());
+    await nextTick();
     expect(page.nested.map).eql({});
     expect(fragment).html('<ul></ul>');
   });
