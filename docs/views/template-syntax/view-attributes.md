@@ -191,7 +191,7 @@ this.modal.close();
 
 ### `as-array` attribute
 
-Similar to the `as` attribute, a property with the name of the attribute value is made available on the component but in this case is an `array`. Used by views in a `each` block to provide a reference in the controller to the individual item.
+Similar to the `as` attribute, a property with the provided name is made available on the component, but in this case the value is an array of multiple references. This is useful in an `each` block, to provide a reference in the controller to every individual item.
 
 ```jinja
 {{each items as #item, #index}}
