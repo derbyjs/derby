@@ -210,9 +210,9 @@ Similar to the `as-array` attribute, a property with the provided name is made a
 ```jinja
 <ul>
   {{each _page.items as #item}}
-    <li as-object="listItems, #item.id">{{#item.name}}
+    <li as-object="listItems, #item.id">{{#item.name}}</li>
   {{/each}}
-</ul>v
+</ul>
 ```
 
 ```js
