@@ -146,7 +146,7 @@ export abstract class Component<T extends object = object> extends Controller<T>
     });
     return function componentBindWrapper(...args) {
       if (!_fn) return;
-      return _fn.apply(_component, ...args);
+      return _fn.apply(_component, args);
     };
   }
 
