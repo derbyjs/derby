@@ -476,11 +476,12 @@ describe('bindings', function() {
     $items.set(['alpha', 'beta']);
     // if getFragment called before second set() call, bindings are evaluated
     // multiple times, leading to suggested bug below of len() called w undefined
-    page.getFragment('Body');
+    const fragment = page.getFragment('Body');
+    expect(fragment).html('<div>alpha [L=5]</div><div>beta [L=4]</div>');
     // When `items` gets set to an array of one, down from two, a possible bug is the `len` function
     // getting invoked again for the no-longer-existing second item, resulting in a thrown exception.
     $items.set(['omega']);
-    expect(page.getFragment('Body')).html('<div>omega [L=5]</div>');
+    expect(fragment).html('<div>omega [L=5]</div>');
   });
 
   // Racer model listeners could mutate the model, causing changed mutations.
