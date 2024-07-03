@@ -474,11 +474,13 @@ describe('bindings', function() {
     var page = app.createPage();
     var $items = page.model.at('_page.list.items');
     $items.set(['alpha', 'beta']);
-
-    var fragment = page.getFragment('Body');
+    // if getFragment called before second set() call, bindings are evaluated
+    // multiple times, leading to suggested bug below of len() called w undefined
+    const fragment = page.getFragment('Body');
+    expect(fragment).html('<div>alpha [L=5]</div><div>beta [L=4]</div>');
     // When `items` gets set to an array of one, down from two, a possible bug is the `len` function
     // getting invoked again for the no-longer-existing second item, resulting in a thrown exception.
-    page.model.set('_page.list.items', ['omega']);
+    $items.set(['omega']);
     expect(fragment).html('<div>omega [L=5]</div>');
   });
 

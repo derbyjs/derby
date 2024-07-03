@@ -1,5 +1,5 @@
-var expect = require('chai').expect;
-var EventModel = require('../../src/eventmodel');
+const { EventModel } = require('../../src/eventmodel');
+const { expect } = require('chai');
 
 describe('eventmodel', function() {
   beforeEach(function() {
