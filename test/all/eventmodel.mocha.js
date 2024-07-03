@@ -1,5 +1,6 @@
+import { EventModel } from '../../src/eventmodel';
+
 var expect = require('chai').expect;
-var EventModel = require('../../src/eventmodel');
 
 describe('eventmodel', function() {
   beforeEach(function() {
