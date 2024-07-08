@@ -94,9 +94,8 @@ describe('components', function() {
       options = options || {};
 
       it('calls a function once with `this` being the component', function(done) {
-        const { app } = runner.createHarness();
-        var page = app.createPage();
-        app.views.register('Body', '<view is="box" as="box"></view>');
+        const harness = runner.createHarness( '<view is="box" as="box"></view>');
+        const { app } = harness;
         app.views.register('box', '<div></div>');
         var called = false;
         var update = function() {
@@ -110,6 +109,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
+        const page = harness.renderDom();
         var box = page.box;
         box.update();
         box.update();
@@ -118,9 +118,8 @@ describe('components', function() {
       });
 
       it('resets and calls again', function(done) {
-        const { app } = runner.createHarness();
-        var page = app.createPage();
-        app.views.register('Body', '<view is="box" as="box"></view>');
+        const harness = runner.createHarness( '<view is="box" as="box"></view>');
+        const { app } = harness;
         app.views.register('box', '<div></div>');
         var called = false;
         var box;
@@ -143,6 +142,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
+        const page = harness.renderDom();
         box = page.box;
         box.update();
         box.update();
@@ -150,9 +150,8 @@ describe('components', function() {
       });
 
       it('calls with the most recent arguments', function(done) {
-        const { app } = runner.createHarness();
-        var page = app.createPage();
-        app.views.register('Body', '<view is="box" as="box"></view>');
+        const harness = runner.createHarness( '<view is="box" as="box"></view>');
+        const { app } = harness;
         app.views.register('box', '<div></div>');
         var called = false;
         var box;
@@ -181,6 +180,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
+        const page = harness.renderDom();
         box = page.box;
         box.update('a', 1);
         box.update('b', 2);
