@@ -94,8 +94,9 @@ describe('components', function() {
       options = options || {};
 
       it('calls a function once with `this` being the component', function(done) {
-        const harness = runner.createHarness( '<view is="box" as="box"></view>');
-        const { app } = harness;
+        var { app } = runner.createHarness();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
         var called = false;
         var update = function() {
@@ -109,7 +110,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
-        const page = harness.renderDom();
+        page.getFragment('Body');
         var box = page.box;
         box.update();
         box.update();
@@ -118,8 +119,9 @@ describe('components', function() {
       });
 
       it('resets and calls again', function(done) {
-        const harness = runner.createHarness( '<view is="box" as="box"></view>');
-        const { app } = harness;
+        var { app } = runner.createHarness();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
         var called = false;
         var box;
@@ -142,7 +144,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
-        const page = harness.renderDom();
+        page.getFragment('Body');
         box = page.box;
         box.update();
         box.update();
@@ -150,8 +152,9 @@ describe('components', function() {
       });
 
       it('calls with the most recent arguments', function(done) {
-        const harness = runner.createHarness( '<view is="box" as="box"></view>');
-        const { app } = harness;
+        var { app } = runner.createHarness();
+        var page = app.createPage();
+        app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
         var called = false;
         var box;
@@ -180,7 +183,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
-        const page = harness.renderDom();
+        page.getFragment('Body');
         box = page.box;
         box.update('a', 1);
         box.update('b', 2);
@@ -223,7 +226,7 @@ describe('components', function() {
       });
     });
     it('debounceAsync does not apply arguments if callback has only one argument', function(done) {
-      const { app } = runner.createHarness();
+      var { app } = runner.createHarness();
       var page = app.createPage();
       app.views.register('Body', '<view is="box" as="box"></view>');
       app.views.register('box', '<div></div>');
@@ -243,11 +246,14 @@ describe('components', function() {
         this.update = this.debounceAsync(update);
       };
       app.component('box', Box);
+      page.getFragment('Body');
       page.box.update('a', 1);
     });
+
     it('debounceAsync debounces until the async call completes', function(done) {
-      const { app } = runner.createHarness();
-      app.views.register('Body', '<view is="box"></view>');
+      var { app } = runner.createHarness();
+      var page = app.createPage();
+      app.views.register('Body', '<view is="box" as="box"></view>');
       app.views.register('box', '<div></div>');
       var calls = 0;
       var intervalCount = 0;
@@ -278,12 +284,17 @@ describe('components', function() {
         }, 7);
       };
       app.component('box', Box);
+      page.getFragment('Body');
     });
+
     it('throttle calls no more frequently than delay', function(done) {
       const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div></div>');
-      var delay = 10;
+      const delay = 10;
+      // prevent flaky test -- occasionally called 1ms too fast
+      const minAllowedDelay = delay - 1;
       var calls = 0;
       var tickCount = 0;
       var timeout;
@@ -293,12 +304,13 @@ describe('components', function() {
         var now = +new Date();
         if (calls < 20) {
           if (previous) {
-            expect(now - previous).least(delay);
+            const elasped = now - previous;
+            expect(elasped).greaterThanOrEqual(minAllowedDelay);
           }
         } else {
           expect(tickCount).above(calls);
           clearTimeout(timeout);
-          return done();
+          done();
         }
         previous = now;
       };
