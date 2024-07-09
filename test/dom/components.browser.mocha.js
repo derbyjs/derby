@@ -315,6 +315,7 @@ describe('components', function() {
         tick();
       };
       app.component('box', Box);
+      page.getFragment('Body');
     });
   });
 
