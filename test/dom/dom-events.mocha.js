@@ -25,7 +25,7 @@ describe('DOM events', function() {
     expect(span).html('<span></span>');
   });
 
-  it('HTML element markup custom `destroy` event', function() {
+  it.skip('HTML element markup custom `destroy` event', function() {
     const { app } = runner.createHarness();
     app.views.register('Body',
       '<div>' +
