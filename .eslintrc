@@ -1,9 +1,10 @@
 {
   "env": {
-    "node": true
+    "node": true,
+    "es6": true
   },
   "parserOptions": {
-    "ecmaVersion": 5
+    "ecmaVersion": 9
   },
   "globals": {
     "window": false,
