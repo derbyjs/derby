@@ -3,9 +3,10 @@ var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('forms', function() {
   const runner = domTestRunner.install();
+  const { window } = runner;
 
   function createEvent(type) {
-    return new runner.window.Event(type, {bubbles: true});
+    return new window.Event(type, {bubbles: true});
   }
 
   describe('textarea', function() {
