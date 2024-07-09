@@ -7,7 +7,7 @@ describe('as', function() {
       // solution for `SecurityError: localStorage is not available for opaque origins`
       // Racer interfaces with localStorage and the `as-object` tests use `page.model`
       // methods causing the SecurityError if `url` is not set. Does not appear to impact
-      // `as-array` tests even though they also use `pae.model` methods so 🤷
+      // `as-array` tests even though they also use `page.model` methods so 🤷
       url: 'http://localhost/'
     }
   });
