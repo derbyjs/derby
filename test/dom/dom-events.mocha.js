@@ -1,5 +1,5 @@
-var expect = require('chai').expect;
-var domTestRunner = require('../../src/test-utils/domTestRunner');
+import { expect } from 'chai';
+import * as domTestRunner from '../../src/test-utils/domTestRunner';
 
 describe('DOM events', function() {
   const runner = domTestRunner.install();
