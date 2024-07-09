@@ -63,9 +63,6 @@ describe('as', function() {
 
     page.model.remove('_page.items', 1);
 
-    // templates.ts#L2342 not processing delete of property until nexttick
-    // https://github.com/derbyjs/derby/blob/master/src/templates/templates.ts#L2342-L2347
-    // unsure if this is a change since these were run in browser
     await nextTick();
     expect(page.nested.map).all.keys('a', 'c');
     expect(page.nested.map.a).html('<li>A</li>');
@@ -118,9 +115,7 @@ describe('as', function() {
     expect(fragment).html('<ul><li>A</li><li>B</li><li>C</li></ul>');
 
     page.model.remove('_page.items', 1);
-    // templates.ts#L2342 not processing delete of property until nexttick
-    // https://github.com/derbyjs/derby/blob/master/src/templates/templates.ts#L2342-L2347
-    // unsure if this is a change since these were run in browser
+
     await nextTick();
     expect(page.nested.map).all.keys('a', 'c');
     expect(page.nested.map.a).instanceof(Item);
