@@ -1,6 +1,6 @@
-import { expect } from 'chai';
-import { templates } from '../../src/templates';
-import * as domTestRunner from '../../src/test-utils/domTestRunner';
+const expect = require('chai').expect;
+const templates = require('../../src/templates').templates;
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('components', function() {
   const runner = domTestRunner.install();

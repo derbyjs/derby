@@ -1,6 +1,6 @@
-import { expect } from 'chai';
-import { Component } from '../../src/components';
-import * as domTestRunner from '../../src/test-utils/domTestRunner';
+var expect = require('chai').expect;
+var Component = require('../../src/components').Component;
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('ComponentHarness', function() {
   var runner = domTestRunner.install();
