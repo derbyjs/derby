@@ -1,23 +1,23 @@
-var expect = require('chai').expect;
-var Component = require('../../src/components').Component;
-var domTestRunner = require('../../src/test-utils/domTestRunner');
+const expect = require('chai').expect;
+const Component = require('../../src/components').Component;
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('ComponentHarness', function() {
-  var runner = domTestRunner.install();
+  const runner = domTestRunner.install();
 
   describe('renderDom', function() {
     it('returns a page object', function() {
       function Box() {}
       Box.view = {is: 'box'};
-      var harness = runner.createHarness('<view is="box" />', Box);
-      var page = harness.renderDom();
+      const harness = runner.createHarness('<view is="box" />', Box);
+      const page = harness.renderDom();
       expect(page).instanceof(harness.app.Page);
     });
 
     it('sets component property on returned object', function() {
       function Box() {}
       Box.view = {is: 'box'};
-      var box = runner.createHarness('<view is="box" />', Box).renderDom().component;
+      const box = runner.createHarness('<view is="box" />', Box).renderDom().component;
       expect(box).instanceof(Box);
     });
 
@@ -27,7 +27,7 @@ describe('ComponentHarness', function() {
         is: 'box',
         source: '<index:><div class="box"></div>'
       };
-      var fragment = runner.createHarness('<view is="box" />', Box).renderDom().fragment;
+      const fragment = runner.createHarness('<view is="box" />', Box).renderDom().fragment;
       expect(fragment).instanceof(runner.window.DocumentFragment);
       expect(fragment).html('<div class="box"></div>');
     });
@@ -49,7 +49,7 @@ describe('ComponentHarness', function() {
           '<index:>' +
             '<div class="clown"></div>'
       };
-      var box = runner.createHarness('<view is="box" />', Box, Clown).renderDom().component;
+      const box = runner.createHarness('<view is="box" />', Box, Clown).renderDom().component;
       expect(box.myClown).instanceof(Clown);
     });
 
@@ -61,9 +61,9 @@ describe('ComponentHarness', function() {
           '<index:>' +
             '<div class="box {{if open}}open{{/if}}"></div>'
       };
-      var page = runner.createHarness('<view is="box" />', Box).renderDom();
-      var fragment = page.fragment;
-      var component = page.component;
+      const page = runner.createHarness('<view is="box" />', Box).renderDom();
+      const fragment = page.fragment;
+      const component = page.component;
       expect(fragment).html('<div class="box "></div>');
       component.model.set('open', true);
       expect(fragment).html('<div class="box open"></div>');
@@ -77,8 +77,8 @@ describe('ComponentHarness', function() {
           '<index:>' +
             '<div as="container" class="box {{if open}}open{{/if}}"></div>'
       };
-      var component = runner.createHarness('<view is="box" />', Box).renderDom().component;
-      var container = component.container;
+      const component = runner.createHarness('<view is="box" />', Box).renderDom().component;
+      const container = component.container;
       expect(container.className).equal('box ');
       component.model.set('open', true);
       expect(container.className).equal('box open');
@@ -96,9 +96,9 @@ describe('ComponentHarness', function() {
               '{{/unless}}' +
             '</div>'
       };
-      var page = runner.createHarness('<view is="box" />', Box)
+      const page = runner.createHarness('<view is="box" />', Box)
         .stubComponent('clown').renderDom();
-      var model = page.component.model;
+      const model = page.component.model;
       expect(page.clown).instanceof(Component);
       model.set('hideClown', true);
       expect(page.clown).equal(undefined);
@@ -121,10 +121,10 @@ describe('ComponentHarness', function() {
               '{{/if}}' +
             '</div>'
       };
-      var page = runner.createHarness('<view is="box" show-happy />', Box)
+      const page = runner.createHarness('<view is="box" show-happy />', Box)
         .stubComponent({is: 'clown', asArray: 'clowns'}).renderDom();
-      var clowns = page.clowns;
-      var model = page.component.model;
+      const clowns = page.clowns;
+      const model = page.component.model;
       expect(clowns.length).equal(1);
       expect(clowns[0].model.get('expression')).equal('happy');
       model.set('showSad', true);
@@ -146,7 +146,7 @@ describe('ComponentHarness', function() {
         is: 'box',
         source: '<index:><div class="box"></div>'
       };
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).to.render();
     });
 
@@ -156,7 +156,7 @@ describe('ComponentHarness', function() {
         is: 'box',
         source: '<index:><p><div></div></p>'
       };
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).not.to.render();
     });
 
@@ -166,7 +166,7 @@ describe('ComponentHarness', function() {
         is: 'box',
         source: '<index:><table><tr><td></td></tr></table>'
       };
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).not.to.render();
     });
 
@@ -176,7 +176,7 @@ describe('ComponentHarness', function() {
         is: 'box',
         source: '<index:><div class="box"></div>'
       };
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).to.render('<div class="box"></div>');
     });
 
@@ -186,14 +186,14 @@ describe('ComponentHarness', function() {
         is: 'box',
         source: '<index:><p><div></div></p>'
       };
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).not.to.render('<p><div></div></p>');
     });
 
     it('passes with blank view', function() {
       function Box() {}
       Box.view = {is: 'box'};
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).to.render('');
     });
 
@@ -206,12 +206,12 @@ describe('ComponentHarness', function() {
       Box.prototype.create = function() {
         this.boxElement.className = 'box-changed-in-create';
       };
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       expect(harness).to.render('<div class="box"></div>');
     });
 
     it('works with HTML entities like &nbsp;', function() {
-      var harness = runner.createHarness('&lt;&nbsp;&quot;&gt;');
+      const harness = runner.createHarness('&lt;&nbsp;&quot;&gt;');
       expect(harness).to.render();
       expect(harness).to.render('&lt;&nbsp;"&gt;');
     });
@@ -223,7 +223,7 @@ describe('ComponentHarness', function() {
         source: '<index:><div class="box">{{greeting}}</div>'
       };
       Box.prototype.init = function() {
-        var initialName = this.model.scope('_page.initialName').get();
+        const initialName = this.model.scope('_page.initialName').get();
         expect(initialName).to.equal('Spot');
         this.model.set('name', initialName);
         this.model.start('greeting', ['name'], function(name) {
@@ -233,7 +233,7 @@ describe('ComponentHarness', function() {
           return 'Hello, ' + name;
         });
       };
-      var harness = runner.createHarness('<view is="box" />', Box);
+      const harness = runner.createHarness('<view is="box" />', Box);
       // Have the test depend on state in `_page` to make sure it's not cleared
       // between rendering passes in `.to.render`.
       harness.model.set('_page.initialName', 'Spot');
@@ -244,15 +244,15 @@ describe('ComponentHarness', function() {
 
   describe('fake app.history implementation', function() {
     it('accepts url option', function() {
-      var renderUrl = '/box?size=123';
-      var expectedQueryParams = {size: '123'};
+      const renderUrl = '/box?size=123';
+      const expectedQueryParams = {size: '123'};
 
-      var harness = runner.createHarness(
+      const harness = runner.createHarness(
         'url: {{$render.url}} | query: {{JSON.stringify($render.query)}}'
       );
-      var expectedHtml = 'url: /box?size=123 | query: {"size":"123"}';
+      const expectedHtml = 'url: /box?size=123 | query: {"size":"123"}';
 
-      var page = harness.renderHtml({url: renderUrl});
+      const page = harness.renderHtml({url: renderUrl});
       expectPageParams(page, renderUrl, expectedQueryParams);
       expect(page.html).to.equal(expectedHtml);
 
@@ -262,14 +262,14 @@ describe('ComponentHarness', function() {
     });
 
     it('supports push(url) and replace(url)', function() {
-      var harness = runner.createHarness(
+      const harness = runner.createHarness(
         'url: {{$render.url}} | query: {{JSON.stringify($render.query)}}'
       );
 
-      var page = harness.renderDom();
+      const page = harness.renderDom();
       expectPageParams(page, '', {});
 
-      var newUrl = '/box?size=123';
+      const newUrl = '/box?size=123';
       harness.app.history.push(newUrl);
       expectPageParams(page, newUrl, {size: '123'});
       expect(page.fragment).html('url: /box?size=123 | query: {"size":"123"}');

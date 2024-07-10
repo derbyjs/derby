@@ -1,7 +1,7 @@
-var chai = require('chai');
-var expect = chai.expect;
-var saddle = require('../../../src/templates/templates');
-var domTestRunner = require('../../../src/test-utils/domTestRunner');
+const chai = require('chai');
+const expect = chai.expect;
+const saddle = require('../../../src/templates/templates');
+const domTestRunner = require('../../../src/test-utils/domTestRunner');
 
 describe('templates rendering', function() {
   domTestRunner.install({jsdomOptions: {pretendToBeVisual: true}});
@@ -9,17 +9,17 @@ describe('templates rendering', function() {
   describe('Static rendering', function() {  
     describe('HTML', function() {
       testStaticRendering(function test(options) {
-        var context = getContext();
-        var html = options.template.get(context);
+        const context = getContext();
+        const html = options.template.get(context);
         expect(html).equal(options.html);
       });
     });
   
     describe('Fragment', function() {
       testStaticRendering(function test(options) {
-        var context = getContext();
+        const context = getContext();
         // getFragment calls appendTo, so these Fragment tests cover appendTo.
-        var fragment = options.template.getFragment(context);
+        const fragment = options.template.getFragment(context);
         options.fragment(fragment);
       });
     });
@@ -30,20 +30,20 @@ describe('templates rendering', function() {
 
     describe('HTML', function() {
       testDynamicRendering(function test(options) {
-        var context = getContext({
+        const context = getContext({
           show: true
         });
-        var html = options.template.get(context);
+        const html = options.template.get(context);
         expect(html).equal(options.html);
       });
     });
   
     describe('Fragment', function() {
       testDynamicRendering(function test(options) {
-        var context = getContext({
+        const context = getContext({
           show: true
         });
-        var fragment = options.template.getFragment(context);
+        const fragment = options.template.getFragment(context);
         options.fragment(fragment);
       });
     });
@@ -174,10 +174,10 @@ function testStaticRendering(test) {
       html: '<div><div><span></span><span></span></div></div>',
       fragment: function(fragment) {
         expect(fragment.childNodes.length).equal(1);
-        var node = fragment.childNodes[0];
+        let node = fragment.childNodes[0];
         expect(node.tagName.toLowerCase()).equal('div');
         expect(node.childNodes.length).equal(1);
-        var node = node.childNodes[0];
+        node = node.childNodes[0];
         expect(node.tagName.toLowerCase()).equal('div');
         expect(node.childNodes.length).equal(2);
         expect(node.childNodes[0].tagName.toLowerCase()).equal('span');
@@ -209,7 +209,7 @@ function testStaticRendering(test) {
       html: '<div>Hello, world.</div>',
       fragment: function(fragment) {
         expect(fragment.childNodes.length).equal(1);
-        var node = fragment.childNodes[0];
+        const node = fragment.childNodes[0];
         expect(node.tagName.toLowerCase()).equal('div');
         expect(node.childNodes.length).equal(2);
         expect(node.childNodes[0].nodeType).equal(3);
@@ -245,7 +245,7 @@ function testStaticRendering(test) {
         expect(fragment.childNodes.length).equal(2);
         expect(fragment.childNodes[0].nodeType).equal(8);
         expect(fragment.childNodes[0].data).equal('Hi');
-        var node = fragment.childNodes[1];
+        const node = fragment.childNodes[1];
         expect(node.tagName.toLowerCase()).equal('div');
         expect(node.childNodes.length).equal(1);
         expect(node.childNodes[0].nodeType).equal(3);
@@ -260,10 +260,10 @@ function testStaticRendering(test) {
       html: '<div>Hi</div><input>',
       fragment: function(fragment) {
         expect(fragment.childNodes.length).equal(2);
-        var node = fragment.childNodes[0];
+        let node = fragment.childNodes[0];
         expect(node.tagName.toLowerCase()).equal('div');
         expect(node.innerHTML).equal('Hi');
-        var node = fragment.childNodes[1];
+        node = fragment.childNodes[1];
         expect(node.tagName.toLowerCase()).equal('input');
       }
     });
@@ -278,7 +278,7 @@ function testStaticRendering(test) {
       ]),
       html: '<table><tbody><tr><td>Hi</td></tr></tbody></table>',
       fragment: function(fragment) {
-        var node = fragment.firstChild;
+        const node = fragment.firstChild;
         expect(node.tagName.toLowerCase()).equal('table');
         node = node.firstChild;
         expect(node.tagName.toLowerCase()).equal('tbody');
@@ -373,7 +373,7 @@ function testDynamicRendering(test) {
 describe('templates DOM manipulation', function() {
   domTestRunner.install({jsdomOptions: {pretendToBeVisual: true}});
 
-  var fixture;
+  let fixture;
   beforeEach(function() {
     fixture = document.getElementById('fixture');
     if (!fixture) {
@@ -388,14 +388,14 @@ describe('templates DOM manipulation', function() {
 
   describe('attachTo', function() {
     function renderAndAttach(template) {
-      var context = getContext();
+      const context = getContext();
       removeChildren(fixture);
       fixture.innerHTML = template.get(context);
       template.attachTo(fixture, fixture.firstChild, context);
     }
   
     it('splits static text nodes', function() {
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Text('Hi'),
         new saddle.Text(' there.')
       ]);
@@ -404,7 +404,7 @@ describe('templates DOM manipulation', function() {
     });
   
     it('splits empty static text nodes', function() {
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Text(''),
         new saddle.Text('')
       ]);
@@ -413,7 +413,7 @@ describe('templates DOM manipulation', function() {
     });
   
     it('splits mixed empty static text nodes', function() {
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Text(''),
         new saddle.Text('Hi'),
         new saddle.Text(''),
@@ -426,7 +426,7 @@ describe('templates DOM manipulation', function() {
     });
   
     it('adds empty text nodes around a comment', function() {
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Text('Hi'),
         new saddle.Text(''),
         new saddle.Comment('cool'),
@@ -438,7 +438,7 @@ describe('templates DOM manipulation', function() {
     });
   
     it('attaches to nested elements', function() {
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Element('ul', null, [
           new saddle.Element('li', null, [
             new saddle.Text('One')
@@ -452,7 +452,7 @@ describe('templates DOM manipulation', function() {
     });
   
     it('attaches to element attributes', function() {
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Element('input', {
           type: new saddle.Attribute('text'),
           autofocus: new saddle.Attribute(true),
@@ -463,7 +463,7 @@ describe('templates DOM manipulation', function() {
     });
   
     it('attaches to <tr> from HTML within tbody context', function() {
-      var template = new saddle.Element('table', null, [
+      const template = new saddle.Element('table', null, [
         new saddle.Element('tbody', null, [
           new saddle.Comment('OK'),
           new saddle.Html('<tr><td>Hi</td></tr>'),
@@ -479,7 +479,7 @@ describe('templates DOM manipulation', function() {
   
     it('traverses with comments in a table and select', function() {
       // IE fails to create comments in certain locations when parsing HTML
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Element('table', null, [
           new saddle.Comment('table comment'),
           new saddle.Element('tbody', null, [
@@ -504,7 +504,7 @@ describe('templates DOM manipulation', function() {
     it('throws when fragment does not match HTML', function() {
       // This template is invalid HTML, and when it is parsed it will produce
       // a different tree structure than when the nodes are created one-by-one
-      var template = new saddle.Template([
+      const template = new saddle.Template([
         new saddle.Element('table', null, [
           new saddle.Element('div', null, [
             new saddle.Element('td', null, [
@@ -523,9 +523,9 @@ describe('templates DOM manipulation', function() {
   describe('binding updates', function() {
     describe('getFragment', function() {
       testBindingUpdates(function render(template, data) {
-        var bindings = [];
-        var context = getContext(data, bindings);
-        var fragment = template.getFragment(context);
+        const bindings = [];
+        const context = getContext(data, bindings);
+        const fragment = template.getFragment(context);
         removeChildren(fixture);
         fixture.appendChild(fragment);
         return bindings;
@@ -534,8 +534,8 @@ describe('templates DOM manipulation', function() {
   
     describe('get + attachTo', function() {
       testBindingUpdates(function render(template, data) {
-        var bindings = [];
-        var context = getContext(data, bindings);
+        const bindings = [];
+        const context = getContext(data, bindings);
         removeChildren(fixture);
         fixture.innerHTML = template.get(context);
         template.attachTo(fixture, fixture.firstChild, context);
@@ -545,10 +545,10 @@ describe('templates DOM manipulation', function() {
 
     function testBindingUpdates(render) {
       it('updates a single TextNode', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.DynamicText(new FakeExpression('text'))
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('');
         binding.context = getContext({text: 'Yo'});
         binding.update();
@@ -556,14 +556,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates sibling TextNodes', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.DynamicText(new FakeExpression('first')),
           new saddle.DynamicText(new FakeExpression('second'))
         ]);
-        var bindings = render(template, {second: 2});
+        const bindings = render(template, {second: 2});
         expect(bindings.length).equal(2);
         expect(getText(fixture)).equal('2');
-        var context = getContext({first: 'one', second: 'two'});
+        const context = getContext({first: 'one', second: 'two'});
         bindings[0].context = context;
         bindings[0].update();
         expect(getText(fixture)).equal('one2');
@@ -573,11 +573,11 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates a TextNode that returns text, then a Template', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.DynamicText(new FakeExpression('dynamicTemplate'))
         ]);
-        var data = {dynamicTemplate: 'Hola'};
-        var binding = render(template, data).pop();
+        const data = {dynamicTemplate: 'Hola'};
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('Hola');
         binding.context = getContext({
           dynamicTemplate: new saddle.DynamicText(new FakeExpression('text')),
@@ -588,14 +588,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates a TextNode that returns a Template, then text', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.DynamicText(new FakeExpression('dynamicTemplate'))
         ]);
-        var data = {
+        const data = {
           dynamicTemplate: new saddle.DynamicText(new FakeExpression('text')),
           text: 'Yo'
         };
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('Yo');
         binding.context = getContext({dynamicTemplate: 'Hola'});
         binding.update();
@@ -603,14 +603,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates a TextNode that returns a Template, then another Template', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.DynamicText(new FakeExpression('dynamicTemplate'))
         ]);
-        var data = {
+        const data = {
           dynamicTemplate: new saddle.DynamicText(new FakeExpression('text')),
           text: 'Yo'
         };
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('Yo');
         binding.context = getContext({
           dynamicTemplate: new saddle.Template([
@@ -625,14 +625,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates within a template returned by a TextNode', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.DynamicText(new FakeExpression('dynamicTemplate'))
         ]);
-        var data = {
+        const data = {
           dynamicTemplate: new saddle.DynamicText(new FakeExpression('text')),
           text: 'Yo'
         };
-        var textBinding = render(template, data).shift();
+        const textBinding = render(template, data).shift();
         expect(getText(fixture)).equal('Yo');
         data.text = 'Hola';
         textBinding.context = getContext(data);
@@ -641,10 +641,10 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates a CommentNode', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.DynamicComment(new FakeExpression('comment'))
         ]);
-        var binding = render(template, {comment: 'Hi'}).pop();
+        const binding = render(template, {comment: 'Hi'}).pop();
         expect(fixture.innerHTML).equal('<!--Hi-->');
         binding.context = getContext({comment: 'Bye'});
         binding.update();
@@ -652,40 +652,41 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates raw HTML', function() {
-        var template = new saddle.Template([
+        let children;
+        const template = new saddle.Template([
           new saddle.DynamicHtml(new FakeExpression('html')),
           new saddle.Element('div')
         ]);
-        var binding = render(template, {html: '<b>Hi</b>'}).pop();
-        var children = getChildren(fixture);
+        const binding = render(template, {html: '<b>Hi</b>'}).pop();
+        children = getChildren(fixture);
         expect(children.length).equal(2);
         expect(children[0].tagName.toLowerCase()).equal('b');
         expect(children[0].innerHTML).equal('Hi');
         expect(children[1].tagName.toLowerCase()).equal('div');
         binding.context = getContext({html: '<i>What?</i>'});
         binding.update();
-        var children = getChildren(fixture);
+        children = getChildren(fixture);
         expect(children.length).equal(2);
         expect(children[0].tagName.toLowerCase()).equal('i');
         expect(children[0].innerHTML).equal('What?');
         expect(children[1].tagName.toLowerCase()).equal('div');
         binding.context = getContext({html: 'Hola'});
         binding.update();
-        var children = getChildren(fixture);
+        children = getChildren(fixture);
         expect(children.length).equal(1);
         expect(getText(fixture)).equal('Hola');
         expect(children[0].tagName.toLowerCase()).equal('div');
       });
 
       it('updates an Element attribute', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.Element('div', {
             'class': new saddle.Attribute('message'),
             'data-greeting': new saddle.DynamicAttribute(new FakeExpression('greeting'))
           })
         ]);
-        var binding = render(template).pop();
-        var node = fixture.firstChild;
+        const binding = render(template).pop();
+        const node = fixture.firstChild;
         expect(node.className).equal('message');
         expect(node.getAttribute('data-greeting')).eql(null);
         // Set initial value
@@ -705,14 +706,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates text input "value" property', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.Element('input', {
             'value': new saddle.DynamicAttribute(new FakeExpression('text')),
           })
         ]);
 
-        var binding = render(template).pop();
-        var input = fixture.firstChild;
+        const binding = render(template).pop();
+        const input = fixture.firstChild;
 
         // Set initial value to string.
         binding.context = getContext({text: 'Hi'});
@@ -731,15 +732,15 @@ describe('templates DOM manipulation', function() {
       });
 
       it('does not clobber input type="number" value when typing "1.0"', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.Element('input', {
             'type': new saddle.Attribute('number'),
             'value': new saddle.DynamicAttribute(new FakeExpression('amount')),
           })
         ]);
 
-        var binding = render(template).pop();
-        var input = fixture.firstChild;
+        const binding = render(template).pop();
+        const input = fixture.firstChild;
 
         // Make sure that a user-typed input value of "1.0" does not get clobbered by
         // a context value of `1`.
@@ -750,14 +751,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates "title" attribute', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.Element('div', {
             'title': new saddle.DynamicAttribute(new FakeExpression('divTooltip')),
           })
         ]);
 
-        var binding = render(template).pop();
-        var node = fixture.firstChild;
+        const binding = render(template).pop();
+        const node = fixture.firstChild;
 
         // Set initial value to string.
         binding.context = getContext({divTooltip: 'My tooltip'});
@@ -776,7 +777,7 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates a Block', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.Block(new FakeExpression('author'), [
             new saddle.Element('h3', null, [
               new saddle.DynamicText(new FakeExpression('name'))
@@ -784,8 +785,9 @@ describe('templates DOM manipulation', function() {
             new saddle.DynamicText(new FakeExpression('name'))
           ])
         ]);
-        var binding = render(template).pop();
-        var children = getChildren(fixture);
+        let children;
+        const binding = render(template).pop();
+        children = getChildren(fixture);
         expect(children.length).equal(1);
         expect(children[0].tagName.toLowerCase()).equal('h3');
         expect(getText(children[0])).equal('');
@@ -793,7 +795,7 @@ describe('templates DOM manipulation', function() {
         // Update entire block context
         binding.context = getContext({author: {name: 'John'}});
         binding.update();
-        var children = getChildren(fixture);
+        children = getChildren(fixture);
         expect(children.length).equal(1);
         expect(children[0].tagName.toLowerCase()).equal('h3');
         expect(getText(children[0])).equal('John');
@@ -801,7 +803,7 @@ describe('templates DOM manipulation', function() {
         // Reset to no data
         binding.context = getContext();
         binding.update();
-        var children = getChildren(fixture);
+        children = getChildren(fixture);
         expect(children.length).equal(1);
         expect(children[0].tagName.toLowerCase()).equal('h3');
         expect(getText(children[0])).equal('');
@@ -809,14 +811,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates a single condition ConditionalBlock', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.ConditionalBlock([
             new FakeExpression('show')
           ], [
             [new saddle.Text('shown')]
           ])
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('');
         // Update value
         binding.context = getContext({show: true});
@@ -829,7 +831,7 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates a multi-condition ConditionalBlock', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.ConditionalBlock([
             new FakeExpression('primary'),
             new FakeExpression('alternate'),
@@ -840,7 +842,7 @@ describe('templates DOM manipulation', function() {
             [new saddle.Text('else')]
           ])
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('else');
         // Update value
         binding.context = getContext({primary: 'Heyo'});
@@ -857,12 +859,12 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates an each of text', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression())
           ])
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('');
         // Update value
         binding.context = getContext({items: ['One', 'Two', 'Three']});
@@ -883,14 +885,14 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates an each with an else', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name'))
           ], [
             new saddle.Text('else')
           ])
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('else');
         // Update value
         binding.context = getContext({items: [
@@ -915,15 +917,15 @@ describe('templates DOM manipulation', function() {
       });
 
       it('inserts in an each', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name'))
           ])
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('');
         // Insert from null state
-        var data = {items: []};
+        const data = {items: []};
         binding.context = getContext(data);
         insert(binding, data.items, 0, [{name: 'One'}, {name: 'Two'}, {name: 'Three'}]);
         expect(getText(fixture)).equal('OneTwoThree');
@@ -933,34 +935,34 @@ describe('templates DOM manipulation', function() {
       });
 
       it('inserts into empty each with else', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name'))
           ], [
             new saddle.Text('else')
           ])
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('else');
         // Insert from null state
-        var data = {items: []};
+        const data = {items: []};
         binding.context = getContext(data);
         insert(binding, data.items, 0, [{name: 'One'}, {name: 'Two'}, {name: 'Three'}]);
         expect(getText(fixture)).equal('OneTwoThree');
       });
 
       it('removes all items in an each with else', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name'))
           ], [
             new saddle.Text('else')
           ])
         ]);
-        var data = {items: [
+        const data = {items: [
           {name: 'One'}, {name: 'Two'}, {name: 'Three'}
         ]};
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('OneTwoThree');
         binding.context = getContext(data);
         // Remove all items
@@ -969,15 +971,15 @@ describe('templates DOM manipulation', function() {
       });
 
       it('removes in an each', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name'))
           ])
         ]);
-        var data = {items: [
+        const data = {items: [
           {name: 'One'}, {name: 'Two'}, {name: 'Three'}
         ]};
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('OneTwoThree');
         binding.context = getContext(data);
         // Remove inner item
@@ -989,15 +991,15 @@ describe('templates DOM manipulation', function() {
       });
 
       it('moves in an each', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name'))
           ])
         ]);
-        var data = {items: [
+        const data = {items: [
           {name: 'One'}, {name: 'Two'}, {name: 'Three'}
         ]};
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('OneTwoThree');
         binding.context = getContext(data);
         // Move one item
@@ -1009,7 +1011,7 @@ describe('templates DOM manipulation', function() {
       });
 
       it('insert, move, and remove with multiple node items', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.Element('h3', null, [
               new saddle.DynamicText(new FakeExpression('title'))
@@ -1017,12 +1019,12 @@ describe('templates DOM manipulation', function() {
             new saddle.DynamicText(new FakeExpression('text'))
           ])
         ]);
-        var data = {items: [
+        const data = {items: [
           {title: '1', text: 'one'},
           {title: '2', text: 'two'},
           {title: '3', text: 'three'}
         ]};
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('1one2two3three');
         binding.context = getContext(data);
         // Insert an item
@@ -1037,7 +1039,7 @@ describe('templates DOM manipulation', function() {
       });
 
       it('inserts to outer nested each', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name')),
             new saddle.EachBlock(new FakeExpression('subitems'), [
@@ -1045,10 +1047,10 @@ describe('templates DOM manipulation', function() {
             ])
           ])
         ]);
-        var binding = render(template).pop();
+        const binding = render(template).pop();
         expect(getText(fixture)).equal('');
         // Insert from null state
-        var data = {items: []};
+        const data = {items: []};
         binding.context = getContext(data);
         insert(binding, data.items, 0, [
           {name: 'One', subitems: [1, 2, 3]},
@@ -1070,7 +1072,7 @@ describe('templates DOM manipulation', function() {
       });
 
       it('removes from outer nested each', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name')),
             new saddle.EachBlock(new FakeExpression('subitems'), [
@@ -1078,12 +1080,12 @@ describe('templates DOM manipulation', function() {
             ])
           ])
         ]);
-        var data = {items: [
+        const data = {items: [
           {name: 'One', subitems: [1, 2, 3]},
           {name: 'Two', subitems: [2, 4, 6]},
           {name: 'Three', subitems: [3, 6, 9]}
         ]};
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('One123Two246Three369');
         binding.context = getContext(data);
         // Remove inner item
@@ -1095,7 +1097,7 @@ describe('templates DOM manipulation', function() {
       });
 
       it('moves to outer nested each', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.DynamicText(new FakeExpression('name')),
             new saddle.EachBlock(new FakeExpression('subitems'), [
@@ -1103,12 +1105,12 @@ describe('templates DOM manipulation', function() {
             ])
           ])
         ]);
-        var data = {items: [
+        const data = {items: [
           {name: 'One', subitems: [1, 2, 3]},
           {name: 'Two', subitems: [2, 4, 6]},
           {name: 'Three', subitems: [3, 6, 9]}
         ]};
-        var binding = render(template, data).pop();
+        const binding = render(template, data).pop();
         expect(getText(fixture)).equal('One123Two246Three369');
         binding.context = getContext(data);
         // Move one item
@@ -1120,7 +1122,7 @@ describe('templates DOM manipulation', function() {
       });
 
       it('updates an if inside an each', function() {
-        var template = new saddle.Template([
+        const template = new saddle.Template([
           new saddle.EachBlock(new FakeExpression('items'), [
             new saddle.ConditionalBlock([
               new FakeExpression('flag'),
@@ -1131,13 +1133,13 @@ describe('templates DOM manipulation', function() {
             ])
           ])
         ]);
-        var data = {items: [0, 1], flag: true};
-        var bindings = render(template, data);
+        const data = {items: [0, 1], flag: true};
+        const bindings = render(template, data);
         expect(getText(fixture)).equal('AA');
 
-        var eachBinding = bindings[4];
-        var if1Binding = bindings[2];
-        var if2Binding = bindings[0];
+        const eachBinding = bindings[4];
+        const if1Binding = bindings[2];
+        const if2Binding = bindings[0];
 
         data.flag = false;
         if1Binding.update();
@@ -1152,7 +1154,7 @@ describe('templates DOM manipulation', function() {
 });
 
 function getContext(data, bindings) {
-  var contextMeta = new FakeContextMeta();
+  const contextMeta = new FakeContextMeta();
   contextMeta.addBinding = function(binding) {
     if (bindings) {
       bindings.push(binding);
@@ -1169,10 +1171,10 @@ function removeChildren(node) {
 
 // IE <=8 return comments for Node.children
 function getChildren(node) {
-  var nodeChildren = node.children;
-  var children = [];
-  for (var i = 0, len = nodeChildren.length; i < len; i++) {
-    var child = nodeChildren[i];
+  const nodeChildren = node.children;
+  const children = [];
+  for (const i = 0, len = nodeChildren.length; i < len; i++) {
+    const child = nodeChildren[i];
     if (child.nodeType === 1) children.push(child);
   }
   return children;
@@ -1197,7 +1199,7 @@ function remove(binding, array, index, howMany) {
   binding.remove(index, howMany);
 }
 function move(binding, array, from, to, howMany) {
-  var values = array.splice(from, howMany);
+  const values = array.splice(from, howMany);
   array.splice.apply(array, [to, 0].concat(values));
   binding.move(from, to, howMany);
 }
@@ -1251,11 +1253,11 @@ FakeContext.prototype.removeNode = function(node) {
   this.meta.removeNode(node);
 };
 FakeContext.prototype.child = function(expression) {
-  var data = expression.get(this);
+  const data = expression.get(this);
   return new FakeContext(this.meta, data, this);
 };
 FakeContext.prototype.eachChild = function(expression, index) {
-  var data = expression.get(this)[index];
+  const data = expression.get(this)[index];
   return new FakeContext(this.meta, data, this);
 };
 FakeContext.prototype._get = function(property) {
@@ -1271,11 +1273,11 @@ FakeContext.prototype.unpause = function() {
   this.flush();
 };
 FakeContext.prototype.flush = function() {
-  var pending = this.meta.pending;
-  var len = pending.length;
+  const pending = this.meta.pending;
+  const len = pending.length;
   if (!len) return;
   this.meta.pending = [];
-  for (var i = 0; i < len; i++) {
+  for (const i = 0; i < len; i++) {
     pending[i]();
   }
 };

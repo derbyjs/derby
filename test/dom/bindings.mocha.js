@@ -1,22 +1,22 @@
-var expect = require('chai').expect;
-var domTestRunner = require('../../src/test-utils/domTestRunner');
+const expect = require('chai').expect;
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('bindings', function() {
   const runner = domTestRunner.install();
 
   describe('bracket dependencies', function() {
     it('bracket inner dependency change', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
-      var page = app.createPage();
-      var doc = page.model.at('_page.doc');
-      var key = page.model.at('_page.key');
+      const page = app.createPage();
+      const doc = page.model.at('_page.doc');
+      const key = page.model.at('_page.key');
       doc.set({
         one: 'hi',
         two: 'bye'
       });
       key.set('one');
-      var fragment = page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('hi');
       key.set('two');
       expect(fragment).html('bye');
@@ -27,17 +27,17 @@ describe('bindings', function() {
     });
 
     it('bracket outer dependency change', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
-      var page = app.createPage();
-      var doc = page.model.at('_page.doc');
-      var key = page.model.at('_page.key');
+      const page = app.createPage();
+      const doc = page.model.at('_page.doc');
+      const key = page.model.at('_page.key');
       doc.set({
         one: 'hi',
         two: 'bye'
       });
       key.set('one');
-      var fragment = page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('hi');
       doc.set('one', 'hello')
       expect(fragment).html('hello');
@@ -50,17 +50,17 @@ describe('bindings', function() {
     });
 
     it('bracket inner then outer dependency change', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body', '{{_page.doc[_page.key]}}');
-      var page = app.createPage();
-      var doc = page.model.at('_page.doc');
-      var key = page.model.at('_page.key');
+      const page = app.createPage();
+      const doc = page.model.at('_page.doc');
+      const key = page.model.at('_page.key');
       doc.set({
         one: 'hi',
         two: 'bye'
       });
       key.set('one');
-      var fragment = page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('hi');
       key.set('two');
       expect(fragment).html('bye');
@@ -78,16 +78,16 @@ describe('bindings', function() {
 
   describe('dynamic view instances', function() {
     it('simple dynamic view', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="{{_page.view}}" optional></view>'
       );
       app.views.register('one', 'One');
       app.views.register('two', 'Two');
-      var page = app.createPage();
-      var view = page.model.at('_page.view');
+      const page = app.createPage();
+      const view = page.model.at('_page.view');
       view.set('one');
-      var fragment = page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('One');
       view.set('two');
       expect(fragment).html('Two');
@@ -97,18 +97,18 @@ describe('bindings', function() {
       expect(fragment).html('One');
     });
     it('bracketed dynamic view', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="{{_page.names[_page.index]}}" optional></view>'
       );
       app.views.register('one', 'One');
       app.views.register('two', 'Two');
       app.views.register('three', 'Three');
-      var page = app.createPage();
+      const page = app.createPage();
       page.model.set('_page.names', ['one', 'two']);
-      var index = page.model.at('_page.index');
+      const index = page.model.at('_page.index');
       index.set(0);
-      var fragment = page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('One');
       index.set(1);
       expect(fragment).html('Two');
@@ -122,8 +122,8 @@ describe('bindings', function() {
       expect(fragment).html('Three');
     });
     it('only renders if the expression value changes', function() {
-      var app = runner.createHarness().app;
-      var count = 0;
+      const app = runner.createHarness().app;
+      const count = 0;
       app.proto.count = function() {
         return count++;
       };
@@ -133,10 +133,10 @@ describe('bindings', function() {
       app.views.register('Body', '<view is="{{lower(_page.view)}}"></view>');
       app.views.register('one', 'One {{count()}}');
       app.views.register('two', 'Two {{count()}}');
-      var page = app.createPage();
-      var view = page.model.at('_page.view');
+      const page = app.createPage();
+      const view = page.model.at('_page.view');
       view.set('one');
-      var fragment = page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('One 0');
       view.set('two');
       expect(fragment).html('Two 1');
@@ -151,7 +151,7 @@ describe('bindings', function() {
 
   describe('basic blocks', function() {
     it('if', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '{{if _page.nested.value}}' +
           '{{this}}.' +
@@ -159,10 +159,10 @@ describe('bindings', function() {
           'otherwise' +
         '{{/if}}'
       );
-      var page = app.createPage();
-      var fragment = page.getFragment('Body');
+      const page = app.createPage();
+      const fragment = page.getFragment('Body');
       expect(fragment).html('otherwise');
-      var value = page.model.at('_page.nested.value');
+      const value = page.model.at('_page.nested.value');
       value.set(true);
       expect(fragment).html('true.');
       value.set(false);
@@ -171,7 +171,7 @@ describe('bindings', function() {
       expect(fragment).html('hello.');
     });
     it('unless', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '{{unless _page.nested.value}}' +
           'nada' +
@@ -179,10 +179,10 @@ describe('bindings', function() {
           'otherwise' +
         '{{/unless}}'
       );
-      var page = app.createPage();
-      var fragment = page.getFragment('Body');
+      const page = app.createPage();
+      const fragment = page.getFragment('Body');
       expect(fragment).html('nada');
-      var value = page.model.at('_page.nested.value');
+      const value = page.model.at('_page.nested.value');
       value.set(true);
       expect(fragment).html('otherwise');
       value.set(false);
@@ -191,7 +191,7 @@ describe('bindings', function() {
       expect(fragment).html('otherwise');
     });
     it('each else', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '{{each _page.items}}' +
           '{{this}}.' +
@@ -199,10 +199,10 @@ describe('bindings', function() {
           'otherwise' +
         '{{/each}}'
       );
-      var page = app.createPage();
-      var fragment = page.getFragment('Body');
+      const page = app.createPage();
+      const fragment = page.getFragment('Body');
       expect(fragment).html('otherwise');
-      var items = page.model.at('_page.items');
+      const items = page.model.at('_page.items');
       items.set(['one', 'two', 'three']);
       expect(fragment).html('one.two.three.');
       items.set([]);
@@ -218,7 +218,7 @@ describe('bindings', function() {
 
   describe('nested blocks', function() {
     it('each containing if', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '{{each _page.items as #item}}' +
           '{{if _page.toggle}}' +
@@ -226,10 +226,10 @@ describe('bindings', function() {
           '{{/if}}' +
         '{{/each}}'
       );
-      var page = app.createPage();
-      var items = page.model.at('_page.items');
-      var toggle = page.model.at('_page.toggle');
-      var fragment = page.getFragment('Body');
+      const page = app.createPage();
+      const items = page.model.at('_page.items');
+      const toggle = page.model.at('_page.toggle');
+      const fragment = page.getFragment('Body');
       items.set(['one', 'two', 'three']);
       toggle.set(true);
       items.move(2, 1);
@@ -239,7 +239,7 @@ describe('bindings', function() {
 
   describe('as properties', function() {
     it('conditionally rendered', function(done) {
-      var harness = runner.createHarness(`
+      const harness = runner.createHarness(`
       <view is="box" as="box"/>
     `);
       function Box() {}
@@ -254,12 +254,12 @@ describe('bindings', function() {
           {{/if}}>
         `
       };
-      var app = harness.app;
+      const app = harness.app;
       app.component(Box);
-      var page = harness.renderDom();
-      var value = page.component.model.at('_page.foo');
+      const page = harness.renderDom();
+      const value = page.component.model.at('_page.foo');
       value.set(true);
-      var initialElement = page.box.myDiv;
+      const initialElement = page.box.myDiv;
       expect(page.box.myDiv, 'check pre value change')
         .instanceOf(Object)
         .to.have.property('textContent', 'one');
@@ -275,7 +275,7 @@ describe('bindings', function() {
 
     ['__proto__', 'constructor'].forEach(function(badKey) {
       it(`disallows prototype modification with ${badKey}`, function() {
-        var harness = runner.createHarness(`
+        const harness = runner.createHarness(`
           <view is="box"/>
         `);
         function Box() {}
@@ -286,7 +286,7 @@ describe('bindings', function() {
               <div as="${badKey}">one</div>
           `
         };
-        var app = harness.app;
+        const app = harness.app;
         app.component(Box);
         expect(() => harness.renderDom()).to.throw(`Unsafe key "${badKey}"`);
         // Rendering to HTML string should still work, as that doesn't process `as` attributes
@@ -297,7 +297,7 @@ describe('bindings', function() {
 
   function testArray(itemTemplate, itemData) {
     it('each on path', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' + itemTemplate + '{{/each}}' +
@@ -306,7 +306,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on alias', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page.items as #items}}' +
           '<ul>' +
@@ -317,7 +317,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on relative path', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page.items}}' +
           '<ul>' +
@@ -328,7 +328,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on relative subpath', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '{{with _page}}' +
           '<ul>' +
@@ -339,7 +339,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each on attribute', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '<view is="list" items="{{_page.items}}"></view>'
       );
@@ -351,7 +351,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing withs', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -368,7 +368,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing view instance', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -380,7 +380,7 @@ describe('bindings', function() {
       testEach(app);
     });
     it('each containing view instance containing with', function() {
-      var app = runner.createHarness().app;
+      const app = runner.createHarness().app;
       app.views.register('Body',
         '<ul>' +
           '{{each _page.items as #item, #i}}' +
@@ -392,9 +392,9 @@ describe('bindings', function() {
       testEach(app);
     });
     function testEach(app) {
-      var page = app.createPage();
-      var items = page.model.at('_page.items');
-      var fragment = page.getFragment('Body');
+      const page = app.createPage();
+      const items = page.model.at('_page.items');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('<ul></ul>');
       items.insert(0, itemData.slice(0, 2));
       expect(fragment).html(
@@ -448,7 +448,7 @@ describe('bindings', function() {
   });
 
   it('array item binding with view function calls', function() {
-    var app = runner.createHarness().app;
+    const app = runner.createHarness().app;
     app.views.register('Body', '<view is="box" list="{{_page.list}}"/ boxName="My box"/>');
     function Box() {}
     Box.view = {
@@ -471,8 +471,8 @@ describe('bindings', function() {
       }
       return str.length;
     };
-    var page = app.createPage();
-    var $items = page.model.at('_page.list.items');
+    const page = app.createPage();
+    const $items = page.model.at('_page.list.items');
     $items.set(['alpha', 'beta']);
     // if getFragment called before second set() call, bindings are evaluated
     // multiple times, leading to suggested bug below of len() called w undefined
@@ -502,7 +502,7 @@ describe('bindings', function() {
   // This is solved by having Derby register its catch-all listeners using
   // the *Immediate events, which operate outside the mutator event queue.
   it('array chained insertions at index 0', function() {
-    var app = runner.createHarness().app;
+    const app = runner.createHarness().app;
     app.views.register('Body',
       '<ul>' +
         '{{each _data.items as #item}}' +
@@ -511,16 +511,16 @@ describe('bindings', function() {
       '</ul>'
     );
 
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.on('insert', '_data.items', function(index, values) {
       if (values[0] === 'B') {
         page.model.insert('_data.items', 0, 'C');
       }
     });
-    var $items = page.model.at('_data.items');
+    const $items = page.model.at('_data.items');
     $items.set(['A']);
 
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
     expect(fragment).html('<ul><li>A</li></ul>');
     $items.insert(0, 'B');
     expect(fragment).html('<ul><li>C</li><li>B</li><li>A</li></ul>');
@@ -531,7 +531,7 @@ describe('bindings', function() {
     // which handle binding updates. The event model expects that any numeric
     // path segments it receives have been cast into JS numbers, which the
     // Racer model doesn't necessarily guarantee.
-    var app = runner.createHarness().app;
+    const app = runner.createHarness().app;
     app.views.register('Body',
       '<ul>' +
         '{{each _data.items as #item}}' +
@@ -539,15 +539,15 @@ describe('bindings', function() {
         '{{/each}}' +
       '</ul>'
     );
-    var page = app.createPage();
-    var $items = page.model.at('_data.items');
+    const page = app.createPage();
+    const $items = page.model.at('_data.items');
     $items.set([
       {label: 'Red', hexCode: '#ff0000'},
       {label: 'Green', hexCode: '#00ff00'},
       {label: 'Blue', hexCode: '#0000ff'},
     ]);
 
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
     expect(fragment).html('<ul><li>Red</li><li>Green</li><li>Blue</li></ul>');
     // Test mutation with a numeric path segment.
     page.model.set('_data.items.1.label', 'Verde');

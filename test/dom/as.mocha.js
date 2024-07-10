@@ -1,8 +1,8 @@
-var expect = require('chai').expect;
-var domTestRunner = require('../../src/test-utils/domTestRunner');
+const expect = require('chai').expect;
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('as', function() {
-  var runner = domTestRunner.install({
+  const runner = domTestRunner.install({
     jsdomOptions: {
       // solution for `SecurityError: localStorage is not available for opaque origins`
       // Racer interfaces with localStorage and the `as-object` tests use `page.model`
@@ -15,8 +15,8 @@ describe('as', function() {
   it('HTML element `as` property', function() {
     const { app } = runner.createHarness();
     app.views.register('Body', '<div as="nested[0]"></div>');
-    var page = app.createPage();
-    var fragment = page.getFragment('Body');
+    const page = app.createPage();
+    const fragment = page.getFragment('Body');
     expect(page.nested[0]).html('<div></div>');
     expect(fragment).html('<div></div>');
   });
@@ -27,8 +27,8 @@ describe('as', function() {
     app.views.register('item', '<div></div>')
     function Item() {};
     app.component('item', Item);
-    var page = app.createPage();
-    var fragment = page.getFragment('Body');
+    const page = app.createPage();
+    const fragment = page.getFragment('Body');
     expect(page.nested[0]).instanceof(Item);
     expect(page.nested[0].markerNode.nextSibling).html('<div></div>');
     expect(fragment).html('<div></div>');
@@ -47,13 +47,13 @@ describe('as', function() {
         '{{/each}}' +
       '</ul>'
     );
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.map).all.keys('a', 'b', 'c');
     expect(page.nested.map.a).html('<li>A</li>');
@@ -97,13 +97,13 @@ describe('as', function() {
     app.views.register('item', '<li>{{@content}}</li>');
     function Item() {};
     app.component('item', Item);
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.map).all.keys('a', 'b', 'c');
     expect(page.nested.map.a).instanceof(Item);
@@ -150,13 +150,13 @@ describe('as', function() {
         '{{/each}}' +
       '</ul>'
     );
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.list).an('array');
     expect(page.nested.list).length(3);
@@ -197,13 +197,13 @@ describe('as', function() {
     app.views.register('item', '<li>{{@content}}</li>');
     function Item() {};
     app.component('item', Item);
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.list).an('array');
     expect(page.nested.list).length(3);

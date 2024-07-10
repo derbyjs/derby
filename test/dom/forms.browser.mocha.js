@@ -9,13 +9,15 @@ describe('forms', function() {
   }
 
   describe('textarea', function() {
+    let fixture;
 
     beforeEach(function() {
-      this.fixture = document.createElement('ins');
-      document.body.appendChild(this.fixture);
+      fixture = document.createElement('ins');
+      document.body.appendChild(fixture);
     });
+
     afterEach(function() {
-      document.body.removeChild(this.fixture);
+      document.body.removeChild(fixture);
     });
 
     it('renders text content in textarea', function() {
@@ -58,7 +60,7 @@ describe('forms', function() {
       var textarea = fragment.firstChild;
       var textNode = textarea.firstChild;
       // Insert the fragment in the document so that Derby captures events
-      this.fixture.appendChild(fragment);
+      fixture.appendChild(fragment);
       textNode.data = 'Yo';
       textarea.dispatchEvent(createEvent('change'));
       expect(textarea.value).equal('Yo');
@@ -74,7 +76,7 @@ describe('forms', function() {
       var fragment = page.getFragment('Body');
       var textarea = fragment.firstChild;
       // Insert the fragment in the document so that Derby captures events
-      this.fixture.appendChild(fragment);
+      fixture.appendChild(fragment);
       textarea.value = 'Yo';
       textarea.dispatchEvent(createEvent('change'));
       expect(text.get()).equal('Yo');
@@ -89,11 +91,10 @@ describe('forms', function() {
       var fragment = page.getFragment('Body');
       var textarea = fragment.firstChild;
       // Insert the fragment in the document so that Derby captures events
-      this.fixture.appendChild(fragment);
+      fixture.appendChild(fragment);
       textarea.value = 'Yo';
       textarea.dispatchEvent(createEvent('input'));
       expect(text.get()).equal('Yo');
     });
-
   });
 });

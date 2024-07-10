@@ -1,5 +1,5 @@
-var expect = require('chai').expect;
-var domTestRunner = require('../../src/test-utils/domTestRunner');
+const expect = require('chai').expect;
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('DOM events', function() {
   const runner = domTestRunner.install();
@@ -11,15 +11,15 @@ describe('DOM events', function() {
         '<span on-create="createSpan($element)"></span>' +
       '</div>'
     );
-    var page = app.createPage();
-    var div, span;
+    const page = app.createPage();
+    let div, span;
     page.createDiv = function(element) {
       div = element;
     };
     page.createSpan = function(element) {
       span = element;
     };
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
     expect(fragment).html('<div><span></span></div>');
     expect(div).html('<div><span></span></div>');
     expect(span).html('<span></span>');
@@ -34,12 +34,12 @@ describe('DOM events', function() {
         '{{/unless}}' +
       '</div>'
     );
-    var page = app.createPage();
-    var span;
+    const page = app.createPage();
+    let span;
     page.destroySpan = function(element) {
       span = element;
     };
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
     expect(fragment).html('<div><span></span></div>');
     expect(span).equal(undefined);
 
@@ -57,9 +57,9 @@ describe('DOM events', function() {
         '{{/unless}}' +
       '</div>'
     );
-    var page = app.createPage();
-    var fragment = page.getFragment('Body');
-    var destroyed = false;
+    const page = app.createPage();
+    const fragment = page.getFragment('Body');
+    const destroyed = false;
     page.dom.on('destroy', page.span, function() {
       destroyed = true;
     });
