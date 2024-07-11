@@ -1,13 +1,14 @@
-var expect = require('chai').expect;
-var templates = require('../../src/templates').templates;
-var derby = require('./util').derby;
+const expect = require('chai').expect;
+const templates = require('../../src/templates').templates;
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('components', function() {
+  const runner = domTestRunner.install();
 
   describe('destroy', function() {
     it('emits a "destroy" event when the component is removed from the DOM', function(done) {
-      var app = derby.createApp();
-      var page = app.createPage();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body',
         '{{unless _page.hide}}' +
           '<view is="box" as="box"></view>' +
@@ -26,8 +27,8 @@ describe('components', function() {
     });
 
     it('emits an event declared in the template with `on-destroy`', function(done) {
-      var app = derby.createApp();
-      var page = app.createPage();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body',
         '{{unless _page.hide}}' +
           '<view is="box" on-destroy="destroyBox()"></view>' +
@@ -44,8 +45,8 @@ describe('components', function() {
     });
 
     it('sets `this.isDestroyed` property to true after a component has been fully destroyed', function() {
-      var app = derby.createApp();
-      var page = app.createPage();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body',
         '{{unless _page.hide}}' +
           '<view is="box" as="box"></view>' +
@@ -55,7 +56,7 @@ describe('components', function() {
       function Box() {}
       app.component('box', Box);
       page.getFragment('Body');
-      var box = page.box;
+      const box = page.box;
       expect(box.isDestroyed).equal(false);
       page.model.set('_page.hide', true);
       expect(box.isDestroyed).equal(true);
@@ -64,11 +65,11 @@ describe('components', function() {
 
   describe('bind', function() {
     it('calls a function with `this` being the component and passed in arguments', function() {
-      var app = derby.createApp();
-      var page = app.createPage();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div>{{area}}</div>');
-      var getArea = function(scale) {
+      const getArea = function(scale) {
         expect(this).instanceof(Box);
         return this.width * this.height * scale;
       };
@@ -78,12 +79,12 @@ describe('components', function() {
         this.height = 4;
       };
       Box.prototype.create = function() {
-        var bound = this.bind(getArea);
-        var area = bound(10);
+        const bound = this.bind(getArea);
+        const area = bound(10);
         this.model.set('area', area);
       };
       app.component('box', Box);
-      var fragment = page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html('<div>120</div>');
     });
   });
@@ -93,12 +94,12 @@ describe('components', function() {
       options = options || {};
 
       it('calls a function once with `this` being the component', function(done) {
-        var app = derby.createApp();
-        var page = app.createPage();
+        const { app } = runner.createHarness();
+        const page = app.createPage();
         app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
-        var called = false;
-        var update = function() {
+        const called = false;
+        const update = function() {
           expect(this).instanceof(Box);
           called = true;
           // Will error if called more than once:
@@ -109,7 +110,8 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
-        var box = page.box;
+        page.getFragment('Body');
+        const box = page.box;
         box.update();
         box.update();
         box.update();
@@ -117,13 +119,13 @@ describe('components', function() {
       });
 
       it('resets and calls again', function(done) {
-        var app = derby.createApp();
-        var page = app.createPage();
+        const { app } = runner.createHarness();
+        const page = app.createPage();
         app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
-        var called = false;
-        var box;
-        var update = function(cb) {
+        const called = false;
+        let box;
+        const update = function(cb) {
           expect(this).instanceof(Box);
           if (called) {
             done();
@@ -142,6 +144,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
+        page.getFragment('Body');
         box = page.box;
         box.update();
         box.update();
@@ -149,13 +152,13 @@ describe('components', function() {
       });
 
       it('calls with the most recent arguments', function(done) {
-        var app = derby.createApp();
-        var page = app.createPage();
+        const { app } = runner.createHarness();
+        const page = app.createPage();
         app.views.register('Body', '<view is="box" as="box"></view>');
         app.views.register('box', '<div></div>');
-        var called = false;
-        var box;
-        var update = function(letter, number, cb) {
+        const called = false;
+        let box;
+        const update = function(letter, number, cb) {
           expect(this).instanceof(Box);
           if (called) {
             expect(letter).equal('e');
@@ -180,6 +183,7 @@ describe('components', function() {
           this.update = getFn.call(this, update);
         };
         app.component('box', Box);
+        page.getFragment('Body');
         box = page.box;
         box.update('a', 1);
         box.update('b', 2);
@@ -222,12 +226,12 @@ describe('components', function() {
       });
     });
     it('debounceAsync does not apply arguments if callback has only one argument', function(done) {
-      var app = derby.createApp();
-      var page = app.createPage();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body', '<view is="box" as="box"></view>');
       app.views.register('box', '<div></div>');
-      var called = false;
-      var update = function(cb) {
+      const called = false;
+      const update = function(cb) {
         expect(cb).a('function');
         if (called) {
           done();
@@ -242,16 +246,19 @@ describe('components', function() {
         this.update = this.debounceAsync(update);
       };
       app.component('box', Box);
+      page.getFragment('Body');
       page.box.update('a', 1);
     });
+
     it('debounceAsync debounces until the async call completes', function(done) {
-      var app = derby.createApp();
-      app.views.register('Body', '<view is="box"></view>');
+      const { app } = runner.createHarness();
+      const page = app.createPage();
+      app.views.register('Body', '<view is="box" as="box"></view>');
       app.views.register('box', '<div></div>');
-      var calls = 0;
-      var intervalCount = 0;
-      var interval;
-      var update = function(cb) {
+      const calls = 0;
+      const intervalCount = 0;
+      let interval;
+      const update = function(cb) {
         if (calls === 0) {
           expect(intervalCount).equal(1);
         } else if (calls < 5) {
@@ -267,7 +274,7 @@ describe('components', function() {
       };
       function Box() {}
       Box.prototype.create = function() {
-        var debounced = this.debounceAsync(update);
+        const debounced = this.debounceAsync(update);
         interval = setInterval(function() {
           intervalCount++;
           debounced();
@@ -277,34 +284,40 @@ describe('components', function() {
         }, 7);
       };
       app.component('box', Box);
+      page.getFragment('Body');
     });
+
     it('throttle calls no more frequently than delay', function(done) {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body', '<view is="box"></view>');
       app.views.register('box', '<div></div>');
-      var delay = 10;
-      var calls = 0;
-      var tickCount = 0;
-      var timeout;
-      var previous;
-      var update = function() {
+      const delay = 10;
+      // prevent flaky test -- occasionally called 1ms too fast
+      const minAllowedDelay = delay - 1;
+      const calls = 0;
+      const tickCount = 0;
+      let timeout;
+      let previous;
+      const update = function() {
         calls++;
-        var now = +new Date();
+        const now = +new Date();
         if (calls < 20) {
           if (previous) {
-            expect(now - previous).least(delay);
+            const elasped = now - previous;
+            expect(elasped).greaterThanOrEqual(minAllowedDelay);
           }
         } else {
           expect(tickCount).above(calls);
           clearTimeout(timeout);
-          return done();
+          done();
         }
         previous = now;
       };
       function Box() {}
       Box.prototype.create = function() {
-        var debounced = this.throttle(update, delay);
-        var tick = function() {
+        const debounced = this.throttle(update, delay);
+        const tick = function() {
           timeout = setTimeout(function() {
             tickCount++;
             debounced();
@@ -314,13 +327,14 @@ describe('components', function() {
         tick();
       };
       app.component('box', Box);
+      page.getFragment('Body');
     });
   });
 
   describe('dependencies', function() {
     it('gets dependencies rendered inside of components', function() {
-      var app = derby.createApp();
-      var page = app.createPage();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body',
         '<view is="box" title="{{_page.title}}, friend">' +
           '{{_page.message}}!' +
@@ -337,7 +351,7 @@ describe('components', function() {
       );
       app.component('box', function Box() {});
       app.component('box-title', function BoxTitle() {});
-      var view = app.views.find('Body');
+      const view = app.views.find('Body');
       expect(view.dependencies(page.context)).eql([
         ['_page', 'title'],
         ['_page', 'message']
@@ -345,8 +359,8 @@ describe('components', function() {
     });
 
     it('does not return dependencies for local paths within components', function() {
-      var app = derby.createApp();
-      var page = app.createPage();
+      const { app } = runner.createHarness();
+      const page = app.createPage();
       app.views.register('Body',
         '<view is="box" title="{{_page.title}}"></view>'
       );
@@ -368,7 +382,7 @@ describe('components', function() {
       );
       app.component('box', function Box() {});
       app.component('box-title', function BoxTitle() {});
-      var view = app.views.find('Body');
+      const view = app.views.find('Body');
       expect(view.dependencies(page.context)).eql([
         ['_page', 'title'],
         ['_page', 'disclaimer']
@@ -378,159 +392,154 @@ describe('components', function() {
 
   describe('attribute to model binding', function() {
     it('updates model when path attribute changes', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.color', 'blue');
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      page.model.set('_page.color', 'blue');
+      app.views.register('Body',
         '<view is="swatch" value="{{_page.color}}"></view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '<div style="background-color: {{value}}"></div>'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
       expect(fragment).html('<div style="background-color: blue"></div>');
-      this.page.model.set('_page.color', 'gray');
+      page.model.set('_page.color', 'gray');
       expect(fragment).html('<div style="background-color: gray"></div>');
     });
 
     it('updates model when expression attribute changes', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.color', 'blue');
-      this.app.proto.concat = function() {
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      page.model.set('_page.color', 'blue');
+      app.proto.concat = function() {
         return Array.prototype.join.call(arguments, '');
       };
-      this.app.views.register('Body',
+      app.views.register('Body',
         '<view is="swatch" value="{{concat(\'light\', _page.color)}}"></view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{@value}}<view is="color" value="{{value}}"></view>'
       );
-      this.app.views.register('color',
+      app.views.register('color',
         '<div style="background-color: {{value}}"></div>'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
       expect(fragment).html('lightblue<div style="background-color: lightblue"></div>');
-      this.page.model.set('_page.color', 'gray');
+      page.model.set('_page.color', 'gray');
       expect(fragment).html('lightgray<div style="background-color: lightgray"></div>');
     });
 
     it('updates model when template attribute changes', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.color', 'blue');
-      this.app.proto.concat = function() {
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      page.model.set('_page.color', 'blue');
+      app.proto.concat = function() {
         return Array.prototype.join.call(arguments, '');
       };
-      this.app.views.register('Body',
+      app.views.register('Body',
         '<view is="swatch" value="light{{_page.color}}"></view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '<view is="color"></view>'
       );
-      this.app.views.register('color',
+      app.views.register('color',
         '{{value}}<div style="background-color: {{value}}"></div>'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
       expect(fragment).html('lightblue<div style="background-color: lightblue"></div>');
-      this.page.model.set('_page.color', 'gray');
+      page.model.set('_page.color', 'gray');
       expect(fragment).html('lightgray<div style="background-color: lightgray"></div>');
     });
 
     it('updates view expression', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.color', 'blue');
-      this.page.model.set('_page.view', 'back');
-      this.app.proto.concat = function() {
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      page.model.set('_page.color', 'blue');
+      page.model.set('_page.view', 'back');
+      app.proto.concat = function() {
         return Array.prototype.join.call(arguments, '');
       };
-      this.app.views.register('Body',
+      app.views.register('Body',
         '<view is="swatch" value="{{view _page.view, {value: _page.color}}}"></view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '<div style="{{value}}">{{value}}</div>'
       );
-      this.app.views.register('back',
+      app.views.register('back',
         'background-color: light{{@value}}'
       );
-      this.app.views.register('fore',
+      app.views.register('fore',
         'color: light{{@value}}'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
       expect(fragment).html('<div style="background-color: lightblue">background-color: lightblue</div>');
-      this.page.model.set('_page.color', 'gray');
+      page.model.set('_page.color', 'gray');
       expect(fragment).html('<div style="background-color: lightgray">background-color: lightgray</div>');
-      this.page.model.set('_page.view', 'fore');
+      page.model.set('_page.view', 'fore');
       expect(fragment).html('<div style="color: lightgray">color: lightgray</div>');
     });
 
     it('updates when template attribute is updated to new value inside component model', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.color', 'blue');
-      this.app.proto.concat = function() {
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      page.model.set('_page.color', 'blue');
+      app.proto.concat = function() {
         return Array.prototype.join.call(arguments, '');
       };
-      this.app.views.register('Body',
+      app.views.register('Body',
         '<view is="swatch" value="light{{_page.color}}"></view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '<div style="background-color: {{value}}">{{value}}</div>'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('<div style="background-color: lightblue">lightblue</div>');
-      var previous = swatch.model.set('value', 'gray');
+      const previous = swatch.model.set('value', 'gray');
       expect(fragment).html('<div style="background-color: gray">gray</div>');
-      expect(this.page.model.get('_page.color')).equal('blue');
+      expect(page.model.get('_page.color')).equal('blue');
       swatch.model.set('value', previous);
       expect(fragment).html('<div style="background-color: lightblue">lightblue</div>');
     });
 
     it('renders template attribute passed through component and partial with correct context', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.color', 'blue');
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      page.model.set('_page.color', 'blue');
       // `Body` uses the `picture-exhibit` component, passing in the `swatch` template as a
       // `@content` attribute. `swatch` refers to a top-level model path, `_page.color`.
-      this.app.views.register('Body',
+      app.views.register('Body',
         '<view is="picture-exhibit" label="Blue Swatch"><view is="swatch"></view></view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '<div style="background-color: {{_page.color}}">{{_page.color}}</div>'
       );
       // `picture-exhibit` passes `@content` through as a content attribute to `picture-frame`,
       // a simple partial. `picture-frame` then renders the content attribute that got passed
       // all the way through. The value of `@content` is a `swatch` template, and the rendering
       // should use the top-level context, as the usage of `swatch` didn't use `within`.
-      this.app.views.register('picture-exhibit',
+      app.views.register('picture-exhibit',
         '<view is="picture-frame">{{@content}}</view>' +
         '<label>{{@label}}</label>'
       );
-      this.app.views.register('picture-frame',
+      app.views.register('picture-frame',
         '<div class="picture-frame">{{@content}}</div>'
       );
 
       function PictureExhibit() {}
-      this.app.component('picture-exhibit', PictureExhibit);
+      app.component('picture-exhibit', PictureExhibit);
 
-      var fragment = this.page.getFragment('Body');
+      const fragment = page.getFragment('Body');
       expect(fragment).html(
         '<div class="picture-frame">' +
           '<div style="background-color: blue">blue</div>' +
@@ -540,16 +549,16 @@ describe('components', function() {
     });
 
     it('updates within template content', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.width', 10);
-      this.page.model.set('_page.color', 'blue');
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      page.model.set('_page.width', 10);
+      page.model.set('_page.color', 'blue');
+      app.views.register('Body',
         '<view is="swatch" width="{{_page.width}}" within>' +
           'light{{#color}}' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with #root._page.color as #color}}' +
           '<div style="width: {{width}}px; background-color: {{content}}">' +
             '{{content}}' +
@@ -557,32 +566,30 @@ describe('components', function() {
         '{{/with}}'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
       expect(fragment).html('<div style="width: 10px; background-color: lightblue">lightblue</div>');
-      this.page.model.set('_page.color', 'green');
+      page.model.set('_page.color', 'green');
       expect(fragment).html('<div style="width: 10px; background-color: lightgreen">lightgreen</div>');
     });
 
     it('updates within template attribute', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<attribute is="message" within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '<div>{{@message}}</div>' +
         '{{/with}}'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
@@ -591,23 +598,22 @@ describe('components', function() {
     });
 
     it('updates within template attribute in model', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<attribute is="message" within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '<div>{{message}}</div>' +
         '{{/with}}'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       swatch.model.set('show', true);
@@ -616,23 +622,22 @@ describe('components', function() {
     });
 
     it('updates within expression attribute by making it a template', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<attribute is="message" within>{{#show ? "Show me!" : "Hide me."}}</attribute>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '<div>{{message}}</div>' +
         '{{/with}}'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
@@ -644,19 +649,18 @@ describe('components', function() {
     });
 
     it('updates within attribute bound to component model path', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<attribute is="message" within>{{if show}}Show me!{{else}}Hide me.{{/if}}</attribute>' +
         '</view>'
       );
-      this.app.views.register('swatch', '<div>{{message}}</div>');
+      app.views.register('swatch', '<div>{{message}}</div>');
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('<div>Hide me.</div>');
       expect(swatch.model.get('message')).instanceof(templates.Template);
       expect(swatch.getAttribute('message')).equal('Hide me.');
@@ -666,15 +670,15 @@ describe('components', function() {
     });
 
     it('updates array within template attribute', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
           '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '{{each @items as #item}}' +
             '{{#item.content}}' +
@@ -683,10 +687,9 @@ describe('components', function() {
         {arrays: 'item/items'}
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
@@ -701,15 +704,15 @@ describe('components', function() {
     });
 
     it('updates array within template attribute with content alias', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
           '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '{{each @items as #item}}' +
             '{{with #item.content as #itemContent}}' +
@@ -720,10 +723,9 @@ describe('components', function() {
         {arrays: 'item/items'}
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
@@ -738,15 +740,15 @@ describe('components', function() {
     });
 
     it('updates array within template attribute in model', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
           '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '{{each items as #item}}' +
             '{{#item.content}}' +
@@ -755,10 +757,9 @@ describe('components', function() {
         {arrays: 'item/items'}
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
       expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
@@ -768,30 +769,29 @@ describe('components', function() {
     });
 
     it('updates array within template attribute in model from partial', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<item within>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
           '<item>{{if #show}}Show me!{{else}}Hide me.{{/if}}</item>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '<view is="swatch-items"></view>' +
         '{{/with}}',
         {arrays: 'item/items'}
       );
-      this.app.views.register('swatch-items',
+      app.views.register('swatch-items',
         '{{each items as #item}}' +
           '{{#item.content}}' +
         '{{/each}}'
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
       expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
@@ -801,25 +801,24 @@ describe('components', function() {
     });
 
     it('updates array within attribute bound to component model path', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<item within>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
           '<item>{{if show}}Show me!{{else}}Hide me.{{/if}}</item>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{each @items as #item}}' +
           '{{#item.content}}' +
         '{{/each}}',
         {arrays: 'item/items'}
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('Hide me.Hide me.');
       expect(swatch.getAttribute('items')).eql([
         {content: 'Hide me.'},
@@ -834,15 +833,15 @@ describe('components', function() {
     });
 
     it('updates array within expression attribute by making it a template', function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.app.views.register('Body',
+      const app = runner.createHarness().app;
+      const page = app.createPage();
+      app.views.register('Body',
         '<view is="swatch">' +
           '<item within>{{#show ? "Show me!" : "Hide me."}}</item>' +
           '<item>{{#show ? "Show me!" : "Hide me."}}</item>' +
         '</view>'
       );
-      this.app.views.register('swatch',
+      app.views.register('swatch',
         '{{with show as #show}}' +
           '{{each items as #item}}' +
             '{{#item.content}}' +
@@ -851,10 +850,9 @@ describe('components', function() {
         {arrays: 'item/items'}
       );
       function Swatch() {}
-      this.Swatch = Swatch;
-      this.app.component('swatch', Swatch);
-      var fragment = this.page.getFragment('Body');
-      var swatch = this.page._components._1;
+      app.component('swatch', Swatch);
+      const fragment = page.getFragment('Body');
+      const swatch = page._components._1;
       expect(fragment).html('Hide me.Hide me.');
       expect(swatch.model.get('items').length).equal(2);
       expect(swatch.model.get('items')[0].content).instanceof(templates.Template);
@@ -866,35 +864,38 @@ describe('components', function() {
   });
 
   describe('rendering', function() {
+    let app;
+    let page;
+
     beforeEach(function() {
-      this.app = derby.createApp();
-      this.page = this.app.createPage();
-      this.page.model.set('_page.title', 'Good day');
-      this.app.views.register('Body',
+      app = runner.createHarness().app;
+      page = app.createPage();
+      page.model.set('_page.title', 'Good day');
+      app.views.register('Body',
         '<view is="box" role="container" title="{{_page.title}}">' +
           '<view is="box" role="inner1" title="Greeting">Hello.</view>' +
           '<view is="box" role="inner2"></view>' +
         '</view>'
       );
-      this.app.views.register('box',
+      app.views.register('box',
         '<div class="box">' +
           '<view is="box-title" tip="{{@title}}">{{@title}}</view>' +
           '{{@content}}' +
         '</div>'
       );
-      this.app.views.register('box-title',
+      app.views.register('box-title',
         '<b title="{{@tip}}">{{@content}}</b>'
       );
       function Box() {}
       this.Box = Box;
-      this.app.component('box', this.Box);
+      app.component('box', this.Box);
       function BoxTitle() {}
       this.BoxTitle = BoxTitle;
-      this.app.component('box-title', this.BoxTitle);
+      app.component('box-title', this.BoxTitle);
     });
 
     it('renders a component', function() {
-      var html = this.page.get('Body');
+      const html = page.get('Body');
       expect(html).equal(
         '<div class="box">' +
           '<b title="Good day">Good day</b>' +
@@ -905,7 +906,7 @@ describe('components', function() {
     });
 
     it('sets attributes as values on component model', function() {
-      var tests = {
+      const tests = {
         container: function(box, boxTitle) {
           expect(box.model.get('title')).equal('Good day');
           expect(boxTitle.model.get('tip')).equal('Good day');
@@ -928,7 +929,7 @@ describe('components', function() {
     });
 
     it('Component::getAttribute returns passed in values', function() {
-      var tests = {
+      const tests = {
         container: function(box, boxTitle) {
           expect(box.getAttribute('title')).equal('Good day');
           expect(boxTitle.getAttribute('tip')).equal('Good day');
@@ -952,13 +953,13 @@ describe('components', function() {
 
     function testInit(tests) {
       this.BoxTitle.prototype.init = function() {
-        var box = this.parent;
-        var boxTitle = this;
-        var role = box.model.get('role');
+        const box = this.parent;
+        const boxTitle = this;
+        const role = box.model.get('role');
         tests[role](box, boxTitle);
         delete tests[role];
       }
-      this.page.getFragment('Body');
+      page.getFragment('Body');
       expect(Object.keys(tests).length).equal(0);
     }
   });

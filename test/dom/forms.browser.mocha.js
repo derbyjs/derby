@@ -1,20 +1,27 @@
 var expect = require('chai').expect;
-var derby = require('./util').derby;
+var domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('forms', function() {
+  const runner = domTestRunner.install();
+
+  function createEvent(type) {
+    return new runner.window.Event(type, {bubbles: true});
+  }
 
   describe('textarea', function() {
+    let fixture;
 
     beforeEach(function() {
-      this.fixture = document.createElement('ins');
-      document.body.appendChild(this.fixture);
+      fixture = document.createElement('ins');
+      document.body.appendChild(fixture);
     });
+
     afterEach(function() {
-      document.body.removeChild(this.fixture);
+      document.body.removeChild(fixture);
     });
 
     it('renders text content in textarea', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
@@ -28,7 +35,7 @@ describe('forms', function() {
     });
 
     it('updates textarea value on model set', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
@@ -44,7 +51,7 @@ describe('forms', function() {
     });
 
     it('updates model after changing text and emitting change', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
@@ -53,7 +60,7 @@ describe('forms', function() {
       var textarea = fragment.firstChild;
       var textNode = textarea.firstChild;
       // Insert the fragment in the document so that Derby captures events
-      this.fixture.appendChild(fragment);
+      fixture.appendChild(fragment);
       textNode.data = 'Yo';
       textarea.dispatchEvent(createEvent('change'));
       expect(textarea.value).equal('Yo');
@@ -61,7 +68,7 @@ describe('forms', function() {
     });
 
     it('updates model after changing value and emitting change', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
@@ -69,14 +76,14 @@ describe('forms', function() {
       var fragment = page.getFragment('Body');
       var textarea = fragment.firstChild;
       // Insert the fragment in the document so that Derby captures events
-      this.fixture.appendChild(fragment);
+      fixture.appendChild(fragment);
       textarea.value = 'Yo';
       textarea.dispatchEvent(createEvent('change'));
       expect(text.get()).equal('Yo');
     });
 
     it('updates model after changing value and emitting input', function() {
-      var app = derby.createApp();
+      const { app } = runner.createHarness();
       app.views.register('Body', '<textarea>{{_page.text}}</textarea>');
       var page = app.createPage();
       var text = page.model.at('_page.text');
@@ -84,22 +91,10 @@ describe('forms', function() {
       var fragment = page.getFragment('Body');
       var textarea = fragment.firstChild;
       // Insert the fragment in the document so that Derby captures events
-      this.fixture.appendChild(fragment);
+      fixture.appendChild(fragment);
       textarea.value = 'Yo';
       textarea.dispatchEvent(createEvent('input'));
       expect(text.get()).equal('Yo');
     });
-
   });
 });
-
-function createEvent(type) {
-  // Current browsers
-  if (typeof Event === 'function') {
-    return new Event(type, {bubbles: true});
-  }
-  // IE and old browsers
-  var event = document.createEvent('Event');
-  event.initEvent(type, true, false);
-  return event;
-}

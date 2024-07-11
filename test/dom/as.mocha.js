@@ -1,31 +1,45 @@
-var expect = require('chai').expect;
-var derby = require('./util').derby;
+const expect = require('chai').expect;
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('as', function() {
+  const runner = domTestRunner.install({
+    jsdomOptions: {
+      // solution for `SecurityError: localStorage is not available for opaque origins`
+      // Racer interfaces with localStorage and the `as-object` tests use `page.model`
+      // methods causing the SecurityError if `url` is not set. Does not appear to impact
+      // `as-array` tests even though they also use `page.model` methods so 🤷
+      url: 'http://localhost/'
+    }
+  });
+
   it('HTML element `as` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body', '<div as="nested[0]"></div>');
-    var page = app.createPage();
-    var fragment = page.getFragment('Body');
+    const page = app.createPage();
+    const fragment = page.getFragment('Body');
     expect(page.nested[0]).html('<div></div>');
     expect(fragment).html('<div></div>');
   });
 
   it('Component `as` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body', '<view is="item" as="nested[0]"></view>');
     app.views.register('item', '<div></div>')
     function Item() {};
     app.component('item', Item);
-    var page = app.createPage();
-    var fragment = page.getFragment('Body');
+    const page = app.createPage();
+    const fragment = page.getFragment('Body');
     expect(page.nested[0]).instanceof(Item);
     expect(page.nested[0].markerNode.nextSibling).html('<div></div>');
     expect(fragment).html('<div></div>');
   });
 
-  it('HTML element `as-object` property', function() {
-    var app = derby.createApp();
+  async function nextTick() {
+    return new Promise((resolve) => process.nextTick(resolve));
+  }
+
+  it('HTML element `as-object` property', async function() {
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +
@@ -33,13 +47,13 @@ describe('as', function() {
         '{{/each}}' +
       '</ul>'
     );
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.map).all.keys('a', 'b', 'c');
     expect(page.nested.map.a).html('<li>A</li>');
@@ -48,12 +62,15 @@ describe('as', function() {
     expect(fragment).html('<ul><li>A</li><li>B</li><li>C</li></ul>');
 
     page.model.remove('_page.items', 1);
+
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c');
     expect(page.nested.map.a).html('<li>A</li>');
     expect(page.nested.map.c).html('<li>C</li>');
     expect(fragment).html('<ul><li>A</li><li>C</li></ul>');
 
     page.model.unshift('_page.items', {id: 'd', text: 'D'});
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c', 'd');
     expect(page.nested.map.a).html('<li>A</li>');
     expect(page.nested.map.c).html('<li>C</li>');
@@ -61,12 +78,13 @@ describe('as', function() {
     expect(fragment).html('<ul><li>D</li><li>A</li><li>C</li></ul>');
 
     page.model.del('_page.items');
+    await nextTick();
     expect(page.nested.map).eql({});
     expect(fragment).html('<ul></ul>');
   });
 
-  it('Component `as-object` property', function() {
-    var app = derby.createApp();
+  it('Component `as-object` property', async function() {
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +
@@ -79,13 +97,13 @@ describe('as', function() {
     app.views.register('item', '<li>{{@content}}</li>');
     function Item() {};
     app.component('item', Item);
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.map).all.keys('a', 'b', 'c');
     expect(page.nested.map.a).instanceof(Item);
@@ -97,6 +115,8 @@ describe('as', function() {
     expect(fragment).html('<ul><li>A</li><li>B</li><li>C</li></ul>');
 
     page.model.remove('_page.items', 1);
+
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c');
     expect(page.nested.map.a).instanceof(Item);
     expect(page.nested.map.c).instanceof(Item);
@@ -105,6 +125,7 @@ describe('as', function() {
     expect(fragment).html('<ul><li>A</li><li>C</li></ul>');
 
     page.model.unshift('_page.items', {id: 'd', text: 'D'});
+    await nextTick();
     expect(page.nested.map).all.keys('a', 'c', 'd');
     expect(page.nested.map.a).instanceof(Item);
     expect(page.nested.map.c).instanceof(Item);
@@ -115,12 +136,13 @@ describe('as', function() {
     expect(fragment).html('<ul><li>D</li><li>A</li><li>C</li></ul>');
 
     page.model.del('_page.items');
+    await nextTick();
     expect(page.nested.map).eql({});
     expect(fragment).html('<ul></ul>');
   });
 
   it('HTML element `as-array` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +
@@ -128,13 +150,13 @@ describe('as', function() {
         '{{/each}}' +
       '</ul>'
     );
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.list).an('array');
     expect(page.nested.list).length(3);
@@ -162,7 +184,7 @@ describe('as', function() {
   });
 
   it('Component `as-array` property', function() {
-    var app = derby.createApp();
+    const { app } = runner.createHarness();
     app.views.register('Body',
       '<ul>' +
         '{{each _page.items}}' +
@@ -175,13 +197,13 @@ describe('as', function() {
     app.views.register('item', '<li>{{@content}}</li>');
     function Item() {};
     app.component('item', Item);
-    var page = app.createPage();
+    const page = app.createPage();
     page.model.set('_page.items', [
       {id: 'a', text: 'A'},
       {id: 'b', text: 'B'},
       {id: 'c', text: 'C'}
     ]);
-    var fragment = page.getFragment('Body');
+    const fragment = page.getFragment('Body');
 
     expect(page.nested.list).an('array');
     expect(page.nested.list).length(3);

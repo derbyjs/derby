@@ -1,16 +1,16 @@
-var expect = require('chai').expect;
-var pathLib = require('node:path');
+const expect = require('chai').expect;
+const pathLib = require('node:path');
 const { Component } = require('../../src/components');
-var domTestRunner = require('../../src/test-utils/domTestRunner');
+const domTestRunner = require('../../src/test-utils/domTestRunner');
 
 describe('components', function() {
-  var runner = domTestRunner.install();
+  const runner = domTestRunner.install();
 
   describe('app.component registration', function() {
     describe('passing just component class', function() {
       describe('with static view prop', function() {
         it('external view file', function() {
-          var harness = runner.createHarness();
+          const harness = runner.createHarness();
 
           function SimpleBox() {}
           SimpleBox.view = {
@@ -25,7 +25,7 @@ describe('components', function() {
         });
 
         it('inlined view.source', function() {
-          var harness = runner.createHarness();
+          const harness = runner.createHarness();
 
           function SimpleBox() {}
           SimpleBox.view = {
@@ -39,7 +39,7 @@ describe('components', function() {
         });
 
         it('inferred view file from view name', function() {
-          var harness = runner.createHarness();
+          const harness = runner.createHarness();
 
           // Pre-load view with same name as the component's static `view.is`
           harness.app.loadViews(pathLib.resolve(__dirname, '../fixtures/simple-box'), 'simple-box');
