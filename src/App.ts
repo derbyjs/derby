@@ -39,7 +39,11 @@ export function createAppPage(derby): typeof Page {
 
 export interface AppOptions {
   appMetadata?: Record<string, string>,
-  scriptHash?: string,
+  scriptBaseUrl?: string,
+  scriptCrossOrigin?: boolean,
+  scriptHash?: string;
+  scriptMapBaseUrl?: string,
+  [key: string]: unknown,
 }
 
 type OnRouteCallback = (this: Page, page: Page, model: Model, params: PageParams, done?: () => void) => void;
