@@ -39,9 +39,24 @@ export function createAppPage(derby): typeof Page {
 
 export interface AppOptions {
   appMetadata?: Record<string, string>,
+  /** 
+    * Base URL that the JS bundles are served from, with no trailing slash.
+    * Used by bundler plugins such as derby-webpack and derby-browserify.
+    */
   scriptBaseUrl?: string,
+  /**
+    * If true, then Derby's <script> tags have the `crossorigin` attribute set by the bundler plugin.
+    */
   scriptCrossOrigin?: boolean,
+  /**
+    * If set, this is used for auto-refresh in development to determine whether the browser
+    * should auto-refresh due to running different code than the server. Some bundler plugins, 
+    * such as derby-webpack, do their own hot reload and don't use this mechanism.
+    */
   scriptHash?: string;
+  /**
+    * Base URL for js.map files, if different from scriptBaseUrl.
+    */
   scriptMapBaseUrl?: string,
   [key: string]: unknown,
 }
