@@ -55,14 +55,16 @@ export class PageForServer extends Page {
     });
   }
 
-  renderStatic(status?: number, ns?: string) {
+  renderStatic(ns: string): void;
+  renderStatic(status: number, ns?: string): void;
+  renderStatic(status?: number | string, ns?: string) {
     if (typeof status !== 'number') {
       ns = status;
       status = null;
     }
     this.app.emit('renderStatic', this);
 
-    if (status) this.res.statusCode = status;
+    if (typeof status === 'number') this.res.statusCode = status;
     this.params = pageParams(this.req);
     this._setRenderParams(ns);
     const pageHtml = this.get('Page', ns);
